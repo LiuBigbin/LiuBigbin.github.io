@@ -5,16 +5,25 @@
   
   <title>怎样搭建自己的Hexo博客 | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description">
+  <meta name="description" content="Hexo是一个基于Node.js的静态博客程序，其编译上百篇文字只需要几秒。hexo生成的静态网页可以直接放到GitHub Pages，BAE，SAE等平台上。Hexo博客的搭建需要先安装node.js和git，因为Hexo的运行依赖于Node.js,而Git可以将本地的Hexo博客部署到Github上面。这两个程序在windows下比较容易安装，直接下载安装就可以了：
+Node.js
+Git
+安">
 <meta property="og:type" content="article">
 <meta property="og:title" content="怎样搭建自己的Hexo博客">
 <meta property="og:url" content="http://yoursite.com/2016/02/24/怎样搭建自己的Hexo博客/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description">
-<meta property="og:updated_time" content="2016-02-24T05:58:31.000Z">
+<meta property="og:description" content="Hexo是一个基于Node.js的静态博客程序，其编译上百篇文字只需要几秒。hexo生成的静态网页可以直接放到GitHub Pages，BAE，SAE等平台上。Hexo博客的搭建需要先安装node.js和git，因为Hexo的运行依赖于Node.js,而Git可以将本地的Hexo博客部署到Github上面。这两个程序在windows下比较容易安装，直接下载安装就可以了：
+Node.js
+Git
+安">
+<meta property="og:updated_time" content="2016-02-24T07:12:47.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="怎样搭建自己的Hexo博客">
-<meta name="twitter:description">
+<meta name="twitter:description" content="Hexo是一个基于Node.js的静态博客程序，其编译上百篇文字只需要几秒。hexo生成的静态网页可以直接放到GitHub Pages，BAE，SAE等平台上。Hexo博客的搭建需要先安装node.js和git，因为Hexo的运行依赖于Node.js,而Git可以将本地的Hexo博客部署到Github上面。这两个程序在windows下比较容易安装，直接下载安装就可以了：
+Node.js
+Git
+安">
   
     <link rel="alternative" href="/atom.xml" title="Hexo" type="application/atom+xml">
   
@@ -82,13 +91,60 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        
+        <p>Hexo是一个基于Node.js的静态博客程序，其编译上百篇文字只需要几秒。hexo生成的静态网页可以直接放到GitHub Pages，BAE，SAE等平台上。<br>Hexo博客的搭建需要先安装node.js和git，因为Hexo的运行依赖于Node.js,而Git可以将本地的Hexo博客部署到Github上面。这两个程序在windows下比较容易安装，直接下载安装就可以了：</p>
+<p><a href="https://nodejs.org/en/" target="_blank" rel="external">Node.js</a></p>
+<p><a href="http://git-scm.com/" target="_blank" rel="external">Git</a></p>
+<p>安装上面两个程序后，就可以安装Hexo了，打开Node.js的命令行窗口，输入：</p>
+<pre><code>npm  install -g hexo-cli
+</code></pre><p>就可以安装Hexo了，如果提示没有npm命令，需要先安装npm命令，nmp是Node.js的包管理器，是Node Packaged Modules的简称，通过npm可以下载安装nodejs的模块包。具体安装步骤可以参考下面的流程：</p>
+<p><a href="http://jingyan.baidu.com/article/a17d528506d7f58098c8f2b0.html" target="_blank" rel="external">npm安装图文教程</a></p>
+<p>安装Hexo后，可以在磁盘新建一个文件夹用来存储hexo blog，作为hexo的根目录。我自己的是D:\HexoBlog,打开nodejs命令窗口，进入该目录，然后执行以下命令：</p>
+<pre><code>hexo init
+
+npm install
+</code></pre><p>将会在该目录下生成Hexo对应的文件：</p>
+<pre><code>.
+├── _config.yml
+├── package.json
+├── scaffolds
+├── public
+├── source
+    |   ├── _drafts
+    |   └── _posts
+└── themes
+</code></pre><p>接下来就可以在cmd或是nodejs或是git bash命令窗口中执行hexo的命令（hexo的大部分命令都需要先进入hexo根目录才可以执行，也可以自己配置环境变量），因为最后还是要部署到github上面，所以还是建议一直使用git bash，执行：</p>
+<pre><code>hexo g
+</code></pre><p>可以在本地生成静态的页面，页面文件放在hexo根目录先的public文件夹里面。执行</p>
+<pre><code>hexo s
+</code></pre><p>可以在本地启动hexo服务器，在浏览器中输入<a href="http://localhost:4000" target="_blank" rel="external">http://localhost:4000</a>, 就可以直接的访问得到本地的hexo博客了。</p>
+<p>如果想要将本地的博客发布到github仓库中，那么需要在自己额github账户中新建一个仓库，仓库命名规则：</p>
+<pre><code>yourgitname.github.io
+</code></pre><p>创建好仓库后，需要修改hexo根目录下的配置文件_config.yml，在文件的最后加入以下代码：</p>
+<pre><code>deploy:
+type: git
+repository: https://github.com/yourgitname/yourgitname.github.io.git
+branch: master
+</code></pre><p>保存文件后，在git bash窗口输入</p>
+<pre><code>hexo d
+</code></pre><p>就可以将本地的博客部署到github仓库里面了，如果出现下面错误：</p>
+<pre><code>fatal: Not a git repository (or any of the parent directories): .git
+</code></pre><p>先将hexo根目录下的.deploy_git文件夹删除，再执行命令就可以了。</p>
+<p>创建新的hexo博客时，可以使用命令：</p>
+<pre><code>hexo new &quot;new blog name&quot;
+</code></pre><p>来生成新的new blog name.md文件，该文件在source/_post文件夹里面，可以采用markdown编辑器来编辑该文件，生成自己的博客。编辑完成后，执行</p>
+<pre><code>hexo d -g
+</code></pre><p>会生成该md文件对应的静态页面，存放在public文件夹里面，并将新的博客部署到github仓库里面。</p>
+<p>具体的详细介绍，可以参考hexo的官方教程：</p>
+<p><a href="https://hexo.io/zh-cn/docs/" target="_blank" rel="external">Hexo官方中文文档介绍</a></p>
+
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2016/02/24/怎样搭建自己的Hexo博客/" data-id="cil0grelf0001b8qyjc14vr52" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2016/02/24/怎样搭建自己的Hexo博客/" data-id="cil0i7w760001j0qya16slk0u" class="article-share-link">Share</a>
       
       
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/随记/">随记</a></li></ul>
+
     </footer>
   </div>
   
@@ -113,8 +169,22 @@
     
   
     
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
   
     
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/随记/" style="font-size: 10px;">随记</a>
+    </div>
+  </div>
+
   
     
   <div class="widget-wrap">

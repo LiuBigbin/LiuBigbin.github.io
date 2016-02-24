@@ -17,7 +17,7 @@ Git
 Node.js
 Git
 安">
-<meta property="og:updated_time" content="2016-02-24T07:12:47.000Z">
+<meta property="og:updated_time" content="2016-02-24T07:24:36.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="怎样搭建自己的Hexo博客">
 <meta name="twitter:description" content="Hexo是一个基于Node.js的静态博客程序，其编译上百篇文字只需要几秒。hexo生成的静态网页可以直接放到GitHub Pages，BAE，SAE等平台上。Hexo博客的搭建需要先安装node.js和git，因为Hexo的运行依赖于Node.js,而Git可以将本地的Hexo博客部署到Github上面。这两个程序在windows下比较容易安装，直接下载安装就可以了：
@@ -124,7 +124,9 @@ npm install
 type: git
 repository: https://github.com/yourgitname/yourgitname.github.io.git
 branch: master
-</code></pre><p>保存文件后，在git bash窗口输入</p>
+</code></pre><p>保存文件后，需要先安装hexo-deployer-git才能通过git部署，在nodejs窗口进入hexo根目录下输入：</p>
+<pre><code>npm install hexo-deployer-git --save
+</code></pre><p>在git bash窗口输入</p>
 <pre><code>hexo d
 </code></pre><p>就可以将本地的博客部署到github仓库里面了，如果出现下面错误：</p>
 <pre><code>fatal: Not a git repository (or any of the parent directories): .git

@@ -116,7 +116,9 @@ npm install
 type: git
 repository: https://github.com/yourgitname/yourgitname.github.io.git
 branch: master
-</code></pre><p>保存文件后，在git bash窗口输入</p>
+</code></pre><p>保存文件后，需要先安装hexo-deployer-git才能通过git部署，在nodejs窗口进入hexo根目录下输入：</p>
+<pre><code>npm install hexo-deployer-git --save
+</code></pre><p>在git bash窗口输入</p>
 <pre><code>hexo d
 </code></pre><p>就可以将本地的博客部署到github仓库里面了，如果出现下面错误：</p>
 <pre><code>fatal: Not a git repository (or any of the parent directories): .git

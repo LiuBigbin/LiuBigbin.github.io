@@ -65,6 +65,93 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-爬取leetcode所有accepted算法题的代码" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/02/24/爬取leetcode所有accepted算法题的代码/" class="article-date">
+  <time datetime="2016-02-24T13:24:24.000Z" itemprop="datePublished">2016-02-24</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/02/24/爬取leetcode所有accepted算法题的代码/">爬取leetcode所有accepted算法题的代码</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>&#160; &#160; &#160; &#160; 最近刷完了leetcode的两百多道算法题，由于自己在提交代码的时候在代码中有很多的注释，用来说明算法的解答思路，所以想要得到accepted问题的提交代码，方便自己日后可以查看，于是想到了将leetcode中自己已经accepted的算法代码给爬取下来。看了leetcode的算法问题主页面，决定根据主页面中的tag标签来爬去数据，顺便根据标签将算法问题分类。分析了每个tag下的问题链接列表以及每个问题所对应的submission detail链接后，就开始编写程序进行爬取。程序的爬取流程如下：<br>&#160; &#160; &#160; &#160; 首先爬取算法主页面的tag信息，得到leetcode目前所有算法的标签，每一个标签表示为一个文件夹，文件夹里可以用来存储该标签所对应的算法题的提交代码。</p>
+<p>&#160; &#160; &#160; &#160;接下来遍历所有的标签文件夹，根据leetcode中的链接得到每个标签下的所有问题的submission detail链接，链接信息存在对应标签文件夹里面的questionurl.txt文件里面。</p>
+<p>&#160; &#160; &#160; &#160;最后根据questionurl.txt文件里面的问题提交代码链接，获取所提交的代码。</p>
+<p>&#160; &#160; &#160; &#160; 至此得到自己所提交的accepted算法代码。</p>
+<p>爬虫代码可以在<a href="https://github.com/LiuBigbin/Crawler.leetcode" target="_blank" rel="external">leetcode accepted 算法提交代码爬取程序</a>获取</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/02/24/爬取leetcode所有accepted算法题的代码/" data-id="cil0yce9r0004pcqy9ohuaxze" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/爬虫/">爬虫</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-爬虫绕过登陆方法" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/02/24/爬虫绕过登陆方法/" class="article-date">
+  <time datetime="2016-02-24T12:43:10.000Z" itemprop="datePublished">2016-02-24</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/02/24/爬虫绕过登陆方法/">爬虫绕过登陆方法</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>&#160; &#160; &#160; &#160;相信很多网友在写网络爬虫的时候，会遇到需要登陆的情况，比如说在爬取新浪微博的时候，明明爬取的是某个微博的链接，然而新浪返回的却是登陆界面的数据，这样就得不到所需要的微博数据。那么要怎样才能绕过登陆界面呢？</p>
+<p>&#160; &#160; &#160; &#160;其实很简单，浏览器在访问新浪微博的时候，只需要登陆一次后面就可以不需要登陆了，访问什么微博的链接都会得到对应的数据，靠的就是浏览器的cookie，新浪会根据该cookie来判断浏览器是否已经登陆过，我们可以利用该cookie来实现绕过登陆页面。具体的步骤如下：</p>
+<p>&#160; &#160; &#160; &#160;首先通过浏览器登录到所需要爬取的网站，登陆完成后，通过浏览器的开发者模式获得浏览器与网站通讯的cookie，将其值复制下来。</p>
+<p>&#160; &#160; &#160; &#160;在程序中，可以在建立连接的时候设置请求的cookie，直接将复制下来的cookie值设置进去就可以了，然后就可以愉快的爬取数据了。以java语言为例：</p>
+<pre><code>URLConnection url_con = url.openConnection();
+url_con.setRequestProperty(&quot;Cookie&quot;, &quot;your browser&apos;s cookie value&quot;);
+</code></pre>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/02/24/爬虫绕过登陆方法/" data-id="cil0yce9l0001pcqy9tivshx1" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/爬虫/">爬虫</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-怎样搭建自己的Hexo博客" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2016/02/24/怎样搭建自己的Hexo博客/" class="article-date">
@@ -138,7 +225,7 @@ branch: master
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/24/怎样搭建自己的Hexo博客/" data-id="cil0lti3600001gqy66ejlbq5" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/24/怎样搭建自己的Hexo博客/" data-id="cil0yce9s0006pcqy2udrjc55" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/随记/">随记</a></li></ul>
@@ -147,7 +234,6 @@ branch: master
   </div>
   
 </article>
-
 
 
   
@@ -186,14 +272,13 @@ branch: master
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/24/hello-world/" data-id="cil0ka6al0000ssqyafsg81lc" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/24/hello-world/" data-id="cil0yce8y0000pcqykdj28f5l" class="article-share-link">Share</a>
       
       
     </footer>
   </div>
   
 </article>
-
 
 
   
@@ -208,7 +293,7 @@ branch: master
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">1</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">1</span></li></ul>
     </div>
   </div>
 
@@ -217,7 +302,7 @@ branch: master
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/随记/" style="font-size: 10px;">随记</a>
+      <a href="/tags/爬虫/" style="font-size: 20px;">爬虫</a> <a href="/tags/随记/" style="font-size: 10px;">随记</a>
     </div>
   </div>
 
@@ -226,7 +311,7 @@ branch: master
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">2</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">4</span></li></ul>
     </div>
   </div>
 
@@ -236,6 +321,14 @@ branch: master
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2016/02/24/爬取leetcode所有accepted算法题的代码/">爬取leetcode所有accepted算法题的代码</a>
+          </li>
+        
+          <li>
+            <a href="/2016/02/24/爬虫绕过登陆方法/">爬虫绕过登陆方法</a>
+          </li>
         
           <li>
             <a href="/2016/02/24/怎样搭建自己的Hexo博客/">怎样搭建自己的Hexo博客</a>

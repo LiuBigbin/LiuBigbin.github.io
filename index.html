@@ -166,6 +166,7 @@ sshthresh = cwnd
 <p>&#160; &#160; &#160; &#160;当sender这边收到了3个Duplicated Acks，进入Fast Retransimit模式，开发重传重复Acks指示的那个包。如果只有这一个包丢了，那么，重传这个包后回来的Ack会把整个已经被sender传输出去的数据ack回来。如果没有的话，说明有多个包丢了。我们叫这个ACK为Partial ACK。</p>
 <p>&#160; &#160; &#160; &#160;一旦Sender这边发现了Partial ACK出现，那么，sender就可以推理出来有多个包被丢了，于是乎继续重传sliding window里未被ack的第一个包。直到再也收不到了Partial Ack，才真正结束Fast Recovery这个过程。</p>
 <p>&#160; &#160; &#160; &#160;我们可以看到，这个“Fast Recovery的变更”是一个非常激进的玩法，他同时延长了Fast Retransmit和Fast Recovery的过程。</p>
+<p>本文来自于<a href="http://www.cricode.com/3568.html" target="_blank" rel="external">快课网</a></p>
 
       
     </div>

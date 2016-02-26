@@ -17,7 +17,7 @@
 &amp;#160; &amp;#1">
 <meta property="og:image" content="http://liubigbin.github.io/pictures/tcp-ip-handshark.png">
 <meta property="og:image" content="http://liubigbin.github.io/pictures/zhuangtaitu.jpeg">
-<meta property="og:updated_time" content="2016-02-26T08:51:10.000Z">
+<meta property="og:updated_time" content="2016-02-26T08:52:21.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="图解TCP/IP协议">
 <meta name="twitter:description" content="&amp;#160; &amp;#160; &amp;#160; &amp;#160;本文通过两个图来梳理TCP-IP协议相关知识。TCP通信过程包括三个步骤：建立TCP连接通道，传输数据，断开TCP连接通道。如图1所示，给出了TCP通信过程的示意图。
@@ -134,7 +134,7 @@
 b.由CLOSING状态进入:双方同时发起关闭，都做了发起FIN的请求，同时接收到了FIN并做了ACK的情况下，由CLOSING状态进入。
 
 c.由FIN_WAIT_1状态进入：同时接受到FIN（对方发起），ACK（本身发起的FIN回应），与b的区别在于本身发起的FIN回应的ACK先于
-   对方的FIN请求到达，而b是FIN先到达。这种情况概率最小。
+  对方的FIN请求到达，而b是FIN先到达。这种情况概率最小。
 </code></pre><p>关闭的4次连接最难理解的状态是TIME_WAIT，存在TIME_WAIT的2个理由：</p>
 <p>1.可靠地实现TCP全双工连接的终止。</p>
 <p>2.允许老的重复分节在网络中消逝。</p>

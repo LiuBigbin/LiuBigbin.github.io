@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>LiuYongbin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="UNIX�¿�����ls -l �����������ļ���Ȩ�ޡ���ls�������õ��ı�ʾ���ĸ�ʽ�����������ģ�-rwxr-xr-x ����������һ�¸�ʽ����ʾ����˼�����ֱ�ʾ����һ����ʮλ��
+19 8 7 6 5 4 3 2 1 0&amp;#10;&amp;#10;- r w x r - x r - x
+��9λ��ʾ�ļ�����,����Ϊ">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LiuYongbin">
+<meta property="og:url" content="http://liubigbin.github.io/2016/02/28/Linux 文件权限/index.html">
+<meta property="og:site_name" content="LiuYongbin">
+<meta property="og:description" content="UNIX�¿�����ls -l �����������ļ���Ȩ�ޡ���ls�������õ��ı�ʾ���ĸ�ʽ�����������ģ�-rwxr-xr-x ����������һ�¸�ʽ����ʾ����˼�����ֱ�ʾ����һ����ʮλ��
+19 8 7 6 5 4 3 2 1 0&amp;#10;&amp;#10;- r w x r - x r - x
+��9λ��ʾ�ļ�����,����Ϊ">
+<meta property="og:updated_time" content="2016-02-28T11:45:27.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="LiuYongbin">
+<meta name="twitter:description" content="UNIX�¿�����ls -l �����������ļ���Ȩ�ޡ���ls�������õ��ı�ʾ���ĸ�ʽ�����������ģ�-rwxr-xr-x ����������һ�¸�ʽ����ʾ����˼�����ֱ�ʾ����һ����ʮλ��
+19 8 7 6 5 4 3 2 1 0&amp;#10;&amp;#10;- r w x r - x r - x
+��9λ��ʾ�ļ�����,����Ϊ">
+  
+    <link rel="alternative" href="/atom.xml" title="LiuYongbin" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" type="text/css">
+  
+
+</head>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">LiuYongbin</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">Hey boy just do it!</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://liubigbin.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Linux 文件权限" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/02/28/Linux 文件权限/" class="article-date">
+  <time datetime="2016-02-28T11:45:25.000Z" itemprop="datePublished">2016-02-28</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>UNIX�¿�����ls -l �����������ļ���Ȩ�ޡ���ls�������õ��ı�ʾ���ĸ�ʽ�����������ģ�-rwxr-xr-x ����������һ�¸�ʽ����ʾ����˼�����ֱ�ʾ����һ����ʮλ��</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">9 8 7 6 5 4 3 2 1 0&#10;&#10;- r w x r - x r - x</span><br></pre></td></tr></table></figure>
+<p>��9λ��ʾ�ļ�����,����Ϊp��d��l��s��c��b��-��<br><figure class="highlight haml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">p��ʾ�����ܵ��ļ�</span><br><span class="line"></span><br><span class="line">d��ʾĿ¼�ļ�</span><br><span class="line"></span><br><span class="line">l��ʾ���������ļ�</span><br><span class="line"></span><br><span class="line">-<span class="ruby">��ʾ��ͨ�ļ�</span><br><span class="line"></span></span><br><span class="line">s��ʾsocket�ļ�</span><br><span class="line"></span><br><span class="line">c��ʾ�ַ��豸�ļ�</span><br><span class="line"></span><br><span class="line">b��ʾ���豸�ļ�</span><br></pre></td></tr></table></figure></p>
+<p>��8-6λ��5-3λ��2-0λ�ֱ���ʾ�ļ������ߵ�Ȩ�ޣ�ͬ���û���Ȩ�ޣ������û���Ȩ�ޣ�����ʽΪrwx��<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">r��ʾ�ɶ������Զ����ļ�������</span><br><span class="line"></span><br><span class="line">w��ʾ��д�������޸��ļ�������</span><br><span class="line"></span><br><span class="line">x��ʾ��ִ�У���������������</span><br><span class="line"></span><br><span class="line">û��Ȩ�޵�λ����-��ʾ</span><br></pre></td></tr></table></figure></p>
+<p>���ӣ�<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ls -l myfile��ʾΪ��</span><br><span class="line"></span><br><span class="line">-rwxr-x--- <span class="number">1</span> foo staff <span class="number">7734</span> Apr <span class="number">05</span> <span class="number">17</span>:<span class="number">07</span> myfile</span><br></pre></td></tr></table></figure></p>
+<p>��ʾ�ļ�myfile����ͨ�ļ����ļ�����������foo�û�����foo�û�����staff�飬�ļ�ֻ��1��Ӳ���ӣ�������7734���ֽڣ������޸�ʱ��4��5��17:07��</p>
+<p>������foo���ļ��ж�дִ��Ȩ�ޣ�staff���ĳ�Ա���ļ��ж���ִ��Ȩ�ޣ��������û��������ļ�û��Ȩ�ޡ�</p>
+<p>����һ���ļ���������SUID��SGIDλ�����ֱ������������߻�ͬ���û���Ȩ�޵Ŀ�ִ��λ�ϡ����磺<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span>��-rwsr-xr-x ��ʾSUID��������Ȩ���п�ִ��λ������</span><br><span class="line"></span><br><span class="line"><span class="number">2</span>��-rwSr--r-- ��ʾSUID�����ã���������Ȩ���п�ִ��λû�б�����</span><br><span class="line"></span><br><span class="line"><span class="number">3</span>��-rwxr-sr-x ��ʾSGID��ͬ���û�Ȩ���п�ִ��λ������</span><br><span class="line"></span><br><span class="line"><span class="number">4</span>��-rw-r-Sr-- ��ʾSGID�����ã���ͬ���û�Ȩ���п�ִ��λû�б���</span><br></pre></td></tr></table></figure></p>
+<p>��ʵ��UNIX��ʵ���У��ļ�Ȩ����12��������λ��ʾ��������λ���ϵ�ֵ��</p>
+<p>1����ʾ����Ӧ��Ȩ�ޣ�<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">11</span> <span class="number">10</span> <span class="number">9</span> <span class="number">8</span> <span class="number">7</span> <span class="number">6</span> <span class="number">5</span> <span class="number">4</span> <span class="number">3</span> <span class="number">2</span> <span class="number">1</span> <span class="number">0</span></span><br><span class="line"></span><br><span class="line">S G T r w x r w x r w x</span><br></pre></td></tr></table></figure></p>
+<p>��11λΪSUIDλ����10λΪSGIDλ����9λΪstickyλ����8-0λ��Ӧ������������rwxλ��<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">11</span> <span class="number">10</span> <span class="number">9</span> <span class="number">8</span> <span class="number">7</span> <span class="number">6</span> <span class="number">5</span> <span class="number">4</span> <span class="number">3</span> <span class="number">2</span> <span class="number">1</span> <span class="number">0</span></span><br><span class="line"></span><br><span class="line">������-rwsr-xr-x��ֵΪ�� <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span></span><br><span class="line"></span><br><span class="line">-rw-r-Sr--��ֵΪ�� <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span></span><br></pre></td></tr></table></figure></p>
+<p>���ļ���SUID��SUID���������£�<br><figure class="highlight perl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">chmod</span> u+<span class="keyword">s</span> filename ����SUIDλ</span><br><span class="line"></span><br><span class="line"><span class="keyword">chmod</span> u-<span class="keyword">s</span> filename ȥ��SUID����</span><br><span class="line"></span><br><span class="line"><span class="keyword">chmod</span> g+<span class="keyword">s</span> filename ����SGIDλ</span><br><span class="line"></span><br><span class="line"><span class="keyword">chmod</span> g-<span class="keyword">s</span> filename ȥ��SGID����</span><br></pre></td></tr></table></figure></p>
+<p>����һ�ַ�����chmod�����ð˽��Ʊ�ʾ���������á�����������ǰ����12λȨ�ޱ�ʾ��Ҳ�ܼ򵥡�</p>
+<h3 id="SUID��SGID����ϸ����"><a href="#SUID��SGID����ϸ����" class="headerlink" title="SUID��SGID����ϸ����"></a>SUID��SGID����ϸ����</h3><p>����SUID��SGID����ִ�г��򣨳����Ŀ�ִ��λ�����ã�ʱ�����ã�����ִ��λֻ����ͨ�ļ���Ŀ¼�ļ������壬�����������������ļ���SUID��SGIDλ��û�ж��������ġ�</p>
+<p>���Ƚ���ͨ�ļ���SUID��SGID�����á����ӣ�</p>
+<p>������ͨ�ļ�myfile������foo�û��ģ��ǿ�ִ�еģ�����û��SUIDλ��ls������ʾ���£�<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-rwxr-xr-x <span class="number">1</span> foo staff <span class="number">7734</span> Apr <span class="number">05</span> <span class="number">17</span>:<span class="number">07</span> myfile</span><br></pre></td></tr></table></figure></p>
+<p>�κ��û�������ִ������������UNIX���ں��Ǹ���ʲô��ȷ��һ�����̶���Դ�ķ���Ȩ�޵��أ����������̵������û��ģ���Ч��ID������user id��group id���û�������id�������鵽�Լ��Ļ������û���user id��group id��</p>
+<p>����һ����user id ��group id�⣬����������֮Ϊeffective ��id��������Чid���������ĸ�id��ʾΪ��uid��gid��euid��egid���ں���Ҫ�Ǹ���euid��egid��ȷ�����̶���Դ�ķ���Ȩ�ޡ�</p>
+<p>һ����������û��SUID��SGIDλ����euid=uid egid=gid���ֱ������������������û���uid��gid������kevin�û���uid��gid�ֱ�Ϊ204��202��foo�û���uid��gidΪ200��201��kevin����myfile�����γɵĽ��̵�euid=uid=204��egid=gid=202���ں˸�����Щֵ���жϽ��̶���Դ���ʵ����ƣ���ʵ����kevin�û�����Դ���ʵ�Ȩ�ޣ���fooû��ϵ��</p>
+<p>����һ������������SUID����euid��egid���ɱ����еĳ����������ߵ�uid��gid������kevin�û�����myfile��euid=200��egid=201��uid=204��gid=202�����������̾�����������foo����Դ����Ȩ�ޡ�</p>
+<p>SUID�����þ����������ñ���û����ӦȨ�޵��û�������������ʱ�����Է�����û��Ȩ�޷��ʵ���Դ��passwd����һ�������������ӡ�</p>
+<p>SUID�����ȼ���SGID�ߣ���һ����ִ�г���������SUID����SGID���Զ�������Ӧ��egid��</p>
+<p>��������һ�����ӣ�</p>
+<p>UNIXϵͳ��һ��/dev/kmem���豸�ļ�����һ���ַ��豸�ļ��������洢�˺��ĳ���Ҫ���ʵ����ݣ������û��Ŀ�����������ļ����ܸ�һ�����û���д��</p>
+<p><code>Ȩ����Ϊ��cr--r----- 1 root system 2, 1 May 25 1998 kmem</code></p>
+<p>��ps�ȳ���Ҫ�������ļ�����ps��Ȩ���������£�<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-r-xr-sr-x <span class="number">1</span> bin system <span class="number">59346</span> Apr <span class="number">05</span> <span class="number">1998</span> ps</span><br></pre></td></tr></table></figure></p>
+<p>����һ��������SGID�ĳ��򣬶�ps���û���bin������root�����Բ�������SUID������kmem��������ע���ˣ�bin��root������system�飬����ps������SGID��һ���û�ִ��ps���ͻ�����system���û���Ȩ�ޣ����ļ�kmem��ͬ���û���Ȩ���ǿɶ�������һ���û�ִ��ps��û�����ˡ�����Щ��˵��Ϊʲô����ps��������Ϊroot�û��ĳ�����Ȼ������SUIDλ����Ҳ����������ȷ���Խ������⣬��ʵ����Ϊʲô���������أ���ΪSGID�ķ��ձ�SUIDС�ö࣬���Գ���ϵͳ��ȫ�Ŀ��ǣ�Ӧ�þ�����SGID����SUID�ĳ������������ܵĻ���������˵��һ��SGID��Ŀ¼��Ӱ�졣SUID��Ŀ¼û��Ӱ�졣����һ��Ŀ¼������SGIDλ����ô�����κ�һ���û�������Ŀ¼��дȨ�޵Ļ�����������Ŀ¼���������ļ����鶼���Զ�תΪ����Ŀ¼���������ڵ��飬���ļ������߲��䣬�������ڽ��������ļ����û���</p>
+<p>���������ļ�a.txt<br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="id">#ls</span> -l <span class="tag">a</span><span class="class">.txt</span></span><br><span class="line"></span><br><span class="line">-rwxrwxrwx</span><br><span class="line"></span><br><span class="line"><span class="id">#chmod</span> <span class="number">4777</span> <span class="tag">a</span><span class="class">.txt</span></span><br><span class="line"></span><br><span class="line">-rwsrwxrwx ======&gt;ע��sλ��</span><br><span class="line"></span><br><span class="line"><span class="id">#chmod</span> <span class="number">2777</span> <span class="tag">a</span><span class="class">.txt</span></span><br><span class="line"></span><br><span class="line">-rwxrwsrwx ======&gt;ע��sλ��</span><br><span class="line"></span><br><span class="line"><span class="id">#chmod</span> <span class="number">7777</span> <span class="tag">a</span><span class="class">.txt</span></span><br><span class="line"></span><br><span class="line">-rwsrwxswt ======&gt;������t,t���������ڴ��о�������<span class="tag">a</span><span class="class">.txt</span>,��ʡϵͳ�ټ��ص�ʱ��.</span><br></pre></td></tr></table></figure></p>
+<p>�����ٿ�ǰ������ SUID/SGID����:<br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="id">#cd</span> /sbin</span><br><span class="line"></span><br><span class="line">#./lsusb</span><br><span class="line"></span><br><span class="line">...</span><br><span class="line"></span><br><span class="line"><span class="id">#su</span> <span class="function"><span class="title">aaa</span><span class="params">(��ͨ�û�)</span></span></span><br><span class="line"></span><br><span class="line">$./lsusb</span><br><span class="line"></span><br><span class="line">...</span><br></pre></td></tr></table></figure></p>
+<p>�ǲ���������ʾ����<br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$su</span></span><br><span class="line"></span><br><span class="line"><span class="id">#chmod</span> <span class="number">4755</span> lsusb</span><br><span class="line"></span><br><span class="line"><span class="id">#su</span> aaa</span><br><span class="line"></span><br><span class="line">$./lsusb</span><br></pre></td></tr></table></figure></p>
+<p>… �����������𣿱�����ֻ��root�û�����ִ�е��������SUID��,��ͨ�û��Ϳ�����rootһ�����ã�Ȩ�������ˡ������Ƕ����ļ���˵�ģ�����Ŀ¼Ҳ��࣡</p>
+<p>Ŀ¼��S����ʹ���ڸ�Ŀ¼�´������κ��ļ�����Ŀ¼���ڸ�Ŀ¼��ӵ�е��飬Ŀ¼��T����ʹ�ø�Ŀ¼�������߼�root����ɾ����Ŀ¼�����ж���s��S������SUID/SGID��Ҫ������Ȩ�ޣ�������ls -l���ͻῴ��S,֤���������õ�SUID/SGIDû�������á�</p>
+<p>Why we need suid,how do we use suid?</p>
+<p>r – ������</p>
+<p>���� w – д����</p>
+<p>���� x – ִ������</p>
+<p>���� s – SUID/SGID</p>
+<p>���� t – stickyλ</p>
+<p>��ô suid/sgid����ʲô�ģ� Ϊʲô����suidλ�أ�</p>
+<p>Ҫ�������������������ǿ������⣺������ÿ���û������Լ������룿</p>
+<p>�û��޸����룬��ͨ����������passwd��ʵ�ֵġ����ձ���Ҫ�޸�/etc/passwd�ļ�����passwd���ļ��������ǣ�<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">#ls -l /etc/passwd</span></span><br><span class="line"></span><br><span class="line">-rw-r--r-- <span class="number">1</span> root root <span class="number">2520</span> Jul <span class="number">12</span> <span class="number">18</span>:<span class="number">25</span> passwd</span><br></pre></td></tr></table></figure></p>
+<p>���ǿ��Կ���passwd�ļ�ֻ�ж���root�û��ǿ�д�ģ����������е����û���˵����û��дȨ�޵ġ� ��ôһ����ͨ���û������ܹ�ͨ������passwd�����޸�����passwd�ļ��أ�</p>
+<p>Ϊ�˽����������⣬SUID/SGID��Ӧ�˶���������AT&amp;T����������ר���� �Ǻǡ�</p>
+<p>SUID��SGID�����ν������������أ�</p>
+<p>���ȣ�����Ҫ֪��һ�㣺���������е�ʱ������һЩ���ԣ����а��� ʵ���û�ID,ʵ����ID,��Ч�û�ID,��Ч��ID�ȡ� ʵ���û�ID��ʵ����ID��ʶ������˭��˭��������������,һ����2���ֶ��ڵ�½ʱ�򶨣���һ����½�Ự�ڼ䣬 ��Щֵ�����ϲ��ı䡣</p>
+<p>����Ч�û�ID����Ч��ID�������˽���������ʱ��Ȩ�ޡ��ں��ھ򶨽����Ƿ����ļ���ȡȨ��ʱ���ǲ����˽��̵���Ч�û�ID�������жϵġ�</p>
+<p>֪�������㣬����������SUID�Ľ���;����</p>
+<p>��һ������������ΪSUIDλʱ���ں˾�֪������������������ʱ����Ӧ����Ϊ���ļ����������������������򡣼��ó������е�ʱ������Ч�û�ID�Ǹó����������ߡ��ٸ����ӣ�<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@sgrid5 bin]<span class="preprocessor"># ls -l passwd</span></span><br><span class="line"></span><br><span class="line">-r-s--s--x <span class="number">1</span> root root <span class="number">16336</span> Feb <span class="number">14</span> <span class="number">2003</span> passwd</span><br></pre></td></tr></table></figure></p>
+<p>��Ȼ����test��½ϵͳ�����ǵ�������passwd����������������ʱ��������passwd������SUIDλ��������Ȼ���̵�ʵ���û�ID��test��Ӧ��ID�����ǽ��̵���Ч�û�ID����passwd�ļ���������root��ID,���˿����޸�/etc/passwd�ļ���</p>
+<p>�����ǿ�����һ�����ӡ�</p>
+<p>ping����Ӧ�ù㷺�����Բ��������Ƿ�����������ping���������ǲ�����ICMPЭ�飬��Ҫ����ICMP���ġ�����ֻ��root�û����ܽ���ICMP���ģ����ν������������أ�ͬ����Ҳ��ͨ��SUIDλ��������<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@sgrid5 bin]<span class="preprocessor"># ls -l /bin/ping</span></span><br><span class="line"></span><br><span class="line">-rwsr-sr-x <span class="number">1</span> root root <span class="number">28628</span> Jan <span class="number">25</span> <span class="number">2003</span> /bin/ping</span><br></pre></td></tr></table></figure></p>
+<p>���ǿ��Բ���һ�£�����ȥ��ping��SUIDλ��������ͨ�û�ȥ�������������ô����<br><figure class="highlight autoit"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[root<span class="constant">@sgrid5</span> bin]<span class="preprocessor">#chmod u-s /bin/ping</span></span><br><span class="line"></span><br><span class="line">[root<span class="constant">@sgrid5</span> bin]<span class="preprocessor"># ls -l ping</span></span><br><span class="line"></span><br><span class="line">-rwxr-xr-x <span class="number">1</span> root root <span class="number">28628</span> Jan <span class="number">25</span> <span class="number">2003</span> <span class="built_in">ping</span></span><br><span class="line"></span><br><span class="line">[root<span class="constant">@sgrid5</span> bin]<span class="preprocessor">#su test</span></span><br><span class="line"></span><br><span class="line">[test<span class="constant">@sgrid5</span> bin]$ <span class="built_in">ping</span> byhh.net</span><br><span class="line"></span><br><span class="line"><span class="built_in">ping</span>: icmp open socket: Operation <span class="literal">not</span> permitted</span><br></pre></td></tr></table></figure></p>
+<p>SUID��Ȼ�ܺ��˽�����һЩ���⣬����ͬʱҲ������һЩ��ȫ������</p>
+<p>��Ϊ������ SUID λ�ĳ�������������(ͨ�������������ȷ���),��ôhacker�Ϳ����õ�rootȨ�ޡ�</p>
+<p>�����ڰ�ȫ�����ر�Ҫע����Щ������SUID�ĳ�����</p>
+<p>ͨ�����µ����������ҵ�ϵͳ�����е�������suid���ļ���<br><figure class="highlight vim"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@sgrid5 /]# <span class="keyword">find</span> / -perm -<span class="number">04000</span> -<span class="built_in">type</span> <span class="keyword">f</span> -<span class="keyword">ls</span></span><br></pre></td></tr></table></figure></p>
+<p>��������Ϊʲô��4000�����ҿ��Կ�һ��ǰ����st_mode�ĸ�bit�������������ˡ�</p>
+<p>����Щ������suid�ĳ���������ò��ϵģ�������ȡ���ó�����suidλ��</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/02/28/Linux 文件权限/" data-id="cil6i0bxi0000h8qygpp0ksdt" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2016/02/28/基于用户的协同过滤算法/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          (no title)
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2016/02/26/图解TCP-IP协议/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">图解TCP/IP协议</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/TCP-IP/" style="font-size: 10px;">TCP/IP</a> <a href="/tags/动态规划/" style="font-size: 20px;">动态规划</a> <a href="/tags/棋盘动态规划/" style="font-size: 15px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 15px;">爬虫</a> <a href="/tags/随记/" style="font-size: 15px;">随记</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">12</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/02/28/Linux命令面试问答/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2016/02/28/基于用户的协同过滤算法/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2016/02/28/Linux 文件权限/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2016/02/26/图解TCP-IP协议/">图解TCP/IP协议</a>
+          </li>
+        
+          <li>
+            <a href="/2016/02/26/动态规划之整数划分/">动态规划之整数划分</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 LiuYongbin<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js" type="text/javascript"></script>
+
+
+<script src="/js/script.js" type="text/javascript"></script>
+
+  </div>
+</body>
+</html>

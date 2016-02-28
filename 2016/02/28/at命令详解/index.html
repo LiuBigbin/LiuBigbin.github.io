@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>at命令详解 | LiuYongbin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="at命令用来安排一个程序在未来的做一次性执行。所以有提交的任务都会被放在/var/spool/at目录下，并且到了执行时间的时候通过atd守护进程来执行。
+1．命令格式：
+at[参数][时间]
+2．命令功能：
+在一个指定的时间执行一个指定任务，只能执行一次，且需要开启atd进程（ps -ef | grep atd查看， 开启用/etc/init.d/atd start or restart； 开机">
+<meta property="og:type" content="article">
+<meta property="og:title" content="at命令详解">
+<meta property="og:url" content="http://liubigbin.github.io/2016/02/28/at命令详解/index.html">
+<meta property="og:site_name" content="LiuYongbin">
+<meta property="og:description" content="at命令用来安排一个程序在未来的做一次性执行。所以有提交的任务都会被放在/var/spool/at目录下，并且到了执行时间的时候通过atd守护进程来执行。
+1．命令格式：
+at[参数][时间]
+2．命令功能：
+在一个指定的时间执行一个指定任务，只能执行一次，且需要开启atd进程（ps -ef | grep atd查看， 开启用/etc/init.d/atd start or restart； 开机">
+<meta property="og:updated_time" content="2016-02-28T12:45:09.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="at命令详解">
+<meta name="twitter:description" content="at命令用来安排一个程序在未来的做一次性执行。所以有提交的任务都会被放在/var/spool/at目录下，并且到了执行时间的时候通过atd守护进程来执行。
+1．命令格式：
+at[参数][时间]
+2．命令功能：
+在一个指定的时间执行一个指定任务，只能执行一次，且需要开启atd进程（ps -ef | grep atd查看， 开启用/etc/init.d/atd start or restart； 开机">
+  
+    <link rel="alternative" href="/atom.xml" title="LiuYongbin" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" type="text/css">
+  
+
+</head>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">LiuYongbin</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">Hey boy just do it!</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://liubigbin.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-at命令详解" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/02/28/at命令详解/" class="article-date">
+  <time datetime="2016-02-28T12:40:18.000Z" itemprop="datePublished">2016-02-28</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      at命令详解
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>at命令用来安排一个程序在未来的做一次性执行。所以有提交的任务都会被放在/var/spool/at目录下，并且到了执行时间的时候通过atd守护进程来执行。</p>
+<p>1．命令格式：</p>
+<p>at[参数][时间]</p>
+<p>2．命令功能：</p>
+<p>在一个指定的时间执行一个指定任务，只能执行一次，且需要开启atd进程（<code>ps -ef | grep atd</code>查看， 开启用<code>/etc/init.d/atd start or restart</code>； 开机即启动则需要运行 <code>chkconfig --level 2345 atd on</code>）。</p>
+<p>3．命令参数：</p>
+<figure class="highlight haml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">-<span class="ruby">m 当指定的任务被完成之后，将给用户发送邮件，即使没有标准输出</span><br><span class="line"></span>-<span class="ruby"><span class="constant">I</span> atq的别名</span><br><span class="line"></span>-<span class="ruby">d atrm的别名</span><br><span class="line"></span>-<span class="ruby">v 显示任务将被执行的时间</span><br><span class="line"></span>-<span class="ruby">c 打印任务的内容到标准输出</span><br><span class="line"></span>-<span class="ruby"><span class="constant">V</span> 显示版本信息</span><br><span class="line"></span>-<span class="ruby">q&lt;列队&gt; 使用指定的列队</span><br><span class="line"></span>-<span class="ruby">f&lt;文件&gt; 从指定文件读入任务而不是从标准输入读入</span><br><span class="line"></span>-<span class="ruby">t&lt;时间参数&gt; 以时间参数的形式提交要运行的任务</span></span><br></pre></td></tr></table></figure>
+<p>at允许使用一套相当复杂的指定时间的方法。他能够接受在当天的hh:mm（小时:分钟）式的时间指定。假如该时间已过去，那么就放在第二天执行。当然也能够使用midnight（深夜），noon（中午），teatime（饮茶时间，一般是下午4点）等比较模糊的 词语来指定时间。用户还能够采用12小时计时制，即在时间后面加上AM（上午）或PM（下午）来说明是上午还是下午。 也能够指定命令执行的具体日期，指定格式为month day（月 日）或mm/dd/yy（月/日/年）或dd.mm.yy（日.月.年）。指定的日期必须跟在指定时间的后面。</p>
+<p>上面介绍的都是绝对计时法，其实还能够使用相对计时法，这对于安排不久就要执行的命令是很有好处的。指定格式为：now + count time-units ，now就是当前时间，time-units是时间单位，这里能够是minutes（分钟）、hours（小时）、days（天）、weeks（星期）。count是时间的数量，究竟是几天，还是几小时，等等。 更有一种计时方法就是直接使用today（今天）、tomorrow（明天）来指定完成命令的时间。</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">TIME</span>：时间格式，这里可以定义出什么时候要进行 <span class="tag">at</span> 这项任务的时间，格式有：</span><br><span class="line"><span class="tag">HH</span><span class="pseudo">:MM</span></span><br><span class="line"><span class="tag">ex</span>&gt; 04<span class="pseudo">:00</span></span><br><span class="line">在今日的 <span class="tag">HH</span><span class="pseudo">:MM</span> 时刻进行，若该时刻已超过，则明天的 <span class="tag">HH</span><span class="pseudo">:MM</span> 进行此任务。</span><br><span class="line"><span class="tag">HH</span><span class="pseudo">:MM</span> <span class="tag">YYYY-MM-DD</span></span><br><span class="line"><span class="tag">ex</span>&gt; 04<span class="pseudo">:00</span> 2009<span class="tag">-03-17</span></span><br><span class="line">强制规定在某年某月的某一天的特殊时刻进行该项任务</span><br><span class="line"><span class="tag">HH</span><span class="pseudo">:MM</span><span class="attr_selector">[am|pm]</span> <span class="attr_selector">[Month]</span> <span class="attr_selector">[Date]</span></span><br><span class="line"><span class="tag">ex</span>&gt; 04<span class="tag">pm</span> <span class="tag">March</span> 17</span><br><span class="line">也是一样，强制在某年某月某日的某时刻进行该项任务</span><br><span class="line"><span class="tag">HH</span><span class="pseudo">:MM</span><span class="attr_selector">[am|pm]</span> + <span class="tag">number</span> <span class="attr_selector">[minutes|hours|days|weeks]</span></span><br><span class="line"><span class="tag">ex</span>&gt; <span class="tag">now</span> + 5 <span class="tag">minutes</span></span><br><span class="line"><span class="tag">ex</span>&gt; 04<span class="tag">pm</span> + 3 <span class="tag">days</span></span><br><span class="line">就是说，在某个时间点再加几个时间后才进行该项任务。</span><br></pre></td></tr></table></figure>
+<p>4．使用实例：<br>实例1：三天后的下午 5 点锺执行 /bin/ls<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">命令：</span><br><span class="line">at <span class="number">5</span>pm+<span class="number">3</span> days</span><br><span class="line">输出：</span><br><span class="line">[root@localhost ~]<span class="preprocessor"># at <span class="number">5</span>pm+<span class="number">3</span> days</span></span><br><span class="line">at&gt; /bin/ls</span><br><span class="line">at&gt; &lt;EOT&gt;</span><br><span class="line">job <span class="number">7</span> at <span class="number">2013</span>-<span class="number">01</span>-<span class="number">08</span> <span class="number">17</span>:<span class="number">00</span></span><br><span class="line">[root@localhost ~]<span class="preprocessor">#</span></span><br></pre></td></tr></table></figure></p>
+<p>实例2：明天17点钟，输出时间到指定文件内</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">at 17:20 tomorrow&#10;&#36755;&#20986;&#65306;&#10;[root@localhost ~]# at 17:20 tomorrow&#10;at&#62; date &#62;/root/2013.log         &#10;at&#62; &#60;EOT&#62;&#10;job 8 at 2013-01-06 17:20&#10;[root@localhost ~]#</span><br></pre></td></tr></table></figure>
+<p>实例3：计划任务设定后，在没有执行之前我们可以用atq命令来查看系统没有执行工作任务<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">命令：</span><br><span class="line">atq</span><br><span class="line">输出：</span><br><span class="line">[root@localhost ~]<span class="preprocessor"># atq</span></span><br><span class="line"><span class="number">8</span>       <span class="number">2013</span>-<span class="number">01</span>-<span class="number">06</span> <span class="number">17</span>:<span class="number">20</span> a root</span><br><span class="line"><span class="number">7</span>       <span class="number">2013</span>-<span class="number">01</span>-<span class="number">08</span> <span class="number">17</span>:<span class="number">00</span> a root</span><br><span class="line">[root@localhost ~]<span class="preprocessor">#</span></span><br></pre></td></tr></table></figure></p>
+<p>实例4：删除已经设置的任务<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">命令：</span><br><span class="line">atrm <span class="number">7</span></span><br><span class="line">输出：</span><br><span class="line">[root@localhost ~]<span class="preprocessor"># atq</span></span><br><span class="line"><span class="number">8</span>       <span class="number">2013</span>-<span class="number">01</span>-<span class="number">06</span> <span class="number">17</span>:<span class="number">20</span> a root</span><br><span class="line"><span class="number">7</span>       <span class="number">2013</span>-<span class="number">01</span>-<span class="number">08</span> <span class="number">17</span>:<span class="number">00</span> a root</span><br><span class="line">[root@localhost ~]<span class="preprocessor"># atrm <span class="number">7</span></span></span><br><span class="line">[root@localhost ~]<span class="preprocessor"># atq</span></span><br><span class="line"><span class="number">8</span>       <span class="number">2013</span>-<span class="number">01</span>-<span class="number">06</span> <span class="number">17</span>:<span class="number">20</span> a root</span><br><span class="line">[root@localhost ~]<span class="preprocessor">#</span></span><br></pre></td></tr></table></figure></p>
+<p>实例5：显示已经设置的任务内容<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">命令：</span><br><span class="line">at -c <span class="number">8</span></span><br><span class="line">输出：</span><br><span class="line">[root@localhost ~]<span class="comment"># at -c 8</span></span><br><span class="line"><span class="shebang">#!/bin/sh</span></span><br><span class="line"><span class="comment"># atrun uid=0 gid=0</span></span><br><span class="line"><span class="comment"># mail     root 0</span></span><br><span class="line"><span class="built_in">umask</span> <span class="number">22</span>此处省略n个字符</span><br><span class="line">date &gt;/root/<span class="number">2013</span>.log</span><br><span class="line">[root@localhost ~]<span class="comment">#</span></span><br></pre></td></tr></table></figure></p>
+<p>5．atd 的启动与 at 运行的方式：</p>
+<p>5.1 atd 的启动</p>
+<p>要使用一次性计划任务时，我们的 Linux 系统上面必须要有负责这个计划任务的服务，那就是 atd 服务。 不过并非所有的 Linux distributions 都默认会把他打开的，所以，某些时刻我们需要手动将atd 服务激活才行。 激活的方法很简单，就是这样：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">命令：</span><br><span class="line">/etc/init.d/atd start</span><br><span class="line">/etc/init.d/atd restart</span><br><span class="line">输出：</span><br><span class="line">[root@localhost /]<span class="preprocessor"># /etc/init.d/atd start</span></span><br><span class="line">[root@localhost /]<span class="preprocessor"># /etc/init.d/atd</span></span><br><span class="line">用法：/etc/init.d/atd &#123;start|stop|restart|condrestart|status&#125;</span><br><span class="line">[root@localhost /]<span class="preprocessor"># /etc/init.d/atd stop</span></span><br><span class="line">停止 atd：[确定]</span><br><span class="line">[root@localhost /]<span class="preprocessor"># ps -ef|grep atd</span></span><br><span class="line">root     <span class="number">25062</span> <span class="number">24951</span>  <span class="number">0</span> <span class="number">14</span>:<span class="number">53</span> pts/<span class="number">0</span>    <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> grep atd</span><br><span class="line">[root@localhost /]<span class="preprocessor"># /etc/init.d/atd start</span></span><br><span class="line">[确定]td：[确定]</span><br><span class="line">[root@localhost /]<span class="preprocessor"># ps -ef|grep atd</span></span><br><span class="line">root     <span class="number">25068</span>     <span class="number">1</span>  <span class="number">0</span> <span class="number">14</span>:<span class="number">53</span> ?        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> /usr/sbin/atd</span><br><span class="line">root     <span class="number">25071</span> <span class="number">24951</span>  <span class="number">0</span> <span class="number">14</span>:<span class="number">53</span> pts/<span class="number">0</span>    <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> grep atd</span><br><span class="line">[root@localhost /]<span class="preprocessor"># /etc/init.d/atd restart</span></span><br><span class="line">停止 atd：[确定]</span><br><span class="line">[确定]td：[确定]</span><br><span class="line">[root@localhost /]<span class="preprocessor">#</span></span><br></pre></td></tr></table></figure></p>
+<p>说明：</p>
+<p>/etc/init.d/atd start 没有启动的时候，直接启动atd服务</p>
+<p>/etc/init.d/atd restart 服务已经启动后，重启 atd 服务</p>
+<p>备注：配置一下启动时就启动这个服务，免得每次重新启动都得再来一次</p>
+<figure class="highlight coffeescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">命令：</span><br><span class="line">chkconfig atd <span class="literal">on</span></span><br><span class="line">输出：</span><br><span class="line">[root<span class="property">@localhost</span> /]<span class="comment"># chkconfig atd on</span></span><br><span class="line">[root<span class="property">@localhost</span> /]<span class="comment">#</span></span><br></pre></td></tr></table></figure>
+<p>5.2 at 的运行方式</p>
+<p>既然是计划任务，那么应该会有任务执行的方式，并且将这些任务排进行程表中。那么产生计划任务的方式是怎么进行的? 事实上，我们使用 at 这个命令来产生所要运行的计划任务，并将这个计划任务以文字档的方式写入 /var/spool/at/ 目录内，该工作便能等待 atd 这个服务的取用与运行了。就这么简单。不过，并不是所有的人都可以进行 at 计划任务。为什么? 因为系统安全的原因。很多主机被所谓的攻击破解后，最常发现的就是他们的系统当中多了很多的黑客程序， 这些程序非常可能运用一些计划任务来运行或搜集你的系统运行信息,并定时的发送给黑客。 所以，除非是你认可的帐号，否则先不要让他们使用 at 命令。那怎么达到使用 at 的可控呢?</p>
+<p>我们可以利用 /etc/at.allow 与 /etc/at.deny 这两个文件来进行 at 的使用限制。加上这两个文件后， at 的工作情况是这样的：</p>
+<p>先找寻 /etc/at.allow 这个文件，写在这个文件中的使用者才能使用 at ，没有在这个文件中的使用者则不能使用 at (即使没有写在 at.deny 当中);如果 /etc/at.allow 不存在，就寻找 /etc/at.deny 这个文件，若写在这个 at.deny 的使用者则不能使用 at ，而没有在这个 at.deny 文件中的使用者，就可以使用 at 命令了。</p>
+<p>如果两个文件都不存在，那么只有 root 可以使用 at 这个命令。</p>
+<p>透过这个说明，我们知道 /etc/at.allow 是管理较为严格的方式，而 /etc/at.deny 则较为松散 (因为帐号没有在该文件中，就能够运行 at 了)。在一般的 distributions 当中，由于假设系统上的所有用户都是可信任的， 因此系统通常会保留一个空的 /etc/at.deny 文件，意思是允许所有人使用 at 命令的意思 (您可以自行检查一下该文件)。 不过，万一你不希望有某些使用者使用 at 的话，将那个使用者的帐号写入 /etc/at.deny 即可！ 一个帐号写一行。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/02/28/at命令详解/" data-id="cil6jv55f001h2sqyhwgf5am9" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux命令/">Linux命令</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2016/02/28/基于用户的协同过滤算法/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          基于用户的协同过滤算法
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2016/02/28/awk命令详解/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">awk命令详解</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Linux命令/" style="font-size: 20px;">Linux命令</a> <a href="/tags/TCP-IP/" style="font-size: 10px;">TCP/IP</a> <a href="/tags/动态规划/" style="font-size: 16.67px;">动态规划</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/棋盘动态规划/" style="font-size: 13.33px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 13.33px;">爬虫</a> <a href="/tags/随记/" style="font-size: 13.33px;">随记</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">16</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/02/28/基于用户的协同过滤算法/">基于用户的协同过滤算法</a>
+          </li>
+        
+          <li>
+            <a href="/2016/02/28/at命令详解/">at命令详解</a>
+          </li>
+        
+          <li>
+            <a href="/2016/02/28/awk命令详解/">awk命令详解</a>
+          </li>
+        
+          <li>
+            <a href="/2016/02/28/tee命令详解/">tee命令详解</a>
+          </li>
+        
+          <li>
+            <a href="/2016/02/28/cpio命令详解/">cpio命令详解</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 LiuYongbin<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js" type="text/javascript"></script>
+
+
+<script src="/js/script.js" type="text/javascript"></script>
+
+  </div>
+</body>
+</html>

@@ -96,8 +96,9 @@
 <h4 id="推荐算法的条件"><a href="#推荐算法的条件" class="headerlink" title="推荐算法的条件"></a>推荐算法的条件</h4><p>&#160; &#160; &#160; &#160;推荐算法从92年开始，发展到现在也有20年了，当然，也出了各种各样的推荐算法，但是不管怎么样，都绕不开几个条件，这是推荐的基本条件</p>
 <li>根据和你共同喜好的人来给你推荐</li><br><li>根据你喜欢的物品找出和它相似的来给你推荐</li><br><li>根据你给出的关键字来给你推荐，这实际上就退化成搜索算法了</li><br><li>根据上面的几种条件组合起来给你推荐</li>
 
-<p><br><br>&#160; &#160; &#160; &#160;实际上，现有的条件就这些啦，至于怎么发挥这些条件就是八仙过海各显神通了，这么多年沉淀了一些好的算法，今天这篇文章要讲的基于用户的协同过滤算法就是其中的一个，这也是最早出现的推荐算法，并且发展到今天，基本思想没有什么变化，无非就是在处理速度上，计算相似度的算法上出现了一些差别而已。</p>
-<h4 id="基于用户的协同过滤算法"><a href="#基于用户的协同过滤算法" class="headerlink" title="基于用户的协同过滤算法"></a>基于用户的协同过滤算法</h4><p>&#160; &#160; &#160; &#160;我们先做个词法分析基于用户说明这个算法是以用户为主体的算法，这种以用户为主体的算法比较强调的是社会性的属性，也就是说这类算法更加强调把和你有相似爱好的其他的用户的物品推荐给你，与之对应的是基于物品的推荐算法，这种更加强调把和你你喜欢的物品相似的物品推荐给你。然后就是协同过滤了，所谓协同就是大家一起帮助你啦，然后后面跟个过滤，就是大家是商量过后才把结果告诉你的，不然信息量太大了。<br><br><br>&#160; &#160; &#160; &#160;所以，综合起来说就是这么一个算法，那些和你有相似爱好的小伙伴们一起来商量一下，然后告诉你什么东西你会喜欢。<br><br></p>
+<p>&#160; &#160; &#160; &#160;实际上，现有的条件就这些啦，至于怎么发挥这些条件就是八仙过海各显神通了，这么多年沉淀了一些好的算法，今天这篇文章要讲的基于用户的协同过滤算法就是其中的一个，这也是最早出现的推荐算法，并且发展到今天，基本思想没有什么变化，无非就是在处理速度上，计算相似度的算法上出现了一些差别而已。</p>
+<h4 id="基于用户的协同过滤算法"><a href="#基于用户的协同过滤算法" class="headerlink" title="基于用户的协同过滤算法"></a>基于用户的协同过滤算法</h4><p>&#160; &#160; &#160; &#160;我们先做个词法分析基于用户说明这个算法是以用户为主体的算法，这种以用户为主体的算法比较强调的是社会性的属性，也就是说这类算法更加强调把和你有相似爱好的其他的用户的物品推荐给你，与之对应的是基于物品的推荐算法，这种更加强调把和你你喜欢的物品相似的物品推荐给你。然后就是协同过滤了，所谓协同就是大家一起帮助你啦，然后后面跟个过滤，就是大家是商量过后才把结果告诉你的，不然信息量太大了。</p>
+<p>&#160; &#160; &#160; &#160;所以，综合起来说就是这么一个算法，那些和你有相似爱好的小伙伴们一起来商量一下，然后告诉你什么东西你会喜欢。</p>
 <h3 id="算法描述"><a href="#算法描述" class="headerlink" title="算法描述"></a>算法描述</h3><h4 id="相似性计算"><a href="#相似性计算" class="headerlink" title="相似性计算"></a>相似性计算</h4><p>&#160; &#160; &#160; &#160;我们尽量不使用复杂的数学公式，一是怕大家看不懂，难理解，二是我是用mac写的blog,公式不好画，太麻烦了。。</p>
 <p>&#160; &#160; &#160; &#160;所谓计算相似度，有两个比较经典的算法</p>
 <li>Jaccard算法，就是交集除以并集，详细可以看看我这篇文章。</li><br><li>余弦距离相似性算法，这个算法应用很广，一般用来计算向量间的相似度，具体公式大家google一下吧，或者看看这里</li><br><li>各种其他算法，比如欧氏距离算法等等。</li>
@@ -125,7 +126,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/基于用户的协同过滤算法/" data-id="cil6i0bxq0001h8qyqpzwp5nc" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/28/基于用户的协同过滤算法/" data-id="cil6jv54s000g2sqy69bj42jo" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/推荐算法/">推荐算法</a></li></ul>
@@ -137,84 +138,205 @@
 
 
   
-    <article id="post-Linux命令面试问答" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-at命令详解" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/2016/02/28/Linux命令面试问答/" class="article-date">
-  <time datetime="2016-02-28T11:46:23.000Z" itemprop="datePublished">2016-02-28</time>
+    <a href="/2016/02/28/at命令详解/" class="article-date">
+  <time datetime="2016-02-28T12:40:18.000Z" itemprop="datePublished">2016-02-28</time>
 </a>
     
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+  </div>
+
   </div>
   <div class="article-inner">
     
     
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/02/28/at命令详解/">at命令详解</a>
+    </h1>
+  
+
+      </header>
+    
     <div class="article-entry" itemprop="articleBody">
       
-        <h4 id="问1：如何查看当前的Linux服务器运行级别？"><a href="#问1：如何查看当前的Linux服务器运行级别？" class="headerlink" title="问1：如何查看当前的Linux服务器运行级别？"></a>问1：如何查看当前的Linux服务器运行级别？</h4><p>答：<code>who -r</code> 和 <code>runlevel</code> 命令可以用来查看当前的Linux服务器的运行级别。Linux的运行级别有7种：</p>
-<pre><code>0 所有进程将被终止，机器将有序的停止，关机时系统处于这个运行级别   
-1 单用户模式。用于系统维护，只有少数进程运行，同时所有服务也不启动   
-2 多用户模式。和运行级别3一样，只是网络文件系统（NFS）服务没被启动   
-3 多用户模式。允许多用户登录系统，是系统默认的启动级别 
-4 留给用户自定义的运行级别  
-5 多用户模式，并且在系统启动后运行X-Window，给出一个图形化的登录窗口  
-6 所有进程被终止，系统重新启动 
-</code></pre><p>如果想要切换运行级别，可以利用init命令，输入 <code>init n</code> 就可以切换到运行级别n（0-6），如果系统支持图形界面（init5 级别需要安装X-WINDOWS），可以输入startx 直接进入init5 图形模式。</p>
-<p>刚刚输入init级别号，只是临时更改。如果需要修改系统默认的运行级别，可以用VI编辑 /etc/inittab 文件设置。如下图 default 后面的数字就是默认的运行级别，改好之后，重启Linux系统之后生效。</p>
-<p><img src="/pictures/Linux命令面试问答-修改系统默认运行级别.jpg" alt="/etc/inittab文件"></p>
-<h4 id="问2：如何查看Linux的默认网关？"><a href="#问2：如何查看Linux的默认网关？" class="headerlink" title="问2：如何查看Linux的默认网关？"></a>问2：如何查看Linux的默认网关？</h4><p>答：用<code>route -n</code> 或 <code>netstat -nr</code>命令，我们可以查看默认网关，除了默认网关信息，这两个命令还可以显示当前的路由表。</p>
-<h4 id="问3：cpio-命令是什么？"><a href="#问3：cpio-命令是什么？" class="headerlink" title="问3：cpio 命令是什么？"></a>问3：cpio 命令是什么？</h4><p>答：cpio命令是通过重定向的方式将文件进行打包备份，还原恢复的工具，它可以解压以“.cpio”或者“.tar”结尾的文件。</p>
-<p>选项 含义<br><figure class="highlight haml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">-<span class="ruby">o 将文件拷贝打包成文件或者将文件输出到设备上。 </span><br><span class="line"></span>-<span class="ruby">i 将打包文件解压或者将设备上的备份还原到系统。 </span><br><span class="line"></span>-<span class="ruby">t 查看cpio打包的文件内容或者输出到设备上的文件内容。 </span><br><span class="line"></span>-<span class="ruby">v 显示打包过程中的文件名称。 </span><br><span class="line"></span>-<span class="ruby">d 在cpio还原文件的过程中，自动的建立相应的目录。 </span><br><span class="line"></span>-<span class="ruby">c 一种较新的存储方式。 </span><br><span class="line"></span>-<span class="ruby"><span class="constant">B</span> 让默认的<span class="constant">Blocks</span>可以增大到<span class="number">5120</span> bytes，默认<span class="constant">Blocks</span>为<span class="number">512</span> bytes，这样做的好处是可以加快存取速度。</span></span><br></pre></td></tr></table></figure></p>
-<p>注意: </p>
-<p>1)cpio恢复的路径，如果cpio在打包备份的时候用的是绝对路径，那么在恢复的时候会自动恢复到这些绝对路径下，同理，如果在打包备份用的是相对路径，还原时也将恢复到相对路径下。</p>
-<p>2)cpio无法直接读取文件，它需要每个文件或者目录的完整路径名才能识别读取，而find命令的输出刚好做到了这点，因此，cpio命令一般和find命令配合使用。 </p>
-<p>3)cpio恢复的时候不会自动覆盖同名文件。</p>
-<p>4)不会创建目录而是直接解压到当前文件夹。</p>
-<h4 id="举例"><a href="#举例" class="headerlink" title="[举例]"></a>[举例]</h4><p>*将etc目录备份：</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">find ./etc -print |cpio -ov &#62;etc.cpio</span><br></pre></td></tr></table></figure>
-<p>*要恢复文件的时候 </p>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">#cpio -idv &#60;/root/etc.cpio</span><br></pre></td></tr></table></figure>
-<p>*只是查看etc.cpio文件，可以使用 </p>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"># cpio -tv &#60;etc.cpio</span><br></pre></td></tr></table></figure>
-<p>输入之后，输出如下：</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">drwxrwxr-x   4 quiethea quiethea        0 Nov  4 17:14 etc &#10;-rw-rw-r--   1 quiethea quiethea        0 Nov  4 17:07 etc/2 &#10;drwxrwxr-x   2 quiethea quiethea        0 Nov  4 17:07 etc/11 &#10;-rw-rw-r--   1 quiethea quiethea        0 Nov  4 17:07 etc/11/11 &#10;-rw-rw-r--   1 quiethea quiethea        0 Nov  4 17:07 etc/4 &#10;drwxrwxr-x   2 quiethea quiethea        0 Nov  4 17:07 etc/22 &#10;-rw-rw-r--   1 quiethea quiethea        0 Nov  4 17:07 etc/3 &#10;-rw-rw-r--   1 quiethea quiethea        0 Nov  4 17:07 etc/1 &#10;-rw-rw-r--   1 quiethea quiethea        0 Nov  4 17:07 etc/5 &#10;&#36825;&#26679;&#26174;&#31034;&#24471;&#26159;&#23558;&#35201;&#24674;&#22797;&#24471;&#25991;&#20214;&#24471;&#21517;&#31216;&#12290;</span><br></pre></td></tr></table></figure>
-<h4 id="其它"><a href="#其它" class="headerlink" title="[其它]"></a>[其它]</h4><p>现在，内核刚刚启动的时候，会事先挂一个initrd内存文件系统，这个initrd文件系统镜像可以由cpio制作。参见内核源码文档initrd.txt. </p>
-<p>*例如我有一个非常简单的文件系统rootfs.制作镜像方法如下：</p>
-<figure class="highlight xquery"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$cd</span> rootfs </span><br><span class="line"><span class="variable">$find</span> . | cpio -c -o -v |gzip -<span class="number">9</span> -n &gt;../ramdisk.img</span><br></pre></td></tr></table></figure>
-<p>这样，父目录下会生成一个ramdisk.img压缩文件系统镜像。 </p>
-<p>*将镜像解压恢复成文件系统的命令：</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$mkdir rootfs &#10;$cp ramdisk.img rootfs &#10;$cd rootfs &#10;$mv ramdisk.img ramdisk.img.gz &#10;$gunzip ramdisk.img.gz &#10;$cpio -i &#60;ramdisk.img &#10;$rm ramdisk.img</span><br></pre></td></tr></table></figure>
-<p>这样，当前目录下就是原来rootfs中的内容了。</p>
-<p>cpio常与find 配合使用</p>
-<h3 id="实例2"><a href="#实例2" class="headerlink" title="实例2"></a>实例2</h3><h4 id="1-文件或目录打包。"><a href="#1-文件或目录打包。" class="headerlink" title="1.文件或目录打包。　"></a>1.文件或目录打包。　</h4><p>打包有如下多种情况：<br>　<br>A)含子目录打包：</p>
-<figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">find</span> <span class="regexp">/usr/</span>local<span class="regexp">/hbchen/</span> -<span class="keyword">print</span>|cpio -o &gt; <span class="regexp">/tmp/</span>hbchen1.cpio</span><br></pre></td></tr></table></figure>
-<p>将/usr/local/hbchen目录下的文件与子目录打包成一个文件库为/tmp/hbchen1.cpio。　<br>若通过－o选项来打包整个目录下的所有文件与子目录,常先利用find目录名－print来找出所有文件与子目录的名称,通过管道“ ”传给cpio打包。　</p>
-<p>B)不含子目录的打包：</p>
-<figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">　　ls <span class="regexp">/usr/</span>local<span class="regexp">/hbchen |cpio -o &gt; /</span>tmp<span class="regexp">/hbchen3.cpio</span></span><br></pre></td></tr></table></figure>
-<p>将/usr/local/hbchen目录下的文件(不含子目录下的文件)打包成一个文件库为/tmp/hbchen3.cpio。　</p>
-<p>C)特定文件打包：</p>
-<p>可利用文本搜索命令grep与管道配合,可以排除或选择特定类型的文件传给cpio打包。</p>
-<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">如: ls <span class="regexp">/usr/</span>local<span class="regexp">/hbchen/</span>*.txt |cpio -o &gt;<span class="regexp">/tmp/</span>hbchen0.cpio</span><br><span class="line">　　或ls <span class="regexp">/usr/</span>local<span class="regexp">/hbchen |grep '\*.txt$' |cpio -o &gt;/</span>tmp/hbchen6.cpio</span><br><span class="line">find <span class="regexp">/usr/</span>local/hbchen目录下以.txt结尾的文件予以打包。</span><br></pre></td></tr></table></figure>
-<p>又如：<code>ls /usr/local/hbchen grep 1 cpio -o &gt;/tmp/hbchen9.cpio</code>,其意为找出/usr/local/hbchen目录下文件名中含有1字符的文件予以打包。　</p>
-<p><code>ls /usr/local/hbchen |grep -v 1 |cpio -o &gt; /tmp/hbchen11.cpio</code>,其意为找出/usr/local/hbchen目录下文件名中不含 1 字符的文件予以打包。－v选项在grep命令中的意思是排除含有字符串的行列。　</p>
-<p>如此,可充分利用Unix的管道和一些命令的强大功能来实现文件的打包。</p>
-<h3 id="问4：patch命令是什么，如何使用？"><a href="#问4：patch命令是什么，如何使用？" class="headerlink" title="问4：patch命令是什么，如何使用？"></a>问4：patch命令是什么，如何使用？</h3><p>答：顾名思义，patch命令用来用来将补丁写进文本文件里面。patch命令通常是接受diff的输出，并把文件的旧版本转换为新版本。</p>
-<p>举个例子：</p>
-<figure class="highlight vala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor"># diff -Naur old_file new _file &gt; diff_file</span></span><br></pre></td></tr></table></figure>
-<p>旧文件和新文件要么都是单个的文件要么就是包含文件的目录，-r参数支持目录树递归。一旦diff文件创建好，我们就可以在旧文件上打上补丁，把他变成新文件：</p>
-<figure class="highlight vala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor"># patch &lt; diff_file</span></span><br></pre></td></tr></table></figure>
-<h3 id="问题5：如何识别Linux系统中指定文件（-etc-fstab）的关联包（即查询一个已经安装的文件属于哪个软件包）？"><a href="#问题5：如何识别Linux系统中指定文件（-etc-fstab）的关联包（即查询一个已经安装的文件属于哪个软件包）？" class="headerlink" title="问题5：如何识别Linux系统中指定文件（/etc/fstab）的关联包（即查询一个已经安装的文件属于哪个软件包）？"></a>问题5：如何识别Linux系统中指定文件（/etc/fstab）的关联包（即查询一个已经安装的文件属于哪个软件包）？</h3><p>答：命令<code>rmp -qf /etc/fstab</code>可以列出提供”/etc/fstab”这个文件的包。</p>
-<p>RPM是RedHat Package Manager（RedHat软件包管理工具）类似Windows里面的“添加/删除程序”</p>
-<p>rpm 执行安装包，二进制包（Binary）以及源代码包（Source）两种。二进制包可以直接安装在计算机中，而源代码包将会由RPM自动编译、安装。源代码包经常以src.rpm作为后缀名。</p>
-<p>常用命令组合：</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">－ivh：安装显示安装进度<span class="comment">--install--verbose--hash</span></span><br><span class="line">－Uvh：升级软件包<span class="comment">--Update；</span></span><br><span class="line">－qpl：列出RPM软件包内的文件信息[Query Package list]；</span><br><span class="line">－qpi：列出RPM软件包的描述信息[Query Package <span class="operator"><span class="keyword">install</span> <span class="keyword">package</span>(s)]；</span><br><span class="line">－qf：查找指定文件属于哪个RPM软件包[<span class="keyword">Query</span> <span class="keyword">File</span>]；</span><br><span class="line">－Va：校验所有的RPM软件包，查找丢失的文件[<span class="keyword">View</span> Lost]；</span><br><span class="line">－<span class="keyword">e</span>：删除包</span><br><span class="line"><span class="string">``</span><span class="string">` </span><br><span class="line"></span><br><span class="line">`</span><span class="string">``</span>linux</span><br><span class="line">rpm -q samba //查询程序是否安装</span><br><span class="line"></span><br><span class="line">rpm -ivh  /media/cdrom/RedHat/RPMS/samba-<span class="number">3.0</span><span class="number">.10</span>-<span class="number">1.4</span><span class="keyword">E</span>.i386.rpm //按路径安装并显示进度</span><br><span class="line">rpm -ivh <span class="comment">--relocate /=/opt/gaim gaim-1.3.0-1.fc4.i386.rpm    //指定安装目录</span></span><br><span class="line"></span><br><span class="line">rpm -ivh <span class="comment">--test gaim-1.3.0-1.fc4.i386.rpm　　　 //用来检查依赖关系；并不是真正的安装；</span></span><br><span class="line">rpm -Uvh <span class="comment">--oldpackage gaim-1.3.0-1.fc4.i386.rpm //新版本降级为旧版本</span></span><br><span class="line"></span><br><span class="line">rpm -qa | grep httpd　　　　　 ＃[搜索指定rpm包是否安装]<span class="comment">--all搜索*httpd*</span></span><br><span class="line">rpm -ql httpd　　　　　　　　　＃[搜索rpm包]<span class="comment">--list所有文件安装目录</span></span><br><span class="line"></span><br><span class="line">rpm -qpi Linux-<span class="number">1.4</span>-<span class="number">6.</span>i368.rpm　＃[查看rpm包]<span class="comment">--query--package--install package信息</span></span><br><span class="line">rpm -qpf Linux-<span class="number">1.4</span>-<span class="number">6.</span>i368.rpm　＃[查看rpm包]<span class="comment">--file</span></span><br><span class="line">rpm -qpR <span class="keyword">file</span>.rpm　　　　　　　＃[查看包]依赖关系</span><br><span class="line">rpm2cpio <span class="keyword">file</span>.rpm |cpio -<span class="keyword">div</span>    ＃[抽出文件]</span><br><span class="line"></span><br><span class="line">rpm -ivh <span class="keyword">file</span>.rpm 　＃[安装新的rpm]<span class="comment">--install--verbose--hash</span></span><br><span class="line">rpm -ivh</span><br><span class="line"></span><br><span class="line">rpm -Uvh <span class="keyword">file</span>.rpm    ＃[升级一个rpm]<span class="comment">--upgrade</span></span><br><span class="line">rpm -<span class="keyword">e</span> <span class="keyword">file</span>.rpm      ＃[删除一个rpm包]<span class="comment">--erase</span></span></span><br></pre></td></tr></table></figure>
-<p>常用参数：</p>
-<figure class="highlight haml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">Install/Upgrade/Erase options:</span><br><span class="line"></span><br><span class="line">-<span class="ruby">i, --install                     install package(s)</span><br><span class="line"></span>-<span class="ruby">v, --verbose                     provide more detailed output</span><br><span class="line"></span>-<span class="ruby">h, --hash                        print hash marks as package installs (good with -v)</span><br><span class="line"></span>-<span class="ruby">e, --erase                       erase (uninstall) package</span><br><span class="line"></span>-<span class="ruby"><span class="constant">U</span>, --upgrade=&lt;packagefile&gt;+      upgrade package(s)</span><br><span class="line"></span>－-replacepkge                    无论软件包是否已被安装，都强行安装软件包</span><br><span class="line">-<span class="ruby">-test                            安装测试，并不实际安装</span><br><span class="line"></span>-<span class="ruby">-nodeps                          忽略软件包的依赖关系强行安装</span><br><span class="line"></span>-<span class="ruby">-force                           忽略软件包及文件的冲突</span><br><span class="line"></span></span><br><span class="line">Query options (with -q or --query):</span><br><span class="line">-<span class="ruby">a, --all                         query/verify all packages</span><br><span class="line"></span>-<span class="ruby">p, --package                     query/verify a package file</span><br><span class="line"></span>-<span class="ruby">l, --list                        list files <span class="keyword">in</span> package</span><br><span class="line"></span>-<span class="ruby">d, --docfiles                    list all documentation files</span><br><span class="line"></span>-<span class="ruby">f, --file                        query/verify package(s) owning file</span></span><br></pre></td></tr></table></figure>
-<h3 id="问题6：Linux系统中的-proc文件系统有什么用？"><a href="#问题6：Linux系统中的-proc文件系统有什么用？" class="headerlink" title="问题6：Linux系统中的/proc文件系统有什么用？"></a>问题6：Linux系统中的/proc文件系统有什么用？</h3><p>答：/proc文件系统是一个基于内存的文件系统，维护着有关于当前正在运行的内核状态信息，其中包括CPU、内存、分区划分、<br>I/O地址、直接内存访问通道和正在运行的进程。这个文件系统所代表的并不是各种实际存储信息的文件，他们指向的是内存里的信息。<br>/proc文件系统是由系统自动维护的。</p>
-<h3 id="问题7-如何在-usr目录下找出大小超过10MB的文件？"><a href="#问题7-如何在-usr目录下找出大小超过10MB的文件？" class="headerlink" title="问题7: 如何在/usr目录下找出大小超过10MB的文件？"></a>问题7: 如何在/usr目录下找出大小超过10MB的文件？</h3><p>答：<code>find /usr -size +10M</code></p>
-<h3 id="问题8：如何在-home目录下找出120天之前被修改过的文件？"><a href="#问题8：如何在-home目录下找出120天之前被修改过的文件？" class="headerlink" title="问题8：如何在/home目录下找出120天之前被修改过的文件？"></a>问题8：如何在/home目录下找出120天之前被修改过的文件？</h3><p>答：<code>find /home -mtime +120</code></p>
-<h3 id="问题9：如何在-var目录下找出90天之内未被访问过的文件？"><a href="#问题9：如何在-var目录下找出90天之内未被访问过的文件？" class="headerlink" title="问题9：如何在/var目录下找出90天之内未被访问过的文件？"></a>问题9：如何在/var目录下找出90天之内未被访问过的文件？</h3><p>答：<code>find /var \! -atime -90</code></p>
-<h3 id="问题10：在整个目录树下查找文件“core”，如果发现则无需提示，直接删除他们？"><a href="#问题10：在整个目录树下查找文件“core”，如果发现则无需提示，直接删除他们？" class="headerlink" title="问题10：在整个目录树下查找文件“core”，如果发现则无需提示，直接删除他们？"></a>问题10：在整个目录树下查找文件“core”，如果发现则无需提示，直接删除他们？</h3><p>答：<code>find / -name core -exec rm {} \;</code> , -exec  参数后面跟的是command命令，它的终止是以;为结束标志的，所以这句命令后面的分号是不可缺少的，考虑到各个系统中分号会有不同的意义，所以前面加反斜杠。</p>
-<h3 id="问题11：strings命令有什么作用？"><a href="#问题11：strings命令有什么作用？" class="headerlink" title="问题11：strings命令有什么作用？"></a>问题11：strings命令有什么作用？</h3><p>答：strings命令用来提取和显示非文本文件中的文本字符串。</p>
-<h3 id="问题12：tee过滤器有什么作用？"><a href="#问题12：tee过滤器有什么作用？" class="headerlink" title="问题12：tee过滤器有什么作用？"></a>问题12：tee过滤器有什么作用？</h3><p>答：<br><img src="/pictures/Linux命令面试问答-tee命令.png" alt="tee命令示意图">tee过滤器用来想多个目标发送输出的内容。如果用于管道的话，他可以将输出复制一份到文件，兵复制另外一份到屏幕上（或一些其他的程序）。</p>
+        <p>at命令用来安排一个程序在未来的做一次性执行。所以有提交的任务都会被放在/var/spool/at目录下，并且到了执行时间的时候通过atd守护进程来执行。</p>
+<p>1．命令格式：</p>
+<p>at[参数][时间]</p>
+<p>2．命令功能：</p>
+<p>在一个指定的时间执行一个指定任务，只能执行一次，且需要开启atd进程（<code>ps -ef | grep atd</code>查看， 开启用<code>/etc/init.d/atd start or restart</code>； 开机即启动则需要运行 <code>chkconfig --level 2345 atd on</code>）。</p>
+<p>3．命令参数：</p>
+<figure class="highlight haml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">-<span class="ruby">m 当指定的任务被完成之后，将给用户发送邮件，即使没有标准输出</span><br><span class="line"></span>-<span class="ruby"><span class="constant">I</span> atq的别名</span><br><span class="line"></span>-<span class="ruby">d atrm的别名</span><br><span class="line"></span>-<span class="ruby">v 显示任务将被执行的时间</span><br><span class="line"></span>-<span class="ruby">c 打印任务的内容到标准输出</span><br><span class="line"></span>-<span class="ruby"><span class="constant">V</span> 显示版本信息</span><br><span class="line"></span>-<span class="ruby">q&lt;列队&gt; 使用指定的列队</span><br><span class="line"></span>-<span class="ruby">f&lt;文件&gt; 从指定文件读入任务而不是从标准输入读入</span><br><span class="line"></span>-<span class="ruby">t&lt;时间参数&gt; 以时间参数的形式提交要运行的任务</span></span><br></pre></td></tr></table></figure>
+<p>at允许使用一套相当复杂的指定时间的方法。他能够接受在当天的hh:mm（小时:分钟）式的时间指定。假如该时间已过去，那么就放在第二天执行。当然也能够使用midnight（深夜），noon（中午），teatime（饮茶时间，一般是下午4点）等比较模糊的 词语来指定时间。用户还能够采用12小时计时制，即在时间后面加上AM（上午）或PM（下午）来说明是上午还是下午。 也能够指定命令执行的具体日期，指定格式为month day（月 日）或mm/dd/yy（月/日/年）或dd.mm.yy（日.月.年）。指定的日期必须跟在指定时间的后面。</p>
+<p>上面介绍的都是绝对计时法，其实还能够使用相对计时法，这对于安排不久就要执行的命令是很有好处的。指定格式为：now + count time-units ，now就是当前时间，time-units是时间单位，这里能够是minutes（分钟）、hours（小时）、days（天）、weeks（星期）。count是时间的数量，究竟是几天，还是几小时，等等。 更有一种计时方法就是直接使用today（今天）、tomorrow（明天）来指定完成命令的时间。</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">TIME</span>：时间格式，这里可以定义出什么时候要进行 <span class="tag">at</span> 这项任务的时间，格式有：</span><br><span class="line"><span class="tag">HH</span><span class="pseudo">:MM</span></span><br><span class="line"><span class="tag">ex</span>&gt; 04<span class="pseudo">:00</span></span><br><span class="line">在今日的 <span class="tag">HH</span><span class="pseudo">:MM</span> 时刻进行，若该时刻已超过，则明天的 <span class="tag">HH</span><span class="pseudo">:MM</span> 进行此任务。</span><br><span class="line"><span class="tag">HH</span><span class="pseudo">:MM</span> <span class="tag">YYYY-MM-DD</span></span><br><span class="line"><span class="tag">ex</span>&gt; 04<span class="pseudo">:00</span> 2009<span class="tag">-03-17</span></span><br><span class="line">强制规定在某年某月的某一天的特殊时刻进行该项任务</span><br><span class="line"><span class="tag">HH</span><span class="pseudo">:MM</span><span class="attr_selector">[am|pm]</span> <span class="attr_selector">[Month]</span> <span class="attr_selector">[Date]</span></span><br><span class="line"><span class="tag">ex</span>&gt; 04<span class="tag">pm</span> <span class="tag">March</span> 17</span><br><span class="line">也是一样，强制在某年某月某日的某时刻进行该项任务</span><br><span class="line"><span class="tag">HH</span><span class="pseudo">:MM</span><span class="attr_selector">[am|pm]</span> + <span class="tag">number</span> <span class="attr_selector">[minutes|hours|days|weeks]</span></span><br><span class="line"><span class="tag">ex</span>&gt; <span class="tag">now</span> + 5 <span class="tag">minutes</span></span><br><span class="line"><span class="tag">ex</span>&gt; 04<span class="tag">pm</span> + 3 <span class="tag">days</span></span><br><span class="line">就是说，在某个时间点再加几个时间后才进行该项任务。</span><br></pre></td></tr></table></figure>
+<p>4．使用实例：<br>实例1：三天后的下午 5 点锺执行 /bin/ls<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">命令：</span><br><span class="line">at <span class="number">5</span>pm+<span class="number">3</span> days</span><br><span class="line">输出：</span><br><span class="line">[root@localhost ~]<span class="preprocessor"># at <span class="number">5</span>pm+<span class="number">3</span> days</span></span><br><span class="line">at&gt; /bin/ls</span><br><span class="line">at&gt; &lt;EOT&gt;</span><br><span class="line">job <span class="number">7</span> at <span class="number">2013</span>-<span class="number">01</span>-<span class="number">08</span> <span class="number">17</span>:<span class="number">00</span></span><br><span class="line">[root@localhost ~]<span class="preprocessor">#</span></span><br></pre></td></tr></table></figure></p>
+<p>实例2：明天17点钟，输出时间到指定文件内</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">at 17:20 tomorrow&#10;&#36755;&#20986;&#65306;&#10;[root@localhost ~]# at 17:20 tomorrow&#10;at&#62; date &#62;/root/2013.log         &#10;at&#62; &#60;EOT&#62;&#10;job 8 at 2013-01-06 17:20&#10;[root@localhost ~]#</span><br></pre></td></tr></table></figure>
+<p>实例3：计划任务设定后，在没有执行之前我们可以用atq命令来查看系统没有执行工作任务<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">命令：</span><br><span class="line">atq</span><br><span class="line">输出：</span><br><span class="line">[root@localhost ~]<span class="preprocessor"># atq</span></span><br><span class="line"><span class="number">8</span>       <span class="number">2013</span>-<span class="number">01</span>-<span class="number">06</span> <span class="number">17</span>:<span class="number">20</span> a root</span><br><span class="line"><span class="number">7</span>       <span class="number">2013</span>-<span class="number">01</span>-<span class="number">08</span> <span class="number">17</span>:<span class="number">00</span> a root</span><br><span class="line">[root@localhost ~]<span class="preprocessor">#</span></span><br></pre></td></tr></table></figure></p>
+<p>实例4：删除已经设置的任务<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">命令：</span><br><span class="line">atrm <span class="number">7</span></span><br><span class="line">输出：</span><br><span class="line">[root@localhost ~]<span class="preprocessor"># atq</span></span><br><span class="line"><span class="number">8</span>       <span class="number">2013</span>-<span class="number">01</span>-<span class="number">06</span> <span class="number">17</span>:<span class="number">20</span> a root</span><br><span class="line"><span class="number">7</span>       <span class="number">2013</span>-<span class="number">01</span>-<span class="number">08</span> <span class="number">17</span>:<span class="number">00</span> a root</span><br><span class="line">[root@localhost ~]<span class="preprocessor"># atrm <span class="number">7</span></span></span><br><span class="line">[root@localhost ~]<span class="preprocessor"># atq</span></span><br><span class="line"><span class="number">8</span>       <span class="number">2013</span>-<span class="number">01</span>-<span class="number">06</span> <span class="number">17</span>:<span class="number">20</span> a root</span><br><span class="line">[root@localhost ~]<span class="preprocessor">#</span></span><br></pre></td></tr></table></figure></p>
+<p>实例5：显示已经设置的任务内容<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">命令：</span><br><span class="line">at -c <span class="number">8</span></span><br><span class="line">输出：</span><br><span class="line">[root@localhost ~]<span class="comment"># at -c 8</span></span><br><span class="line"><span class="shebang">#!/bin/sh</span></span><br><span class="line"><span class="comment"># atrun uid=0 gid=0</span></span><br><span class="line"><span class="comment"># mail     root 0</span></span><br><span class="line"><span class="built_in">umask</span> <span class="number">22</span>此处省略n个字符</span><br><span class="line">date &gt;/root/<span class="number">2013</span>.log</span><br><span class="line">[root@localhost ~]<span class="comment">#</span></span><br></pre></td></tr></table></figure></p>
+<p>5．atd 的启动与 at 运行的方式：</p>
+<p>5.1 atd 的启动</p>
+<p>要使用一次性计划任务时，我们的 Linux 系统上面必须要有负责这个计划任务的服务，那就是 atd 服务。 不过并非所有的 Linux distributions 都默认会把他打开的，所以，某些时刻我们需要手动将atd 服务激活才行。 激活的方法很简单，就是这样：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">命令：</span><br><span class="line">/etc/init.d/atd start</span><br><span class="line">/etc/init.d/atd restart</span><br><span class="line">输出：</span><br><span class="line">[root@localhost /]<span class="preprocessor"># /etc/init.d/atd start</span></span><br><span class="line">[root@localhost /]<span class="preprocessor"># /etc/init.d/atd</span></span><br><span class="line">用法：/etc/init.d/atd &#123;start|stop|restart|condrestart|status&#125;</span><br><span class="line">[root@localhost /]<span class="preprocessor"># /etc/init.d/atd stop</span></span><br><span class="line">停止 atd：[确定]</span><br><span class="line">[root@localhost /]<span class="preprocessor"># ps -ef|grep atd</span></span><br><span class="line">root     <span class="number">25062</span> <span class="number">24951</span>  <span class="number">0</span> <span class="number">14</span>:<span class="number">53</span> pts/<span class="number">0</span>    <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> grep atd</span><br><span class="line">[root@localhost /]<span class="preprocessor"># /etc/init.d/atd start</span></span><br><span class="line">[确定]td：[确定]</span><br><span class="line">[root@localhost /]<span class="preprocessor"># ps -ef|grep atd</span></span><br><span class="line">root     <span class="number">25068</span>     <span class="number">1</span>  <span class="number">0</span> <span class="number">14</span>:<span class="number">53</span> ?        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> /usr/sbin/atd</span><br><span class="line">root     <span class="number">25071</span> <span class="number">24951</span>  <span class="number">0</span> <span class="number">14</span>:<span class="number">53</span> pts/<span class="number">0</span>    <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> grep atd</span><br><span class="line">[root@localhost /]<span class="preprocessor"># /etc/init.d/atd restart</span></span><br><span class="line">停止 atd：[确定]</span><br><span class="line">[确定]td：[确定]</span><br><span class="line">[root@localhost /]<span class="preprocessor">#</span></span><br></pre></td></tr></table></figure></p>
+<p>说明：</p>
+<p>/etc/init.d/atd start 没有启动的时候，直接启动atd服务</p>
+<p>/etc/init.d/atd restart 服务已经启动后，重启 atd 服务</p>
+<p>备注：配置一下启动时就启动这个服务，免得每次重新启动都得再来一次</p>
+<figure class="highlight coffeescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">命令：</span><br><span class="line">chkconfig atd <span class="literal">on</span></span><br><span class="line">输出：</span><br><span class="line">[root<span class="property">@localhost</span> /]<span class="comment"># chkconfig atd on</span></span><br><span class="line">[root<span class="property">@localhost</span> /]<span class="comment">#</span></span><br></pre></td></tr></table></figure>
+<p>5.2 at 的运行方式</p>
+<p>既然是计划任务，那么应该会有任务执行的方式，并且将这些任务排进行程表中。那么产生计划任务的方式是怎么进行的? 事实上，我们使用 at 这个命令来产生所要运行的计划任务，并将这个计划任务以文字档的方式写入 /var/spool/at/ 目录内，该工作便能等待 atd 这个服务的取用与运行了。就这么简单。不过，并不是所有的人都可以进行 at 计划任务。为什么? 因为系统安全的原因。很多主机被所谓的攻击破解后，最常发现的就是他们的系统当中多了很多的黑客程序， 这些程序非常可能运用一些计划任务来运行或搜集你的系统运行信息,并定时的发送给黑客。 所以，除非是你认可的帐号，否则先不要让他们使用 at 命令。那怎么达到使用 at 的可控呢?</p>
+<p>我们可以利用 /etc/at.allow 与 /etc/at.deny 这两个文件来进行 at 的使用限制。加上这两个文件后， at 的工作情况是这样的：</p>
+<p>先找寻 /etc/at.allow 这个文件，写在这个文件中的使用者才能使用 at ，没有在这个文件中的使用者则不能使用 at (即使没有写在 at.deny 当中);如果 /etc/at.allow 不存在，就寻找 /etc/at.deny 这个文件，若写在这个 at.deny 的使用者则不能使用 at ，而没有在这个 at.deny 文件中的使用者，就可以使用 at 命令了。</p>
+<p>如果两个文件都不存在，那么只有 root 可以使用 at 这个命令。</p>
+<p>透过这个说明，我们知道 /etc/at.allow 是管理较为严格的方式，而 /etc/at.deny 则较为松散 (因为帐号没有在该文件中，就能够运行 at 了)。在一般的 distributions 当中，由于假设系统上的所有用户都是可信任的， 因此系统通常会保留一个空的 /etc/at.deny 文件，意思是允许所有人使用 at 命令的意思 (您可以自行检查一下该文件)。 不过，万一你不希望有某些使用者使用 at 的话，将那个使用者的帐号写入 /etc/at.deny 即可！ 一个帐号写一行。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/02/28/at命令详解/" data-id="cil6jv55f001h2sqyhwgf5am9" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux命令/">Linux命令</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-awk命令详解" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/02/28/awk命令详解/" class="article-date">
+  <time datetime="2016-02-28T12:35:27.000Z" itemprop="datePublished">2016-02-28</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/02/28/awk命令详解/">awk命令详解</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>awk是一个强大的文本分析工具，相对于grep的查找，sed的编辑，awk在其对数据分析并生成报告时，显得尤为强大。简单来说awk就是把文件逐行的读入，以空格为默认分隔符将每行切片，切开的部分再进行各种分析处理。</p>
+<p>awk有3个不同版本: awk、nawk和gawk，未作特别说明，一般指gawk，gawk 是 AWK 的 GNU 版本。</p>
+<p>awk其名称得自于它的创始人 Alfred Aho 、Peter Weinberger 和 Brian Kernighan 姓氏的首个字母。实际上 AWK 的确拥有自己的语言： AWK 程序设计语言 ， 三位创建者已将它正式定义为“样式扫描和处理语言”。它允许您创建简短的程序，这些程序读取输入文件、为数据排序、处理数据、对输入执行计算以及生成报表，还有无数其他的功能。</p>
+<p>使用方法</p>
+<p><code>awk &#39;{pattern + action}&#39; {filenames}</code></p>
+<p>尽管操作可能会很复杂，但语法总是这样，其中 pattern 表示 AWK 在数据中查找的内容，而 action 是在找到匹配内容时所执行的一系列命令。花括号（{}）不需要在程序中始终出现，但它们用于根据特定的模式对一系列指令进行分组。 pattern就是要表示的正则表达式，用斜杠括起来。</p>
+<p>awk语言的最基本功能是在文件或者字符串中基于指定规则浏览和抽取信息，awk抽取信息后，才能进行其他文本操作。完整的awk脚本通常用来格式化文本文件中的信息。</p>
+<p>通常，awk是以文件的一行为处理单位的。awk每接收文件的一行，然后执行相应的命令，来处理文本。</p>
+<p>调用awk有三种方式调用awk</p>
+<p>1.命令行方式<br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">awk [-F  field-separator]  <span class="string">'commands'</span>  <span class="function"><span class="title">input-file</span><span class="params">(s)</span></span></span><br></pre></td></tr></table></figure></p>
+<p>其中，commands 是真正awk命令，[-F域分隔符]是可选的。 input-file(s) 是待处理的文件。<br>在awk中，文件的每一行中，由域分隔符分开的每一项称为一个域。通常，在不指名-F域分隔符的情况下，默认的域分隔符是空格。</p>
+<p>2.shell脚本方式</p>
+<p>将所有的awk命令插入一个文件，并使awk程序可执行，然后awk命令解释器作为脚本的首行，一遍通过键入脚本名称来调用。<br>相当于shell脚本首行的：#!/bin/sh<br>可以换成：#!/bin/awk</p>
+<p>3.将所有的awk命令插入一个单独文件，然后调用：<br><figure class="highlight applescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">awk -f awk-<span class="keyword">script</span>-<span class="type">file</span> input-<span class="type">file</span>(s)</span><br></pre></td></tr></table></figure></p>
+<p>其中，-f选项加载awk-script-file中的awk脚本，input-file(s)跟上面的是一样的。</p>
+<p>本章重点介绍命令行方式。</p>
+<p>入门实例</p>
+<p>假设last -n 5的输出如下</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]<span class="preprocessor"># last -n <span class="number">5</span> &lt;==仅取出前五行</span></span><br><span class="line">root     pts/<span class="number">1</span>   <span class="number">192.168</span><span class="number">.1</span><span class="number">.100</span>  Tue Feb <span class="number">10</span> <span class="number">11</span>:<span class="number">21</span>   still logged in</span><br><span class="line">root     pts/<span class="number">1</span>   <span class="number">192.168</span><span class="number">.1</span><span class="number">.100</span>  Tue Feb <span class="number">10</span> <span class="number">00</span>:<span class="number">46</span> - <span class="number">02</span>:<span class="number">28</span>  (<span class="number">01</span>:<span class="number">41</span>)</span><br><span class="line">root     pts/<span class="number">1</span>   <span class="number">192.168</span><span class="number">.1</span><span class="number">.100</span>  Mon Feb  <span class="number">9</span> <span class="number">11</span>:<span class="number">41</span> - <span class="number">18</span>:<span class="number">30</span>  (<span class="number">06</span>:<span class="number">48</span>)</span><br><span class="line">dmtsai   pts/<span class="number">1</span>   <span class="number">192.168</span><span class="number">.1</span><span class="number">.100</span>  Mon Feb  <span class="number">9</span> <span class="number">11</span>:<span class="number">41</span> - <span class="number">11</span>:<span class="number">41</span>  (<span class="number">00</span>:<span class="number">00</span>)</span><br><span class="line">root     tty1                   Fri Sep  <span class="number">5</span> <span class="number">14</span>:<span class="number">09</span> - <span class="number">14</span>:<span class="number">10</span>  (<span class="number">00</span>:<span class="number">01</span>)</span><br></pre></td></tr></table></figure>
+<p>如果只是显示最近登录的5个帐号<br><figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">#last -<span class="keyword">n</span> 5 | awk  '&#123;<span class="keyword">print</span> <span class="label">$1&#125;</span>'</span><br><span class="line">root</span><br><span class="line">root</span><br><span class="line">root</span><br><span class="line">dmtsai</span><br><span class="line">root</span><br></pre></td></tr></table></figure></p>
+<p>awk工作流程是这样的：读入有’\n’换行符分割的一条记录，然后将记录按指定的域分隔符划分域，填充域，$0则表示所有域,$1表示第一个域,$n表示第n个域。默认域分隔符是”空白键” 或 “[tab]键”,所以$1表示登录用户，$3表示登录用户ip,以此类推。</p>
+<p>如果只是显示/etc/passwd的账户<br><figure class="highlight autoit"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">#cat /etc/passwd |awk  -F <span class="string">':'</span>  <span class="string">'&#123;print $1&#125;'</span>  </span></span><br><span class="line">root</span><br><span class="line">daemon</span><br><span class="line">bin</span><br><span class="line">sys</span><br></pre></td></tr></table></figure></p>
+<p>这种是awk+action的示例，每行都会执行action{print $1}。</p>
+<p>-F指定域分隔符为’:’。</p>
+<p>如果只是显示/etc/passwd的账户和账户对应的shell,而账户与shell之间以tab键分割<br><figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#<span class="keyword">cat</span> /etc/passwd |awk  -F ':'  '&#123;<span class="keyword">print</span> <span class="label">$1</span><span class="string">"\t"</span><span class="label">$7&#125;</span>'</span><br><span class="line">root    /bin/bash</span><br><span class="line">daemon  /bin/<span class="keyword">sh</span></span><br><span class="line">bin     /bin/<span class="keyword">sh</span></span><br><span class="line">sys     /bin/<span class="keyword">sh</span></span><br></pre></td></tr></table></figure></p>
+<p>如果只是显示/etc/passwd的账户和账户对应的shell,而账户与shell之间以逗号分割,而且在所有行添加列名name,shell,在最后一行添加”blue,/bin/nosh”。</p>
+<figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">cat</span> /etc/passwd |awk  -F ':'  'BEGIN &#123;<span class="keyword">print</span> <span class="string">"name,shell"</span>&#125;  &#123;<span class="keyword">print</span> <span class="label">$1</span><span class="string">","</span><span class="label">$7&#125;</span> END &#123;<span class="keyword">print</span> <span class="string">"blue,/bin/nosh"</span>&#125;'</span><br><span class="line">name,<span class="keyword">shell</span></span><br><span class="line">root,/bin/bash</span><br><span class="line">daemon,/bin/<span class="keyword">sh</span></span><br><span class="line">bin,/bin/<span class="keyword">sh</span></span><br><span class="line">sys,/bin/<span class="keyword">sh</span></span><br><span class="line">....</span><br><span class="line">blue,/bin/nosh</span><br></pre></td></tr></table></figure>
+<p>awk工作流程是这样的：先执行BEGING，然后读取文件，读入有/n换行符分割的一条记录，然后将记录按指定的域分隔符划分域，填充域，$0则表示所有域,$1表示第一个域,$n表示第n个域,随后开始执行模式所对应的动作action。接着开始读入第二条记录······直到所有的记录都读完，最后执行END操作。</p>
+<p>搜索/etc/passwd有root关键字的所有行<br><figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#awk -F: '/root/' /etc/passwd</span></span><br><span class="line"><span class="symbol">root:</span><span class="symbol">x:</span><span class="number">0</span><span class="symbol">:</span><span class="number">0</span><span class="symbol">:root</span><span class="symbol">:/root</span><span class="symbol">:/bin/bash</span></span><br></pre></td></tr></table></figure></p>
+<p>这种是pattern的使用示例，匹配了pattern(这里是root)的行才会执行action(没有指定action，默认输出每行的内容)。</p>
+<p>搜索支持正则，例如找root开头的: <code>awk -F: &#39;/^root/&#39; /etc/passwd</code></p>
+<p>搜索/etc/passwd有root关键字的所有行，并显示对应的shell<br><figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># awk -F: <span class="string">'/root/&#123;print $7&#125;'</span> <span class="regexp">/etc/</span>passwd             </span><br><span class="line"><span class="regexp">/bin/</span>bash</span><br></pre></td></tr></table></figure></p>
+<p>这里指定了action{print $7}</p>
+<p>awk内置变量<br>awk有许多内置变量用来设置环境信息，这些变量可以被改变，下面给出了最常用的一些变量。</p>
+<figure class="highlight dos"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">ARGC               命令行参数个数</span><br><span class="line">ARGV               命令行参数排列</span><br><span class="line">ENVIRON            支持队列中系统环境变量的使用</span><br><span class="line">FILENAME           awk浏览的文件名</span><br><span class="line">FNR                浏览文件的记录数</span><br><span class="line"><span class="built_in">FS</span>                 设置输入域分隔符，等价于命令行 -F选项</span><br><span class="line">NF                 浏览记录的域的个数</span><br><span class="line">NR                 已读的记录数</span><br><span class="line">OFS                输出域分隔符</span><br><span class="line">ORS                输出记录分隔符</span><br><span class="line">RS                 控制记录分隔符</span><br></pre></td></tr></table></figure>
+<p>此外,$0变量是指整条记录。$1表示当前行的第一个域,$2表示当前行的第二个域,……以此类推。</p>
+<p>统计/etc/passwd:文件名，每行的行号，每行的列数，对应的完整行内容:<br><figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#awk  -F ':'  '&#123;print "filename:" FILENAME ",linenumber:" NR ",columns:" NF ",linecontent:"$0&#125;' /etc/passwd</span></span><br><span class="line"><span class="symbol">filename:</span>/etc/passwd,<span class="symbol">linenumber:</span><span class="number">1</span>,<span class="symbol">columns:</span><span class="number">7</span>,<span class="symbol">linecontent:</span><span class="symbol">root:</span><span class="symbol">x:</span><span class="number">0</span><span class="symbol">:</span><span class="number">0</span><span class="symbol">:root</span><span class="symbol">:/root</span><span class="symbol">:/bin/bash</span></span><br><span class="line"><span class="symbol">filename:</span>/etc/passwd,<span class="symbol">linenumber:</span><span class="number">2</span>,<span class="symbol">columns:</span><span class="number">7</span>,<span class="symbol">linecontent:</span><span class="symbol">daemon:</span><span class="symbol">x:</span><span class="number">1</span><span class="symbol">:</span><span class="number">1</span><span class="symbol">:daemon</span><span class="symbol">:/usr/sbin</span><span class="symbol">:/bin/sh</span></span><br><span class="line"><span class="symbol">filename:</span>/etc/passwd,<span class="symbol">linenumber:</span><span class="number">3</span>,<span class="symbol">columns:</span><span class="number">7</span>,<span class="symbol">linecontent:</span><span class="symbol">bin:</span><span class="symbol">x:</span><span class="number">2</span><span class="symbol">:</span><span class="number">2</span><span class="symbol">:bin</span><span class="symbol">:/bin</span><span class="symbol">:/bin/sh</span></span><br><span class="line"><span class="symbol">filename:</span>/etc/passwd,<span class="symbol">linenumber:</span><span class="number">4</span>,<span class="symbol">columns:</span><span class="number">7</span>,<span class="symbol">linecontent:</span><span class="symbol">sys:</span><span class="symbol">x:</span><span class="number">3</span><span class="symbol">:</span><span class="number">3</span><span class="symbol">:sys</span><span class="symbol">:/dev</span><span class="symbol">:/bin/sh</span></span><br></pre></td></tr></table></figure></p>
+<p>使用printf替代print,可以让代码更加简洁，易读<br><figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title">awk</span>  -F <span class="string">':'</span>  <span class="string">'&#123;printf("filename:%10s,linenumber:%s,columns:%s,linecontent:%s\n",FILENAME,NR,NF,<span class="variable">$0</span>)&#125;'</span> /etc/passwd</span><br></pre></td></tr></table></figure></p>
+<h5 id="print和printf"><a href="#print和printf" class="headerlink" title="print和printf"></a>print和printf</h5><p>awk中同时提供了print和printf两种打印输出的函数。其中print函数的参数可以是变量、数值或者字符串。字符串必须用双引号引用，参数用逗号分隔。如果没有逗号，参数就串联在一起而无法区分。这里，逗号的作用与输出文件的分隔符的作用是一样的，只是后者是空格而已。</p>
+<p>printf函数，其用法和c语言中printf基本相似,可以格式化字符串,输出复杂时，printf更加好用，代码更易懂。</p>
+<h5 id="awk编程-变量和赋值"><a href="#awk编程-变量和赋值" class="headerlink" title="awk编程,变量和赋值"></a>awk编程,变量和赋值</h5><p>除了awk的内置变量，awk还可以自定义变量。</p>
+<p>下面统计/etc/passwd的账户人数<br><figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">awk <span class="string">'&#123;count++;print $0;&#125; END&#123;print "user count is ", count&#125;'</span> /etc/passwd</span><br><span class="line"><span class="symbol">root:</span><span class="symbol">x:</span><span class="number">0</span><span class="symbol">:</span><span class="number">0</span><span class="symbol">:root</span><span class="symbol">:/root</span><span class="symbol">:/bin/bash</span></span><br><span class="line">......</span><br><span class="line">user count is  <span class="number">40</span></span><br></pre></td></tr></table></figure></p>
+<p>count是自定义变量。之前的action{}里都是只有一个print,其实print只是一个语句，而action{}可以有多个语句，以;号隔开。</p>
+<p>这里没有初始化count，虽然默认是0，但是妥当的做法还是初始化为0:<br><figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">awk '<span class="type">BEGIN</span> &#123;<span class="built_in">count</span>=<span class="number">0</span>;<span class="built_in">print</span> <span class="string">"[start]user count is "</span>, <span class="built_in">count</span>&#125; &#123;<span class="built_in">count</span>=<span class="built_in">count</span>+<span class="number">1</span>;<span class="built_in">print</span> $<span class="number">0</span>;&#125; <span class="type">END</span>&#123;<span class="built_in">print</span> <span class="string">"[end]user count is "</span>, <span class="built_in">count</span>&#125;' /etc/passwd</span><br><span class="line">[start]user <span class="built_in">count</span> <span class="keyword">is</span>  <span class="number">0</span></span><br><span class="line">root:x:<span class="number">0</span>:<span class="number">0</span>:root:/root:/bin/bash</span><br><span class="line">...</span><br><span class="line">[end]user <span class="built_in">count</span> <span class="keyword">is</span>  <span class="number">40</span></span><br></pre></td></tr></table></figure></p>
+<p>统计某个文件夹下的文件占用的字节数<br><figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ls</span> -<span class="keyword">l</span> |awk 'BEGIN &#123;size=0;&#125; &#123;size=size+<span class="label">$5</span>;&#125; END&#123;<span class="keyword">print</span> <span class="string">"[end]size is "</span>, size&#125;'</span><br><span class="line">[end]size is  8657198</span><br></pre></td></tr></table></figure></p>
+<p>如果以M为单位显示:<br><figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ls</span> -<span class="keyword">l</span> |awk 'BEGIN &#123;size=0;&#125; &#123;size=size+<span class="label">$5</span>;&#125; END&#123;<span class="keyword">print</span> <span class="string">"[end]size is "</span>, size/1024/1024,<span class="string">"M"</span>&#125;'</span><br><span class="line">[end]size is  8.25889 <span class="literal">M</span></span><br><span class="line">注意，统计不包括文件夹的子目录。</span><br></pre></td></tr></table></figure></p>
+<p>条件语句</p>
+<p>awk中的条件语句是从C语言中借鉴来的，见如下声明方式：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (expression) &#123;</span><br><span class="line">    statement;</span><br><span class="line">    statement;</span><br><span class="line">    ... ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (expression) &#123;</span><br><span class="line">    statement;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    statement2;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (expression) &#123;</span><br><span class="line">    statement1;</span><br><span class="line">&#125; <span class="keyword">else</span> <span class="keyword">if</span> (expression1) &#123;</span><br><span class="line">    statement2;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    statement3;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>统计某个文件夹下的文件占用的字节数,过滤4096大小的文件(一般都是文件夹):</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ls -l |awk '<span class="operator"><span class="keyword">BEGIN</span> &#123;<span class="keyword">size</span>=<span class="number">0</span>;</span>print "[<span class="operator"><span class="keyword">start</span>]<span class="keyword">size</span> <span class="keyword">is</span> <span class="string">", size&#125; &#123;if($5!=4096)&#123;size=size+$5;&#125;&#125; END&#123;print "</span>[<span class="keyword">end</span>]<span class="keyword">size</span> <span class="keyword">is</span> <span class="string">", size/1024/1024,"</span><span class="keyword">M</span><span class="string">"&#125;'</span><br><span class="line">[end]size is  8.22339 M</span></span></span><br></pre></td></tr></table></figure>
+<p>循环语句</p>
+<p>awk中的循环语句同样借鉴于C语言，支持while、do/while、for、break、continue，这些关键字的语义和C语言中的语义完全相同。</p>
+<p>数组</p>
+<p>因为awk中数组的下标可以是数字和字母，数组的下标通常被称为关键字(key)。值和关键字都存储在内部的一张针对key/value应用hash的表格里。由于hash不是顺序存储，因此在显示数组内容时会发现，它们并不是按照你预料的顺序显示出来的。数组和变量一样，都是在使用时自动创建的，awk也同样会自动判断其存储的是数字还是字符串。一般而言，awk中的数组用来从记录中收集信息，可以用于计算总和、统计单词以及跟踪模板被匹配的次数等等。</p>
+<p>显示/etc/passwd的账户</p>
+<figure class="highlight applescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">awk -F ':' 'BEGIN &#123;<span class="command">count</span>=<span class="number">0</span>;&#125; &#123;<span class="property">name</span>[<span class="command">count</span>] = $<span class="number">1</span>;<span class="command">count</span>++;&#125;; END&#123;<span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; NR; i++) print i, <span class="property">name</span>[i]&#125;' /etc/passwd</span><br><span class="line"><span class="number">0</span> root</span><br><span class="line"><span class="number">1</span> daemon</span><br><span class="line"><span class="number">2</span> bin</span><br><span class="line"><span class="number">3</span> sys</span><br><span class="line"><span class="number">4</span> sync</span><br><span class="line"><span class="number">5</span> games</span><br><span class="line">......</span><br></pre></td></tr></table></figure>
+<p>这里使用for循环遍历数组.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/02/28/awk命令详解/" data-id="cil6jv55d001e2sqy3m0zzxsl" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux命令/">Linux命令</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-tee命令详解" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/02/28/tee命令详解/" class="article-date">
+  <time datetime="2016-02-28T12:29:32.000Z" itemprop="datePublished">2016-02-28</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/02/28/tee命令详解/">tee命令详解</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><img src="/pictures/Linux命令面试问答-tee命令.png" alt="tee命令示意图">tee过滤器用来想多个目标发送输出的内容。如果用于管道的话，他可以将输出复制一份到文件，兵复制另外一份到屏幕上（或一些其他的程序）。</p>
 <figure class="highlight gherkin"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ll /etc |<span class="string"> nl </span>|<span class="string"> tee /temp//ll.out</span></span><br></pre></td></tr></table></figure>
 <p>在以上例子中，从ll输出可以捕获到/temp/ll.out文件中，并且同样在屏幕上显示出来。</p>
 <p>tee [ -a ] [ -i ] [檔案 … ]</p>
@@ -234,79 +356,175 @@
 <p>输出到标准输出两次。（A FILE of <code>-&#39; causes</code>tee’ to send another copy of input to standard output, but this is typically not that useful as the copies are interleaved.）</p>
 <p>格式：tee file1 file2 -</p>
 <p>输出到标准输出两次，同时保存到file1和file2中。</p>
-<h4 id="使用tee命令把标准错误输出也保存到文件"><a href="#使用tee命令把标准错误输出也保存到文件" class="headerlink" title="使用tee命令把标准错误输出也保存到文件"></a>使用tee命令把标准错误输出也保存到文件</h4><figure class="highlight mel"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[root<span class="variable">@web</span> ~]# <span class="keyword">ls</span> <span class="string">"*"</span> </span><br><span class="line"><span class="keyword">ls</span>: <span class="variable">*:</span> 没有那个文件或目录</span><br><span class="line">[root<span class="variable">@web</span> ~]# <span class="keyword">ls</span> <span class="string">"*"</span> | tee - </span><br><span class="line"><span class="keyword">ls</span>: <span class="variable">*:</span> 没有那个文件或目录</span><br><span class="line">[root<span class="variable">@web</span> ~]# <span class="keyword">ls</span> <span class="string">"*"</span> | tee <span class="keyword">ls</span>.txt </span><br><span class="line"><span class="keyword">ls</span>: <span class="variable">*:</span> 没有那个文件或目录</span><br><span class="line">[root<span class="variable">@web</span> ~]# cat <span class="keyword">ls</span>.txt </span><br><span class="line">[root<span class="variable">@web</span> ~]# <span class="keyword">ls</span> <span class="string">"*"</span> <span class="number">2</span>&gt;&amp;<span class="number">1</span> | tee <span class="keyword">ls</span>.txt </span><br><span class="line"><span class="keyword">ls</span>: <span class="variable">*:</span> 没有那个文件或目录</span><br><span class="line">[root<span class="variable">@web</span> ~]# cat <span class="keyword">ls</span>.txt </span><br><span class="line"><span class="keyword">ls</span>: <span class="variable">*:</span> 没有那个文件或目录</span><br><span class="line">[root<span class="variable">@web</span> ~]#</span><br></pre></td></tr></table></figure>
-<h3 id="问题13：export-PS1-quot-LOGNAME-hostname-PWD-quot-这条指令是在做什么？"><a href="#问题13：export-PS1-quot-LOGNAME-hostname-PWD-quot-这条指令是在做什么？" class="headerlink" title="问题13：export PS1=&quot;$LOGNAME@hostname:\:$PWD:&quot; 这条指令是在做什么？"></a>问题13：<code>export PS1=&quot;$LOGNAME@hostname:\:$PWD:&quot;</code> 这条指令是在做什么？</h3><p>答：这条export命令会更改登录提示符来显示用户名、本机名、和当前的工作目录。</p>
-<h3 id="问题14：ll-awk-‘-print-3-“owns”-9-’这条命令是在做什么？"><a href="#问题14：ll-awk-‘-print-3-“owns”-9-’这条命令是在做什么？" class="headerlink" title="问题14：ll | awk ‘{print $3, “owns”, $9}’这条命令是在做什么？"></a>问题14：ll | awk ‘{print $3, “owns”, $9}’这条命令是在做什么？</h3><p>答：会显示这些文件的名称和他们的拥有者。</p>
-<h4 id="awk简介"><a href="#awk简介" class="headerlink" title="awk简介"></a>awk简介</h4><p>awk是一个强大的文本分析工具，相对于grep的查找，sed的编辑，awk在其对数据分析并生成报告时，显得尤为强大。简单来说awk就是把文件逐行的读入，以空格为默认分隔符将每行切片，切开的部分再进行各种分析处理。</p>
-<p>awk有3个不同版本: awk、nawk和gawk，未作特别说明，一般指gawk，gawk 是 AWK 的 GNU 版本。</p>
-<p>awk其名称得自于它的创始人 Alfred Aho 、Peter Weinberger 和 Brian Kernighan 姓氏的首个字母。实际上 AWK 的确拥有自己的语言： AWK 程序设计语言 ， 三位创建者已将它正式定义为“样式扫描和处理语言”。它允许您创建简短的程序，这些程序读取输入文件、为数据排序、处理数据、对输入执行计算以及生成报表，还有无数其他的功能。</p>
-<p>使用方法</p>
-<p><code>awk &#39;{pattern + action}&#39; {filenames}</code></p>
-<p>尽管操作可能会很复杂，但语法总是这样，其中 pattern 表示 AWK 在数据中查找的内容，而 action 是在找到匹配内容时所执行的一系列命令。花括号（{}）不需要在程序中始终出现，但它们用于根据特定的模式对一系列指令进行分组。 pattern就是要表示的正则表达式，用斜杠括起来。</p>
-<p>awk语言的最基本功能是在文件或者字符串中基于指定规则浏览和抽取信息，awk抽取信息后，才能进行其他文本操作。完整的awk脚本通常用来格式化文本文件中的信息。</p>
-<p>通常，awk是以文件的一行为处理单位的。awk每接收文件的一行，然后执行相应的命令，来处理文本。</p>
-<p>调用awk有三种方式调用awk</p>
-<p>1.命令行方式<br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">awk [-F  field-separator]  <span class="string">'commands'</span>  <span class="function"><span class="title">input-file</span><span class="params">(s)</span></span></span><br></pre></td></tr></table></figure></p>
-<p>其中，commands 是真正awk命令，[-F域分隔符]是可选的。 input-file(s) 是待处理的文件。<br>在awk中，文件的每一行中，由域分隔符分开的每一项称为一个域。通常，在不指名-F域分隔符的情况下，默认的域分隔符是空格。</p>
-<p>2.shell脚本方式</p>
-<p>将所有的awk命令插入一个文件，并使awk程序可执行，然后awk命令解释器作为脚本的首行，一遍通过键入脚本名称来调用。<br>相当于shell脚本首行的：#!/bin/sh<br>可以换成：#!/bin/awk</p>
-<p>3.将所有的awk命令插入一个单独文件，然后调用：<br><figure class="highlight applescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">awk -f awk-<span class="keyword">script</span>-<span class="type">file</span> input-<span class="type">file</span>(s)</span><br></pre></td></tr></table></figure></p>
-<p>其中，-f选项加载awk-script-file中的awk脚本，input-file(s)跟上面的是一样的。</p>
-<p>本章重点介绍命令行方式。</p>
-<p>入门实例</p>
-<p>假设last -n 5的输出如下</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]# last -n 5 &#60;==&#20165;&#21462;&#20986;&#21069;&#20116;&#34892;&#10;root     pts/1   192.168.1.100  Tue Feb 10 11:21   still logged in&#10;root     pts/1   192.168.1.100  Tue Feb 10 00:46 - 02:28  (01:41)&#10;root     pts/1   192.168.1.100  Mon Feb  9 11:41 - 18:30  (06:48)&#10;dmtsai   pts/1   192.168.1.100  Mon Feb  9 11:41 - 11:41  (00:00)&#10;root     tty1                   Fri Sep  5 14:09 - 14:10  (00:01)</span><br></pre></td></tr></table></figure>
-<p>如果只是显示最近登录的5个帐号<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">#last -n 5 | awk  &#39;&#123;print $1&#125;&#39;&#10;root&#10;root&#10;root&#10;dmtsai&#10;root</span><br></pre></td></tr></table></figure></p>
-<p>awk工作流程是这样的：读入有’\n’换行符分割的一条记录，然后将记录按指定的域分隔符划分域，填充域，$0则表示所有域,$1表示第一个域,$n表示第n个域。默认域分隔符是”空白键” 或 “[tab]键”,所以$1表示登录用户，$3表示登录用户ip,以此类推。</p>
-<p>如果只是显示/etc/passwd的账户<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">#cat /etc/passwd |awk  -F &#39;:&#39;  &#39;&#123;print $1&#125;&#39;  &#10;root&#10;daemon&#10;bin&#10;sys&#10;`</span><br></pre></td></tr></table></figure></p>
-<p>这种是awk+action的示例，每行都会执行action{print $1}。</p>
-<p>-F指定域分隔符为’:’。</p>
-<p>如果只是显示/etc/passwd的账户和账户对应的shell,而账户与shell之间以tab键分割<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">#cat /etc/passwd |awk  -F &#39;:&#39;  &#39;&#123;print $1&#34;\t&#34;$7&#125;&#39;&#10;root    /bin/bash&#10;daemon  /bin/sh&#10;bin     /bin/sh&#10;sys     /bin/sh&#10;``` &#10;&#10;&#22914;&#26524;&#21482;&#26159;&#26174;&#31034;/etc/passwd&#30340;&#36134;&#25143;&#21644;&#36134;&#25143;&#23545;&#24212;&#30340;shell,&#32780;&#36134;&#25143;&#19982;shell&#20043;&#38388;&#20197;&#36887;&#21495;&#20998;&#21106;,&#32780;&#19988;&#22312;&#25152;&#26377;&#34892;&#28155;&#21152;&#21015;&#21517;name,shell,&#22312;&#26368;&#21518;&#19968;&#34892;&#28155;&#21152;&#34;blue,/bin/nosh&#34;&#12290;&#10;&#10;```linux&#10;cat /etc/passwd |awk  -F &#39;:&#39;  &#39;BEGIN &#123;print &#34;name,shell&#34;&#125;  &#123;print $1&#34;,&#34;$7&#125; END &#123;print &#34;blue,/bin/nosh&#34;&#125;&#39;&#10;name,shell&#10;root,/bin/bash&#10;daemon,/bin/sh&#10;bin,/bin/sh&#10;sys,/bin/sh&#10;....&#10;blue,/bin/nosh</span><br></pre></td></tr></table></figure></p>
-<p>awk工作流程是这样的：先执行BEGING，然后读取文件，读入有/n换行符分割的一条记录，然后将记录按指定的域分隔符划分域，填充域，$0则表示所有域,$1表示第一个域,$n表示第n个域,随后开始执行模式所对应的动作action。接着开始读入第二条记录······直到所有的记录都读完，最后执行END操作。</p>
-<p>搜索/etc/passwd有root关键字的所有行<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">#awk -F: &#39;/root/&#39; /etc/passwd&#10;root:x:0:0:root:/root:/bin/bash</span><br></pre></td></tr></table></figure></p>
-<p>这种是pattern的使用示例，匹配了pattern(这里是root)的行才会执行action(没有指定action，默认输出每行的内容)。</p>
-<p>搜索支持正则，例如找root开头的: <code>awk -F: &#39;/^root/&#39; /etc/passwd</code></p>
-<p>搜索/etc/passwd有root关键字的所有行，并显示对应的shell<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"># awk -F: &#39;/root/&#123;print $7&#125;&#39; /etc/passwd             &#10;/bin/bash</span><br></pre></td></tr></table></figure></p>
-<p>这里指定了action{print $7}</p>
-<p>awk内置变量<br>awk有许多内置变量用来设置环境信息，这些变量可以被改变，下面给出了最常用的一些变量。</p>
-<figure class="highlight dos"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">ARGC               命令行参数个数</span><br><span class="line">ARGV               命令行参数排列</span><br><span class="line">ENVIRON            支持队列中系统环境变量的使用</span><br><span class="line">FILENAME           awk浏览的文件名</span><br><span class="line">FNR                浏览文件的记录数</span><br><span class="line"><span class="built_in">FS</span>                 设置输入域分隔符，等价于命令行 -F选项</span><br><span class="line">NF                 浏览记录的域的个数</span><br><span class="line">NR                 已读的记录数</span><br><span class="line">OFS                输出域分隔符</span><br><span class="line">ORS                输出记录分隔符</span><br><span class="line">RS                 控制记录分隔符</span><br></pre></td></tr></table></figure>
-<p>此外,$0变量是指整条记录。$1表示当前行的第一个域,$2表示当前行的第二个域,……以此类推。</p>
-<p>统计/etc/passwd:文件名，每行的行号，每行的列数，对应的完整行内容:<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">#awk  -F &#39;:&#39;  &#39;&#123;print &#34;filename:&#34; FILENAME &#34;,linenumber:&#34; NR &#34;,columns:&#34; NF &#34;,linecontent:&#34;$0&#125;&#39; /etc/passwd&#10;filename:/etc/passwd,linenumber:1,columns:7,linecontent:root:x:0:0:root:/root:/bin/bash&#10;filename:/etc/passwd,linenumber:2,columns:7,linecontent:daemon:x:1:1:daemon:/usr/sbin:/bin/sh&#10;filename:/etc/passwd,linenumber:3,columns:7,linecontent:bin:x:2:2:bin:/bin:/bin/sh&#10;filename:/etc/passwd,linenumber:4,columns:7,linecontent:sys:x:3:3:sys:/dev:/bin/sh&#10;``` &#10;&#10;&#20351;&#29992;printf&#26367;&#20195;print,&#21487;&#20197;&#35753;&#20195;&#30721;&#26356;&#21152;&#31616;&#27905;&#65292;&#26131;&#35835;</span><br></pre></td></tr></table></figure></p>
-<p>awk  -F ‘:’  ‘{printf(“filename:%10s,linenumber:%s,columns:%s,linecontent:%s\n”,FILENAME,NR,NF,$0)}’ /etc/passwd<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="built_in">print</span>和<span class="built_in">printf</span></span><br><span class="line"></span><br><span class="line">awk中同时提供了<span class="built_in">print</span>和<span class="built_in">printf</span>两种打印输出的函数。其中<span class="built_in">print</span>函数的参数可以是变量、数值或者字符串。字符串必须用双引号引用，参数用逗号分隔。如果没有逗号，参数就串联在一起而无法区分。这里，逗号的作用与输出文件的分隔符的作用是一样的，只是后者是空格而已。</span><br><span class="line"></span><br><span class="line"><span class="built_in">printf</span>函数，其用法和c语言中<span class="built_in">printf</span>基本相似,可以格式化字符串,输出复杂时，<span class="built_in">printf</span>更加好用，代码更易懂。</span><br><span class="line"></span><br><span class="line">awk编程,变量和赋值</span><br><span class="line"></span><br><span class="line">除了awk的内置变量，awk还可以自定义变量。</span><br><span class="line"></span><br><span class="line">下面统计/etc/passwd的账户人数</span><br></pre></td></tr></table></figure></p>
-<p>awk ‘{count++;print $0;} END{print “user count is “, count}’ /etc/passwd<br>root:x:0:0:root:/root:/bin/bash<br>……<br>user count is  40<br><figure class="highlight fortran"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">count</span>是自定义变量。之前的<span class="keyword">action</span>&#123;&#125;里都是只有一个<span class="built_in">print</span>,其实<span class="built_in">print</span>只是一个语句，而<span class="keyword">action</span>&#123;&#125;可以有多个语句，以;号隔开。</span><br><span class="line"></span><br><span class="line">这里没有初始化<span class="built_in">count</span>，虽然默认是<span class="number">0</span>，但是妥当的做法还是初始化为<span class="number">0</span>:</span><br></pre></td></tr></table></figure></p>
-<p>awk ‘BEGIN {count=0;print “[start]user count is “, count} {count=count+1;print $0;} END{print “[end]user count is “, count}’ /etc/passwd<br>[start]user count is  0<br>root:x:0:0:root:/root:/bin/bash<br>…<br>[end]user count is  40<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">统计某个文件夹下的文件占用的字节数</span><br></pre></td></tr></table></figure></p>
-<p>ls -l |awk ‘BEGIN {size=0;} {size=size+$5;} END{print “[end]size is “, size}’<br>[end]size is  8657198<br><figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">如果以<span class="keyword">M</span>为单位显示:</span><br></pre></td></tr></table></figure></p>
-<p>ls -l |awk ‘BEGIN {size=0;} {size=size+$5;} END{print “[end]size is “, size/1024/1024,”M”}’<br>[end]size is  8.25889 M<br>注意，统计不包括文件夹的子目录。<br><figure class="highlight xquery"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">条件语句</span><br><span class="line"></span><br><span class="line">awk中的条件语句是从C语言中借鉴来的，见如下声明方式：</span><br><span class="line"></span><br><span class="line">```c</span><br><span class="line"><span class="keyword">if</span> (expression) &#123;</span><br><span class="line">    statement;</span><br><span class="line">    statement;</span><br><span class="line">    ... ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (expression) &#123;</span><br><span class="line">    statement;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    statement2;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (expression) &#123;</span><br><span class="line">    statement1;</span><br><span class="line">&#125; <span class="keyword">else</span> <span class="keyword">if</span> (expression1) &#123;</span><br><span class="line">    statement2;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    statement3;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>统计某个文件夹下的文件占用的字节数,过滤4096大小的文件(一般都是文件夹):</p>
-<figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ls</span> -<span class="keyword">l</span> |awk 'BEGIN &#123;size=0;<span class="keyword">print</span> <span class="string">"[start]size is "</span>, size&#125; &#123;<span class="keyword">if</span>(<span class="label">$5</span>!=4096)&#123;size=size+<span class="label">$5</span>;&#125;&#125; END&#123;<span class="keyword">print</span> <span class="string">"[end]size is "</span>, size/1024/1024,<span class="string">"M"</span>&#125;' </span><br><span class="line">[end]size is  8.22339 <span class="literal">M</span></span><br><span class="line">``` </span><br><span class="line"></span><br><span class="line">循环语句</span><br><span class="line"></span><br><span class="line">awk中的循环语句同样借鉴于C语言，支持<span class="keyword">while</span>、<span class="keyword">do</span>/<span class="keyword">while</span>、<span class="keyword">for</span>、<span class="keyword">break</span>、<span class="keyword">continue</span>，这些关键字的语义和C语言中的语义完全相同。</span><br><span class="line"></span><br><span class="line">数组</span><br><span class="line"></span><br><span class="line">因为awk中数组的下标可以是数字和字母，数组的下标通常被称为关键字(key)。值和关键字都存储在内部的一张针对key/value应用hash的表格里。由于hash不是顺序存储，因此在显示数组内容时会发现，它们并不是按照你预料的顺序显示出来的。数组和变量一样，都是在使用时自动创建的，awk也同样会自动判断其存储的是数字还是字符串。一般而言，awk中的数组用来从记录中收集信息，可以用于计算总和、统计单词以及跟踪模板被匹配的次数等等。</span><br><span class="line"></span><br><span class="line">显示/etc/passwd的账户</span><br></pre></td></tr></table></figure>
-<p>awk -F ‘:’ ‘BEGIN {count=0;} {name[count] = $1;count++;}; END{for (i = 0; i &lt; NR; i++) print i, name[i]}’ /etc/passwd<br>0 root<br>1 daemon<br>2 bin<br>3 sys<br>4 sync<br>5 games<br>……<br><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">这里使用for循环遍历数组.</span><br><span class="line"></span><br><span class="line"><span class="header">### 问题15：Linux中at命令有什么用？</span></span><br><span class="line"></span><br><span class="line">答：at命令用来安排一个程序在未来的做一次性执行。所以有提交的任务都会被放在/var/spool/at目录下，并且到了执行时间的时候通过atd守护进程来执行。</span><br><span class="line"></span><br><span class="line"><span class="header">#### at命令详解</span></span><br><span class="line"></span><br><span class="line">1．命令格式：</span><br><span class="line"></span><br><span class="line">at[<span class="link_label">参数</span>][<span class="link_reference">时间</span>]</span><br><span class="line"></span><br><span class="line">2．命令功能：</span><br><span class="line"></span><br><span class="line">在一个指定的时间执行一个指定任务，只能执行一次，且需要开启atd进程（<span class="code">`ps -ef | grep atd`</span>查看， 开启用<span class="code">`/etc/init.d/atd start or restart`</span>； 开机即启动则需要运行 <span class="code">`chkconfig --level 2345 atd on`</span>）。</span><br><span class="line"></span><br><span class="line">3．命令参数：</span><br></pre></td></tr></table></figure></p>
-<p>-m 当指定的任务被完成之后，将给用户发送邮件，即使没有标准输出<br>-I atq的别名<br>-d atrm的别名<br>-v 显示任务将被执行的时间<br>-c 打印任务的内容到标准输出<br>-V 显示版本信息<br>-q&lt;列队&gt; 使用指定的列队<br>-f&lt;文件&gt; 从指定文件读入任务而不是从标准输入读入<br>-t&lt;时间参数&gt; 以时间参数的形式提交要运行的任务<br><figure class="highlight applescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="keyword">at</span>允许使用一套相当复杂的指定时间的方法。他能够接受在当天的hh:mm（小时:分钟）式的时间指定。假如该时间已过去，那么就放在第二天执行。当然也能够使用midnight（深夜），noon（中午），teatime（饮茶时间，一般是下午<span class="number">4</span>点）等比较模糊的 词语来指定时间。用户还能够采用<span class="number">12</span>小时计时制，即在时间后面加上AM（上午）或PM（下午）来说明是上午还是下午。 也能够指定命令执行的具体日期，指定格式为<span class="property">month</span> <span class="property">day</span>（月 日）或mm/dd/yy（月/日/年）或dd.mm.yy（日.月.年）。指定的日期必须跟在指定时间的后面。 </span><br><span class="line"></span><br><span class="line">上面介绍的都是绝对计时法，其实还能够使用相对计时法，这对于安排不久就要执行的命令是很有好处的。指定格式为：now + <span class="command">count</span> <span class="property">time</span>-units ，now就是当前时间，<span class="property">time</span>-units是时间单位，这里能够是minutes（分钟）、hours（小时）、days（天）、weeks（星期）。<span class="command">count</span>是时间的数量，究竟是几天，还是几小时，等等。 更有一种计时方法就是直接使用today（今天）、tomorrow（明天）来指定完成命令的时间。</span><br></pre></td></tr></table></figure></p>
-<p>TIME：时间格式，这里可以定义出什么时候要进行 at 这项任务的时间，格式有：<br>HH:MM<br>ex&gt; 04:00<br>在今日的 HH:MM 时刻进行，若该时刻已超过，则明天的 HH:MM 进行此任务。<br>HH:MM YYYY-MM-DD<br>ex&gt; 04:00 2009-03-17<br>强制规定在某年某月的某一天的特殊时刻进行该项任务<br>HH:MM[am|pm] [Month] [Date]<br>ex&gt; 04pm March 17<br>也是一样，强制在某年某月某日的某时刻进行该项任务<br>HH:MM[am|pm] + number [minutes|hours|days|weeks]<br>ex&gt; now + 5 minutes<br>ex&gt; 04pm + 3 days<br>就是说，在某个时间点再加几个时间后才进行该项任务。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="number">4</span>．使用实例：</span><br><span class="line">实例<span class="number">1</span>：三天后的下午 <span class="number">5</span> 点锺执行 /bin/ls</span><br></pre></td></tr></table></figure></p>
-<p>命令：<br>at 5pm+3 days<br>输出：<br>[root@localhost ~]# at 5pm+3 days<br>at&gt; /bin/ls<br>at&gt; <eot><br>job 7 at 2013-01-08 17:00<br>[root@localhost ~]#<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">实例<span class="number">2</span>：明天<span class="number">17</span>点钟，输出时间到指定文件内</span><br><span class="line"></span><br><span class="line">```命令：</span><br><span class="line">at <span class="number">17</span>:<span class="number">20</span> tomorrow</span><br><span class="line">输出：</span><br><span class="line">[root@localhost ~]<span class="preprocessor"># at <span class="number">17</span>:<span class="number">20</span> tomorrow</span></span><br><span class="line">at&gt; date &gt;/root/<span class="number">2013.l</span>og         </span><br><span class="line">at&gt; &lt;EOT&gt;</span><br><span class="line">job <span class="number">8</span> at <span class="number">2013</span>-<span class="number">01</span>-<span class="number">06</span> <span class="number">17</span>:<span class="number">20</span></span><br><span class="line">[root@localhost ~]<span class="preprocessor">#</span></span><br></pre></td></tr></table></figure></eot></p>
-<p>实例3：计划任务设定后，在没有执行之前我们可以用atq命令来查看系统没有执行工作任务<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">命令：</span><br><span class="line">atq</span><br><span class="line">输出：</span><br><span class="line">[root@localhost ~]<span class="preprocessor"># atq</span></span><br><span class="line"><span class="number">8</span>       <span class="number">2013</span>-<span class="number">01</span>-<span class="number">06</span> <span class="number">17</span>:<span class="number">20</span> a root</span><br><span class="line"><span class="number">7</span>       <span class="number">2013</span>-<span class="number">01</span>-<span class="number">08</span> <span class="number">17</span>:<span class="number">00</span> a root</span><br><span class="line">[root@localhost ~]<span class="preprocessor">#</span></span><br></pre></td></tr></table></figure></p>
-<p>实例4：删除已经设置的任务<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">命令：</span><br><span class="line">atrm <span class="number">7</span></span><br><span class="line">输出：</span><br><span class="line">[root@localhost ~]<span class="preprocessor"># atq</span></span><br><span class="line"><span class="number">8</span>       <span class="number">2013</span>-<span class="number">01</span>-<span class="number">06</span> <span class="number">17</span>:<span class="number">20</span> a root</span><br><span class="line"><span class="number">7</span>       <span class="number">2013</span>-<span class="number">01</span>-<span class="number">08</span> <span class="number">17</span>:<span class="number">00</span> a root</span><br><span class="line">[root@localhost ~]<span class="preprocessor"># atrm <span class="number">7</span></span></span><br><span class="line">[root@localhost ~]<span class="preprocessor"># atq</span></span><br><span class="line"><span class="number">8</span>       <span class="number">2013</span>-<span class="number">01</span>-<span class="number">06</span> <span class="number">17</span>:<span class="number">20</span> a root</span><br><span class="line">[root@localhost ~]<span class="preprocessor">#</span></span><br></pre></td></tr></table></figure></p>
-<p>实例5：显示已经设置的任务内容<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">命令：</span><br><span class="line">at -c <span class="number">8</span></span><br><span class="line">输出：</span><br><span class="line">[root@localhost ~]<span class="comment"># at -c 8</span></span><br><span class="line"><span class="shebang">#!/bin/sh</span></span><br><span class="line"><span class="comment"># atrun uid=0 gid=0</span></span><br><span class="line"><span class="comment"># mail     root 0</span></span><br><span class="line"><span class="built_in">umask</span> <span class="number">22</span>此处省略n个字符</span><br><span class="line">date &gt;/root/<span class="number">2013</span>.log</span><br><span class="line">[root@localhost ~]<span class="comment">#</span></span><br></pre></td></tr></table></figure></p>
-<p>5．atd 的启动与 at 运行的方式：</p>
-<p>5.1 atd 的启动</p>
-<p>要使用一次性计划任务时，我们的 Linux 系统上面必须要有负责这个计划任务的服务，那就是 atd 服务。 不过并非所有的 Linux distributions 都默认会把他打开的，所以，某些时刻我们需要手动将atd 服务激活才行。 激活的方法很简单，就是这样：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">命令：</span><br><span class="line">/etc/init.d/atd start </span><br><span class="line">/etc/init.d/atd restart </span><br><span class="line">输出：</span><br><span class="line">[root@localhost /]<span class="preprocessor"># /etc/init.d/atd start</span></span><br><span class="line">[root@localhost /]<span class="preprocessor"># /etc/init.d/atd </span></span><br><span class="line">用法：/etc/init.d/atd &#123;start|stop|restart|condrestart|status&#125;</span><br><span class="line">[root@localhost /]<span class="preprocessor"># /etc/init.d/atd stop</span></span><br><span class="line">停止 atd：[确定]</span><br><span class="line">[root@localhost /]<span class="preprocessor"># ps -ef|grep atd</span></span><br><span class="line">root     <span class="number">25062</span> <span class="number">24951</span>  <span class="number">0</span> <span class="number">14</span>:<span class="number">53</span> pts/<span class="number">0</span>    <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> grep atd</span><br><span class="line">[root@localhost /]<span class="preprocessor"># /etc/init.d/atd start</span></span><br><span class="line">[确定]td：[确定]</span><br><span class="line">[root@localhost /]<span class="preprocessor"># ps -ef|grep atd</span></span><br><span class="line">root     <span class="number">25068</span>     <span class="number">1</span>  <span class="number">0</span> <span class="number">14</span>:<span class="number">53</span> ?        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> /usr/sbin/atd</span><br><span class="line">root     <span class="number">25071</span> <span class="number">24951</span>  <span class="number">0</span> <span class="number">14</span>:<span class="number">53</span> pts/<span class="number">0</span>    <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> grep atd</span><br><span class="line">[root@localhost /]<span class="preprocessor"># /etc/init.d/atd restart</span></span><br><span class="line">停止 atd：[确定]</span><br><span class="line">[确定]td：[确定]</span><br><span class="line">[root@localhost /]<span class="preprocessor">#</span></span><br></pre></td></tr></table></figure></p>
-<p>说明：</p>
-<p>/etc/init.d/atd start 没有启动的时候，直接启动atd服务</p>
-<p>/etc/init.d/atd restart 服务已经启动后，重启 atd 服务</p>
-<p>备注：配置一下启动时就启动这个服务，免得每次重新启动都得再来一次</p>
-<figure class="highlight coffeescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">命令：</span><br><span class="line">chkconfig atd <span class="literal">on</span></span><br><span class="line">输出：</span><br><span class="line">[root<span class="property">@localhost</span> /]<span class="comment"># chkconfig atd on</span></span><br><span class="line">[root<span class="property">@localhost</span> /]<span class="comment">#</span></span><br></pre></td></tr></table></figure>
-<p>5.2 at 的运行方式</p>
-<p>既然是计划任务，那么应该会有任务执行的方式，并且将这些任务排进行程表中。那么产生计划任务的方式是怎么进行的? 事实上，我们使用 at 这个命令来产生所要运行的计划任务，并将这个计划任务以文字档的方式写入 /var/spool/at/ 目录内，该工作便能等待 atd 这个服务的取用与运行了。就这么简单。不过，并不是所有的人都可以进行 at 计划任务。为什么? 因为系统安全的原因。很多主机被所谓的攻击破解后，最常发现的就是他们的系统当中多了很多的黑客程序， 这些程序非常可能运用一些计划任务来运行或搜集你的系统运行信息,并定时的发送给黑客。 所以，除非是你认可的帐号，否则先不要让他们使用 at 命令。那怎么达到使用 at 的可控呢?</p>
-<p>我们可以利用 /etc/at.allow 与 /etc/at.deny 这两个文件来进行 at 的使用限制。加上这两个文件后， at 的工作情况是这样的：</p>
-<p>先找寻 /etc/at.allow 这个文件，写在这个文件中的使用者才能使用 at ，没有在这个文件中的使用者则不能使用 at (即使没有写在 at.deny 当中);如果 /etc/at.allow 不存在，就寻找 /etc/at.deny 这个文件，若写在这个 at.deny 的使用者则不能使用 at ，而没有在这个 at.deny 文件中的使用者，就可以使用 at 命令了。</p>
-<p>如果两个文件都不存在，那么只有 root 可以使用 at 这个命令。</p>
-<p>透过这个说明，我们知道 /etc/at.allow 是管理较为严格的方式，而 /etc/at.deny 则较为松散 (因为帐号没有在该文件中，就能够运行 at 了)。在一般的 distributions 当中，由于假设系统上的所有用户都是可信任的， 因此系统通常会保留一个空的 /etc/at.deny 文件，意思是允许所有人使用 at 命令的意思 (您可以自行检查一下该文件)。 不过，万一你不希望有某些使用者使用 at 的话，将那个使用者的帐号写入 /etc/at.deny 即可！ 一个帐号写一行。</p>
+<h4 id="使用tee命令把标准错误输出也保存到文件"><a href="#使用tee命令把标准错误输出也保存到文件" class="headerlink" title="使用tee命令把标准错误输出也保存到文件"></a>使用tee命令把标准错误输出也保存到文件</h4><figure class="highlight mel"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[root<span class="variable">@web</span> ~]# <span class="keyword">ls</span> <span class="string">"*"</span></span><br><span class="line"><span class="keyword">ls</span>: <span class="variable">*:</span> 没有那个文件或目录</span><br><span class="line">[root<span class="variable">@web</span> ~]# <span class="keyword">ls</span> <span class="string">"*"</span> | tee -</span><br><span class="line"><span class="keyword">ls</span>: <span class="variable">*:</span> 没有那个文件或目录</span><br><span class="line">[root<span class="variable">@web</span> ~]# <span class="keyword">ls</span> <span class="string">"*"</span> | tee <span class="keyword">ls</span>.txt</span><br><span class="line"><span class="keyword">ls</span>: <span class="variable">*:</span> 没有那个文件或目录</span><br><span class="line">[root<span class="variable">@web</span> ~]# cat <span class="keyword">ls</span>.txt</span><br><span class="line">[root<span class="variable">@web</span> ~]# <span class="keyword">ls</span> <span class="string">"*"</span> <span class="number">2</span>&gt;&amp;<span class="number">1</span> | tee <span class="keyword">ls</span>.txt</span><br><span class="line"><span class="keyword">ls</span>: <span class="variable">*:</span> 没有那个文件或目录</span><br><span class="line">[root<span class="variable">@web</span> ~]# cat <span class="keyword">ls</span>.txt</span><br><span class="line"><span class="keyword">ls</span>: <span class="variable">*:</span> 没有那个文件或目录</span><br><span class="line">[root<span class="variable">@web</span> ~]#</span><br></pre></td></tr></table></figure>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/Linux命令面试问答/" data-id="cil6i0bxr0002h8qy8i33hclx" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/28/tee命令详解/" data-id="cil6jv55600142sqyyacdhzd1" class="article-share-link">Share</a>
       
       
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux命令/">Linux命令</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-cpio命令详解" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/02/28/cpio命令详解/" class="article-date">
+  <time datetime="2016-02-28T12:23:51.000Z" itemprop="datePublished">2016-02-28</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/02/28/cpio命令详解/">cpio命令详解</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>cpio命令是通过重定向的方式将文件进行打包备份，还原恢复的工具，它可以解压以“.cpio”或者“.tar”结尾的文件。</p>
+<p>选项 含义<br><figure class="highlight haml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">-<span class="ruby">o 将文件拷贝打包成文件或者将文件输出到设备上。</span><br><span class="line"></span>-<span class="ruby">i 将打包文件解压或者将设备上的备份还原到系统。</span><br><span class="line"></span>-<span class="ruby">t 查看cpio打包的文件内容或者输出到设备上的文件内容。</span><br><span class="line"></span>-<span class="ruby">v 显示打包过程中的文件名称。</span><br><span class="line"></span>-<span class="ruby">d 在cpio还原文件的过程中，自动的建立相应的目录。</span><br><span class="line"></span>-<span class="ruby">c 一种较新的存储方式。</span><br><span class="line"></span>-<span class="ruby"><span class="constant">B</span> 让默认的<span class="constant">Blocks</span>可以增大到<span class="number">5120</span> bytes，默认<span class="constant">Blocks</span>为<span class="number">512</span> bytes，这样做的好处是可以加快存取速度。</span></span><br></pre></td></tr></table></figure></p>
+<p>注意:</p>
+<p>1)cpio恢复的路径，如果cpio在打包备份的时候用的是绝对路径，那么在恢复的时候会自动恢复到这些绝对路径下，同理，如果在打包备份用的是相对路径，还原时也将恢复到相对路径下。</p>
+<p>2)cpio无法直接读取文件，它需要每个文件或者目录的完整路径名才能识别读取，而find命令的输出刚好做到了这点，因此，cpio命令一般和find命令配合使用。</p>
+<p>3)cpio恢复的时候不会自动覆盖同名文件。</p>
+<p>4)不会创建目录而是直接解压到当前文件夹。</p>
+<h4 id="举例"><a href="#举例" class="headerlink" title="[举例]"></a>[举例]</h4><p>*将etc目录备份：</p>
+<figure class="highlight dos"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">find</span> ./etc -<span class="built_in">print</span> |cpio -ov &gt;etc.cpio</span><br></pre></td></tr></table></figure>
+<p>*要恢复文件的时候</p>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="id">#cpio</span> -idv &lt;/root/etc.cpio</span><br></pre></td></tr></table></figure>
+<p>*只是查看etc.cpio文件，可以使用</p>
+<figure class="highlight vala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor"># cpio -tv &lt;etc.cpio</span></span><br></pre></td></tr></table></figure>
+<p>输入之后，输出如下：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">drwxrwxr-x   <span class="number">4</span> quiethea quiethea        <span class="number">0</span> Nov  <span class="number">4</span> <span class="number">17</span>:<span class="number">14</span> etc</span><br><span class="line">-rw-rw-r--   <span class="number">1</span> quiethea quiethea        <span class="number">0</span> Nov  <span class="number">4</span> <span class="number">17</span>:<span class="number">07</span> etc/<span class="number">2</span></span><br><span class="line">drwxrwxr-x   <span class="number">2</span> quiethea quiethea        <span class="number">0</span> Nov  <span class="number">4</span> <span class="number">17</span>:<span class="number">07</span> etc/<span class="number">11</span></span><br><span class="line">-rw-rw-r--   <span class="number">1</span> quiethea quiethea        <span class="number">0</span> Nov  <span class="number">4</span> <span class="number">17</span>:<span class="number">07</span> etc/<span class="number">11</span>/<span class="number">11</span></span><br><span class="line">-rw-rw-r--   <span class="number">1</span> quiethea quiethea        <span class="number">0</span> Nov  <span class="number">4</span> <span class="number">17</span>:<span class="number">07</span> etc/<span class="number">4</span></span><br><span class="line">drwxrwxr-x   <span class="number">2</span> quiethea quiethea        <span class="number">0</span> Nov  <span class="number">4</span> <span class="number">17</span>:<span class="number">07</span> etc/<span class="number">22</span></span><br><span class="line">-rw-rw-r--   <span class="number">1</span> quiethea quiethea        <span class="number">0</span> Nov  <span class="number">4</span> <span class="number">17</span>:<span class="number">07</span> etc/<span class="number">3</span></span><br><span class="line">-rw-rw-r--   <span class="number">1</span> quiethea quiethea        <span class="number">0</span> Nov  <span class="number">4</span> <span class="number">17</span>:<span class="number">07</span> etc/<span class="number">1</span></span><br><span class="line">-rw-rw-r--   <span class="number">1</span> quiethea quiethea        <span class="number">0</span> Nov  <span class="number">4</span> <span class="number">17</span>:<span class="number">07</span> etc/<span class="number">5</span></span><br><span class="line">这样显示得是将要恢复得文件得名称。</span><br></pre></td></tr></table></figure>
+<h4 id="其它"><a href="#其它" class="headerlink" title="[其它]"></a>[其它]</h4><p>现在，内核刚刚启动的时候，会事先挂一个initrd内存文件系统，这个initrd文件系统镜像可以由cpio制作。参见内核源码文档initrd.txt.</p>
+<p>*例如我有一个非常简单的文件系统rootfs.制作镜像方法如下：</p>
+<figure class="highlight xquery"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$cd</span> rootfs</span><br><span class="line"><span class="variable">$find</span> . | cpio -c -o -v |gzip -<span class="number">9</span> -n &gt;../ramdisk.img</span><br></pre></td></tr></table></figure>
+<p>这样，父目录下会生成一个ramdisk.img压缩文件系统镜像。</p>
+<p>*将镜像解压恢复成文件系统的命令：</p>
+<figure class="highlight xquery"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$mkdir</span> rootfs</span><br><span class="line"><span class="variable">$cp</span> ramdisk.img rootfs</span><br><span class="line"><span class="variable">$cd</span> rootfs</span><br><span class="line"><span class="variable">$mv</span> ramdisk.img ramdisk.img.gz</span><br><span class="line"><span class="variable">$gunzip</span> ramdisk.img.gz</span><br><span class="line"><span class="variable">$cpio</span> -i &lt;ramdisk.img</span><br><span class="line"><span class="variable">$rm</span> ramdisk.img</span><br></pre></td></tr></table></figure>
+<p>这样，当前目录下就是原来rootfs中的内容了。</p>
+<p>cpio常与find 配合使用</p>
+<h3 id="实例2"><a href="#实例2" class="headerlink" title="实例2"></a>实例2</h3><h4 id="1-文件或目录打包。"><a href="#1-文件或目录打包。" class="headerlink" title="1.文件或目录打包。　"></a>1.文件或目录打包。　</h4><p>打包有如下多种情况：<br>　<br>A)含子目录打包：</p>
+<figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">find</span> <span class="regexp">/usr/</span>local<span class="regexp">/hbchen/</span> -<span class="keyword">print</span>|cpio -o &gt; <span class="regexp">/tmp/</span>hbchen1.cpio</span><br></pre></td></tr></table></figure>
+<p>将/usr/local/hbchen目录下的文件与子目录打包成一个文件库为/tmp/hbchen1.cpio。　<br>若通过－o选项来打包整个目录下的所有文件与子目录,常先利用find目录名－print来找出所有文件与子目录的名称,通过管道“ ”传给cpio打包。　</p>
+<p>B)不含子目录的打包：</p>
+<figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ls <span class="regexp">/usr/</span>local<span class="regexp">/hbchen |cpio -o &gt; /</span>tmp<span class="regexp">/hbchen3.cpio</span></span><br></pre></td></tr></table></figure>
+<p>将/usr/local/hbchen目录下的文件(不含子目录下的文件)打包成一个文件库为/tmp/hbchen3.cpio。　</p>
+<p>C)特定文件打包：</p>
+<p>可利用文本搜索命令grep与管道配合,可以排除或选择特定类型的文件传给cpio打包。</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">如: ls <span class="regexp">/usr/</span>local<span class="regexp">/hbchen/</span>*.txt |cpio -o &gt;<span class="regexp">/tmp/</span>hbchen0.cpio</span><br><span class="line">或  ls <span class="regexp">/usr/</span>local<span class="regexp">/hbchen |grep '\*.txt$' |cpio -o &gt;/</span>tmp/hbchen6.cpio</span><br><span class="line">find <span class="regexp">/usr/</span>local/hbchen目录下以.txt结尾的文件予以打包。</span><br></pre></td></tr></table></figure>
+<p>又如：<code>ls /usr/local/hbchen grep 1 cpio -o &gt;/tmp/hbchen9.cpio</code>,其意为找出/usr/local/hbchen目录下文件名中含有1字符的文件予以打包。　</p>
+<p><code>ls /usr/local/hbchen |grep -v 1 |cpio -o &gt; /tmp/hbchen11.cpio</code>,其意为找出/usr/local/hbchen目录下文件名中不含 1 字符的文件予以打包。－v选项在grep命令中的意思是排除含有字符串的行列。　</p>
+<p>如此,可充分利用Unix的管道和一些命令的强大功能来实现文件的打包。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/02/28/cpio命令详解/" data-id="cil6jv55b001b2sqyzz9qgtxo" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux命令/">Linux命令</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Linux命令面试问答" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/02/28/Linux命令面试问答/" class="article-date">
+  <time datetime="2016-02-28T12:03:10.000Z" itemprop="datePublished">2016-02-28</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/02/28/Linux命令面试问答/">Linux命令面试问答</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h4 id="问1：如何查看当前的Linux服务器运行级别？"><a href="#问1：如何查看当前的Linux服务器运行级别？" class="headerlink" title="问1：如何查看当前的Linux服务器运行级别？"></a>问1：如何查看当前的Linux服务器运行级别？</h4><p>答：<code>who -r</code> 和 <code>runlevel</code> 命令可以用来查看当前的Linux服务器的运行级别。Linux的运行级别有7种：</p>
+<pre><code>0 所有进程将被终止，机器将有序的停止，关机时系统处于这个运行级别   
+1 单用户模式。用于系统维护，只有少数进程运行，同时所有服务也不启动   
+2 多用户模式。和运行级别3一样，只是网络文件系统（NFS）服务没被启动   
+3 多用户模式。允许多用户登录系统，是系统默认的启动级别 
+4 留给用户自定义的运行级别  
+5 多用户模式，并且在系统启动后运行X-Window，给出一个图形化的登录窗口  
+6 所有进程被终止，系统重新启动 
+</code></pre><p>如果想要切换运行级别，可以利用init命令，输入 <code>init n</code> 就可以切换到运行级别n（0-6），如果系统支持图形界面（init5 级别需要安装X-WINDOWS），可以输入startx 直接进入init5 图形模式。</p>
+<p>刚刚输入init级别号，只是临时更改。如果需要修改系统默认的运行级别，可以用VI编辑 /etc/inittab 文件设置。如下图 default 后面的数字就是默认的运行级别，改好之后，重启Linux系统之后生效。</p>
+<p><img src="/pictures/Linux命令面试问答-修改系统默认运行级别.jpg" alt="/etc/inittab文件"></p>
+<h4 id="问2：如何查看Linux的默认网关？"><a href="#问2：如何查看Linux的默认网关？" class="headerlink" title="问2：如何查看Linux的默认网关？"></a>问2：如何查看Linux的默认网关？</h4><p>答：用<code>route -n</code> 或 <code>netstat -nr</code>命令，我们可以查看默认网关，除了默认网关信息，这两个命令还可以显示当前的路由表。</p>
+<h4 id="问3：cpio-命令是什么？"><a href="#问3：cpio-命令是什么？" class="headerlink" title="问3：cpio 命令是什么？"></a>问3：cpio 命令是什么？</h4><p>答：cpio命令是通过重定向的方式将文件进行打包备份，还原恢复的工具，它可以解压以“.cpio”或者“.tar”结尾的文件。</p>
+<p>详细请查看<a href="http://liubigbin.github.io/2016/02/28/cpio%E5%91%BD%E4%BB%A4%E8%AF%A6%E8%A7%A3/">这里！</a></p>
+<h3 id="问4：patch命令是什么，如何使用？"><a href="#问4：patch命令是什么，如何使用？" class="headerlink" title="问4：patch命令是什么，如何使用？"></a>问4：patch命令是什么，如何使用？</h3><p>答：顾名思义，patch命令用来用来将补丁写进文本文件里面。patch命令通常是接受diff的输出，并把文件的旧版本转换为新版本。</p>
+<p>举个例子：</p>
+<figure class="highlight vala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor"># diff -Naur old_file new _file &gt; diff_file</span></span><br></pre></td></tr></table></figure>
+<p>旧文件和新文件要么都是单个的文件要么就是包含文件的目录，-r参数支持目录树递归。一旦diff文件创建好，我们就可以在旧文件上打上补丁，把他变成新文件：</p>
+<figure class="highlight vala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor"># patch &lt; diff_file</span></span><br></pre></td></tr></table></figure>
+<h3 id="问题5：如何识别Linux系统中指定文件（-etc-fstab）的关联包（即查询一个已经安装的文件属于哪个软件包）？"><a href="#问题5：如何识别Linux系统中指定文件（-etc-fstab）的关联包（即查询一个已经安装的文件属于哪个软件包）？" class="headerlink" title="问题5：如何识别Linux系统中指定文件（/etc/fstab）的关联包（即查询一个已经安装的文件属于哪个软件包）？"></a>问题5：如何识别Linux系统中指定文件（/etc/fstab）的关联包（即查询一个已经安装的文件属于哪个软件包）？</h3><p>答：命令<code>rmp -qf /etc/fstab</code>可以列出提供”/etc/fstab”这个文件的包。</p>
+<p>RPM是RedHat Package Manager（RedHat软件包管理工具）类似Windows里面的“添加/删除程序”</p>
+<p>rpm 执行安装包，二进制包（Binary）以及源代码包（Source）两种。二进制包可以直接安装在计算机中，而源代码包将会由RPM自动编译、安装。源代码包经常以src.rpm作为后缀名。</p>
+<p>常用命令组合：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">－ivh：安装显示安装进度<span class="comment">--install--verbose--hash</span></span><br><span class="line">－Uvh：升级软件包<span class="comment">--Update；</span></span><br><span class="line">－qpl：列出RPM软件包内的文件信息[Query Package list]；</span><br><span class="line">－qpi：列出RPM软件包的描述信息[Query Package <span class="operator"><span class="keyword">install</span> <span class="keyword">package</span>(s)]；</span><br><span class="line">－qf：查找指定文件属于哪个RPM软件包[<span class="keyword">Query</span> <span class="keyword">File</span>]；</span><br><span class="line">－Va：校验所有的RPM软件包，查找丢失的文件[<span class="keyword">View</span> Lost]；</span><br><span class="line">－<span class="keyword">e</span>：删除包</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">rpm -q samba <span class="comment">//查询程序是否安装</span></span><br><span class="line"></span><br><span class="line">rpm -ivh  /media/cdrom/RedHat/RPMS/samba-<span class="number">3.0</span><span class="number">.10</span>-<span class="number">1.4</span>E.i386.rpm <span class="comment">//按路径安装并显示进度</span></span><br><span class="line">rpm -ivh --relocate /=/opt/gaim gaim-<span class="number">1.3</span><span class="number">.0</span>-<span class="number">1.f</span>c4.i386.rpm    <span class="comment">//指定安装目录</span></span><br><span class="line"></span><br><span class="line">rpm -ivh --test gaim-<span class="number">1.3</span><span class="number">.0</span>-<span class="number">1.f</span>c4.i386.rpm　　　 <span class="comment">//用来检查依赖关系；并不是真正的安装；</span></span><br><span class="line">rpm -Uvh --oldpackage gaim-<span class="number">1.3</span><span class="number">.0</span>-<span class="number">1.f</span>c4.i386.rpm <span class="comment">//新版本降级为旧版本</span></span><br><span class="line"></span><br><span class="line">rpm -qa | grep httpd　　　　　 ＃[搜索指定rpm包是否安装]--all搜索*httpd*</span><br><span class="line">rpm -ql httpd　　　　　　　　　＃[搜索rpm包]--<span class="built_in">list</span>所有文件安装目录</span><br><span class="line"></span><br><span class="line">rpm -qpi Linux-<span class="number">1.4</span>-<span class="number">6.</span>i368.rpm　＃[查看rpm包]--query--package--install package信息</span><br><span class="line">rpm -qpf Linux-<span class="number">1.4</span>-<span class="number">6.</span>i368.rpm　＃[查看rpm包]--file</span><br><span class="line">rpm -qpR file.rpm　　　　　　　＃[查看包]依赖关系</span><br><span class="line">rpm2cpio file.rpm |cpio -div    ＃[抽出文件]</span><br><span class="line"></span><br><span class="line">rpm -ivh file.rpm 　＃[安装新的rpm]--install--verbose--hash</span><br><span class="line">rpm -ivh</span><br><span class="line"></span><br><span class="line">rpm -Uvh file.rpm    ＃[升级一个rpm]--upgrade</span><br><span class="line">rpm -e file.rpm      ＃[删除一个rpm包]--erase</span><br></pre></td></tr></table></figure>
+<p>常用参数：</p>
+<figure class="highlight haml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">Install/Upgrade/Erase options:</span><br><span class="line"></span><br><span class="line">-<span class="ruby">i, --install                     install package(s)</span><br><span class="line"></span>-<span class="ruby">v, --verbose                     provide more detailed output</span><br><span class="line"></span>-<span class="ruby">h, --hash                        print hash marks as package installs (good with -v)</span><br><span class="line"></span>-<span class="ruby">e, --erase                       erase (uninstall) package</span><br><span class="line"></span>-<span class="ruby"><span class="constant">U</span>, --upgrade=&lt;packagefile&gt;+      upgrade package(s)</span><br><span class="line"></span>－-replacepkge                    无论软件包是否已被安装，都强行安装软件包</span><br><span class="line">-<span class="ruby">-test                            安装测试，并不实际安装</span><br><span class="line"></span>-<span class="ruby">-nodeps                          忽略软件包的依赖关系强行安装</span><br><span class="line"></span>-<span class="ruby">-force                           忽略软件包及文件的冲突</span><br><span class="line"></span></span><br><span class="line">Query options (with -q or --query):</span><br><span class="line">-<span class="ruby">a, --all                         query/verify all packages</span><br><span class="line"></span>-<span class="ruby">p, --package                     query/verify a package file</span><br><span class="line"></span>-<span class="ruby">l, --list                        list files <span class="keyword">in</span> package</span><br><span class="line"></span>-<span class="ruby">d, --docfiles                    list all documentation files</span><br><span class="line"></span>-<span class="ruby">f, --file                        query/verify package(s) owning file</span></span><br></pre></td></tr></table></figure>
+<h3 id="问题6：Linux系统中的-proc文件系统有什么用？"><a href="#问题6：Linux系统中的-proc文件系统有什么用？" class="headerlink" title="问题6：Linux系统中的/proc文件系统有什么用？"></a>问题6：Linux系统中的/proc文件系统有什么用？</h3><p>答：/proc文件系统是一个基于内存的文件系统，维护着有关于当前正在运行的内核状态信息，其中包括CPU、内存、分区划分、<br>I/O地址、直接内存访问通道和正在运行的进程。这个文件系统所代表的并不是各种实际存储信息的文件，他们指向的是内存里的信息。<br>/proc文件系统是由系统自动维护的。</p>
+<h3 id="问题7-如何在-usr目录下找出大小超过10MB的文件？"><a href="#问题7-如何在-usr目录下找出大小超过10MB的文件？" class="headerlink" title="问题7: 如何在/usr目录下找出大小超过10MB的文件？"></a>问题7: 如何在/usr目录下找出大小超过10MB的文件？</h3><p>答：<code>find /usr -size +10M</code></p>
+<h3 id="问题8：如何在-home目录下找出120天之前被修改过的文件？"><a href="#问题8：如何在-home目录下找出120天之前被修改过的文件？" class="headerlink" title="问题8：如何在/home目录下找出120天之前被修改过的文件？"></a>问题8：如何在/home目录下找出120天之前被修改过的文件？</h3><p>答：<code>find /home -mtime +120</code></p>
+<h3 id="问题9：如何在-var目录下找出90天之内未被访问过的文件？"><a href="#问题9：如何在-var目录下找出90天之内未被访问过的文件？" class="headerlink" title="问题9：如何在/var目录下找出90天之内未被访问过的文件？"></a>问题9：如何在/var目录下找出90天之内未被访问过的文件？</h3><p>答：<code>find /var \! -atime -90</code></p>
+<h3 id="问题10：在整个目录树下查找文件“core”，如果发现则无需提示，直接删除他们？"><a href="#问题10：在整个目录树下查找文件“core”，如果发现则无需提示，直接删除他们？" class="headerlink" title="问题10：在整个目录树下查找文件“core”，如果发现则无需提示，直接删除他们？"></a>问题10：在整个目录树下查找文件“core”，如果发现则无需提示，直接删除他们？</h3><p>答：<code>find / -name core -exec rm {} \;</code> , -exec  参数后面跟的是command命令，它的终止是以;为结束标志的，所以这句命令后面的分号是不可缺少的，考虑到各个系统中分号会有不同的意义，所以前面加反斜杠。</p>
+<h3 id="问题11：strings命令有什么作用？"><a href="#问题11：strings命令有什么作用？" class="headerlink" title="问题11：strings命令有什么作用？"></a>问题11：strings命令有什么作用？</h3><p>答：strings命令用来提取和显示非文本文件中的文本字符串。</p>
+<h3 id="问题12：tee过滤器有什么作用？"><a href="#问题12：tee过滤器有什么作用？" class="headerlink" title="问题12：tee过滤器有什么作用？"></a>问题12：tee过滤器有什么作用？</h3><p>答：tee过滤器用来想多个目标发送输出的内容。如果用于管道的话，他可以将输出复制一份到文件，兵复制另外一份到屏幕上（或一些其他的程序）。</p>
+<p>详细请查看<a href="http://liubigbin.github.io/2016/02/28/tee%E5%91%BD%E4%BB%A4%E8%AF%A6%E8%A7%A3/">这里</a></p>
+<h3 id="问题13：export-PS1-quot-LOGNAME-hostname-PWD-quot-这条指令是在做什么？"><a href="#问题13：export-PS1-quot-LOGNAME-hostname-PWD-quot-这条指令是在做什么？" class="headerlink" title="问题13：export PS1=&quot;$LOGNAME@hostname:\:$PWD:&quot; 这条指令是在做什么？"></a>问题13：<code>export PS1=&quot;$LOGNAME@hostname:\:$PWD:&quot;</code> 这条指令是在做什么？</h3><p>答：这条export命令会更改登录提示符来显示用户名、本机名、和当前的工作目录。</p>
+<h3 id="问题14：ll-awk-‘-print-3-“owns”-9-’这条命令是在做什么？"><a href="#问题14：ll-awk-‘-print-3-“owns”-9-’这条命令是在做什么？" class="headerlink" title="问题14：ll | awk ‘{print $3, “owns”, $9}’这条命令是在做什么？"></a>问题14：ll | awk ‘{print $3, “owns”, $9}’这条命令是在做什么？</h3><p>答：会显示这些文件的名称和他们的拥有者。</p>
+<p>详细请看<a href="http://liubigbin.github.io/2016/02/28/awk%E5%91%BD%E4%BB%A4%E8%AF%A6%E8%A7%A3/">awk命令详解</a></p>
+<h3 id="问题15：Linux中at命令有什么用？"><a href="#问题15：Linux中at命令有什么用？" class="headerlink" title="问题15：Linux中at命令有什么用？"></a>问题15：Linux中at命令有什么用？</h3><p>答：at命令用来安排一个程序在未来的做一次性执行。所以有提交的任务都会被放在/var/spool/at目录下，并且到了执行时间的时候通过atd守护进程来执行。</p>
+<p>详细请看<a href="http://liubigbin.github.io/2016/02/28/at%E5%91%BD%E4%BB%A4%E8%AF%A6%E8%A7%A3/">at命令详解</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/02/28/Linux命令面试问答/" data-id="cil6jv55i001k2sqybaowbdnr" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux命令/">Linux命令</a></li></ul>
+
     </footer>
   </div>
   
@@ -388,7 +606,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/Linux 文件权限/" data-id="cil6i0bxi0000h8qygpp0ksdt" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/28/Linux 文件权限/" data-id="cil6jv54b00002sqy5h2t2stn" class="article-share-link">Share</a>
       
       
     </footer>
@@ -506,7 +724,7 @@ sshthresh = cwnd
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/26/图解TCP-IP协议/" data-id="cil3fzubv000hgkqyghkvc1hg" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/26/图解TCP-IP协议/" data-id="cil6jv54u000l2sqyzu99immx" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TCP-IP/">TCP/IP</a></li></ul>
@@ -554,7 +772,7 @@ sshthresh = cwnd
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/26/动态规划之整数划分/" data-id="cil3fzuc4000xgkqyhhge0j8q" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/26/动态规划之整数划分/" data-id="cil6jv55400112sqyjjvdr0v1" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/动态规划/">动态规划</a></li></ul>
@@ -610,244 +828,10 @@ sshthresh = cwnd
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/26/双线程动态规划之探寻宝藏/" data-id="cil3fzubx000mgkqyc2tfylpv" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/26/双线程动态规划之探寻宝藏/" data-id="cil6jv54x000q2sqyw3518a6g" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/动态规划/">动态规划</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-双线程动态规划之传纸条" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/02/26/双线程动态规划之传纸条/" class="article-date">
-  <time datetime="2016-02-26T05:03:31.000Z" itemprop="datePublished">2016-02-26</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/算法/">算法</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/02/26/双线程动态规划之传纸条/">双线程动态规划之传纸条</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>&#160; &#160; &#160; &#160;最近在做天梯的时候，遇到了传纸条题目，一时想不出来，于是在网上百度了一下解题的方法，依然是动态规划，但是采用的是双线程的动态规划，感觉有点新鲜，于是记录了下来！<br>题目是这样子的：</p>
-<p>&#160; &#160; &#160; &#160;小渊和小轩是好朋友也是同班同学，他们在一起总有谈不完的话题。一次素质拓展活动中，班上同学安排做成一个m行n列的矩阵，而小渊和小轩被安排在矩阵对角线的两端，因此，他们就无法直接交谈了。幸运的是，他们可以通过传纸条来进行交流。纸条要经由许多同学传到对方手里，小渊坐在矩阵的左上角，坐标(1,1)，小轩坐在矩阵的右下角，坐标(m,n)。从小渊传到小轩的纸条只可以向下或者向右传递，从小轩传给小渊的纸条只可以向上或者向左传递。</p>
-<p>&#160; &#160; &#160; &#160;在活动进行中，小渊希望给小轩传递一张纸条，同时希望小轩给他回复。班里每个同学都可以帮他们传递，但只会帮他们一次，也就是说如果此人在小渊递给小轩纸条的时候帮忙，那么在小轩递给小渊的时候就不会再帮忙。反之亦然。</p>
-<p>&#160; &#160; &#160; &#160;还有一件事情需要注意，全班每个同学愿意帮忙的好感度有高有低（注意：小渊和小轩的好心程度没有定义，输入时用0表示），可以用一个0-100的自然数来表示，数越大表示越好心。小渊和小轩希望尽可能找好心程度高的同学来帮忙传纸条，即找到来回两条传递路径，使得这两条路径上同学的好心程度只和最大。现在，请你帮助小渊和小轩找到这样的两条路径。</p>
-<p>输入描述 Input Description</p>
-<p>&#160; &#160; &#160; &#160;输入的第一行有2个用空格隔开的整数m和n，表示班里有m行n列（1&lt;=m,n&lt;=50）。</p>
-<p>&#160; &#160; &#160; &#160;接下来的m行是一个m*n的矩阵，矩阵中第i行j列的整数表示坐在第i行j列的学生的好心程度。每行的n个整数之间用空格隔开。</p>
-<p>输出描述 Output Description</p>
-<p>&#160; &#160; &#160; &#160;输出共一行，包含一个整数，表示来回两条路上参与传递纸条的学生的好心程度之和的最大值。</p>
-<p>样例输入 Sample Input</p>
-<pre><code>3 3
-
-0 3 9
-
-2 8 5
-
-5 7 0
-</code></pre><p>样例输出 Sample Output</p>
-<pre><code>34
-</code></pre><h4 id="双线程DP的思想："><a href="#双线程DP的思想：" class="headerlink" title="双线程DP的思想："></a>双线程DP的思想：</h4><p>&#160; &#160; &#160; &#160;dp[k,x1,y1,x2,y2]表示第k步第一个纸条在(x1,y1)时和第二个纸条在(x2,y2)时的最优解…当然要保证x1!=x2&amp;&amp;y1!=y2 ,则它的上一步可能有四种情况：</p>
-<p><li>第一个纸条的位置在（x1, y1-1）, 第二纸条的位置为(x2, y2-1)，此时的状态为dp[k-1][x1][y1-1][x2][y2-1]</li></p>
-<p><li>第一个纸条的位置在（x1, y1-1）, 第二纸条的位置为(x2-1, y2)，此时的状态为dp[k-1][x1][y1-1][x2-1][y2]</li></p>
-<p><li>第一个纸条的位置在（x1-1, y1）, 第二纸条的位置为(x2, y2-1)，此时的状态为dp[k-1][x1-1][y1][x2][y2-1]</li></p>
-<p><li>第一个纸条的位置在（x1-1, y1）, 第二纸条的位置为(x2-1, y2)，此时的状态为dp[k-1][x1-1][y1][x2-1][y2])</li><br><br><br>状态转移方程为：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">dp[k][x1][y1][x2][y2]=max(</span><br><span class="line">                          dp[k-<span class="number">1</span>][x1][y1-<span class="number">1</span>][x2][y2-<span class="number">1</span>],</span><br><span class="line">                          dp[k-<span class="number">1</span>][x1][y1-<span class="number">1</span>][x2-<span class="number">1</span>][y2],</span><br><span class="line">                          dp[k-<span class="number">1</span>][x1-<span class="number">1</span>][y1][x2][y2-<span class="number">1</span>],</span><br><span class="line">                          dp[k-<span class="number">1</span>][x1-<span class="number">1</span>][y1][x2-<span class="number">1</span>][y2]</span><br><span class="line">                          )</span><br><span class="line">                      +<span class="built_in">map</span>[x1][y1]+<span class="built_in">map</span>[x2][y2];</span><br></pre></td></tr></table></figure>
-<p>但是上面的复杂度太高，但通过观察发现可以用三维数组来表示,因为每次只能向下或者向右。前一步（x1,y1）  向下：(x1+1，y1),  向右（x1,y1+1），前一步（x2,y2）  向下：(x2+1，y2),  向右（x2,y2+1）注意到没有？行标列标和相等！！！<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">k=x1+y1;</span><br><span class="line">k=x2+y2;</span><br></pre></td></tr></table></figure></p>
-<p>所以y1,y2就可以用k-x1,k-x2代替，顺利降为 三维；</p>
-<p>上面状态转移方程可以换为：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">dp[k][x1][x2] = max(</span><br><span class="line">                    dp[k-<span class="number">1</span>][x1][x2],</span><br><span class="line">                    dp[k-<span class="number">1</span>][x1][x2-<span class="number">1</span>],</span><br><span class="line">                    dp[k-<span class="number">1</span>][x1-<span class="number">1</span>][x2],</span><br><span class="line">                    dp[k-<span class="number">1</span>][x1-<span class="number">1</span>][x2-<span class="number">1</span>]</span><br><span class="line">                   )</span><br><span class="line">                + <span class="built_in">map</span>[i][k-i] + <span class="built_in">map</span>[j][k-j];</span><br></pre></td></tr></table></figure></p>
-<p>dp[k][x1][x2]来表示第k步第一个纸条和第二个纸条横坐标分别在x1和x2时的最优解,只需要保证x1!=x2即可;</p>
-<p>x1==x2时dp[k][x1][x2]==0…</p>
-<p>&#160; &#160; &#160; &#160;K表示map的第几条斜线  一共有m+n-1条斜线，在这个题中  第一和最后一条斜线不参与，因为两对角的好心度 定义为0；而在探寻宝藏这题中，两对角也有价值，所以需要加上两对角的值.</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">#<span class="keyword">include</span><span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span><span class="string">&lt;cstring&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span><span class="string">&lt;algorithm&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="preprocessor">#<span class="keyword">define</span> N <span class="number">52</span></span></span><br><span class="line"> <span class="keyword">int</span> dp[<span class="number">105</span>][N][N],<span class="built_in">map</span>[N][N];</span><br><span class="line"> <span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span><br><span class="line"> </span>&#123;</span><br><span class="line">	 <span class="keyword">int</span> test;</span><br><span class="line">	 <span class="built_in">cin</span>&gt;&gt;test;</span><br><span class="line">	 <span class="keyword">while</span>(test--)</span><br><span class="line">	 &#123;</span><br><span class="line">		 <span class="keyword">int</span> m,n;</span><br><span class="line">		 <span class="built_in">cin</span>&gt;&gt;m&gt;&gt;n;</span><br><span class="line">		 <span class="keyword">int</span> i,j;</span><br><span class="line">		 <span class="keyword">for</span>(i=<span class="number">1</span>;i&lt;=m;++i)</span><br><span class="line">			 <span class="keyword">for</span>(j=<span class="number">1</span>;j&lt;=n;++j)</span><br><span class="line">				 <span class="built_in">cin</span>&gt;&gt;<span class="built_in">map</span>[i][j];</span><br><span class="line"></span><br><span class="line">		 <span class="built_in">memset</span>(dp,<span class="number">0</span>,<span class="keyword">sizeof</span>(dp));</span><br><span class="line">		 <span class="keyword">int</span> all=m+n;</span><br><span class="line">		 <span class="keyword">int</span> k,t1=<span class="number">0</span>,t2=<span class="number">0</span>,ans=<span class="number">0</span>;</span><br><span class="line">		 <span class="keyword">int</span> x1,y1,x2,y2;</span><br><span class="line"></span><br><span class="line">		 <span class="comment">//dp[2][1][1]=map[1][1];</span></span><br><span class="line">		 <span class="keyword">for</span>(k=<span class="number">2</span>;k&lt;=all;++k)</span><br><span class="line">			 <span class="keyword">for</span>(x1=<span class="number">1</span>;x1&lt;=m;++x1)</span><br><span class="line">				 <span class="keyword">for</span>(x2=<span class="number">1</span>;x2&lt;=m;++x2)</span><br><span class="line">				&#123;</span><br><span class="line">					y1=k-x1;</span><br><span class="line">					y2=k-x2;</span><br><span class="line">					<span class="keyword">if</span>(y1&lt;<span class="number">0</span>||y2&lt;<span class="number">0</span>||y1&gt;n||y2&gt;n)</span><br><span class="line">						<span class="keyword">continue</span>;</span><br><span class="line">					<span class="keyword">if</span>(y1==y2)</span><br><span class="line">						<span class="keyword">continue</span>;</span><br><span class="line"></span><br><span class="line">					t1=max(dp[k-<span class="number">1</span>][x1-<span class="number">1</span>][x2],dp[k-<span class="number">1</span>][x1-<span class="number">1</span>][x2-<span class="number">1</span>]);</span><br><span class="line">					t2=max(dp[k-<span class="number">1</span>][x1][x2],dp[k-<span class="number">1</span>][x1][x2-<span class="number">1</span>]);</span><br><span class="line">					dp[k][x1][x2]=max(t1,t2)+ <span class="built_in">map</span>[x1][y1] + <span class="built_in">map</span>[x2][y2];</span><br><span class="line">				 &#125;</span><br><span class="line">		<span class="built_in">cout</span>&lt;&lt;dp[all-<span class="number">1</span>][m][m-<span class="number">1</span>]&lt;&lt;endl;</span><br><span class="line">	 &#125;</span><br><span class="line">	 <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
-<p>以上内容大部分来自别人的CSDN博客，因为觉得写的很不错，所以就记录了下来，如果想看原创，请点击<a href=" http://m.blog.csdn.net/article/details?id=24369927" target="_blank" rel="external">这里</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/26/双线程动态规划之传纸条/" data-id="cil3fzuc2000tgkqyb7937dwt" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/动态规划/">动态规划</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-通过git提交或更新代码到github" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/02/25/通过git提交或更新代码到github/" class="article-date">
-  <time datetime="2016-02-25T07:48:06.000Z" itemprop="datePublished">2016-02-25</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/日志/">日志</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/02/25/通过git提交或更新代码到github/">通过git提交或更新代码到github</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>&#160; &#160; &#160; &#160; Git是用C语言开发的分布版本控制系统。版本控制系统可以保留一个文件集合的历史记录，并能回滚文件集合到另一个状态（历史记录状态）。另一个状态可以是不同的文件，也可以是不同的文件内容。举个例子，你可以将文件集合转换到两天之前的状态，或者你可以在生产代码和实验性质的代码之间进行切换。文件集合往往被称作是“源代码”。在一个分布版本控制系统中，每个人都有一份完整的源代码（包括源代码所有的历史记录信息），而且可以对这个本地的数据进行操作。分布版本控制系统不需要一个集中式的代码仓库。</p>
-<p>&#160; &#160; &#160; &#160; 如果想要将本地的代码提交到github上，先在github中创建新的仓库，在安装了<a href="http://git-scm.com/" target="_blank" rel="external">Git</a>的情况下，先进入到代码所在的目录下，然后右键选择git bash here，打开git命令行窗口，接下来执行一下命令：</p>
-<pre><code># git 仓库初始化
-$ git init
-# 添加索引文件, 也可以在add后面添加文件名，这里会直接的将目录下的文件以及文件夹添加到索引
-$ git add .
-# 提交到本地仓库
-$ git commit -m &quot;这里是本次提交的说明&quot;
-# 添加远程仓库, 这一步会在当前目录下的.git/config文件中记录远程仓库地址
-# 该命令将对应的远程仓库命名为 origin
-$ git remote add origin https://github.com/yourname/repositoryname.git
-# 提交到远程仓库中(也可以直接使用git push，origin 和 master都是默认的参数)
-# origin 为上一条命令命名的远程仓库，master 为仓库的分支
-$ git push origin master
-</code></pre><p>&#160; &#160; &#160; &#160; 这样代码就顺利的提交到了github对应的仓库中。如果本地跟新了代码（增加、删除或是修改文件），需要同步更新到github仓库中，那么需要执行以下的命令：</p>
-<pre><code>$ git add .
-$ git commit -m &quot;提交说明&quot;
-$ git push origin master
-</code></pre><p>&#160; &#160; &#160; &#160; 如果想要更正最后提交的信息，可以使用<code>git amend</code>：</p>
-<pre><code>git commit --amend -m &quot;新的提交信息&quot;
-</code></pre><p>&#160; &#160; &#160; &#160; 每个Git仓库都是放置在.git文件夹下.这个目录包含了仓库的所有历史记录，.git/config文件包含了仓库的本地配置。命令<code>git init</code>用来建立本地git仓库，并初始化所有必要文件。改命令会生成.git文件夹和.gitignore文件，.gitignore文件用来存放git忽略特定的文件或是文件夹的配置，这个文件可以存在于不同的文件夹中，可以包含不同的文件匹配模式。为了让Git忽略bin文件夹，在主目录下放置.gitignore文件，其中内容为bin。同时Git也提供了全局的配置，core.excludesfile</p>
-<p>&#160; &#160; &#160; &#160; Git会忽略空的文件夹。如果你想版本控制包括空文件夹，根据惯例会在空文件夹下放置.gitkeep文件。其实对文件名没有特定的要求。一旦一个空文件夹下有文件后，这个文件夹就会在版本控制范围内。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/25/通过git提交或更新代码到github/" data-id="cil3fzub60003gkqylezzfno3" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/随记/">随记</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-爬取leetcode所有accepted算法题的代码" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/02/24/爬取leetcode所有accepted算法题的代码/" class="article-date">
-  <time datetime="2016-02-24T13:24:24.000Z" itemprop="datePublished">2016-02-24</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/日志/">日志</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/02/24/爬取leetcode所有accepted算法题的代码/">爬取leetcode所有accepted算法题的代码</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>&#160; &#160; &#160; &#160; 最近刷完了leetcode的两百多道算法题，由于自己在提交代码的时候在代码中有很多的注释，用来说明算法的解答思路，所以想要得到accepted问题的提交代码，方便自己日后可以查看，于是想到了将leetcode中自己已经accepted的算法代码给爬取下来。看了leetcode的算法问题主页面，决定根据主页面中的tag标签来爬去数据，顺便根据标签将算法问题分类。分析了每个tag下的问题链接列表以及每个问题所对应的submission detail链接后，就开始编写程序进行爬取。程序的爬取流程如下：<br>&#160; &#160; &#160; &#160; 首先爬取算法主页面的tag信息，得到leetcode目前所有算法的标签，每一个标签表示为一个文件夹，文件夹里可以用来存储该标签所对应的算法题的提交代码。</p>
-<p>&#160; &#160; &#160; &#160;接下来遍历所有的标签文件夹，根据leetcode中的链接得到每个标签下的所有问题的submission detail链接，链接信息存在对应标签文件夹里面的questionurl.txt文件里面。</p>
-<p>&#160; &#160; &#160; &#160;最后根据questionurl.txt文件里面的问题提交代码链接，获取所提交的代码。</p>
-<p>&#160; &#160; &#160; &#160; 至此得到自己所提交的accepted算法代码。</p>
-<p>爬虫代码可以在<a href="https://github.com/LiuBigbin/Crawler.leetcode" target="_blank" rel="external">leetcode accepted 算法提交代码爬取程序</a>获取</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/24/爬取leetcode所有accepted算法题的代码/" data-id="cil3fzubb000bgkqy1xqtqt8b" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/爬虫/">爬虫</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-爬虫绕过登陆方法" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/02/24/爬虫绕过登陆方法/" class="article-date">
-  <time datetime="2016-02-24T12:43:10.000Z" itemprop="datePublished">2016-02-24</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/日志/">日志</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/02/24/爬虫绕过登陆方法/">爬虫绕过登陆方法</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>&#160; &#160; &#160; &#160;相信很多网友在写网络爬虫的时候，会遇到需要登陆的情况，比如说在爬取新浪微博的时候，明明爬取的是某个微博的链接，然而新浪返回的却是登陆界面的数据，这样就得不到所需要的微博数据。那么要怎样才能绕过登陆界面呢？</p>
-<p>&#160; &#160; &#160; &#160;其实很简单，浏览器在访问新浪微博的时候，只需要登陆一次后面就可以不需要登陆了，访问什么微博的链接都会得到对应的数据，靠的就是浏览器的cookie，新浪会根据该cookie来判断浏览器是否已经登陆过，我们可以利用该cookie来实现绕过登陆页面。具体的步骤如下：</p>
-<p>&#160; &#160; &#160; &#160;首先通过浏览器登录到所需要爬取的网站，登陆完成后，通过浏览器的开发者模式获得浏览器与网站通讯的cookie，将其值复制下来。</p>
-<p>&#160; &#160; &#160; &#160;在程序中，可以在建立连接的时候设置请求的cookie，直接将复制下来的cookie值设置进去就可以了，然后就可以愉快的爬取数据了。以java语言为例：</p>
-<pre><code>URLConnection url_con = url.openConnection();
-url_con.setRequestProperty(&quot;Cookie&quot;, &quot;your browser&apos;s cookie value&quot;);
-</code></pre>
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/24/爬虫绕过登陆方法/" data-id="cil3fzub80007gkqyz44vga46" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/爬虫/">爬虫</a></li></ul>
 
     </footer>
   </div>
@@ -869,7 +853,7 @@ url_con.setRequestProperty(&quot;Cookie&quot;, &quot;your browser&apos;s cookie 
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">1</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">1</span></li></ul>
     </div>
   </div>
 
@@ -878,7 +862,7 @@ url_con.setRequestProperty(&quot;Cookie&quot;, &quot;your browser&apos;s cookie 
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
     </div>
   </div>
 
@@ -887,7 +871,7 @@ url_con.setRequestProperty(&quot;Cookie&quot;, &quot;your browser&apos;s cookie 
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/TCP-IP/" style="font-size: 10px;">TCP/IP</a> <a href="/tags/动态规划/" style="font-size: 20px;">动态规划</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/棋盘动态规划/" style="font-size: 15px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 15px;">爬虫</a> <a href="/tags/随记/" style="font-size: 15px;">随记</a>
+      <a href="/tags/Linux命令/" style="font-size: 20px;">Linux命令</a> <a href="/tags/TCP-IP/" style="font-size: 10px;">TCP/IP</a> <a href="/tags/动态规划/" style="font-size: 16.67px;">动态规划</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/棋盘动态规划/" style="font-size: 13.33px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 13.33px;">爬虫</a> <a href="/tags/随记/" style="font-size: 13.33px;">随记</a>
     </div>
   </div>
 
@@ -896,7 +880,7 @@ url_con.setRequestProperty(&quot;Cookie&quot;, &quot;your browser&apos;s cookie 
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">12</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">16</span></li></ul>
     </div>
   </div>
 
@@ -912,19 +896,19 @@ url_con.setRequestProperty(&quot;Cookie&quot;, &quot;your browser&apos;s cookie 
           </li>
         
           <li>
-            <a href="/2016/02/28/Linux命令面试问答/">(no title)</a>
+            <a href="/2016/02/28/at命令详解/">at命令详解</a>
           </li>
         
           <li>
-            <a href="/2016/02/28/Linux 文件权限/">(no title)</a>
+            <a href="/2016/02/28/awk命令详解/">awk命令详解</a>
           </li>
         
           <li>
-            <a href="/2016/02/26/图解TCP-IP协议/">图解TCP/IP协议</a>
+            <a href="/2016/02/28/tee命令详解/">tee命令详解</a>
           </li>
         
           <li>
-            <a href="/2016/02/26/动态规划之整数划分/">动态规划之整数划分</a>
+            <a href="/2016/02/28/cpio命令详解/">cpio命令详解</a>
           </li>
         
       </ul>

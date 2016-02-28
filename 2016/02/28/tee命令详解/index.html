@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>tee命令详解 | LiuYongbin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="tee过滤器用来想多个目标发送输出的内容。如果用于管道的话，他可以将输出复制一份到文件，兵复制另外一份到屏幕上（或一些其他的程序）。
+1ll /etc | nl | tee /temp//ll.out
+在以上例子中，从ll输出可以捕获到/temp/ll.out文件中，并且同样在屏幕上显示出来。
+tee [ -a ] [ -i ] [檔案 … ]
+参数:
+檔案 一个或多个档案，能够接收 tee-d">
+<meta property="og:type" content="article">
+<meta property="og:title" content="tee命令详解">
+<meta property="og:url" content="http://liubigbin.github.io/2016/02/28/tee命令详解/index.html">
+<meta property="og:site_name" content="LiuYongbin">
+<meta property="og:description" content="tee过滤器用来想多个目标发送输出的内容。如果用于管道的话，他可以将输出复制一份到文件，兵复制另外一份到屏幕上（或一些其他的程序）。
+1ll /etc | nl | tee /temp//ll.out
+在以上例子中，从ll输出可以捕获到/temp/ll.out文件中，并且同样在屏幕上显示出来。
+tee [ -a ] [ -i ] [檔案 … ]
+参数:
+檔案 一个或多个档案，能够接收 tee-d">
+<meta property="og:image" content="http://liubigbin.github.io/pictures/Linux命令面试问答-tee命令.png">
+<meta property="og:updated_time" content="2016-02-28T12:34:04.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="tee命令详解">
+<meta name="twitter:description" content="tee过滤器用来想多个目标发送输出的内容。如果用于管道的话，他可以将输出复制一份到文件，兵复制另外一份到屏幕上（或一些其他的程序）。
+1ll /etc | nl | tee /temp//ll.out
+在以上例子中，从ll输出可以捕获到/temp/ll.out文件中，并且同样在屏幕上显示出来。
+tee [ -a ] [ -i ] [檔案 … ]
+参数:
+檔案 一个或多个档案，能够接收 tee-d">
+  
+    <link rel="alternative" href="/atom.xml" title="LiuYongbin" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" type="text/css">
+  
+
+</head>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">LiuYongbin</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">Hey boy just do it!</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://liubigbin.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-tee命令详解" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/02/28/tee命令详解/" class="article-date">
+  <time datetime="2016-02-28T12:29:32.000Z" itemprop="datePublished">2016-02-28</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      tee命令详解
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><img src="/pictures/Linux命令面试问答-tee命令.png" alt="tee命令示意图">tee过滤器用来想多个目标发送输出的内容。如果用于管道的话，他可以将输出复制一份到文件，兵复制另外一份到屏幕上（或一些其他的程序）。</p>
+<figure class="highlight gherkin"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ll /etc |<span class="string"> nl </span>|<span class="string"> tee /temp//ll.out</span></span><br></pre></td></tr></table></figure>
+<p>在以上例子中，从ll输出可以捕获到/temp/ll.out文件中，并且同样在屏幕上显示出来。</p>
+<p>tee [ -a ] [ -i ] [檔案 … ]</p>
+<p>参数:</p>
+<p>檔案 一个或多个档案，能够接收 tee-d 的输出。</p>
+<p>Flags:</p>
+<p>-a 追加到目标文件而不是覆盖<br>-i 忽略中断。</p>
+<p>tee命令读取标准输入，把这些内容同时输出到标准输出和（多个）文件中（read from standard input and write to standard output and files. Copy standard input to each FILE, and also to standard output. If a FILE is -, copy again to standard output.）。在info tee中说道：tee命令可以重定向标准输出到多个文件（<code>tee&#39;: Redirect output to multiple files. The</code>tee’ command copies standard input to standard output and also to any files given as arguments.  This is useful when you want not only to send some data down a pipe, but also to save a copy.）。要注意的是：在使用管道线时，前一个命令的标准错误输出不会被tee读取。</p>
+<p>常用参数</p>
+<p>格式：tee</p>
+<p>只输出到标准输出，因为没有指定文件嘛。</p>
+<p>格式：tee file</p>
+<p>输出到标准输出的同时，保存到文件file中。如果文件不存在，则创建；如果已经存在，则覆盖之。（If a file being written to does not already exist, it is created. If a file being written to already exists, the data it previously<br>contained is overwritten unless the `-a’ option is used.）</p>
+<p>格式：tee -a file</p>
+<p>输出到标准输出的同时，追加到文件file中。如果文件不存在，则创建；如果已经存在，就在末尾追加内容，而不是覆盖。</p>
+<p>格式：tee -</p>
+<p>输出到标准输出两次。（A FILE of <code>-&#39; causes</code>tee’ to send another copy of input to standard output, but this is typically not that useful as the copies are interleaved.）</p>
+<p>格式：tee file1 file2 -</p>
+<p>输出到标准输出两次，同时保存到file1和file2中。</p>
+<h4 id="使用tee命令把标准错误输出也保存到文件"><a href="#使用tee命令把标准错误输出也保存到文件" class="headerlink" title="使用tee命令把标准错误输出也保存到文件"></a>使用tee命令把标准错误输出也保存到文件</h4><figure class="highlight mel"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[root<span class="variable">@web</span> ~]# <span class="keyword">ls</span> <span class="string">"*"</span></span><br><span class="line"><span class="keyword">ls</span>: <span class="variable">*:</span> 没有那个文件或目录</span><br><span class="line">[root<span class="variable">@web</span> ~]# <span class="keyword">ls</span> <span class="string">"*"</span> | tee -</span><br><span class="line"><span class="keyword">ls</span>: <span class="variable">*:</span> 没有那个文件或目录</span><br><span class="line">[root<span class="variable">@web</span> ~]# <span class="keyword">ls</span> <span class="string">"*"</span> | tee <span class="keyword">ls</span>.txt</span><br><span class="line"><span class="keyword">ls</span>: <span class="variable">*:</span> 没有那个文件或目录</span><br><span class="line">[root<span class="variable">@web</span> ~]# cat <span class="keyword">ls</span>.txt</span><br><span class="line">[root<span class="variable">@web</span> ~]# <span class="keyword">ls</span> <span class="string">"*"</span> <span class="number">2</span>&gt;&amp;<span class="number">1</span> | tee <span class="keyword">ls</span>.txt</span><br><span class="line"><span class="keyword">ls</span>: <span class="variable">*:</span> 没有那个文件或目录</span><br><span class="line">[root<span class="variable">@web</span> ~]# cat <span class="keyword">ls</span>.txt</span><br><span class="line"><span class="keyword">ls</span>: <span class="variable">*:</span> 没有那个文件或目录</span><br><span class="line">[root<span class="variable">@web</span> ~]#</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/02/28/tee命令详解/" data-id="cil6jv55600142sqyyacdhzd1" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux命令/">Linux命令</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2016/02/28/awk命令详解/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          awk命令详解
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2016/02/28/cpio命令详解/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">cpio命令详解</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Linux命令/" style="font-size: 20px;">Linux命令</a> <a href="/tags/TCP-IP/" style="font-size: 10px;">TCP/IP</a> <a href="/tags/动态规划/" style="font-size: 16.67px;">动态规划</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/棋盘动态规划/" style="font-size: 13.33px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 13.33px;">爬虫</a> <a href="/tags/随记/" style="font-size: 13.33px;">随记</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">16</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/02/28/基于用户的协同过滤算法/">基于用户的协同过滤算法</a>
+          </li>
+        
+          <li>
+            <a href="/2016/02/28/at命令详解/">at命令详解</a>
+          </li>
+        
+          <li>
+            <a href="/2016/02/28/awk命令详解/">awk命令详解</a>
+          </li>
+        
+          <li>
+            <a href="/2016/02/28/tee命令详解/">tee命令详解</a>
+          </li>
+        
+          <li>
+            <a href="/2016/02/28/cpio命令详解/">cpio命令详解</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 LiuYongbin<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js" type="text/javascript"></script>
+
+
+<script src="/js/script.js" type="text/javascript"></script>
+
+  </div>
+</body>
+</html>

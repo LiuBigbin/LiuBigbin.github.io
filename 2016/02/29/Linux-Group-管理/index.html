@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Linux Group 管理 | LiuYongbin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="关于群组的文件也有两个:/etc/group和/etc/gshadow, /etc/group文件每一行的结构为：组名、群组密码、GID、此群组支持的账号id。/etc/gshadow文件的结构为：组名、密码、群组管理员账号、该群组的所有用户账号（与/etc/group文件里面的最后一栏一样）。
+有效群组和初始群组当用户登录时，系统会读取/etc/passwd文件里面用户的信息，里面的gid此时就">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux Group 管理">
+<meta property="og:url" content="http://liubigbin.github.io/2016/02/29/Linux-Group-管理/index.html">
+<meta property="og:site_name" content="LiuYongbin">
+<meta property="og:description" content="关于群组的文件也有两个:/etc/group和/etc/gshadow, /etc/group文件每一行的结构为：组名、群组密码、GID、此群组支持的账号id。/etc/gshadow文件的结构为：组名、密码、群组管理员账号、该群组的所有用户账号（与/etc/group文件里面的最后一栏一样）。
+有效群组和初始群组当用户登录时，系统会读取/etc/passwd文件里面用户的信息，里面的gid此时就">
+<meta property="og:image" content="http://liubigbin.github.io/pictures/Linux-Group-管理-groupadd命令参数.png">
+<meta property="og:image" content="http://liubigbin.github.io/pictures/Linux-Group-管理-groupmod命令参数.png">
+<meta property="og:image" content="http://liubigbin.github.io/pictures/Linux-Group-管理-groupdel命令参数.png">
+<meta property="og:image" content="http://liubigbin.github.io/pictures/Linux-Group-管理-gpasswd命令参数1.png">
+<meta property="og:image" content="http://liubigbin.github.io/pictures/Linux-Group-管理-gpasswd命令参数2.png">
+<meta property="og:updated_time" content="2016-02-29T04:01:01.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Linux Group 管理">
+<meta name="twitter:description" content="关于群组的文件也有两个:/etc/group和/etc/gshadow, /etc/group文件每一行的结构为：组名、群组密码、GID、此群组支持的账号id。/etc/gshadow文件的结构为：组名、密码、群组管理员账号、该群组的所有用户账号（与/etc/group文件里面的最后一栏一样）。
+有效群组和初始群组当用户登录时，系统会读取/etc/passwd文件里面用户的信息，里面的gid此时就">
+  
+    <link rel="alternative" href="/atom.xml" title="LiuYongbin" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" type="text/css">
+  
+
+</head>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">LiuYongbin</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">Hey boy just do it!</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://liubigbin.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Linux-Group-管理" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/02/29/Linux-Group-管理/" class="article-date">
+  <time datetime="2016-02-29T03:43:56.000Z" itemprop="datePublished">2016-02-29</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Linux Group 管理
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>关于群组的文件也有两个:/etc/group和/etc/gshadow, /etc/group文件每一行的结构为：组名、群组密码、GID、此群组支持的账号id。/etc/gshadow文件的结构为：组名、密码、群组管理员账号、该群组的所有用户账号（与/etc/group文件里面的最后一栏一样）。</p>
+<h4 id="有效群组和初始群组"><a href="#有效群组和初始群组" class="headerlink" title="有效群组和初始群组"></a>有效群组和初始群组</h4><p>当用户登录时，系统会读取/etc/passwd文件里面用户的信息，里面的gid此时就是用户的初始群组，也是用户的有效群组，如果用户想要切换群组以及查看当前自己所能支持的群组的话，那么可以使用下面的命令：</p>
+<figure class="highlight crystal"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">查看用户当前所能支持的群组</span><br><span class="line"><span class="variable">$ </span>groups</span><br><span class="line">为用户添加支持群组</span><br><span class="line"><span class="variable">$ </span>usermod -<span class="constant">G</span> 群组名称  用户名称</span><br><span class="line">设置用户的初始化群组</span><br><span class="line"><span class="variable">$ </span>usermod -g 群组名称  用户名称</span><br><span class="line">有效群组的切换</span><br><span class="line"><span class="variable">$ </span>newgrp 群组名称</span><br></pre></td></tr></table></figure>
+<p>注意，执行newgrp命令后，用户是以另外一个shell登录的，而且新的shell赋予了用户新的有效gid，虽然用户的环境设定不会有影响，但是使用者的群组权限将会被重新计算，需要注意的是，由于取得的是一个新的shell，所以如果想要回到原来的shell，可以执行<code>exit</code>回到原来的shell！</p>
+<p>与群组管理相关的指令有groupadd、gropumod、groupdel</p>
+<h4 id="groupadd"><a href="#groupadd" class="headerlink" title="groupadd"></a>groupadd</h4><p><img src="/pictures/Linux-Group-管理-groupadd命令参数.png" alt=""></p>
+<h4 id="groupmod"><a href="#groupmod" class="headerlink" title="groupmod"></a>groupmod</h4><p><img src="/pictures/Linux-Group-管理-groupmod命令参数.png" alt=""></p>
+<h4 id="groupdel"><a href="#groupdel" class="headerlink" title="groupdel"></a>groupdel</h4><p><img src="/pictures/Linux-Group-管理-groupdel命令参数.png" alt=""></p>
+<p>为什么 mygroup 可以删除，但是 vbird1 就不能删除呢？原因很简单，『有某个账号 (/etc/passwd) 的 initial group 使用该群组！』 如果查阅一下，你会发现在 /etc/passwd 内的 vbird1 第四栏的 GID 就是 /etc/group 内的 vbird1 那个群组的 GID ，所以啰，当然无法删除～否则 vbird1 这个用户登入系统后， 就会找不到 GID ，那可是会造成很大的困扰的！那么如果硬是要删除 vbird1 这个群组呢？ 你『必须要确认 /etc/passwd 内的账号没有任何人使用该群组作为 initial group 』才行喔！所以，你可以：</p>
+<p>1：修改 vbird1 癿的 GID ，或者是：</p>
+<p>2： 初除 vbird1 这个使用者。</p>
+<h3 id="gpasswd：群组管理员功能"><a href="#gpasswd：群组管理员功能" class="headerlink" title="gpasswd：群组管理员功能"></a>gpasswd：群组管理员功能</h3><p>群组管理员可以对群增加或删除人员（只能执行这个功能）。群组管理员可以不是该群组的成员，具体执行指令如下</p>
+<p><img src="/pictures/Linux-Group-管理-gpasswd命令参数1.png" alt=""></p>
+<p><img src="/pictures/Linux-Group-管理-gpasswd命令参数2.png" alt=""></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/02/29/Linux-Group-管理/" data-id="cil8ufotn0000jgqypryvjb4m" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2016/02/29/Linux用户管理实例/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Linux用户管理实例
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2016/02/28/Linux-User-管理/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Linux User 管理</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Linux命令/" style="font-size: 20px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 17.5px;">Linux用户管理</a> <a href="/tags/TCP-IP/" style="font-size: 10px;">TCP/IP</a> <a href="/tags/动态规划/" style="font-size: 15px;">动态规划</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/棋盘动态规划/" style="font-size: 12.5px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 12.5px;">爬虫</a> <a href="/tags/随记/" style="font-size: 12.5px;">随记</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/02/29/磁盘的分割、格式化、检验与挂载/">磁盘的分割、格式化、检验与挂载</a>
+          </li>
+        
+          <li>
+            <a href="/2016/02/29/Linux文件系统之df，du以及ln命令/">Linux文件系统之df，du以及ln命令</a>
+          </li>
+        
+          <li>
+            <a href="/2016/02/29/Linux磁盘概念/">Linux磁盘概念</a>
+          </li>
+        
+          <li>
+            <a href="/2016/02/29/Linux-User、Group切换/">Linux User、Group切换</a>
+          </li>
+        
+          <li>
+            <a href="/2016/02/29/Linux用户管理实例/">Linux用户管理实例</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 LiuYongbin<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js" type="text/javascript"></script>
+
+
+<script src="/js/script.js" type="text/javascript"></script>
+
+  </div>
+</body>
+</html>

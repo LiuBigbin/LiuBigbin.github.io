@@ -20,7 +20,7 @@
 2 多用户模式。和运行级别3一样，只是网络文件系统（NFS）服务没被启动   
 3">
 <meta property="og:image" content="http://liubigbin.github.io/pictures/Linux命令面试问答-修改系统默认运行级别.jpg">
-<meta property="og:updated_time" content="2016-02-28T12:50:30.000Z">
+<meta property="og:updated_time" content="2016-02-28T12:55:43.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Linux命令面试问答">
 <meta name="twitter:description" content="问1：如何查看当前的Linux服务器运行级别？答：who -r 和 runlevel 命令可以用来查看当前的Linux服务器的运行级别。Linux的运行级别有7种：
@@ -116,7 +116,7 @@
 <p><img src="/pictures/Linux命令面试问答-修改系统默认运行级别.jpg" alt="/etc/inittab文件"></p>
 <h4 id="问2：如何查看Linux的默认网关？"><a href="#问2：如何查看Linux的默认网关？" class="headerlink" title="问2：如何查看Linux的默认网关？"></a>问2：如何查看Linux的默认网关？</h4><p>答：用<code>route -n</code> 或 <code>netstat -nr</code>命令，我们可以查看默认网关，除了默认网关信息，这两个命令还可以显示当前的路由表。</p>
 <h4 id="问3：cpio-命令是什么？"><a href="#问3：cpio-命令是什么？" class="headerlink" title="问3：cpio 命令是什么？"></a>问3：cpio 命令是什么？</h4><p>答：cpio命令是通过重定向的方式将文件进行打包备份，还原恢复的工具，它可以解压以“.cpio”或者“.tar”结尾的文件。</p>
-<p>详细请查看<a href="http://liubigbin.github.io/2016/02/28/cpio%E5%91%BD%E4%BB%A4%E8%AF%A6%E8%A7%A3/">这里！</a></p>
+<p>详细请查看<a href="http://liubigbin.github.io/2016/02/28/cpio%E5%91%BD%E4%BB%A4%E8%AF%A6%E8%A7%A3/">cpio命令详解</a></p>
 <h3 id="问4：patch命令是什么，如何使用？"><a href="#问4：patch命令是什么，如何使用？" class="headerlink" title="问4：patch命令是什么，如何使用？"></a>问4：patch命令是什么，如何使用？</h3><p>答：顾名思义，patch命令用来用来将补丁写进文本文件里面。patch命令通常是接受diff的输出，并把文件的旧版本转换为新版本。</p>
 <p>举个例子：</p>
 <figure class="highlight vala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor"># diff -Naur old_file new _file &gt; diff_file</span></span><br></pre></td></tr></table></figure>
@@ -137,7 +137,7 @@
 <h3 id="问题10：在整个目录树下查找文件“core”，如果发现则无需提示，直接删除他们？"><a href="#问题10：在整个目录树下查找文件“core”，如果发现则无需提示，直接删除他们？" class="headerlink" title="问题10：在整个目录树下查找文件“core”，如果发现则无需提示，直接删除他们？"></a>问题10：在整个目录树下查找文件“core”，如果发现则无需提示，直接删除他们？</h3><p>答：<code>find / -name core -exec rm {} \;</code> , -exec  参数后面跟的是command命令，它的终止是以;为结束标志的，所以这句命令后面的分号是不可缺少的，考虑到各个系统中分号会有不同的意义，所以前面加反斜杠。</p>
 <h3 id="问题11：strings命令有什么作用？"><a href="#问题11：strings命令有什么作用？" class="headerlink" title="问题11：strings命令有什么作用？"></a>问题11：strings命令有什么作用？</h3><p>答：strings命令用来提取和显示非文本文件中的文本字符串。</p>
 <h3 id="问题12：tee过滤器有什么作用？"><a href="#问题12：tee过滤器有什么作用？" class="headerlink" title="问题12：tee过滤器有什么作用？"></a>问题12：tee过滤器有什么作用？</h3><p>答：tee过滤器用来想多个目标发送输出的内容。如果用于管道的话，他可以将输出复制一份到文件，兵复制另外一份到屏幕上（或一些其他的程序）。</p>
-<p>详细请查看<a href="http://liubigbin.github.io/2016/02/28/tee%E5%91%BD%E4%BB%A4%E8%AF%A6%E8%A7%A3/">这里</a></p>
+<p>详细请查看<a href="http://liubigbin.github.io/2016/02/28/tee%E5%91%BD%E4%BB%A4%E8%AF%A6%E8%A7%A3/">tee命令详解</a></p>
 <h3 id="问题13：export-PS1-quot-LOGNAME-hostname-PWD-quot-这条指令是在做什么？"><a href="#问题13：export-PS1-quot-LOGNAME-hostname-PWD-quot-这条指令是在做什么？" class="headerlink" title="问题13：export PS1=&quot;$LOGNAME@hostname:\:$PWD:&quot; 这条指令是在做什么？"></a>问题13：<code>export PS1=&quot;$LOGNAME@hostname:\:$PWD:&quot;</code> 这条指令是在做什么？</h3><p>答：这条export命令会更改登录提示符来显示用户名、本机名、和当前的工作目录。</p>
 <h3 id="问题14：ll-awk-‘-print-3-“owns”-9-’这条命令是在做什么？"><a href="#问题14：ll-awk-‘-print-3-“owns”-9-’这条命令是在做什么？" class="headerlink" title="问题14：ll | awk ‘{print $3, “owns”, $9}’这条命令是在做什么？"></a>问题14：ll | awk ‘{print $3, “owns”, $9}’这条命令是在做什么？</h3><p>答：会显示这些文件的名称和他们的拥有者。</p>
 <p>详细请看<a href="http://liubigbin.github.io/2016/02/28/awk%E5%91%BD%E4%BB%A4%E8%AF%A6%E8%A7%A3/">awk命令详解</a></p>
@@ -147,7 +147,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/Linux命令面试问答/" data-id="cil6jv55i001k2sqybaowbdnr" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/28/Linux命令面试问答/" data-id="cil8ufov4001wjgqys7d9fqjf" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux命令/">Linux命令</a></li></ul>
@@ -168,9 +168,9 @@
     </a>
   
   
-    <a href="/2016/02/28/Linux 文件权限/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/2016/02/26/图解TCP-IP协议/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title"></div>
+      <div class="article-nav-title">图解TCP/IP协议</div>
     </a>
   
 </nav>
@@ -186,7 +186,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">1</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">1</span></li></ul>
     </div>
   </div>
 
@@ -195,7 +195,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
     </div>
   </div>
 
@@ -204,7 +204,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/Linux命令/" style="font-size: 20px;">Linux命令</a> <a href="/tags/TCP-IP/" style="font-size: 10px;">TCP/IP</a> <a href="/tags/动态规划/" style="font-size: 16.67px;">动态规划</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/棋盘动态规划/" style="font-size: 13.33px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 13.33px;">爬虫</a> <a href="/tags/随记/" style="font-size: 13.33px;">随记</a>
+      <a href="/tags/Linux命令/" style="font-size: 20px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 17.5px;">Linux用户管理</a> <a href="/tags/TCP-IP/" style="font-size: 10px;">TCP/IP</a> <a href="/tags/动态规划/" style="font-size: 15px;">动态规划</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/棋盘动态规划/" style="font-size: 12.5px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 12.5px;">爬虫</a> <a href="/tags/随记/" style="font-size: 12.5px;">随记</a>
     </div>
   </div>
 
@@ -213,7 +213,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">16</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
     </div>
   </div>
 
@@ -225,23 +225,23 @@
       <ul>
         
           <li>
-            <a href="/2016/02/28/基于用户的协同过滤算法/">基于用户的协同过滤算法</a>
+            <a href="/2016/02/29/磁盘的分割、格式化、检验与挂载/">磁盘的分割、格式化、检验与挂载</a>
           </li>
         
           <li>
-            <a href="/2016/02/28/at命令详解/">at命令详解</a>
+            <a href="/2016/02/29/Linux文件系统之df，du以及ln命令/">Linux文件系统之df，du以及ln命令</a>
           </li>
         
           <li>
-            <a href="/2016/02/28/awk命令详解/">awk命令详解</a>
+            <a href="/2016/02/29/Linux磁盘概念/">Linux磁盘概念</a>
           </li>
         
           <li>
-            <a href="/2016/02/28/tee命令详解/">tee命令详解</a>
+            <a href="/2016/02/29/Linux-User、Group切换/">Linux User、Group切换</a>
           </li>
         
           <li>
-            <a href="/2016/02/28/cpio命令详解/">cpio命令详解</a>
+            <a href="/2016/02/29/Linux用户管理实例/">Linux用户管理实例</a>
           </li>
         
       </ul>

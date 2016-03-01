@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Linux文件系统之df，du以及ln命令 | LiuYongbin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="df 命令用来查看Linux文件系统的整体磁盘使用量（展示的单位为分区，即分区的磁盘使用量）123456789[root@www ~]# df [-ahikHTm] [目录或文件名]选项与参数：-a ：列出所有的文件系统，包括系统特有的 /proc 等文件系统；-k ：以 KBytes 的容量显示各文件系统；-m ：以 MBytes 的容量显示各文件系统；-h ：以人们较易阅读的 GBytes,">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux文件系统之df，du以及ln命令">
+<meta property="og:url" content="http://liubigbin.github.io/2016/02/29/Linux文件系统之df，du以及ln命令/index.html">
+<meta property="og:site_name" content="LiuYongbin">
+<meta property="og:description" content="df 命令用来查看Linux文件系统的整体磁盘使用量（展示的单位为分区，即分区的磁盘使用量）123456789[root@www ~]# df [-ahikHTm] [目录或文件名]选项与参数：-a ：列出所有的文件系统，包括系统特有的 /proc 等文件系统；-k ：以 KBytes 的容量显示各文件系统；-m ：以 MBytes 的容量显示各文件系统；-h ：以人们较易阅读的 GBytes,">
+<meta property="og:updated_time" content="2016-02-29T14:44:54.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Linux文件系统之df，du以及ln命令">
+<meta name="twitter:description" content="df 命令用来查看Linux文件系统的整体磁盘使用量（展示的单位为分区，即分区的磁盘使用量）123456789[root@www ~]# df [-ahikHTm] [目录或文件名]选项与参数：-a ：列出所有的文件系统，包括系统特有的 /proc 等文件系统；-k ：以 KBytes 的容量显示各文件系统；-m ：以 MBytes 的容量显示各文件系统；-h ：以人们较易阅读的 GBytes,">
+  
+    <link rel="alternative" href="/atom.xml" title="LiuYongbin" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" type="text/css">
+  
+
+</head>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">LiuYongbin</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">Hey boy just do it!</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://liubigbin.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Linux文件系统之df，du以及ln命令" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/02/29/Linux文件系统之df，du以及ln命令/" class="article-date">
+  <time datetime="2016-02-29T13:19:20.000Z" itemprop="datePublished">2016-02-29</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Linux文件系统之df，du以及ln命令
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="df-命令用来查看Linux文件系统的整体磁盘使用量（展示的单位为分区，即分区的磁盘使用量）"><a href="#df-命令用来查看Linux文件系统的整体磁盘使用量（展示的单位为分区，即分区的磁盘使用量）" class="headerlink" title="df 命令用来查看Linux文件系统的整体磁盘使用量（展示的单位为分区，即分区的磁盘使用量）"></a>df 命令用来查看Linux文件系统的整体磁盘使用量（展示的单位为分区，即分区的磁盘使用量）</h3><figure class="highlight haml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]# df [-ahikHTm] [目录或文件名]</span><br><span class="line">选项与参数：</span><br><span class="line">-<span class="ruby">a ：列出所有的文件系统，包括系统特有的 /proc 等文件系统；</span><br><span class="line"></span>-<span class="ruby">k ：以 <span class="constant">KBytes</span> 的容量显示各文件系统；</span><br><span class="line"></span>-<span class="ruby">m ：以 <span class="constant">MBytes</span> 的容量显示各文件系统；</span><br><span class="line"></span>-<span class="ruby">h ：以人们较易阅读的 <span class="constant">GBytes</span>, <span class="constant">MBytes</span>, <span class="constant">KBytes</span> 等格式自行显示；</span><br><span class="line"></span>-<span class="ruby"><span class="constant">H</span> ：以 <span class="constant">M</span>=<span class="number">1000</span>K 取代 <span class="constant">M</span>=<span class="number">1024</span>K 的进位方式；</span><br><span class="line"></span>-<span class="ruby"><span class="constant">T</span> ：连同该 partition 的 filesystem 名称 (例如 ext3) 也列出；</span><br><span class="line"></span>-<span class="ruby">i ：不用硬盘容量，而以 inode的数量来显示</span></span><br></pre></td></tr></table></figure>
+<p>以下列出几个例子：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line">范例一：将系统内所有的 filesystem 列出来！</span><br><span class="line">[root@www ~]<span class="preprocessor"># df</span></span><br><span class="line">Filesystem <span class="number">1</span>K-blocks Used Available Use% Mounted on</span><br><span class="line">/dev/hdc2 <span class="number">9920624</span> <span class="number">3823112</span> <span class="number">5585444</span> <span class="number">41</span>% /</span><br><span class="line">/dev/hdc3 <span class="number">4956316</span> <span class="number">141376</span> <span class="number">4559108</span> <span class="number">4</span>% /home</span><br><span class="line">/dev/hdc1 <span class="number">101086</span> <span class="number">11126</span> <span class="number">84741</span> <span class="number">12</span>% /boot</span><br><span class="line">tmpfs <span class="number">371332</span> <span class="number">0</span> <span class="number">371332</span> <span class="number">0</span>% /dev/shm</span><br><span class="line"><span class="preprocessor"># 在 Linux 底下如果 df 没有加任何选顷，那么默认会将系统内所有的</span></span><br><span class="line"><span class="preprocessor"># (不含特殊内存内的文件系统与 swap) 都以 <span class="number">1</span> Kbytes 癿容量来列出来！</span></span><br><span class="line"><span class="preprocessor"># 至于那个 /dev/shm 是与内存有关的挂载，先不要理他！</span></span><br><span class="line"></span><br><span class="line">范例二：将容量结果以易读的容量格式显示出来</span><br><span class="line">[root@www ~]<span class="preprocessor"># df -h</span></span><br><span class="line">Filesystem Size Used Avail Use% Mounted on</span><br><span class="line">/dev/hdc2 <span class="number">9.5</span>G <span class="number">3.7</span>G <span class="number">5.4</span>G <span class="number">41</span>% /</span><br><span class="line">/dev/hdc3 <span class="number">4.8</span>G <span class="number">139</span>M <span class="number">4.4</span>G <span class="number">4</span>% /home</span><br><span class="line">/dev/hdc1 <span class="number">99</span>M <span class="number">11</span>M <span class="number">83</span>M <span class="number">12</span>% /boot</span><br><span class="line">tmpfs <span class="number">363</span>M <span class="number">0</span> <span class="number">363</span>M <span class="number">0</span>% /dev/shm</span><br><span class="line"><span class="preprocessor"># 不同与范例一，这里会以 G/M 等容量格式显示出来，比较容易看啦！</span></span><br><span class="line"></span><br><span class="line">范例三：将系统内的所有特殊文件格式及名称都列出来</span><br><span class="line">[root@www ~]<span class="preprocessor"># df -aT</span></span><br><span class="line">Filesystem Type <span class="number">1</span>K-blocks Used Available Use% Mounted on</span><br><span class="line">/dev/hdc2 ext3 <span class="number">9920624</span> <span class="number">3823112</span> <span class="number">5585444</span> <span class="number">41</span>% /</span><br><span class="line">proc proc <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> - /proc</span><br><span class="line">sysfs sysfs <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> - /sys</span><br><span class="line">devpts devpts <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> - /dev/pts</span><br><span class="line">/dev/hdc3 ext3 <span class="number">4956316</span> <span class="number">141376</span> <span class="number">4559108</span> <span class="number">4</span>% /home</span><br><span class="line">/dev/hdc1 ext3 <span class="number">101086</span> <span class="number">11126</span> <span class="number">84741</span> <span class="number">12</span>% /boot</span><br><span class="line">tmpfs tmpfs <span class="number">371332</span> <span class="number">0</span> <span class="number">371332</span> <span class="number">0</span>% /dev/shm</span><br><span class="line">none binfmt_misc <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> - /proc/sys/fs/binfmt_misc</span><br><span class="line">sunrpc rpc_pipefs <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> - /var/lib/nfs/rpc_pipefs</span><br><span class="line"><span class="preprocessor"># 系统里面其实还有很多特殊的文件系统存在。那些比较特殊的文件系统几乎</span></span><br><span class="line"><span class="preprocessor"># 都是在内存当中，例如 /proc 这个挂载点。因此，这些特殊的文件系统</span></span><br><span class="line"><span class="preprocessor"># 都不会占据硬盘空间！</span></span><br><span class="line"></span><br><span class="line">范例四：将 /etc 底下的可用磁盘容量以易读容量格式显示</span><br><span class="line">[root@www ~]<span class="preprocessor"># df -h /etc</span></span><br><span class="line">Filesystem Size Used Avail Use% Mounted on</span><br><span class="line">/dev/hdc2 <span class="number">9.5</span>G <span class="number">3.7</span>G <span class="number">5.4</span>G <span class="number">41</span>% /</span><br><span class="line"><span class="preprocessor"># 在 df 后面加上目录或者是档案时， df 会自动的分析该目录或档案所在的 partition ，</span></span><br><span class="line"><span class="preprocessor"># 并将该 partition 容量显示出来， 所以，您就可以知道某个目录底下还有多少容量可以使用了！</span></span><br><span class="line"></span><br><span class="line">范例五：将目前各个 partition 当中可用的 inode 数量列出</span><br><span class="line">[root@www ~]<span class="preprocessor"># df -ih</span></span><br><span class="line">Filesystem Inodes IUsed IFree IUse% Mounted on</span><br><span class="line">/dev/hdc2 <span class="number">2.5</span>M <span class="number">147</span>K <span class="number">2.3</span>M <span class="number">6</span>% /</span><br><span class="line">/dev/hdc3 <span class="number">1.3</span>M <span class="number">46</span> <span class="number">1.3</span>M <span class="number">1</span>% /home</span><br><span class="line">/dev/hdc1 <span class="number">26</span>K <span class="number">34</span> <span class="number">26</span>K <span class="number">1</span>% /boot</span><br><span class="line">tmpfs <span class="number">91</span>K <span class="number">1</span> <span class="number">91</span>K <span class="number">1</span>% /dev/shm</span><br><span class="line"><span class="preprocessor"># 这个范例则主要列出可用的 inode 剩余量不总容量。分析一下与范例一的关系，</span></span><br><span class="line"><span class="preprocessor"># 你可以清楚的发现到，通常 inode 的数量剩余都比 block 还要多。</span></span><br></pre></td></tr></table></figure>
+<p>由于 df 主要读取的数据几乎都是针对一整个文件系统，因此读取的范围主要是在 Superblock 内的信息， 所以这个指令显示结果的速度非帯的快速。</p>
+<h3 id="du：评估文件系统癿磁盘使用量-帯用在推估目彔所占容量"><a href="#du：评估文件系统癿磁盘使用量-帯用在推估目彔所占容量" class="headerlink" title="du：评估文件系统癿磁盘使用量(帯用在推估目彔所占容量)"></a>du：评估文件系统癿磁盘使用量(帯用在推估目彔所占容量)</h3><figure class="highlight haml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]# du [-ahskm] 档案或目录名称</span><br><span class="line">选项与参数：</span><br><span class="line">-<span class="ruby">a ：列出所有的档案与目录容量，因为默认仅统计目录底下的子目录容量而已。</span><br><span class="line"></span>-<span class="ruby">h ：以人们较易读的容量格式 (<span class="constant">G</span>/<span class="constant">M</span>) 显示；</span><br><span class="line"></span>-<span class="ruby">s ：列出总量而已，而不列出每个各别的目录占用容量；（即目录占用量）</span><br><span class="line"></span>-<span class="ruby"><span class="constant">S</span> ：不包括子目录下的总计，与 -s 有点差别。</span><br><span class="line"></span>-<span class="ruby">k ：以 <span class="constant">KBytes</span> 列出容量显示；</span><br><span class="line"></span>-<span class="ruby">m ：以 <span class="constant">MBytes</span> 列出容量显示；</span></span><br></pre></td></tr></table></figure>
+<p>使用例子如下：</p>
+<figure class="highlight nimrod"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]<span class="comment"># du [-ahskm] 档案或目录名称</span></span><br><span class="line">选项与参数：</span><br><span class="line">-a ：列出所有的档案与目录容量，因为默认仅统计目录底下的子目录占用量而已。</span><br><span class="line">-h ：以人们较易读的容量格式 (G/M) 显示；</span><br><span class="line">-s ：列出总量而已，而不列出每个各别的目录占用容量；</span><br><span class="line">-S ：不包括子目录下的总计，与 -s 有点差别。</span><br><span class="line">-k ：以 <span class="type">KBytes</span> 列出容量显示；</span><br><span class="line">-m ：以 <span class="type">MBytes</span> 列出容量显示；</span><br><span class="line"></span><br><span class="line">范例一：列出目前目录下的所有档案容量</span><br><span class="line">[root@www ~]<span class="comment"># du</span></span><br><span class="line"><span class="number">8</span> ./test4 &lt;==每个目录都会列出来</span><br><span class="line"><span class="number">8</span> ./test2</span><br><span class="line">....中间省略....</span><br><span class="line"><span class="number">12</span> ./.gconfd &lt;==包括隐藏文件的目录</span><br><span class="line"><span class="number">220</span> . &lt;==这个目录(.)所占用的总量</span><br><span class="line"><span class="comment"># 直接输入 du 没有加任何选项时，则 du 会分析『目前所在目录』 的档案不目彔所占用癿硬盘空间。</span></span><br><span class="line"><span class="comment"># 但是，实际显示时，仅会显示目录容量(不显示档案)，</span></span><br><span class="line"><span class="comment"># 因此 . 目录有很多档案没有被列出来，所以全部的目录相加不会等于 .的容量！</span></span><br><span class="line"><span class="comment"># 此外，输出的数值数据为 1K 大小的容量单位。</span></span><br><span class="line"></span><br><span class="line">范例二：同范例一，但是将档案的容量也列出来</span><br><span class="line">[root@www ~]<span class="comment"># du -a</span></span><br><span class="line"><span class="number">12</span> ./install.log.syslog &lt;==有档案的列表了</span><br><span class="line"><span class="number">8</span> ./.bash_logout</span><br><span class="line"><span class="number">8</span> ./test4</span><br><span class="line"><span class="number">8</span> ./test2</span><br><span class="line">....中间省略....</span><br><span class="line"><span class="number">12</span> ./.gconfd</span><br><span class="line"><span class="number">220</span> .</span><br><span class="line"></span><br><span class="line">范例三：检查根目录底下每个目录所占用的容量</span><br><span class="line">[root@www ~]<span class="comment"># du -sm /*</span></span><br><span class="line"><span class="number">7</span> /bin <span class="number">6</span> /boot</span><br><span class="line">.....中间省略....</span><br><span class="line"><span class="number">0</span> /<span class="keyword">proc</span></span><br><span class="line">.....中间省略....</span><br><span class="line"><span class="number">1</span> /tmp <span class="number">3859</span> /usr &lt;==系统初期最大就是他了啦！</span><br><span class="line"><span class="number">77</span> /<span class="keyword">var</span></span><br><span class="line"><span class="comment"># 这是个很常被使用的功能～利用通配符 * 来代表每个目录，</span></span><br><span class="line"><span class="comment"># 如果想要检查某个目录下，那个次目录占用最大的容量，可以用这个方法找出来</span></span><br><span class="line"><span class="comment"># 值得注意的是，如果刚刚安装好 Linux 时，那么整个系统容量最大的应该是 /usr</span></span><br><span class="line"><span class="comment"># 而 /proc 虽然有列出容量，但是那个容量是在内存中，不占硬盘空间。</span></span><br></pre></td></tr></table></figure>
+<h3 id="实体链接与符号链接-ln"><a href="#实体链接与符号链接-ln" class="headerlink" title="实体链接与符号链接 ln"></a>实体链接与符号链接 ln</h3><h4 id="实体链接（硬式链接）"><a href="#实体链接（硬式链接）" class="headerlink" title="实体链接（硬式链接）"></a>实体链接（硬式链接）</h4><p>实体链接，只能链接文件，不能链接目录，不能跨 Filesystem，创建实体链接时，只是在某个目录下的block多写入一条关联数据而已，不会增加inode也不会耗用block的数量。任一个档案删除了，另外一个档案都可以将数据完整的读取出来。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]<span class="preprocessor"># ln /etc/crontab /root/crontab &lt;==建立实体链接的指令</span></span><br><span class="line">[root@www ~]<span class="preprocessor"># ll -i /etc/crontab /root/crontab</span></span><br><span class="line"><span class="number">1912701</span> -rw-r--r-- <span class="number">2</span> root root <span class="number">255</span> Jan <span class="number">6</span> <span class="number">2007</span> /etc/crontab</span><br><span class="line"><span class="number">1912701</span> -rw-r--r-- <span class="number">2</span> root root <span class="number">255</span> Jan <span class="number">6</span> <span class="number">2007</span> /root/crontab</span><br></pre></td></tr></table></figure>
+<h4 id="Symbolic-Link-符号链接，亦即是忚捷方式"><a href="#Symbolic-Link-符号链接，亦即是忚捷方式" class="headerlink" title="Symbolic Link (符号链接，亦即是忚捷方式)"></a>Symbolic Link (符号链接，亦即是忚捷方式)</h4><p>基本上， Symbolic link 就是在建立一个独立的档案，而这个档案会将数据的读取指向他 link 的那个档案的档名！由于只是利用档案来做为指向的动作，所以，当来源档被删除之后，symbolic link 的档案会『开不了』， 会一直说『无法开起某档案！』。实际上就是找不到原始『档名』而已。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]<span class="preprocessor"># ln -s /etc/crontab crontab2</span></span><br><span class="line">[root@www ~]<span class="preprocessor"># ll -i /etc/crontab /root/crontab2</span></span><br><span class="line"><span class="number">1912701</span> -rw-r--r-- <span class="number">2</span> root root <span class="number">255</span> Jan <span class="number">6</span> <span class="number">2007</span> /etc/crontab</span><br><span class="line"><span class="number">654687</span> lrwxrwxrwx <span class="number">1</span> root root <span class="number">12</span> Oct <span class="number">22</span> <span class="number">13</span>:<span class="number">58</span> /root/crontab2 -&gt; /etc/crontab</span><br><span class="line"><span class="preprocessor"># /etc/crontab 也就是/root/crontab2文件的内容，所以大小为<span class="number">12</span>bytes</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#创建目录链接</span></span><br><span class="line">[root@www ~]<span class="preprocessor"># ln -s /bin /root/bin</span></span><br><span class="line"><span class="preprocessor">#当进入/root/bin目录时，实际上进入的是/bin目录，对其所有的操作都会相当于直接在/bin目录下操作</span></span><br></pre></td></tr></table></figure>
+<p>看起来硬链接会比符号链接安全的多，因为不会因为被链接文件被删除了而导致链接文件打不开，但是由于硬链接的限制比较多，不能链接目录，不能跨文件系统，所以还是符号链接比较受欢迎！</p>
+<p>ln指令参数：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]<span class="comment"># ln [-sf] 来源文件 目标文件</span></span><br><span class="line">选项与参数：</span><br><span class="line"><span class="operator">-s</span> ：如果不加任何参数就进行连结，那就是hard link，至于 <span class="operator">-s</span> 就是symbolic link</span><br><span class="line"><span class="operator">-f</span> ：如果 目标文件 存在时，就主动将目标文件直接移除后再建立！</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/02/29/Linux文件系统之df，du以及ln命令/" data-id="cil8ufov3001ujgqy8v2wywmm" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2016/02/29/磁盘的分割、格式化、检验与挂载/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          磁盘的分割、格式化、检验与挂载
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2016/02/29/Linux磁盘概念/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Linux磁盘概念</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Linux命令/" style="font-size: 20px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 17.5px;">Linux用户管理</a> <a href="/tags/TCP-IP/" style="font-size: 10px;">TCP/IP</a> <a href="/tags/动态规划/" style="font-size: 15px;">动态规划</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/棋盘动态规划/" style="font-size: 12.5px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 12.5px;">爬虫</a> <a href="/tags/随记/" style="font-size: 12.5px;">随记</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/02/29/磁盘的分割、格式化、检验与挂载/">磁盘的分割、格式化、检验与挂载</a>
+          </li>
+        
+          <li>
+            <a href="/2016/02/29/Linux文件系统之df，du以及ln命令/">Linux文件系统之df，du以及ln命令</a>
+          </li>
+        
+          <li>
+            <a href="/2016/02/29/Linux磁盘概念/">Linux磁盘概念</a>
+          </li>
+        
+          <li>
+            <a href="/2016/02/29/Linux-User、Group切换/">Linux User、Group切换</a>
+          </li>
+        
+          <li>
+            <a href="/2016/02/29/Linux用户管理实例/">Linux用户管理实例</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 LiuYongbin<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js" type="text/javascript"></script>
+
+
+<script src="/js/script.js" type="text/javascript"></script>
+
+  </div>
+</body>
+</html>

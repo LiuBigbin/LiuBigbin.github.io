@@ -65,6 +65,595 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-磁盘的分割、格式化、检验与挂载" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/02/29/磁盘的分割、格式化、检验与挂载/" class="article-date">
+  <time datetime="2016-02-29T14:51:39.000Z" itemprop="datePublished">2016-02-29</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/02/29/磁盘的分割、格式化、检验与挂载/">磁盘的分割、格式化、检验与挂载</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>我们都知道，在Linux下，想要使用一颗磁盘，那么都必须要经过这几个动作：分割、格式化、（检验）<br>挂载。</p>
+<h4 id="磁盘分区：fdisk"><a href="#磁盘分区：fdisk" class="headerlink" title="磁盘分区：fdisk"></a>磁盘分区：fdisk</h4><figure class="highlight autoit"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root<span class="constant">@www</span> ~]<span class="preprocessor"># fdisk [-l] 装置名称</span></span><br><span class="line">选项与参数：</span><br><span class="line">-l ：输出后面接的装置所有的 partition 内容。若仅有 fdisk -l 时， 则系统将会把整个系统内能够搜到的装置的</span><br><span class="line">     partition 均列出来。</span><br><span class="line"></span><br><span class="line"><span class="preprocessor"># 没有加 -l 参数时，直接进行后面接的磁盘的分区操作</span></span><br><span class="line">[root<span class="constant">@www</span> ~]<span class="preprocessor"># fdisk /dev/sdc   &lt;==将进入对/dev/sdc磁盘的分区操作</span></span><br></pre></td></tr></table></figure>
+<h4 id="磁盘格式化：mkfs"><a href="#磁盘格式化：mkfs" class="headerlink" title="磁盘格式化：mkfs"></a>磁盘格式化：mkfs</h4><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]# mkfs [-t 文件系统格式] 装置文件名</span><br><span class="line">选项与参数：</span><br><span class="line">-t ：可以接文件系统格式，例如 ext3, ext2, vfat 等(系统有支持才会生效)</span><br><span class="line"></span><br><span class="line">[root@www ~]# mkfs -t ext3 /dev/hdc6</span><br><span class="line"></span><br><span class="line"><span class="header"># 按下两个[tab]，会发现 mkfs 支持的文件格式如下所示！可以格式化 vfat ！</span></span><br><span class="line">[<span class="link_label">root@www ~</span>]# mkfs[<span class="link_label">tab</span>][<span class="link_reference">tab</span>]</span><br><span class="line">mkfs mkfs.cramfs mkfs.ext2 mkfs.ext3 mkfs.msdos mkfs.vfat</span><br></pre></td></tr></table></figure>
+<p>mkfs命令会将每一种文件系统的参数都给默认化，如果需要自己加入参数，那么可以使用mke2fs命令</p>
+<figure class="highlight scheme"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="list">[<span class="keyword">root@www</span> ~]# mke2fs <span class="list">[<span class="keyword">-b</span> block大小] <span class="list">[<span class="keyword">-i</span> block大小] <span class="list">[<span class="keyword">-L</span> 标头] <span class="list">[<span class="keyword">-cj</span>] 装置</span><br><span class="line">选项与参数：</span><br><span class="line">-b ：可以设定每个 block 的大小，目前支持 <span class="number">1024</span>, <span class="number">2048</span>, <span class="number">4096</span> bytes 三种；</span><br><span class="line">-i ：多少容量给予一个 inode 呢？</span><br><span class="line">-c ：检查磁盘错误，仅下达一次 -c 时，会进行快速读取测试； 如果下达两次 -c -c 癿话，会测试读写<span class="list">(<span class="keyword">read-write</span>)</span>，</span><br><span class="line">     会很慢～</span><br><span class="line">-L ：后面可以接标头名称 <span class="list">(<span class="keyword">Label</span>)</span>，这个 label 是有用的喔！</span><br><span class="line">-j ：本来 mke2fs 是 EXT2 ，加上 -j 后，会主动加入 journal 而成为 EXT3。</span><br><span class="line"></span><br><span class="line"><span class="list">[<span class="keyword">root@www</span> ~]# mke2fs -j -L <span class="string">"vbird_logical"</span> -b <span class="number">2048</span> -i <span class="number">8192</span> /dev/hdc6</span></span></span></span></span></span></span><br></pre></td></tr></table></figure>
+<h4 id="磁盘检验：-fsck-badblocks"><a href="#磁盘检验：-fsck-badblocks" class="headerlink" title="磁盘检验： fsck, badblocks"></a>磁盘检验： fsck, badblocks</h4><p>fsch是用来检查与修正文件系统错误的指令。注意：通帯只有身为 root 的文件系统有问题的时候才使用这个指令，否则在正常状况下使用此一指令， 可能会造成对系统的危害！通帯使用这个指令的场合都是在系统出现极大的问题，导致你在 Linux 开机的时候得进入单人单机模式下进行维护的行为时，才必项使用此指令！</p>
+<p>此外，由于 fsck 在扫瞄硬盘的时候，可能会造成部分 filesystem<br>的损坏，所以『执行 fsck 时， 被检查的 partition 务必不可挂载到系统上！亦即是需要在卸除的状态！』</p>
+<p>ext2/ext3文件系统的最顶层(就是挂载点那个目录底下)会存在一个『lost+found』的目录吧！ 该目录就是在当你使用 fsck 检查文件系统后，若出现问题时，有问题的数据会被放置到这个目录中！所以理论上这个目录不应该会有任何数据，若系统自动产生数据在里面，那…你就得特别注意你的文件系统！！！<br><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]# fsck [-t 文件系统] [-ACay] 装置名称</span><br><span class="line">选项与参数：</span><br><span class="line">-t ：如同 mkfs 一样，fsck 也是个综合软件而已！因此我们同样需要指定文件系统。</span><br><span class="line"><span class="code">     不过由于现今的 Linux 太聪明了，他会自动的透过 superblock 去分辨文件系统， 因此通常可以不需要这个选顷！</span></span><br><span class="line">-A ：依据 /etc/fstab 癿内容，将需要的装置扫瞄一次。通常开机过程中就会执行此指令了。</span><br><span class="line">-a ：自动修复检查到的有问题的扇区，所以你不用一直按 y ！</span><br><span class="line">-y ：与 -a 类似，但是某些 filesystem 仅支持 -y 这个参数！</span><br><span class="line">-C ：可以在检验的过程当中，使用一个直方图来显示目前的进度！</span><br><span class="line">EXT2/EXT3 的额外选项功能：(e2fsck 指令所提供)</span><br><span class="line">-f ：强制检查！一般来说，如果 fsck 没有发现任何 unclean 的旗标，不会主动进入细部检查的，</span><br><span class="line"><span class="code">     如果您想要强制 fsck 进入细部检查，就得加上 -f 旗标！</span></span><br><span class="line">-D ：针对文件系统下的目录进行优化配置。</span><br><span class="line"></span><br><span class="line">范例一：强制的将前面我们建立的 /dev/hdc6 这个装置给他检验一下！</span><br><span class="line">[root@www ~]# fsck -C -f -t ext3 /dev/hdc6</span><br><span class="line">fsck 1.39 (29-May-2006)</span><br><span class="line">e2fsck 1.39 (29-May-2006)</span><br><span class="line">Pass 1: Checking inodes, blocks, and sizes</span><br><span class="line">Pass 2: Checking directory structure</span><br><span class="line">Pass 3: Checking directory connectivity</span><br><span class="line">Pass 4: Checking reference counts</span><br><span class="line">Pass 5: Checking group summary information</span><br><span class="line">vbird_logical: 11/251968 files (9.1% non-contiguous), 36926/1004046 blocks</span><br><span class="line"><span class="header"># 如果没有加上 -f 的选项，则由于这个文件系统不曾出现问题，</span></span><br><span class="line"><span class="header"># 检查的经过非常的快速！若加上 -f 强制检查，才会一项一项的显示过程。</span></span><br><span class="line"></span><br><span class="line">范例二：系统有多少文件系统支持的 fsck 软件？</span><br><span class="line">[<span class="link_label">root@www ~</span>]# fsck[<span class="link_label">tab</span>][<span class="link_reference">tab</span>]</span><br><span class="line">fsck fsck.cramfs fsck.ext2 fsck.ext3 fsck.msdos fsck.vfat</span><br></pre></td></tr></table></figure></p>
+<p>刚刚谈到的 fsck 是用来检验文件系统是否出错，至于badblocks 则是用来检查硬盘软软盘扇区有没有坏轨的！ 由与这个指令其实可以透过『 mke2fs -c 装置文件名 』在进行格式化的时候处理磁盘表面的读取测试， 因此目前大多不使用这个指令！</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]<span class="comment"># badblocks -[svw] 装置名称</span></span><br><span class="line">选项与参数：</span><br><span class="line"><span class="operator">-s</span> ：在屏幕上列出进度</span><br><span class="line">-v ：可以在屏幕上看到进度</span><br><span class="line">-w：使用写入癿方式来测试，建议不要使用此一参数，尤其是待检查的装置已有档案时！</span><br><span class="line"> [root@www ~]<span class="comment"># badblocks -sv /dev/hdc6</span></span><br><span class="line"> Checking blocks <span class="number">0</span> to <span class="number">2008093</span></span><br><span class="line"> Checking <span class="keyword">for</span> bad blocks (<span class="built_in">read</span>-only <span class="built_in">test</span>): <span class="keyword">done</span></span><br><span class="line"> Pass completed, <span class="number">0</span> bad blocks found.</span><br></pre></td></tr></table></figure>
+<h4 id="磁盘挂载与卸除"><a href="#磁盘挂载与卸除" class="headerlink" title="磁盘挂载与卸除"></a>磁盘挂载与卸除</h4><p>以下列出磁盘挂载的例子：</p>
+<figure class="highlight nimrod"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">范例一：将刚刚建立的 /dev/hdc6 挂载到 /mnt/hdc6 上面！</span><br><span class="line">[root@www ~]<span class="comment"># mkdir /mnt/hdc6</span></span><br><span class="line">[root@www ~]<span class="comment"># mount /dev/hdc6 /mnt/hdc6</span></span><br><span class="line">[root@www ~]<span class="comment"># df</span></span><br><span class="line"><span class="type">Filesystem</span> <span class="number">1</span>K-blocks <span class="type">Used</span> <span class="type">Available</span> <span class="type">Use</span>% <span class="type">Mounted</span> on</span><br><span class="line">.....中间省略.....</span><br><span class="line">/dev/hdc6 <span class="number">1976312</span> <span class="number">42072</span> <span class="number">1833836</span> <span class="number">3</span>% /mnt/hdc6</span><br><span class="line"><span class="comment"># 看起来，真的有挂载！档案大小约为 2GB 左右！</span></span><br><span class="line"></span><br><span class="line">范例二：观察目前『已挂载』的文件系统，包括各文件系统的<span class="type">Label</span>名称</span><br><span class="line">[root@www ~]<span class="comment"># mount -l</span></span><br><span class="line">/dev/hdc2 on / <span class="keyword">type</span> ext3 (rw) [/<span class="number">1</span>]</span><br><span class="line"><span class="keyword">proc</span> on /<span class="keyword">proc</span> <span class="keyword">type</span> <span class="keyword">proc</span> (rw)</span><br><span class="line">sysfs on /sys <span class="keyword">type</span> sysfs (rw)</span><br><span class="line">devpts on /dev/pts <span class="keyword">type</span> devpts (rw,gid=<span class="number">5</span>,mode=<span class="number">620</span>)</span><br><span class="line">/dev/hdc3 on /home <span class="keyword">type</span> ext3 (rw) [/home]</span><br><span class="line">/dev/hdc1 on /boot <span class="keyword">type</span> ext3 (rw) [/boot]</span><br><span class="line">tmpfs on /dev/shm <span class="keyword">type</span> tmpfs (rw)</span><br><span class="line">none on /<span class="keyword">proc</span>/sys/fs/binfmt_misc <span class="keyword">type</span> binfmt_misc (rw)</span><br><span class="line">sunrpc on /<span class="keyword">var</span>/lib/nfs/rpc_pipefs <span class="keyword">type</span> rpc_pipefs (rw)</span><br><span class="line">/dev/hdc6 on /mnt/hdc6 <span class="keyword">type</span> ext3 (rw) [vbird_logical]</span><br><span class="line"><span class="comment"># 除了实际的文件系统外，很多特殊的文件系统(proc/sysfs...)也会被显示出来！</span></span><br><span class="line"><span class="comment"># 值得注意的是，加上 -l 可以列出如上特殊字体的标头(label)</span></span><br></pre></td></tr></table></figure>
+<p>另外，我们也可以利用 mount 来将某个目录挂载到另外一个目录去！这并不是挂载文件系统，而是额外挂载某个目录的方法！ 虽然底下的方法也可以使用 symbolic link 来连结，不过在某些不支持符号链接的程序运作中，还是得要透过这样的方法才行。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">范例七：将 /home 这个目录暂时挂载到 /mnt/home 底下：</span><br><span class="line">[root@www ~]<span class="preprocessor"># mkdir /mnt/home</span></span><br><span class="line">[root@www ~]<span class="preprocessor"># mount --bind /home /mnt/home</span></span><br><span class="line">[root@www ~]<span class="preprocessor"># ls -lid /home/ /mnt/home</span></span><br><span class="line"><span class="number">2</span> drwxr-xr-x <span class="number">6</span> root root <span class="number">4096</span> Sep <span class="number">29</span> <span class="number">02</span>:<span class="number">21</span> /home/</span><br><span class="line"><span class="number">2</span> drwxr-xr-x <span class="number">6</span> root root <span class="number">4096</span> Sep <span class="number">29</span> <span class="number">02</span>:<span class="number">21</span> /mnt/home</span><br><span class="line">[root@www ~]<span class="preprocessor"># mount -l</span></span><br><span class="line">/home on /mnt/<span class="function">home type <span class="title">none</span> <span class="params">(rw,bind)</span></span></span><br></pre></td></tr></table></figure>
+<p>从此进入 /mnt/home 就是进入 /home !</p>
+<p>利用umount可以卸载装置</p>
+<figure class="highlight scheme"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="list">[<span class="keyword">root@www</span> ~]# umount <span class="list">[<span class="keyword">-fn</span>] 装置文件名戒挂载点</span><br><span class="line">选项与参数：</span><br><span class="line">-f ：强制卸除！可用在类似网络文件系统 <span class="list">(<span class="keyword">NFS</span>)</span> 无法读取到的情冴下；</span><br><span class="line">-n ：不更新 /etc/mtab 情况下卸除。</span></span></span><br></pre></td></tr></table></figure>
+<p>执行该指令时，必须保证所挂载的装置处于不使用状态，否则的话，卸载不成：</p>
+<figure class="highlight coffeescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root<span class="property">@www</span> ~]<span class="comment"># mount /dev/cdrom /media/cdrom</span></span><br><span class="line">[root<span class="property">@www</span> ~]<span class="comment"># cd /media/cdrom</span></span><br><span class="line">[root<span class="property">@www</span> cdrom]<span class="comment"># umount /media/cdrom</span></span><br><span class="line"><span class="attribute">umount</span>: /media/<span class="attribute">cdrom</span>: device <span class="keyword">is</span> busy</span><br><span class="line"><span class="attribute">umount</span>: /media/<span class="attribute">cdrom</span>: device <span class="keyword">is</span> busy</span><br></pre></td></tr></table></figure>
+<h4 id="开机挂载-etc-fstab-及-etc-mtab"><a href="#开机挂载-etc-fstab-及-etc-mtab" class="headerlink" title="开机挂载 /etc/fstab 及 /etc/mtab"></a>开机挂载 /etc/fstab 及 /etc/mtab</h4><p>开机自动挂载涉及到/etc/fstab文件，该文件的内容如下所示：</p>
+<figure class="highlight nimrod"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]<span class="comment"># cat /etc/fstab</span></span><br><span class="line"><span class="comment"># Device Mount point filesystem parameters dump fsck</span></span><br><span class="line"><span class="type">LABEL</span>=/<span class="number">1</span> / ext3 defaults <span class="number">1</span> <span class="number">1</span></span><br><span class="line"><span class="type">LABEL</span>=/home /home ext3 defaults <span class="number">1</span> <span class="number">2</span></span><br><span class="line"><span class="type">LABEL</span>=/boot /boot ext3 defaults <span class="number">1</span> <span class="number">2</span></span><br><span class="line">tmpfs  /dev/shm tmpfs defaults <span class="number">0</span> <span class="number">0</span></span><br><span class="line">devpts /dev/pts devpts gid=<span class="number">5</span>,mode=<span class="number">620</span> <span class="number">0</span> <span class="number">0</span></span><br><span class="line">sysfs /sys sysfs defaults <span class="number">0</span> <span class="number">0</span></span><br><span class="line"><span class="keyword">proc</span> /<span class="keyword">proc</span> <span class="keyword">proc</span> defaults <span class="number">0</span> <span class="number">0</span></span><br><span class="line"><span class="type">LABEL</span>=<span class="type">SWAP</span>-hdc5 swap swap defaults <span class="number">0</span> <span class="number">0</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 第一列表示的是磁盘装置文件名（如/dev/sha1）或是该装置的Label</span></span><br><span class="line"><span class="comment"># dump 表示的是文件系统需不需要备份，0表示不需要，1表示每天进行dump备份，2表示不定日期的备份</span></span><br><span class="line"><span class="comment"># fsck开机时是否检查文件系统是否完整，0表示不需要，1表示最早检查（一般只有根目录会设为1），</span></span><br><span class="line"><span class="comment"># 2也表示检查，只不过会在1检查完后再检查2。</span></span><br></pre></td></tr></table></figure>
+<p> /etc/fstab 是开机时的配置文件，不过，实际 filesystem 的挂载是记录到和不 /proc/mounts 这两个档案当中的。每次我们在更动 filesyste的 挂载时，也会同时更动这两个档案！但是，万一发生您在 /etc/fstab 输入的数据错误，导致无法顺利开机成功，而进入单人维护模式当中，那时候的 / 可是 read only 的状态，当然您就无法修改 /etc/fstab ，也无法更新 /etc/mtab 那怎么办？ 没关系，可以利用底下这一招：</p>
+ <figure class="highlight autoit"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor"># 重新挂载根目录，修改挂载的参数，使得根目录可以进行读写操作</span></span><br><span class="line">[root<span class="constant">@www</span> ~]<span class="preprocessor"># mount -n -o remount,rw /</span></span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/02/29/磁盘的分割、格式化、检验与挂载/" data-id="cil8ufou1000ajgqyiyp9ukn0" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Linux文件系统之df，du以及ln命令" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/02/29/Linux文件系统之df，du以及ln命令/" class="article-date">
+  <time datetime="2016-02-29T13:19:20.000Z" itemprop="datePublished">2016-02-29</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/02/29/Linux文件系统之df，du以及ln命令/">Linux文件系统之df，du以及ln命令</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="df-命令用来查看Linux文件系统的整体磁盘使用量（展示的单位为分区，即分区的磁盘使用量）"><a href="#df-命令用来查看Linux文件系统的整体磁盘使用量（展示的单位为分区，即分区的磁盘使用量）" class="headerlink" title="df 命令用来查看Linux文件系统的整体磁盘使用量（展示的单位为分区，即分区的磁盘使用量）"></a>df 命令用来查看Linux文件系统的整体磁盘使用量（展示的单位为分区，即分区的磁盘使用量）</h3><figure class="highlight haml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]# df [-ahikHTm] [目录或文件名]</span><br><span class="line">选项与参数：</span><br><span class="line">-<span class="ruby">a ：列出所有的文件系统，包括系统特有的 /proc 等文件系统；</span><br><span class="line"></span>-<span class="ruby">k ：以 <span class="constant">KBytes</span> 的容量显示各文件系统；</span><br><span class="line"></span>-<span class="ruby">m ：以 <span class="constant">MBytes</span> 的容量显示各文件系统；</span><br><span class="line"></span>-<span class="ruby">h ：以人们较易阅读的 <span class="constant">GBytes</span>, <span class="constant">MBytes</span>, <span class="constant">KBytes</span> 等格式自行显示；</span><br><span class="line"></span>-<span class="ruby"><span class="constant">H</span> ：以 <span class="constant">M</span>=<span class="number">1000</span>K 取代 <span class="constant">M</span>=<span class="number">1024</span>K 的进位方式；</span><br><span class="line"></span>-<span class="ruby"><span class="constant">T</span> ：连同该 partition 的 filesystem 名称 (例如 ext3) 也列出；</span><br><span class="line"></span>-<span class="ruby">i ：不用硬盘容量，而以 inode的数量来显示</span></span><br></pre></td></tr></table></figure>
+<p>以下列出几个例子：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line">范例一：将系统内所有的 filesystem 列出来！</span><br><span class="line">[root@www ~]<span class="preprocessor"># df</span></span><br><span class="line">Filesystem <span class="number">1</span>K-blocks Used Available Use% Mounted on</span><br><span class="line">/dev/hdc2 <span class="number">9920624</span> <span class="number">3823112</span> <span class="number">5585444</span> <span class="number">41</span>% /</span><br><span class="line">/dev/hdc3 <span class="number">4956316</span> <span class="number">141376</span> <span class="number">4559108</span> <span class="number">4</span>% /home</span><br><span class="line">/dev/hdc1 <span class="number">101086</span> <span class="number">11126</span> <span class="number">84741</span> <span class="number">12</span>% /boot</span><br><span class="line">tmpfs <span class="number">371332</span> <span class="number">0</span> <span class="number">371332</span> <span class="number">0</span>% /dev/shm</span><br><span class="line"><span class="preprocessor"># 在 Linux 底下如果 df 没有加任何选顷，那么默认会将系统内所有的</span></span><br><span class="line"><span class="preprocessor"># (不含特殊内存内的文件系统与 swap) 都以 <span class="number">1</span> Kbytes 癿容量来列出来！</span></span><br><span class="line"><span class="preprocessor"># 至于那个 /dev/shm 是与内存有关的挂载，先不要理他！</span></span><br><span class="line"></span><br><span class="line">范例二：将容量结果以易读的容量格式显示出来</span><br><span class="line">[root@www ~]<span class="preprocessor"># df -h</span></span><br><span class="line">Filesystem Size Used Avail Use% Mounted on</span><br><span class="line">/dev/hdc2 <span class="number">9.5</span>G <span class="number">3.7</span>G <span class="number">5.4</span>G <span class="number">41</span>% /</span><br><span class="line">/dev/hdc3 <span class="number">4.8</span>G <span class="number">139</span>M <span class="number">4.4</span>G <span class="number">4</span>% /home</span><br><span class="line">/dev/hdc1 <span class="number">99</span>M <span class="number">11</span>M <span class="number">83</span>M <span class="number">12</span>% /boot</span><br><span class="line">tmpfs <span class="number">363</span>M <span class="number">0</span> <span class="number">363</span>M <span class="number">0</span>% /dev/shm</span><br><span class="line"><span class="preprocessor"># 不同与范例一，这里会以 G/M 等容量格式显示出来，比较容易看啦！</span></span><br><span class="line"></span><br><span class="line">范例三：将系统内的所有特殊文件格式及名称都列出来</span><br><span class="line">[root@www ~]<span class="preprocessor"># df -aT</span></span><br><span class="line">Filesystem Type <span class="number">1</span>K-blocks Used Available Use% Mounted on</span><br><span class="line">/dev/hdc2 ext3 <span class="number">9920624</span> <span class="number">3823112</span> <span class="number">5585444</span> <span class="number">41</span>% /</span><br><span class="line">proc proc <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> - /proc</span><br><span class="line">sysfs sysfs <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> - /sys</span><br><span class="line">devpts devpts <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> - /dev/pts</span><br><span class="line">/dev/hdc3 ext3 <span class="number">4956316</span> <span class="number">141376</span> <span class="number">4559108</span> <span class="number">4</span>% /home</span><br><span class="line">/dev/hdc1 ext3 <span class="number">101086</span> <span class="number">11126</span> <span class="number">84741</span> <span class="number">12</span>% /boot</span><br><span class="line">tmpfs tmpfs <span class="number">371332</span> <span class="number">0</span> <span class="number">371332</span> <span class="number">0</span>% /dev/shm</span><br><span class="line">none binfmt_misc <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> - /proc/sys/fs/binfmt_misc</span><br><span class="line">sunrpc rpc_pipefs <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> - /var/lib/nfs/rpc_pipefs</span><br><span class="line"><span class="preprocessor"># 系统里面其实还有很多特殊的文件系统存在。那些比较特殊的文件系统几乎</span></span><br><span class="line"><span class="preprocessor"># 都是在内存当中，例如 /proc 这个挂载点。因此，这些特殊的文件系统</span></span><br><span class="line"><span class="preprocessor"># 都不会占据硬盘空间！</span></span><br><span class="line"></span><br><span class="line">范例四：将 /etc 底下的可用磁盘容量以易读容量格式显示</span><br><span class="line">[root@www ~]<span class="preprocessor"># df -h /etc</span></span><br><span class="line">Filesystem Size Used Avail Use% Mounted on</span><br><span class="line">/dev/hdc2 <span class="number">9.5</span>G <span class="number">3.7</span>G <span class="number">5.4</span>G <span class="number">41</span>% /</span><br><span class="line"><span class="preprocessor"># 在 df 后面加上目录或者是档案时， df 会自动的分析该目录或档案所在的 partition ，</span></span><br><span class="line"><span class="preprocessor"># 并将该 partition 容量显示出来， 所以，您就可以知道某个目录底下还有多少容量可以使用了！</span></span><br><span class="line"></span><br><span class="line">范例五：将目前各个 partition 当中可用的 inode 数量列出</span><br><span class="line">[root@www ~]<span class="preprocessor"># df -ih</span></span><br><span class="line">Filesystem Inodes IUsed IFree IUse% Mounted on</span><br><span class="line">/dev/hdc2 <span class="number">2.5</span>M <span class="number">147</span>K <span class="number">2.3</span>M <span class="number">6</span>% /</span><br><span class="line">/dev/hdc3 <span class="number">1.3</span>M <span class="number">46</span> <span class="number">1.3</span>M <span class="number">1</span>% /home</span><br><span class="line">/dev/hdc1 <span class="number">26</span>K <span class="number">34</span> <span class="number">26</span>K <span class="number">1</span>% /boot</span><br><span class="line">tmpfs <span class="number">91</span>K <span class="number">1</span> <span class="number">91</span>K <span class="number">1</span>% /dev/shm</span><br><span class="line"><span class="preprocessor"># 这个范例则主要列出可用的 inode 剩余量不总容量。分析一下与范例一的关系，</span></span><br><span class="line"><span class="preprocessor"># 你可以清楚的发现到，通常 inode 的数量剩余都比 block 还要多。</span></span><br></pre></td></tr></table></figure>
+<p>由于 df 主要读取的数据几乎都是针对一整个文件系统，因此读取的范围主要是在 Superblock 内的信息， 所以这个指令显示结果的速度非帯的快速。</p>
+<h3 id="du：评估文件系统癿磁盘使用量-帯用在推估目彔所占容量"><a href="#du：评估文件系统癿磁盘使用量-帯用在推估目彔所占容量" class="headerlink" title="du：评估文件系统癿磁盘使用量(帯用在推估目彔所占容量)"></a>du：评估文件系统癿磁盘使用量(帯用在推估目彔所占容量)</h3><figure class="highlight haml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]# du [-ahskm] 档案或目录名称</span><br><span class="line">选项与参数：</span><br><span class="line">-<span class="ruby">a ：列出所有的档案与目录容量，因为默认仅统计目录底下的子目录容量而已。</span><br><span class="line"></span>-<span class="ruby">h ：以人们较易读的容量格式 (<span class="constant">G</span>/<span class="constant">M</span>) 显示；</span><br><span class="line"></span>-<span class="ruby">s ：列出总量而已，而不列出每个各别的目录占用容量；（即目录占用量）</span><br><span class="line"></span>-<span class="ruby"><span class="constant">S</span> ：不包括子目录下的总计，与 -s 有点差别。</span><br><span class="line"></span>-<span class="ruby">k ：以 <span class="constant">KBytes</span> 列出容量显示；</span><br><span class="line"></span>-<span class="ruby">m ：以 <span class="constant">MBytes</span> 列出容量显示；</span></span><br></pre></td></tr></table></figure>
+<p>使用例子如下：</p>
+<figure class="highlight nimrod"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]<span class="comment"># du [-ahskm] 档案或目录名称</span></span><br><span class="line">选项与参数：</span><br><span class="line">-a ：列出所有的档案与目录容量，因为默认仅统计目录底下的子目录占用量而已。</span><br><span class="line">-h ：以人们较易读的容量格式 (G/M) 显示；</span><br><span class="line">-s ：列出总量而已，而不列出每个各别的目录占用容量；</span><br><span class="line">-S ：不包括子目录下的总计，与 -s 有点差别。</span><br><span class="line">-k ：以 <span class="type">KBytes</span> 列出容量显示；</span><br><span class="line">-m ：以 <span class="type">MBytes</span> 列出容量显示；</span><br><span class="line"></span><br><span class="line">范例一：列出目前目录下的所有档案容量</span><br><span class="line">[root@www ~]<span class="comment"># du</span></span><br><span class="line"><span class="number">8</span> ./test4 &lt;==每个目录都会列出来</span><br><span class="line"><span class="number">8</span> ./test2</span><br><span class="line">....中间省略....</span><br><span class="line"><span class="number">12</span> ./.gconfd &lt;==包括隐藏文件的目录</span><br><span class="line"><span class="number">220</span> . &lt;==这个目录(.)所占用的总量</span><br><span class="line"><span class="comment"># 直接输入 du 没有加任何选项时，则 du 会分析『目前所在目录』 的档案不目彔所占用癿硬盘空间。</span></span><br><span class="line"><span class="comment"># 但是，实际显示时，仅会显示目录容量(不显示档案)，</span></span><br><span class="line"><span class="comment"># 因此 . 目录有很多档案没有被列出来，所以全部的目录相加不会等于 .的容量！</span></span><br><span class="line"><span class="comment"># 此外，输出的数值数据为 1K 大小的容量单位。</span></span><br><span class="line"></span><br><span class="line">范例二：同范例一，但是将档案的容量也列出来</span><br><span class="line">[root@www ~]<span class="comment"># du -a</span></span><br><span class="line"><span class="number">12</span> ./install.log.syslog &lt;==有档案的列表了</span><br><span class="line"><span class="number">8</span> ./.bash_logout</span><br><span class="line"><span class="number">8</span> ./test4</span><br><span class="line"><span class="number">8</span> ./test2</span><br><span class="line">....中间省略....</span><br><span class="line"><span class="number">12</span> ./.gconfd</span><br><span class="line"><span class="number">220</span> .</span><br><span class="line"></span><br><span class="line">范例三：检查根目录底下每个目录所占用的容量</span><br><span class="line">[root@www ~]<span class="comment"># du -sm /*</span></span><br><span class="line"><span class="number">7</span> /bin <span class="number">6</span> /boot</span><br><span class="line">.....中间省略....</span><br><span class="line"><span class="number">0</span> /<span class="keyword">proc</span></span><br><span class="line">.....中间省略....</span><br><span class="line"><span class="number">1</span> /tmp <span class="number">3859</span> /usr &lt;==系统初期最大就是他了啦！</span><br><span class="line"><span class="number">77</span> /<span class="keyword">var</span></span><br><span class="line"><span class="comment"># 这是个很常被使用的功能～利用通配符 * 来代表每个目录，</span></span><br><span class="line"><span class="comment"># 如果想要检查某个目录下，那个次目录占用最大的容量，可以用这个方法找出来</span></span><br><span class="line"><span class="comment"># 值得注意的是，如果刚刚安装好 Linux 时，那么整个系统容量最大的应该是 /usr</span></span><br><span class="line"><span class="comment"># 而 /proc 虽然有列出容量，但是那个容量是在内存中，不占硬盘空间。</span></span><br></pre></td></tr></table></figure>
+<h3 id="实体链接与符号链接-ln"><a href="#实体链接与符号链接-ln" class="headerlink" title="实体链接与符号链接 ln"></a>实体链接与符号链接 ln</h3><h4 id="实体链接（硬式链接）"><a href="#实体链接（硬式链接）" class="headerlink" title="实体链接（硬式链接）"></a>实体链接（硬式链接）</h4><p>实体链接，只能链接文件，不能链接目录，不能跨 Filesystem，创建实体链接时，只是在某个目录下的block多写入一条关联数据而已，不会增加inode也不会耗用block的数量。任一个档案删除了，另外一个档案都可以将数据完整的读取出来。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]<span class="preprocessor"># ln /etc/crontab /root/crontab &lt;==建立实体链接的指令</span></span><br><span class="line">[root@www ~]<span class="preprocessor"># ll -i /etc/crontab /root/crontab</span></span><br><span class="line"><span class="number">1912701</span> -rw-r--r-- <span class="number">2</span> root root <span class="number">255</span> Jan <span class="number">6</span> <span class="number">2007</span> /etc/crontab</span><br><span class="line"><span class="number">1912701</span> -rw-r--r-- <span class="number">2</span> root root <span class="number">255</span> Jan <span class="number">6</span> <span class="number">2007</span> /root/crontab</span><br></pre></td></tr></table></figure>
+<h4 id="Symbolic-Link-符号链接，亦即是忚捷方式"><a href="#Symbolic-Link-符号链接，亦即是忚捷方式" class="headerlink" title="Symbolic Link (符号链接，亦即是忚捷方式)"></a>Symbolic Link (符号链接，亦即是忚捷方式)</h4><p>基本上， Symbolic link 就是在建立一个独立的档案，而这个档案会将数据的读取指向他 link 的那个档案的档名！由于只是利用档案来做为指向的动作，所以，当来源档被删除之后，symbolic link 的档案会『开不了』， 会一直说『无法开起某档案！』。实际上就是找不到原始『档名』而已。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]<span class="preprocessor"># ln -s /etc/crontab crontab2</span></span><br><span class="line">[root@www ~]<span class="preprocessor"># ll -i /etc/crontab /root/crontab2</span></span><br><span class="line"><span class="number">1912701</span> -rw-r--r-- <span class="number">2</span> root root <span class="number">255</span> Jan <span class="number">6</span> <span class="number">2007</span> /etc/crontab</span><br><span class="line"><span class="number">654687</span> lrwxrwxrwx <span class="number">1</span> root root <span class="number">12</span> Oct <span class="number">22</span> <span class="number">13</span>:<span class="number">58</span> /root/crontab2 -&gt; /etc/crontab</span><br><span class="line"><span class="preprocessor"># /etc/crontab 也就是/root/crontab2文件的内容，所以大小为<span class="number">12</span>bytes</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#创建目录链接</span></span><br><span class="line">[root@www ~]<span class="preprocessor"># ln -s /bin /root/bin</span></span><br><span class="line"><span class="preprocessor">#当进入/root/bin目录时，实际上进入的是/bin目录，对其所有的操作都会相当于直接在/bin目录下操作</span></span><br></pre></td></tr></table></figure>
+<p>看起来硬链接会比符号链接安全的多，因为不会因为被链接文件被删除了而导致链接文件打不开，但是由于硬链接的限制比较多，不能链接目录，不能跨文件系统，所以还是符号链接比较受欢迎！</p>
+<p>ln指令参数：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]<span class="comment"># ln [-sf] 来源文件 目标文件</span></span><br><span class="line">选项与参数：</span><br><span class="line"><span class="operator">-s</span> ：如果不加任何参数就进行连结，那就是hard link，至于 <span class="operator">-s</span> 就是symbolic link</span><br><span class="line"><span class="operator">-f</span> ：如果 目标文件 存在时，就主动将目标文件直接移除后再建立！</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/02/29/Linux文件系统之df，du以及ln命令/" data-id="cil8ufov3001ujgqy8v2wywmm" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Linux磁盘概念" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/02/29/Linux磁盘概念/" class="article-date">
+  <time datetime="2016-02-29T11:57:39.000Z" itemprop="datePublished">2016-02-29</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/02/29/Linux磁盘概念/">Linux磁盘概念</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>个人计算机常见的磁盘接口有两种， 分别是IDE不SATA接口，目前(2009)的主流已经是SATA接口了。</p>
+<p>以IDE接口来说，由于一个IDE扁平电缆可以连接两个IDE装置，又通常主机都会提供两个IDE接口，因此最多可以接到四个IDE装置。 也就是说，如果你已经有一个光盘设备了，那么最多就只能再接三颗IDE接口的磁盘啰。 这两个IDE接口通常被称为IDE1(primary)及IDE2(secondary)， 而每条扁平电缆上面癿IDE装置可以被区分为Master不Slave。这四个IDE装置癿文件名为：</p>
+<p><font color="red">以下的名称以及顺序都是固定的</font></p>
+<table>
+<thead>
+<tr>
+<th>IDE\Jumper</th>
+<th style="text-align:center">Master</th>
+<th style="text-align:right">Slave</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>IED1（primary）</td>
+<td style="text-align:center">/dev/hda</td>
+<td style="text-align:right">/dev/hdb</td>
+</tr>
+<tr>
+<td>IED2（Secondary）</td>
+<td style="text-align:center">/dev/hdc</td>
+<td style="text-align:right">/dev/hdd</td>
+</tr>
+</tbody>
+</table>
+<p>再以SATA接口来说，由于SATA/USB/SCSI等磁盘接口都是使用SCSI模块来驱动的， 因此这些接口的磁盘装置文件名都是/dev/sd[a-p]的格式。 但是与IDE接口不同的是，SATA/USB接口的磁盘根本就没有一定的顺序，那如何决定他的装置文件名呢？ 这个时候就得要根据Linux核心侦测到磁盘的顺序了！这里以底下的例子来让你了解：</p>
+<p>例题：</p>
+<p>如果你的PC上面有两个SATA磁盘以及一个USB磁盘，而主板上面有六个SATA的插槽。这两个SATA磁盘分别安插在主板上的SATA1, SATA5插槽上， 请问这三个磁盘在<br>Linux中的装置文件名为何？</p>
+<p>答：由与是使用侦测到的顺序来决定装置文件名，<font color="red">并非与实际插槽代号有关</font>，因此装置癿文件名如下：</p>
+<ol>
+<li>SATA1插槽上的檔名：/dev/sda</li>
+<li>SATA5插槽上的檔名：/dev/sdb</li>
+<li>USB磁盘(开机完成后才被系统捉到)：/dev/sdc</li>
+</ol>
+<h3 id="磁盘"><a href="#磁盘" class="headerlink" title="磁盘"></a>磁盘</h3><p>一颗磁盘的数据主要存在其盘面上，磁盘面由磁柱构成，磁柱又可以分为很多的扇区。一颗磁盘最重要的扇区就是第一个扇区，这里记录着正科磁盘最重要的信息，主要有两个重要的信息：</p>
+<ol>
+<li>主要启动记录区MBR（Master Boot Record）：可以安装开机管理程序的地方，有466 Bytes</li>
+<li>分割表（partition table）: 记录整颗磁盘分割信息，有64bytes</li>
+</ol>
+<p>由于分割表只有64bytes，所以只能存储四笔的分割信息，也就是说，磁盘的主要分割区只有四个。如果想要分割跟多的区的话，就只能通过extend延伸分割的方式来处理了。延伸分割的目的是使用额外的扇区来记录分割信息，延伸分割本身并不能被拿来格式化。 然后我们可以透过延伸分割所指向的那个区块继续作分割的记录。如下图所示：</p>
+<p><img src="/pictures/Linux磁盘概念-磁盘延伸分割.png" alt=""></p>
+<p>上述的分割槽在Linux系统中的装置文件名分别如下：</p>
+<ol>
+<li>P1:/dev/hda1</li>
+<li>P2:/dev/hda2</li>
+<li>L1:/dev/hda5</li>
+<li>L2:/dev/hda6</li>
+<li>L3:/dev/hda7</li>
+<li>L4:/dev/hda8</li>
+<li>L5:/dev/hda9</li>
+</ol>
+<p>要注意的是：如果延伸分割被破坏，所有逻辑分割将会被删除。因为逻辑分割的信息都记录在延伸分割里面。</p>
+<p>磁盘需要分割的原因主要有两个：</p>
+<ol>
+<li>数据的安全性：由于各个分割区之间是互相独立的，一个区数据坏了并不影响其他数据区的数据</li>
+<li>系统性能的考虑：由于数据只能存在一个分割区上，因此当需要读取数据的时候，磁头只会搜索该区所在的磁柱的范围，是的磁臂的摆动幅度不会太大，从而加快了数据的读取。</li>
+</ol>
+<h3 id="开机流程与主要启动记录区-MBR"><a href="#开机流程与主要启动记录区-MBR" class="headerlink" title="开机流程与主要启动记录区(MBR)"></a>开机流程与主要启动记录区(MBR)</h3><p>计算机主板上面有两个东西，一个是CMOS，主要记录各项硬件参数且嵌入到主板上面的存储器，另外一个就是BIOS，写入到主板上面的一个韧体（也就是一个软件程序）。开机时，计算机会先运行BIOS，该程序会根据用户的设定来取得能够开机的硬盘，并且读取该硬盘的第一个扇区中的MBR区域，该位置存放的是最基本的开机管理程序（boot loader），此时BIOS运行结束，记下来就是开机管理程序的事情了。</p>
+<p>开机管理程序的任务就是加载核心档案，由于开机管理程序是操作系统在安装的时候所提供的，所以他可以识别硬盘内的文件系统格式，从而加载核心档案，然后接下来就是核心档案的工作了，开机管理程序到此结束。接下来就是操作系统的任务了！</p>
+<p>简答来说，这个开机的流程为：</p>
+<ol>
+<li>BIOS：开机主动执行的韧体，会识别可一个可开机的装置；</li>
+<li>MBR：第一个可开机装置的第一个扇区内的主要启动记录区，含有开机管理程序</li>
+<li>开机管理程序（boot loader）：一支可读取核心档案来执行的软件程序</li>
+<li>核心档案：开始操作系统的功能。</li>
+</ol>
+<p>至于多重引导开机的情况，可以参考下图：</p>
+<p><img src="/pictures/Linux磁盘概念-多重引导.png" alt=""></p>
+<p>在上图中我们可以发现，MBR的开机管理程序提供两个选单，选单一(M1)可以直接加载Windows癿核心档案来开机；选单事(M2)则是将开机管理工作交给第二个分割槽的启动扇区(boot sector)。当使用者在开机的时候选择选单二时，那么整个开机管理工作就会交给第二分割槽的开机管理程序了。当第二个开机管理程序启动后，该开机管理程序内(上图中)仅有一个开机选单，因此就能够使用Linu的核心档案来开机啰。 这就是多重引导的工作情况啦！我们将上图作个总结：</p>
+<ol>
+<li>每个分割槽都拥有自己的启动扇区(boot sector)</li>
+<li>图中的系统槽为第一及第二分割槽，</li>
+<li>实际可开机的核心档案是放置到各分割槽内的！</li>
+<li>loader只会识识自己的系统槽内的可开机核心档案，以及其他loader而已；</li>
+<li>loader可直接指向或者是间接将管理权转交给另一个管理程序。</li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/02/29/Linux磁盘概念/" data-id="cil8ufouy001pjgqypodjqjne" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Linux-User、Group切换" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/02/29/Linux-User、Group切换/" class="article-date">
+  <time datetime="2016-02-29T04:11:54.000Z" itemprop="datePublished">2016-02-29</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/02/29/Linux-User、Group切换/">Linux User、Group切换</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="Linux用户切换涉及到两个指令：su-和-sudo"><a href="#Linux用户切换涉及到两个指令：su-和-sudo" class="headerlink" title="Linux用户切换涉及到两个指令：su 和 sudo"></a>Linux用户切换涉及到两个指令：su 和 sudo</h3><h4 id="su"><a href="#su" class="headerlink" title="su"></a>su</h4><p>su有两种切换的方式：</p>
+<li>su - username, 以login-shell的方式切换到新的用户，更改了环境变量</li><br><li>su username, 以no-login-shell的方式切换到新的用户，环境变量不变</li>
+
+<p>如果想要离开当期的shell，回到切换前的shell，只需要执行<code>exit</code>命令就好。如果只是需要拥有新的用户的权限来执行某条命令，然后就自动回到当前的shell的话，那么可以使用-c参数如<br><code>su - -c &quot;command&quot;</code>,就会在执行完命令后回到当前的用户shell。</p>
+<p>root执行此命令时，不需要输入任何的密码！！！</p>
+<p>由于su在切换新用户的时候，需要知道新用户的密码才可以执行，这样的话比较麻烦，所以出现了sudo。</p>
+<h4 id="sudo"><a href="#sudo" class="headerlink" title="sudo"></a>sudo</h4><p>sudo可以获取新用户的权限来执行后面的命令（以no-login-shell方式实现），在执行后回到当前的用户状态，需要输入的只是当前用户的密码，不需要新用户的密码！</p>
+<p><img src="/pictures/Linux-User、Group切换-sudo命令1.png" alt=""><br><img src="/pictures/Linux-User、Group切换-sudo命令2.png" alt=""></p>
+<p>sudo默认只是root可以执行，如果需要加入新的用户，那么需要知道/etc/sudoers文件。该文件存放的是那些用户可以执行sudo，以及可以利用sudo来执行的具体指令。编辑该文件可以直接vim，也可以使用visudo命令，由于该文件是具有语法的，所以还是建议使用visudo来修改，因为该命令在执行的时候会检查文件的新增内容的语法是否正确。</p>
+<p><img src="/pictures/Linux-User、Group切换-visudo命令1.png" alt=""><br><img src="/pictures/Linux-User、Group切换-visudo命令2.png" alt=""></p>
+<p>上面这一行的四个组件意义是：</p>
+<ol>
+<li>系统的哪个账号可以使用 sudo 这个指令的意思，默认为 root 这个账号；</li>
+<li>当这个账号由哪部主机联机到本 Linux 主机，意思是这个账号可能是由哪一部网络主机联机过来的， 这个设定值可以指定客户端计算机(信任用户的意思)。默认值 root 可来自任何一部网络主机</li>
+<li>这个账号可以切换成什么身份来下达后续的指令，默认 root 可以切换成任何人；</li>
+<li>可用该身份下达什么指令？这个指令请务必使用绝对路径撰写。 预设 root 可以切换任何身份与进行任何指令之意。</li>
+</ol>
+<h4 id="利用群组以及免密码功能处理visudo"><a href="#利用群组以及免密码功能处理visudo" class="headerlink" title="利用群组以及免密码功能处理visudo"></a>利用群组以及免密码功能处理visudo</h4><p><img src="/pictures/Linux-User、Group切换-visudo群组1.png" alt=""></p>
+<p>上面的设定值会造成『任何加入 wheel 这个群组的使用者，就能够使用 sudo 切换任何身份来操作任何指令』的意思。 你当然可以将 wheel 换成你自己想要的群组名。接下来，请分别切换身份成为 pro1 及 pro2 试看看 sudo 的运作。</p>
+<p><img src="/pictures/Linux-User、Group切换-visudo群组2.png" alt=""></p>
+<p>如果你想要让 pro3 也支持这个 sudo 的话，不需要重新使用 visudo ，只要利用 usermod 去修改 pro3 的群组支持，让 wheel 也支持 pro3 的话，那他就能够进行 sudo 啰！ 简单吧！不过，既然我们都信任这些 sudo 的用户了，能否提供『不需要密码即可使用 sudo 』呢？ 就透过如下的方式：</p>
+<p><img src="/pictures/Linux-User、Group切换-visudo不需要密码.png" alt=""></p>
+<h4 id="有限制的指令操作"><a href="#有限制的指令操作" class="headerlink" title="有限制的指令操作"></a>有限制的指令操作</h4><p>上面两点都会让使用者能够利用 root 的身份进行任何事情！这样总是不太好～如果我想要让用户仅能够进行部分系统任务， 比方说，系统上面的 myuser1 仅能够帮 root 修改其他用户的密码时，亦即『让使用者仅能使用 passwd 这个指令帮忙 root 修改其他用户的密码』时，你该如何撰写呢？可以这样做：</p>
+<figure class="highlight scheme"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="list">[<span class="keyword">root@www</span> ~]# visudo &lt;==注意是 root 身份 myuser1 ALL=<span class="list">(<span class="keyword">root</span>)</span> /usr/bin/passwd &lt;==最后指令务必用绝对路径</span></span><br></pre></td></tr></table></figure>
+<p>但是上面有一个很不好的就是，当用户使用如下指令时，会直接的修改root密码：</p>
+<figure class="highlight crmsh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[myuser1@www ~]$ sudo passwd</span><br><span class="line">Changing password for <span class="keyword">user</span> <span class="title">root</span>. <span class="tag">&lt;==见鬼！怎么会去改 root 的密码？</span></span><br></pre></td></tr></table></figure>
+<p>所以我们要限制用户的指令参数，修改的方法为将上述的那一行修改为</p>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root<span class="variable">@www</span> ~]<span class="comment"># visudo &lt;==注意是 root 身份</span></span><br><span class="line">myuser1 <span class="constant">ALL=</span>(root) !<span class="regexp">/usr/bin</span><span class="regexp">/passwd, /usr</span><span class="regexp">/bin/passwd</span> [<span class="constant">A-Za-</span>z]*, !<span class="regexp">/usr/bin</span><span class="regexp">/passwd root</span></span><br></pre></td></tr></table></figure>
+<h4 id="透过别名设置visuo"><a href="#透过别名设置visuo" class="headerlink" title="透过别名设置visuo"></a>透过别名设置visuo</h4><p>假设我的 pro1, pro2, pro3 和 myuser1, myuser2 要加入上述的密码管理员的 sudo 列表中， 那我可以创立一个帐户删名称为 ADMPW 的名称，然后将这个名称处理一下即可。处理的方式如下：</p>
+<figure class="highlight crystal"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root<span class="variable">@www</span> ~]<span class="comment"># visudo &lt;==注意是 root 身份</span></span><br><span class="line"><span class="constant">User_Alias</span> <span class="constant">ADMPW</span> = pro1, pro2, pro3, myuser1, myuser2</span><br><span class="line"><span class="constant">Cmnd_Alias</span> <span class="constant">ADMPWCOM</span> = !/usr/bin/passwd, <span class="regexp">/usr/bin</span><span class="regexp">/passwd [A-Za-z]*, !/usr</span><span class="regexp">/bin/passwd</span> root</span><br><span class="line"><span class="constant">ADMPW</span> <span class="constant">ALL</span>=(root) <span class="constant">ADMPWCOM</span></span><br></pre></td></tr></table></figure>
+<p>我透过 User_Alias 建立出一个新账号，这个账号名称一定要使用大写字符来处理，包括 Cmnd_Alias(命令别名)、Host_Alias(来源主机名别名) 都需要使用大写字符的！</p>
+<h4 id="sudo的时间间隔"><a href="#sudo的时间间隔" class="headerlink" title="sudo的时间间隔"></a>sudo的时间间隔</h4><p>sudo的默认时间间隔为5分钟，在这5分钟里面，多次执行sudo可以不需要输入当前用户的密码。</p>
+<p>另外需要注意的是，因为使用一般用户是不会用到/sbin, /usr/sbin等目录内的指令，所以$PATH变量不会含有这些目录，因此很多管理指令需要使用绝对路径来下达比较妥当！</p>
+<h4 id="sudo搭配su的使用方式"><a href="#sudo搭配su的使用方式" class="headerlink" title="sudo搭配su的使用方式"></a>sudo搭配su的使用方式</h4><p>利用sudo和su可以在不需要root密码的情况下直接把身份变为root。只需要输入<code>sudo su -</code>,此时只需要输入自己的密码，就可以成功的切换到root身份了。</p>
+<h3 id="Linux中群组的切换"><a href="#Linux中群组的切换" class="headerlink" title="Linux中群组的切换"></a>Linux中群组的切换</h3><h4 id="groups-有效与支持群组的观察"><a href="#groups-有效与支持群组的观察" class="headerlink" title="groups 有效与支持群组的观察"></a>groups 有效与支持群组的观察</h4><p>如果想要查看当前用户所能支持的群组，那么可以使用该命令：</p>
+<figure class="highlight crystal"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[dmtsai<span class="variable">@www</span> ~]<span class="variable">$ </span>groups</span><br><span class="line">dmtsai users</span><br></pre></td></tr></table></figure>
+<p>在这个输出的信息中，可知道 dmtsai 这个用户同时属于 dmtsai 及 users 这个两个群组，而且， 第一个输出的群组即为有效群组 (effective group) 了。 也就是说，我的有效群组为 dmtsai 啦～此时，如果我以 touch 去建立一个新档，例如： 『 touch test 』，那么这个档案的拥有者为 dmtsai ，而且群组也是 dmtsai 的啦。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[dmtsai@www ~]$ touch test</span><br><span class="line">[dmtsai@www ~]$ ll -rw-rw-r-- <span class="number">1</span> dmtsai dmtsai <span class="number">0</span> Feb <span class="number">24</span> <span class="number">17</span>:<span class="number">26</span> test</span><br></pre></td></tr></table></figure>
+<p>这样是否可以了解什么是有效群组了？通常有效群组的作用是在新建档案啦！那么有效群组是否能够变换？当然可以，这个时候需要用到<code>newgrp</code>命令。</p>
+<h3 id="newgrp-有效群组的切换"><a href="#newgrp-有效群组的切换" class="headerlink" title="newgrp: 有效群组的切换"></a>newgrp: 有效群组的切换</h3><p>使用 newgrp 是有限制的，那就是你想要切换的群组必须是你已经有支持的群组。举例来说， dmtsai 可以在 dmtsai/users 这两个群组间切换有效群组，但是 dmtsai 无法切换有效群组成为 sshd 啦！使用的方式如下：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[dmtsai@www ~]$ newgrp users</span><br><span class="line">[dmtsai@www ~]$ groups users dmtsai</span><br><span class="line">[dmtsai@www ~]$ touch test2</span><br><span class="line">[dmtsai@www ~]$ ll</span><br><span class="line">-rw-rw-r-- <span class="number">1</span> dmtsai dmtsai <span class="number">0</span> Feb <span class="number">24</span> <span class="number">17</span>:<span class="number">26</span> test</span><br><span class="line">-rw-r--r-- <span class="number">1</span> dmtsai users <span class="number">0</span> Feb <span class="number">24</span> <span class="number">17</span>:<span class="number">33</span> test2</span><br></pre></td></tr></table></figure>
+<p>newgrp这个指令可以变更目前用户的有效群组， 而且是另外以一个 shell 来提供这个功能的，所以，以上面的例子来说， dmtsai 这个使用者目前是以另一个 shell 登入的，而且新的 shell 给予 dmtsai 有效 GID 为 users 就是了。如果以图示来看就是如下所示：</p>
+<p><img src="/pictures/Linux-User、Group切换-newgrp运行示意图.png" alt="newgrp运作示意图"></p>
+<p>虽然用户的环境设定(例如环境变量等等其他数据)不会有影响，但是使用者的『群组权限』将会重新被计算。 但是需要注意，由于是新取得一个 shell ，因此如果你想要回到原本的环境中，请输入 exit 回到原本的 shell ！</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/02/29/Linux-User、Group切换/" data-id="cil8ufov90023jgqy40dggd10" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Linux用户管理实例" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/02/29/Linux用户管理实例/" class="article-date">
+  <time datetime="2016-02-29T04:01:50.000Z" itemprop="datePublished">2016-02-29</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/02/29/Linux用户管理实例/">Linux用户管理实例</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>账号管理不是随意建置几个账号就算了！有时候我们需要考虑到一部主机上面可能有多个账号在协同工作！举例来说，在大学任教时，我们学校的专题生是需要分组的，这些同一组的同学间必须要能够互相修改对方的数据文件，但是同时这些同学又需要保留自己的私密数据，因此直接公开家目录是不适宜的。那该如何是好？ 为此，我们底下提供几个例子来让大家思考看看啰：</p>
+<p>任务一：单纯的完成上头交代的任务，假设我们需要的账号数据如下，你该如何实作？</p>
+<table>
+<thead>
+<tr>
+<th>账号名称</th>
+<th style="text-align:center">账号全名</th>
+<th style="text-align:right">支援次要群组</th>
+<th style="text-align:right">是否可登入主机</th>
+<th style="text-align:right">密码</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>user1</td>
+<td style="text-align:center">1st user</td>
+<td style="text-align:right">mygroup1</td>
+<td style="text-align:right">可以</td>
+<td style="text-align:right">password</td>
+</tr>
+<tr>
+<td>user2</td>
+<td style="text-align:center">2nd user</td>
+<td style="text-align:right">mygroup1</td>
+<td style="text-align:right">可以</td>
+<td style="text-align:right">password</td>
+</tr>
+<tr>
+<td>user3</td>
+<td style="text-align:center">3rd user</td>
+<td style="text-align:right">无额外支持</td>
+<td style="text-align:right">不可以</td>
+<td style="text-align:right">password</td>
+</tr>
+</tbody>
+</table>
+<p>处理方法如下所示：</p>
+<p><img src="/pictures/Linux用户管理实例-任务1a.png" alt=""></p>
+<p><img src="/pictures/Linux用户管理实例-任务1b.png" alt=""></p>
+<p>要注意的地方主要有：myuser1 与 myuser2 都有支援次要群组，但该群组不见得会存在，因此需要先手动建立他！ 然后 myuser3 是『不可登入系统』的账号，因此需要使用 /sbin/nologin 这个 shell 来给予，这样该账号就无法登入啰！ 这样是否理解啊！接下来再来讨论比较难一些的环境！如果是专题环境该如何制作？</p>
+<p>任务二：我的使用者 pro1, pro2, pro3 是同一个项目计划的开发人员，我想要让这三个用户在同一个目录底下工作， 但这三个用户还是拥有自己的家目录与基本的私有群组。假设我要让这个项目计划在 /srv/projecta 目录下开发， 可以如何进行？</p>
+<p><img src="/pictures/Linux用户管理实例-任务2.png" alt=""></p>
+<p>由于此项目计划只能够给 pro1, pro2, pro3 三个人使用，所以 /srv/projecta 的权限设定一定要正确才行！ 所以该目录群组一定是 projecta ，但是权限怎么会是 2770 呢？还让得<a href="/2016/02/28/Linux-%E4%B8%ADSUID%E3%80%81SGID%E5%92%8CSBIT%E7%9A%84%E7%94%A8%E9%80%94/">SGID</a> 吧？为了让三个使用者能够互相修改对方的档案， 这个 SGID 是必须要存在的喔！</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/02/29/Linux用户管理实例/" data-id="cil8ufov0001rjgqyyvh0d86e" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Linux-Group-管理" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/02/29/Linux-Group-管理/" class="article-date">
+  <time datetime="2016-02-29T03:43:56.000Z" itemprop="datePublished">2016-02-29</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/02/29/Linux-Group-管理/">Linux Group 管理</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>关于群组的文件也有两个:/etc/group和/etc/gshadow, /etc/group文件每一行的结构为：组名、群组密码、GID、此群组支持的账号id。/etc/gshadow文件的结构为：组名、密码、群组管理员账号、该群组的所有用户账号（与/etc/group文件里面的最后一栏一样）。</p>
+<h4 id="有效群组和初始群组"><a href="#有效群组和初始群组" class="headerlink" title="有效群组和初始群组"></a>有效群组和初始群组</h4><p>当用户登录时，系统会读取/etc/passwd文件里面用户的信息，里面的gid此时就是用户的初始群组，也是用户的有效群组，如果用户想要切换群组以及查看当前自己所能支持的群组的话，那么可以使用下面的命令：</p>
+<figure class="highlight crystal"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">查看用户当前所能支持的群组</span><br><span class="line"><span class="variable">$ </span>groups</span><br><span class="line">为用户添加支持群组</span><br><span class="line"><span class="variable">$ </span>usermod -<span class="constant">G</span> 群组名称  用户名称</span><br><span class="line">设置用户的初始化群组</span><br><span class="line"><span class="variable">$ </span>usermod -g 群组名称  用户名称</span><br><span class="line">有效群组的切换</span><br><span class="line"><span class="variable">$ </span>newgrp 群组名称</span><br></pre></td></tr></table></figure>
+<p>注意，执行newgrp命令后，用户是以另外一个shell登录的，而且新的shell赋予了用户新的有效gid，虽然用户的环境设定不会有影响，但是使用者的群组权限将会被重新计算，需要注意的是，由于取得的是一个新的shell，所以如果想要回到原来的shell，可以执行<code>exit</code>回到原来的shell！</p>
+<p>与群组管理相关的指令有groupadd、gropumod、groupdel</p>
+<h4 id="groupadd"><a href="#groupadd" class="headerlink" title="groupadd"></a>groupadd</h4><p><img src="/pictures/Linux-Group-管理-groupadd命令参数.png" alt=""></p>
+<h4 id="groupmod"><a href="#groupmod" class="headerlink" title="groupmod"></a>groupmod</h4><p><img src="/pictures/Linux-Group-管理-groupmod命令参数.png" alt=""></p>
+<h4 id="groupdel"><a href="#groupdel" class="headerlink" title="groupdel"></a>groupdel</h4><p><img src="/pictures/Linux-Group-管理-groupdel命令参数.png" alt=""></p>
+<p>为什么 mygroup 可以删除，但是 vbird1 就不能删除呢？原因很简单，『有某个账号 (/etc/passwd) 的 initial group 使用该群组！』 如果查阅一下，你会发现在 /etc/passwd 内的 vbird1 第四栏的 GID 就是 /etc/group 内的 vbird1 那个群组的 GID ，所以啰，当然无法删除～否则 vbird1 这个用户登入系统后， 就会找不到 GID ，那可是会造成很大的困扰的！那么如果硬是要删除 vbird1 这个群组呢？ 你『必须要确认 /etc/passwd 内的账号没有任何人使用该群组作为 initial group 』才行喔！所以，你可以：</p>
+<p>1：修改 vbird1 癿的 GID ，或者是：</p>
+<p>2： 初除 vbird1 这个使用者。</p>
+<h3 id="gpasswd：群组管理员功能"><a href="#gpasswd：群组管理员功能" class="headerlink" title="gpasswd：群组管理员功能"></a>gpasswd：群组管理员功能</h3><p>群组管理员可以对群增加或删除人员（只能执行这个功能）。群组管理员可以不是该群组的成员，具体执行指令如下</p>
+<p><img src="/pictures/Linux-Group-管理-gpasswd命令参数1.png" alt=""></p>
+<p><img src="/pictures/Linux-Group-管理-gpasswd命令参数2.png" alt=""></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/02/29/Linux-Group-管理/" data-id="cil8ufotn0000jgqypryvjb4m" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Linux-User-管理" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/02/28/Linux-User-管理/" class="article-date">
+  <time datetime="2016-02-28T15:23:51.000Z" itemprop="datePublished">2016-02-28</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/02/28/Linux-User-管理/">Linux User 管理</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="关于用户"><a href="#关于用户" class="headerlink" title="关于用户"></a>关于用户</h3><p>Linux账号管理需要涉及到两个文件/etc/passwd和/etc/shadow,早期的Unix系统的密码是放在/etc/passwd这个文件上面的，但由于该文件的特性是所有程序都能够读取，这样一来很容易造成密码数据被窃取，所以才把密码放在/etc/shadow这个文件上，所以在/etc/passwd文件里面的密码字段就只有一个X。</p>
+<p>与用户管理相关的指令有：useradd、passwd、usermod、userdel</p>
+<h4 id="useradd"><a href="#useradd" class="headerlink" title="useradd"></a>useradd</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]<span class="preprocessor"># useradd [-u UID] [-g 初始群组] [-G 次要群组] [-mM]\</span><br><span class="line">&gt; [-c 说明栏] [-d 家目录的绝对路径] [-s shell] 使用者账号名</span></span><br><span class="line"> 选项不参数：</span><br><span class="line">  -u ：后面接的是 UID ，是一组数字。直接指定一个特定的UID 给这个账号；</span><br><span class="line">  -g ：后面接的那个组名就是我们上面提到的 initial group 啦～ 该群组的 GID 会被放置到 /etc/passwd 的第四个字段内。</span><br><span class="line">  -G ：后面接的组名则是这个账号还可以加入的群组。 这个选项与参数会修改 /etc/group 内的相关资料喔！</span><br><span class="line">  -M ：强制！不要建立用户家目录！(系统账号默认值)</span><br><span class="line">  -m ：强制！要建立用户家目录！(一般账号默认值)</span><br><span class="line">  -c ：这个就是 /etc/passwd 的第五栏的说明内容啦～可以随便我们设定啦～</span><br><span class="line">  -d ：指定某个目录成为家目录，而不要使用默认值。务必使用绝对路径！</span><br><span class="line">  -r ：建立一个系统的账号，这个账号的 UID 会有限制 (参考 /etc/login.defs) -s ：后面接一个 shell ，若没有指定则预设是 /bin/bash的啦～</span><br><span class="line">  -e ：后面接一个日期，格式为『YYYY-MM-DD』此项目可写入 shadow 第八字段， 亦即账号失效日的设定项目啰；</span><br><span class="line">  -f ：后面接 shadow 的第七字段项目，指定密码是否会失效。<span class="number">0</span>为立刻失效， -<span class="number">1</span> 为永远不失效(密码只会过期而强制登入时重新设定而已。)</span><br><span class="line"></span><br><span class="line">范例一：完全参考默认值建立一个用户，名称为 vbird1</span><br><span class="line">  [root@www ~]<span class="preprocessor"># useradd vbird1</span></span><br><span class="line">  [root@www ~]<span class="preprocessor"># ll -d /home/vbird1</span></span><br><span class="line">  drwx------ <span class="number">4</span> vbird1 vbird1 <span class="number">4096</span> Feb <span class="number">25</span> <span class="number">09</span>:<span class="number">38</span> /home/vbird1</span><br><span class="line">  <span class="preprocessor"># 默认会建立用户家目录，且权限为 <span class="number">700</span> ！这是重点！</span></span><br><span class="line">  [root@www ~]<span class="preprocessor"># grep vbird1 /etc/passwd /etc/shadow /etc/group</span></span><br><span class="line">  /etc/passwd:vbird1:x:<span class="number">504</span>:<span class="number">505</span>::/home/vbird1:/bin/bash</span><br><span class="line">  /etc/shadow:vbird1:!!:<span class="number">14300</span>:<span class="number">0</span>:<span class="number">99999</span>:<span class="number">7</span>:::</span><br><span class="line">  /etc/group:vbird1:x:<span class="number">505</span>: &lt;==预设会建立一个与账号一模一样的群组名</span><br></pre></td></tr></table></figure>
+<p>执行该命令后，系统会帮我们处理几个动作：</p>
+<li>在/etc/passwd中建立一行与账号相关的数据</li><br><li>在/etc/shadow文件里面将此账号的密码相关数据写进去，但是此时的密码字段为空</li><br><li>在/etc/group文件里面新建一行与账号名称一样的群组信息</li><br><li>在/home底下建立一个与账号一样的目录为用户的家目录(该动作不一定会执行，如果建立的是系统用户或是参数中限制不创建用户目录的话将不执行)，且权限为700。</li>
+
+<p>执行useradd后，一般都会接着执行passwd命令来设置刚创建的用户的密码。</p>
+<p>passwd命令参数：</p>
+<p><img src="/pictures/Linux-User-管理-passwd命令参数1.png" alt=""><br><img src="/pictures/Linux-User-管理-passwd命令参数2.png" alt=""></p>
+<font color="red">在执行passwd的时候，一般用户会要求输入旧的密码，而对于root用户来说，在修改其他用户或是自己用户的密码时，不需要输入旧密码，只需要直接输入新密码就可以了！</font>
+
+<h4 id="usermod"><a href="#usermod" class="headerlink" title="usermod"></a>usermod</h4><p>我们可以通过usermod来修改用户的相关数据，当然也可以直接修改/etc/passwd、/etc/shadow、/etc/group三个文件。</p>
+<p><img src="/pictures/Linux-User-管理-usermod命令参数.png" alt=""></p>
+<h4 id="userdel"><a href="#userdel" class="headerlink" title="userdel"></a>userdel</h4><p>userdel用来删除用户，与用户相关的数据有：</p>
+<li>用户账号密码相关参数：/etc/passwd, /etc/shadow</li><br><li>使用者相关群组数据：/etc/group, /etc/gshadow</li><br><li>用户个人数据：/home/username, /var/spool/mail/username …</li>
+
+<p>整个指令的用法很简单：</p>
+<p><img src="/pictures/Linux-User-管理-userdel命令参数.png" alt=""></p>
+<p>其实用户在系统上用过一阵时间后，会在系统的其他地方留下用户的其他文件，所以，如果想要完整的删除用户的所有数据，在执行<code>userdel -r username</code>之前，最好先执行<code>find / -user username</code>查出系统的属于username的档案，然后再加以删除！</p>
+<p>useradd、usermod、userdel这三个命令只有root才可以执行，那么一般用户要怎样修改自己的个人账号信息呢，可以有以下的命令来执行：</p>
+<h4 id="finger"><a href="#finger" class="headerlink" title="finger"></a>finger</h4><p>finger 的中文字面意义是：『手指』或者是『指纹』的意思。这个 finger 可以查阅很多用户相的信息喔！ 大部分都是在 /etc/passwd 这个档案里面的信息啦！我们就先来检查检查用户信息吧！</p>
+<p><img src="/pictures/Linux-User-管理-finger命令参数.png" alt=""></p>
+<p>由于finger类似于指纹功能，他会将用户的相关属性列出来！如上表所示，其实他列出来的几乎都是 /etc/passwd 档案里面的东西。列出的信息说明如下：</p>
+<li>Login：为使用者账号，亦即 /etc/passwd 内的第一字段;</li><br><li>Name：为全名，亦即 /etc/passwd 内的第五字段(也称为批注)；</li><br><li>Directory：就是家目录了；</li><br><li>Shell：就是使用的 Shell 档案所在；</li><br><li>Never logged in.：figner 还会调查用户登入主机的情况喔！</li><br><li>No mail.：调查 /var/spool/mail 当中的信箱资料；</li><br><li>No Plan.：调查 ~vbird1/.plan 档案，并将该档案取出来说明！</li>
+
+<h4 id="chfn"><a href="#chfn" class="headerlink" title="chfn"></a>chfn</h4><p>chfn 有点像是： change finger 的意思！这玩意的使用方法如下：</p>
+<p><img src="/pictures/Linux-User-管理-chfn命令参数.png" alt=""></p>
+<p>这个指令说实在的，除非是你的主机有很多的用户，否则倒真是用不着这个程序！这就有点像是 bbs里头更改你『个人属性』的那一个资料啦！不过还是可以自己玩一玩！尤其是用来提醒自己相关资料啦！</p>
+<h4 id="chsh"><a href="#chsh" class="headerlink" title="chsh"></a>chsh</h4><p>这就是 change shell 的简写！使用方法就更简单了！</p>
+<p><img src="/pictures/Linux-User-管理-chsh命令参数.png" alt=""></p>
+<p>不论是 chfn 与 chsh ，都是能够让一般用户修改 /etc/passwd 这个系统文件的！所以你猜猜，这两个档案的权限是什么？ 一定是 <a href="/2016/02/28/Linux-%E4%B8%ADSUID%E3%80%81SGID%E5%92%8CSBIT%E7%9A%84%E7%94%A8%E9%80%94/">SUID</a> 的功能啦！</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/02/28/Linux-User-管理/" data-id="cil8ufovb0026jgqy7exeu6s9" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Linux-中SUID、SGID和SBIT的用途" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/02/28/Linux-中SUID、SGID和SBIT的用途/" class="article-date">
+  <time datetime="2016-02-28T13:58:12.000Z" itemprop="datePublished">2016-02-28</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/02/28/Linux-中SUID、SGID和SBIT的用途/">Linux 中SUID、SGID和SBIT的用途</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Linux中，用户的权限一般会根据用户的uid和gid来确定，但是在运行的时候，系统根据的是用户的有效uid和有效gid，本来的话，在执行文件前，用户的uid和gid是也就是用户的有效uid和有效gid，这也就决定了用户的权限，但是，当文档设置了suid和sgid后，用户的有效uid和gid将会改变，这也就是suid和sgid的功能。</p>
+<p>其实在UNIX的实现中，文件权限用12个二进制位表示，如果该位置上的值是1，表示有相应的权限：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">11</span> <span class="number">10</span> <span class="number">9</span> <span class="number">8</span> <span class="number">7</span> <span class="number">6</span> <span class="number">5</span> <span class="number">4</span> <span class="number">3</span> <span class="number">2</span> <span class="number">1</span> <span class="number">0</span></span><br><span class="line"></span><br><span class="line">S G T r w x r w x r w x</span><br></pre></td></tr></table></figure></p>
+<p>第11位为SUID位，第10位为SGID位，第9位为sticky位，第8-0位对应于上面的三组rwx位。</p>
+<p>给文件加SUID和SUID的命令如下：<br><figure class="highlight perl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">chmod</span> u+<span class="keyword">s</span> filename 设置SUID位</span><br><span class="line"></span><br><span class="line"><span class="keyword">chmod</span> u-<span class="keyword">s</span> filename 去掉SUID设置</span><br><span class="line"></span><br><span class="line"><span class="keyword">chmod</span> g+<span class="keyword">s</span> filename 设置SGID位</span><br><span class="line"></span><br><span class="line"><span class="keyword">chmod</span> g-<span class="keyword">s</span> filename 去掉SGID设置</span><br></pre></td></tr></table></figure></p>
+<p>另外一种方法是chmod命令用八进制表示方法的设置。如果明白了前面的12位权限表示法也很简单。如 <code>chmod 2770 filename</code>，将filename文件设置权限为<code>rwxrws---</code>,此时的sgid位有效，如果为<code>chmod  2760 filename</code>, 将filename文件设置权限为<code>rwxrwS---</code>,此时sgid无效。</p>
+<p>suid只对可执行文件有意义，sgid只对目录和可执行文件有意义。suid和sgid起作用的前提是，调用者对文件有执行权限，对目录有写以及执行权限，否则的话，即使设置了suid和sgid位，都会无效。</p>
+<p>由于SUID和SGID是在执行程序（程序的可执行位被设置）时起作用，而可执行位只对普通文件和目录文件有意义，所以设置其他种类文件的SUID和SGID位是没有多大意义的。</p>
+<p>当可执行文件设置了suid后，调用者在运行该文件的时候（前提是调用者有运行该文件的权限），将会暂时获得该文件拥有者的权限,此时调用者的有效uid就是文件拥有者的uid，例如，使用如下命令：<br><figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ls</span> -<span class="keyword">l</span> /usr/bin/passwd</span><br></pre></td></tr></table></figure></p>
+<p>我们会得到如下的结果：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-rwsr-xr-x <span class="number">1</span> root root <span class="number">42824</span> Sep <span class="number">13</span>  <span class="number">2012</span> /usr/bin/passwd</span><br></pre></td></tr></table></figure></p>
+<p>可以看到，在文件拥有者的执行位上出现为s而不是x,所以说passwd这个程序是具有SUID权限的。我们知道在修改用户密码的时候，用的就是passwd这个命令，而我们又知道在linux下面，用户密码是存储在/etc/shadow这个文件里面的。首先查看一下/etc/shadow这个文件的权限：<br><figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ls</span> -<span class="keyword">l</span> /etc/shadow</span><br></pre></td></tr></table></figure></p>
+<p>返回的结果如下：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-rw-r----- <span class="number">1</span> root shadow <span class="number">1138</span> Dec <span class="number">13</span> <span class="number">20</span>:<span class="number">00</span> /etc/shadow</span><br></pre></td></tr></table></figure></p>
+<p>由上面的结果，我们知道只有root可以往shadow文件中写入数据，其他用户连查看的权限都没有。那我们平时是怎么修改密码呢？没错，就是和SUID有关。当我们使用passwd命令时，就获得了passwd的所有者即root的权限，进而可以对shadow文件进行写入操作。</p>
+<p>SGID即Set GID的缩写，它出现在文件所属组权限的执行位上面，它对普通二进制文件和目录都有效。当它作用于普通文件时，和SUID类似，在执行该文件时，用户将获得该文件所属组的权限。当SGID作用于目录时，意义就非常重大了。当用户对某一目录有写和执行权限时，该用户就可以在该目录下建立文件，如果该目录用SGID修饰，则该用户在这个目录下建立的文件都是属于这个目录所属的组。</p>
+<p>SBIT即Sticky Bit，它出现在其他用户权限的执行位上，它只能用来修饰一个目录。当某一个目录拥有SBIT权限时，则任何一个能够在这个目录下建立文件的用户，该用户在这个目录下所建立的文件，只有该用户自己和root可以删除，其他用户均不可以。例如：<br><figure class="highlight avrasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ls -<span class="keyword">ld</span> /tmp</span><br></pre></td></tr></table></figure></p>
+<p>可以得到以下结果：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">drwxrwxrwt <span class="number">12</span> root root <span class="number">12288</span> Dec <span class="number">17</span> <span class="number">16</span>:<span class="number">33</span> /tmp</span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/02/28/Linux-中SUID、SGID和SBIT的用途/" data-id="cil8ufov6001zjgqy13u49igf" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-基于用户的协同过滤算法" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2016/02/28/基于用户的协同过滤算法/" class="article-date">
@@ -126,7 +715,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/基于用户的协同过滤算法/" data-id="cil6jv54s000g2sqy69bj42jo" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/28/基于用户的协同过滤算法/" data-id="cil8ufoub000mjgqycxgm31wa" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/推荐算法/">推荐算法</a></li></ul>
@@ -198,640 +787,10 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/at命令详解/" data-id="cil6jv55f001h2sqyhwgf5am9" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/28/at命令详解/" data-id="cil8ufouw001mjgqyh1x1zhbz" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux命令/">Linux命令</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-awk命令详解" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/02/28/awk命令详解/" class="article-date">
-  <time datetime="2016-02-28T12:35:27.000Z" itemprop="datePublished">2016-02-28</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Linux/">Linux</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/02/28/awk命令详解/">awk命令详解</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>awk是一个强大的文本分析工具，相对于grep的查找，sed的编辑，awk在其对数据分析并生成报告时，显得尤为强大。简单来说awk就是把文件逐行的读入，以空格为默认分隔符将每行切片，切开的部分再进行各种分析处理。</p>
-<p>awk有3个不同版本: awk、nawk和gawk，未作特别说明，一般指gawk，gawk 是 AWK 的 GNU 版本。</p>
-<p>awk其名称得自于它的创始人 Alfred Aho 、Peter Weinberger 和 Brian Kernighan 姓氏的首个字母。实际上 AWK 的确拥有自己的语言： AWK 程序设计语言 ， 三位创建者已将它正式定义为“样式扫描和处理语言”。它允许您创建简短的程序，这些程序读取输入文件、为数据排序、处理数据、对输入执行计算以及生成报表，还有无数其他的功能。</p>
-<p>使用方法</p>
-<p><code>awk &#39;{pattern + action}&#39; {filenames}</code></p>
-<p>尽管操作可能会很复杂，但语法总是这样，其中 pattern 表示 AWK 在数据中查找的内容，而 action 是在找到匹配内容时所执行的一系列命令。花括号（{}）不需要在程序中始终出现，但它们用于根据特定的模式对一系列指令进行分组。 pattern就是要表示的正则表达式，用斜杠括起来。</p>
-<p>awk语言的最基本功能是在文件或者字符串中基于指定规则浏览和抽取信息，awk抽取信息后，才能进行其他文本操作。完整的awk脚本通常用来格式化文本文件中的信息。</p>
-<p>通常，awk是以文件的一行为处理单位的。awk每接收文件的一行，然后执行相应的命令，来处理文本。</p>
-<p>调用awk有三种方式调用awk</p>
-<p>1.命令行方式<br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">awk [-F  field-separator]  <span class="string">'commands'</span>  <span class="function"><span class="title">input-file</span><span class="params">(s)</span></span></span><br></pre></td></tr></table></figure></p>
-<p>其中，commands 是真正awk命令，[-F域分隔符]是可选的。 input-file(s) 是待处理的文件。<br>在awk中，文件的每一行中，由域分隔符分开的每一项称为一个域。通常，在不指名-F域分隔符的情况下，默认的域分隔符是空格。</p>
-<p>2.shell脚本方式</p>
-<p>将所有的awk命令插入一个文件，并使awk程序可执行，然后awk命令解释器作为脚本的首行，一遍通过键入脚本名称来调用。<br>相当于shell脚本首行的：#!/bin/sh<br>可以换成：#!/bin/awk</p>
-<p>3.将所有的awk命令插入一个单独文件，然后调用：<br><figure class="highlight applescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">awk -f awk-<span class="keyword">script</span>-<span class="type">file</span> input-<span class="type">file</span>(s)</span><br></pre></td></tr></table></figure></p>
-<p>其中，-f选项加载awk-script-file中的awk脚本，input-file(s)跟上面的是一样的。</p>
-<p>本章重点介绍命令行方式。</p>
-<p>入门实例</p>
-<p>假设last -n 5的输出如下</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]<span class="preprocessor"># last -n <span class="number">5</span> &lt;==仅取出前五行</span></span><br><span class="line">root     pts/<span class="number">1</span>   <span class="number">192.168</span><span class="number">.1</span><span class="number">.100</span>  Tue Feb <span class="number">10</span> <span class="number">11</span>:<span class="number">21</span>   still logged in</span><br><span class="line">root     pts/<span class="number">1</span>   <span class="number">192.168</span><span class="number">.1</span><span class="number">.100</span>  Tue Feb <span class="number">10</span> <span class="number">00</span>:<span class="number">46</span> - <span class="number">02</span>:<span class="number">28</span>  (<span class="number">01</span>:<span class="number">41</span>)</span><br><span class="line">root     pts/<span class="number">1</span>   <span class="number">192.168</span><span class="number">.1</span><span class="number">.100</span>  Mon Feb  <span class="number">9</span> <span class="number">11</span>:<span class="number">41</span> - <span class="number">18</span>:<span class="number">30</span>  (<span class="number">06</span>:<span class="number">48</span>)</span><br><span class="line">dmtsai   pts/<span class="number">1</span>   <span class="number">192.168</span><span class="number">.1</span><span class="number">.100</span>  Mon Feb  <span class="number">9</span> <span class="number">11</span>:<span class="number">41</span> - <span class="number">11</span>:<span class="number">41</span>  (<span class="number">00</span>:<span class="number">00</span>)</span><br><span class="line">root     tty1                   Fri Sep  <span class="number">5</span> <span class="number">14</span>:<span class="number">09</span> - <span class="number">14</span>:<span class="number">10</span>  (<span class="number">00</span>:<span class="number">01</span>)</span><br></pre></td></tr></table></figure>
-<p>如果只是显示最近登录的5个帐号<br><figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">#last -<span class="keyword">n</span> 5 | awk  '&#123;<span class="keyword">print</span> <span class="label">$1&#125;</span>'</span><br><span class="line">root</span><br><span class="line">root</span><br><span class="line">root</span><br><span class="line">dmtsai</span><br><span class="line">root</span><br></pre></td></tr></table></figure></p>
-<p>awk工作流程是这样的：读入有’\n’换行符分割的一条记录，然后将记录按指定的域分隔符划分域，填充域，$0则表示所有域,$1表示第一个域,$n表示第n个域。默认域分隔符是”空白键” 或 “[tab]键”,所以$1表示登录用户，$3表示登录用户ip,以此类推。</p>
-<p>如果只是显示/etc/passwd的账户<br><figure class="highlight autoit"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">#cat /etc/passwd |awk  -F <span class="string">':'</span>  <span class="string">'&#123;print $1&#125;'</span>  </span></span><br><span class="line">root</span><br><span class="line">daemon</span><br><span class="line">bin</span><br><span class="line">sys</span><br></pre></td></tr></table></figure></p>
-<p>这种是awk+action的示例，每行都会执行action{print $1}。</p>
-<p>-F指定域分隔符为’:’。</p>
-<p>如果只是显示/etc/passwd的账户和账户对应的shell,而账户与shell之间以tab键分割<br><figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#<span class="keyword">cat</span> /etc/passwd |awk  -F ':'  '&#123;<span class="keyword">print</span> <span class="label">$1</span><span class="string">"\t"</span><span class="label">$7&#125;</span>'</span><br><span class="line">root    /bin/bash</span><br><span class="line">daemon  /bin/<span class="keyword">sh</span></span><br><span class="line">bin     /bin/<span class="keyword">sh</span></span><br><span class="line">sys     /bin/<span class="keyword">sh</span></span><br></pre></td></tr></table></figure></p>
-<p>如果只是显示/etc/passwd的账户和账户对应的shell,而账户与shell之间以逗号分割,而且在所有行添加列名name,shell,在最后一行添加”blue,/bin/nosh”。</p>
-<figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">cat</span> /etc/passwd |awk  -F ':'  'BEGIN &#123;<span class="keyword">print</span> <span class="string">"name,shell"</span>&#125;  &#123;<span class="keyword">print</span> <span class="label">$1</span><span class="string">","</span><span class="label">$7&#125;</span> END &#123;<span class="keyword">print</span> <span class="string">"blue,/bin/nosh"</span>&#125;'</span><br><span class="line">name,<span class="keyword">shell</span></span><br><span class="line">root,/bin/bash</span><br><span class="line">daemon,/bin/<span class="keyword">sh</span></span><br><span class="line">bin,/bin/<span class="keyword">sh</span></span><br><span class="line">sys,/bin/<span class="keyword">sh</span></span><br><span class="line">....</span><br><span class="line">blue,/bin/nosh</span><br></pre></td></tr></table></figure>
-<p>awk工作流程是这样的：先执行BEGING，然后读取文件，读入有/n换行符分割的一条记录，然后将记录按指定的域分隔符划分域，填充域，$0则表示所有域,$1表示第一个域,$n表示第n个域,随后开始执行模式所对应的动作action。接着开始读入第二条记录······直到所有的记录都读完，最后执行END操作。</p>
-<p>搜索/etc/passwd有root关键字的所有行<br><figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#awk -F: '/root/' /etc/passwd</span></span><br><span class="line"><span class="symbol">root:</span><span class="symbol">x:</span><span class="number">0</span><span class="symbol">:</span><span class="number">0</span><span class="symbol">:root</span><span class="symbol">:/root</span><span class="symbol">:/bin/bash</span></span><br></pre></td></tr></table></figure></p>
-<p>这种是pattern的使用示例，匹配了pattern(这里是root)的行才会执行action(没有指定action，默认输出每行的内容)。</p>
-<p>搜索支持正则，例如找root开头的: <code>awk -F: &#39;/^root/&#39; /etc/passwd</code></p>
-<p>搜索/etc/passwd有root关键字的所有行，并显示对应的shell<br><figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># awk -F: <span class="string">'/root/&#123;print $7&#125;'</span> <span class="regexp">/etc/</span>passwd             </span><br><span class="line"><span class="regexp">/bin/</span>bash</span><br></pre></td></tr></table></figure></p>
-<p>这里指定了action{print $7}</p>
-<p>awk内置变量<br>awk有许多内置变量用来设置环境信息，这些变量可以被改变，下面给出了最常用的一些变量。</p>
-<figure class="highlight dos"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">ARGC               命令行参数个数</span><br><span class="line">ARGV               命令行参数排列</span><br><span class="line">ENVIRON            支持队列中系统环境变量的使用</span><br><span class="line">FILENAME           awk浏览的文件名</span><br><span class="line">FNR                浏览文件的记录数</span><br><span class="line"><span class="built_in">FS</span>                 设置输入域分隔符，等价于命令行 -F选项</span><br><span class="line">NF                 浏览记录的域的个数</span><br><span class="line">NR                 已读的记录数</span><br><span class="line">OFS                输出域分隔符</span><br><span class="line">ORS                输出记录分隔符</span><br><span class="line">RS                 控制记录分隔符</span><br></pre></td></tr></table></figure>
-<p>此外,$0变量是指整条记录。$1表示当前行的第一个域,$2表示当前行的第二个域,……以此类推。</p>
-<p>统计/etc/passwd:文件名，每行的行号，每行的列数，对应的完整行内容:<br><figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#awk  -F ':'  '&#123;print "filename:" FILENAME ",linenumber:" NR ",columns:" NF ",linecontent:"$0&#125;' /etc/passwd</span></span><br><span class="line"><span class="symbol">filename:</span>/etc/passwd,<span class="symbol">linenumber:</span><span class="number">1</span>,<span class="symbol">columns:</span><span class="number">7</span>,<span class="symbol">linecontent:</span><span class="symbol">root:</span><span class="symbol">x:</span><span class="number">0</span><span class="symbol">:</span><span class="number">0</span><span class="symbol">:root</span><span class="symbol">:/root</span><span class="symbol">:/bin/bash</span></span><br><span class="line"><span class="symbol">filename:</span>/etc/passwd,<span class="symbol">linenumber:</span><span class="number">2</span>,<span class="symbol">columns:</span><span class="number">7</span>,<span class="symbol">linecontent:</span><span class="symbol">daemon:</span><span class="symbol">x:</span><span class="number">1</span><span class="symbol">:</span><span class="number">1</span><span class="symbol">:daemon</span><span class="symbol">:/usr/sbin</span><span class="symbol">:/bin/sh</span></span><br><span class="line"><span class="symbol">filename:</span>/etc/passwd,<span class="symbol">linenumber:</span><span class="number">3</span>,<span class="symbol">columns:</span><span class="number">7</span>,<span class="symbol">linecontent:</span><span class="symbol">bin:</span><span class="symbol">x:</span><span class="number">2</span><span class="symbol">:</span><span class="number">2</span><span class="symbol">:bin</span><span class="symbol">:/bin</span><span class="symbol">:/bin/sh</span></span><br><span class="line"><span class="symbol">filename:</span>/etc/passwd,<span class="symbol">linenumber:</span><span class="number">4</span>,<span class="symbol">columns:</span><span class="number">7</span>,<span class="symbol">linecontent:</span><span class="symbol">sys:</span><span class="symbol">x:</span><span class="number">3</span><span class="symbol">:</span><span class="number">3</span><span class="symbol">:sys</span><span class="symbol">:/dev</span><span class="symbol">:/bin/sh</span></span><br></pre></td></tr></table></figure></p>
-<p>使用printf替代print,可以让代码更加简洁，易读<br><figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title">awk</span>  -F <span class="string">':'</span>  <span class="string">'&#123;printf("filename:%10s,linenumber:%s,columns:%s,linecontent:%s\n",FILENAME,NR,NF,<span class="variable">$0</span>)&#125;'</span> /etc/passwd</span><br></pre></td></tr></table></figure></p>
-<h5 id="print和printf"><a href="#print和printf" class="headerlink" title="print和printf"></a>print和printf</h5><p>awk中同时提供了print和printf两种打印输出的函数。其中print函数的参数可以是变量、数值或者字符串。字符串必须用双引号引用，参数用逗号分隔。如果没有逗号，参数就串联在一起而无法区分。这里，逗号的作用与输出文件的分隔符的作用是一样的，只是后者是空格而已。</p>
-<p>printf函数，其用法和c语言中printf基本相似,可以格式化字符串,输出复杂时，printf更加好用，代码更易懂。</p>
-<h5 id="awk编程-变量和赋值"><a href="#awk编程-变量和赋值" class="headerlink" title="awk编程,变量和赋值"></a>awk编程,变量和赋值</h5><p>除了awk的内置变量，awk还可以自定义变量。</p>
-<p>下面统计/etc/passwd的账户人数<br><figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">awk <span class="string">'&#123;count++;print $0;&#125; END&#123;print "user count is ", count&#125;'</span> /etc/passwd</span><br><span class="line"><span class="symbol">root:</span><span class="symbol">x:</span><span class="number">0</span><span class="symbol">:</span><span class="number">0</span><span class="symbol">:root</span><span class="symbol">:/root</span><span class="symbol">:/bin/bash</span></span><br><span class="line">......</span><br><span class="line">user count is  <span class="number">40</span></span><br></pre></td></tr></table></figure></p>
-<p>count是自定义变量。之前的action{}里都是只有一个print,其实print只是一个语句，而action{}可以有多个语句，以;号隔开。</p>
-<p>这里没有初始化count，虽然默认是0，但是妥当的做法还是初始化为0:<br><figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">awk '<span class="type">BEGIN</span> &#123;<span class="built_in">count</span>=<span class="number">0</span>;<span class="built_in">print</span> <span class="string">"[start]user count is "</span>, <span class="built_in">count</span>&#125; &#123;<span class="built_in">count</span>=<span class="built_in">count</span>+<span class="number">1</span>;<span class="built_in">print</span> $<span class="number">0</span>;&#125; <span class="type">END</span>&#123;<span class="built_in">print</span> <span class="string">"[end]user count is "</span>, <span class="built_in">count</span>&#125;' /etc/passwd</span><br><span class="line">[start]user <span class="built_in">count</span> <span class="keyword">is</span>  <span class="number">0</span></span><br><span class="line">root:x:<span class="number">0</span>:<span class="number">0</span>:root:/root:/bin/bash</span><br><span class="line">...</span><br><span class="line">[end]user <span class="built_in">count</span> <span class="keyword">is</span>  <span class="number">40</span></span><br></pre></td></tr></table></figure></p>
-<p>统计某个文件夹下的文件占用的字节数<br><figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ls</span> -<span class="keyword">l</span> |awk 'BEGIN &#123;size=0;&#125; &#123;size=size+<span class="label">$5</span>;&#125; END&#123;<span class="keyword">print</span> <span class="string">"[end]size is "</span>, size&#125;'</span><br><span class="line">[end]size is  8657198</span><br></pre></td></tr></table></figure></p>
-<p>如果以M为单位显示:<br><figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ls</span> -<span class="keyword">l</span> |awk 'BEGIN &#123;size=0;&#125; &#123;size=size+<span class="label">$5</span>;&#125; END&#123;<span class="keyword">print</span> <span class="string">"[end]size is "</span>, size/1024/1024,<span class="string">"M"</span>&#125;'</span><br><span class="line">[end]size is  8.25889 <span class="literal">M</span></span><br><span class="line">注意，统计不包括文件夹的子目录。</span><br></pre></td></tr></table></figure></p>
-<p>条件语句</p>
-<p>awk中的条件语句是从C语言中借鉴来的，见如下声明方式：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (expression) &#123;</span><br><span class="line">    statement;</span><br><span class="line">    statement;</span><br><span class="line">    ... ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (expression) &#123;</span><br><span class="line">    statement;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    statement2;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (expression) &#123;</span><br><span class="line">    statement1;</span><br><span class="line">&#125; <span class="keyword">else</span> <span class="keyword">if</span> (expression1) &#123;</span><br><span class="line">    statement2;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    statement3;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>统计某个文件夹下的文件占用的字节数,过滤4096大小的文件(一般都是文件夹):</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ls -l |awk '<span class="operator"><span class="keyword">BEGIN</span> &#123;<span class="keyword">size</span>=<span class="number">0</span>;</span>print "[<span class="operator"><span class="keyword">start</span>]<span class="keyword">size</span> <span class="keyword">is</span> <span class="string">", size&#125; &#123;if($5!=4096)&#123;size=size+$5;&#125;&#125; END&#123;print "</span>[<span class="keyword">end</span>]<span class="keyword">size</span> <span class="keyword">is</span> <span class="string">", size/1024/1024,"</span><span class="keyword">M</span><span class="string">"&#125;'</span><br><span class="line">[end]size is  8.22339 M</span></span></span><br></pre></td></tr></table></figure>
-<p>循环语句</p>
-<p>awk中的循环语句同样借鉴于C语言，支持while、do/while、for、break、continue，这些关键字的语义和C语言中的语义完全相同。</p>
-<p>数组</p>
-<p>因为awk中数组的下标可以是数字和字母，数组的下标通常被称为关键字(key)。值和关键字都存储在内部的一张针对key/value应用hash的表格里。由于hash不是顺序存储，因此在显示数组内容时会发现，它们并不是按照你预料的顺序显示出来的。数组和变量一样，都是在使用时自动创建的，awk也同样会自动判断其存储的是数字还是字符串。一般而言，awk中的数组用来从记录中收集信息，可以用于计算总和、统计单词以及跟踪模板被匹配的次数等等。</p>
-<p>显示/etc/passwd的账户</p>
-<figure class="highlight applescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">awk -F ':' 'BEGIN &#123;<span class="command">count</span>=<span class="number">0</span>;&#125; &#123;<span class="property">name</span>[<span class="command">count</span>] = $<span class="number">1</span>;<span class="command">count</span>++;&#125;; END&#123;<span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; NR; i++) print i, <span class="property">name</span>[i]&#125;' /etc/passwd</span><br><span class="line"><span class="number">0</span> root</span><br><span class="line"><span class="number">1</span> daemon</span><br><span class="line"><span class="number">2</span> bin</span><br><span class="line"><span class="number">3</span> sys</span><br><span class="line"><span class="number">4</span> sync</span><br><span class="line"><span class="number">5</span> games</span><br><span class="line">......</span><br></pre></td></tr></table></figure>
-<p>这里使用for循环遍历数组.</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/awk命令详解/" data-id="cil6jv55d001e2sqy3m0zzxsl" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux命令/">Linux命令</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-tee命令详解" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/02/28/tee命令详解/" class="article-date">
-  <time datetime="2016-02-28T12:29:32.000Z" itemprop="datePublished">2016-02-28</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Linux/">Linux</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/02/28/tee命令详解/">tee命令详解</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p><img src="/pictures/Linux命令面试问答-tee命令.png" alt="tee命令示意图">tee过滤器用来想多个目标发送输出的内容。如果用于管道的话，他可以将输出复制一份到文件，兵复制另外一份到屏幕上（或一些其他的程序）。</p>
-<figure class="highlight gherkin"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ll /etc |<span class="string"> nl </span>|<span class="string"> tee /temp//ll.out</span></span><br></pre></td></tr></table></figure>
-<p>在以上例子中，从ll输出可以捕获到/temp/ll.out文件中，并且同样在屏幕上显示出来。</p>
-<p>tee [ -a ] [ -i ] [檔案 … ]</p>
-<p>参数:</p>
-<p>檔案 一个或多个档案，能够接收 tee-d 的输出。</p>
-<p>Flags:</p>
-<p>-a 追加到目标文件而不是覆盖<br>-i 忽略中断。</p>
-<p>tee命令读取标准输入，把这些内容同时输出到标准输出和（多个）文件中（read from standard input and write to standard output and files. Copy standard input to each FILE, and also to standard output. If a FILE is -, copy again to standard output.）。在info tee中说道：tee命令可以重定向标准输出到多个文件（<code>tee&#39;: Redirect output to multiple files. The</code>tee’ command copies standard input to standard output and also to any files given as arguments.  This is useful when you want not only to send some data down a pipe, but also to save a copy.）。要注意的是：在使用管道线时，前一个命令的标准错误输出不会被tee读取。</p>
-<p>常用参数</p>
-<p>格式：tee</p>
-<p>只输出到标准输出，因为没有指定文件嘛。</p>
-<p>格式：tee file</p>
-<p>输出到标准输出的同时，保存到文件file中。如果文件不存在，则创建；如果已经存在，则覆盖之。（If a file being written to does not already exist, it is created. If a file being written to already exists, the data it previously<br>contained is overwritten unless the `-a’ option is used.）</p>
-<p>格式：tee -a file</p>
-<p>输出到标准输出的同时，追加到文件file中。如果文件不存在，则创建；如果已经存在，就在末尾追加内容，而不是覆盖。</p>
-<p>格式：tee -</p>
-<p>输出到标准输出两次。（A FILE of <code>-&#39; causes</code>tee’ to send another copy of input to standard output, but this is typically not that useful as the copies are interleaved.）</p>
-<p>格式：tee file1 file2 -</p>
-<p>输出到标准输出两次，同时保存到file1和file2中。</p>
-<h4 id="使用tee命令把标准错误输出也保存到文件"><a href="#使用tee命令把标准错误输出也保存到文件" class="headerlink" title="使用tee命令把标准错误输出也保存到文件"></a>使用tee命令把标准错误输出也保存到文件</h4><figure class="highlight mel"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[root<span class="variable">@web</span> ~]# <span class="keyword">ls</span> <span class="string">"*"</span></span><br><span class="line"><span class="keyword">ls</span>: <span class="variable">*:</span> 没有那个文件或目录</span><br><span class="line">[root<span class="variable">@web</span> ~]# <span class="keyword">ls</span> <span class="string">"*"</span> | tee -</span><br><span class="line"><span class="keyword">ls</span>: <span class="variable">*:</span> 没有那个文件或目录</span><br><span class="line">[root<span class="variable">@web</span> ~]# <span class="keyword">ls</span> <span class="string">"*"</span> | tee <span class="keyword">ls</span>.txt</span><br><span class="line"><span class="keyword">ls</span>: <span class="variable">*:</span> 没有那个文件或目录</span><br><span class="line">[root<span class="variable">@web</span> ~]# cat <span class="keyword">ls</span>.txt</span><br><span class="line">[root<span class="variable">@web</span> ~]# <span class="keyword">ls</span> <span class="string">"*"</span> <span class="number">2</span>&gt;&amp;<span class="number">1</span> | tee <span class="keyword">ls</span>.txt</span><br><span class="line"><span class="keyword">ls</span>: <span class="variable">*:</span> 没有那个文件或目录</span><br><span class="line">[root<span class="variable">@web</span> ~]# cat <span class="keyword">ls</span>.txt</span><br><span class="line"><span class="keyword">ls</span>: <span class="variable">*:</span> 没有那个文件或目录</span><br><span class="line">[root<span class="variable">@web</span> ~]#</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/tee命令详解/" data-id="cil6jv55600142sqyyacdhzd1" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux命令/">Linux命令</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-cpio命令详解" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/02/28/cpio命令详解/" class="article-date">
-  <time datetime="2016-02-28T12:23:51.000Z" itemprop="datePublished">2016-02-28</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Linux/">Linux</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/02/28/cpio命令详解/">cpio命令详解</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>cpio命令是通过重定向的方式将文件进行打包备份，还原恢复的工具，它可以解压以“.cpio”或者“.tar”结尾的文件。</p>
-<p>选项 含义<br><figure class="highlight haml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">-<span class="ruby">o 将文件拷贝打包成文件或者将文件输出到设备上。</span><br><span class="line"></span>-<span class="ruby">i 将打包文件解压或者将设备上的备份还原到系统。</span><br><span class="line"></span>-<span class="ruby">t 查看cpio打包的文件内容或者输出到设备上的文件内容。</span><br><span class="line"></span>-<span class="ruby">v 显示打包过程中的文件名称。</span><br><span class="line"></span>-<span class="ruby">d 在cpio还原文件的过程中，自动的建立相应的目录。</span><br><span class="line"></span>-<span class="ruby">c 一种较新的存储方式。</span><br><span class="line"></span>-<span class="ruby"><span class="constant">B</span> 让默认的<span class="constant">Blocks</span>可以增大到<span class="number">5120</span> bytes，默认<span class="constant">Blocks</span>为<span class="number">512</span> bytes，这样做的好处是可以加快存取速度。</span></span><br></pre></td></tr></table></figure></p>
-<p>注意:</p>
-<p>1)cpio恢复的路径，如果cpio在打包备份的时候用的是绝对路径，那么在恢复的时候会自动恢复到这些绝对路径下，同理，如果在打包备份用的是相对路径，还原时也将恢复到相对路径下。</p>
-<p>2)cpio无法直接读取文件，它需要每个文件或者目录的完整路径名才能识别读取，而find命令的输出刚好做到了这点，因此，cpio命令一般和find命令配合使用。</p>
-<p>3)cpio恢复的时候不会自动覆盖同名文件。</p>
-<p>4)不会创建目录而是直接解压到当前文件夹。</p>
-<h4 id="举例"><a href="#举例" class="headerlink" title="[举例]"></a>[举例]</h4><p>*将etc目录备份：</p>
-<figure class="highlight dos"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">find</span> ./etc -<span class="built_in">print</span> |cpio -ov &gt;etc.cpio</span><br></pre></td></tr></table></figure>
-<p>*要恢复文件的时候</p>
-<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="id">#cpio</span> -idv &lt;/root/etc.cpio</span><br></pre></td></tr></table></figure>
-<p>*只是查看etc.cpio文件，可以使用</p>
-<figure class="highlight vala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor"># cpio -tv &lt;etc.cpio</span></span><br></pre></td></tr></table></figure>
-<p>输入之后，输出如下：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">drwxrwxr-x   <span class="number">4</span> quiethea quiethea        <span class="number">0</span> Nov  <span class="number">4</span> <span class="number">17</span>:<span class="number">14</span> etc</span><br><span class="line">-rw-rw-r--   <span class="number">1</span> quiethea quiethea        <span class="number">0</span> Nov  <span class="number">4</span> <span class="number">17</span>:<span class="number">07</span> etc/<span class="number">2</span></span><br><span class="line">drwxrwxr-x   <span class="number">2</span> quiethea quiethea        <span class="number">0</span> Nov  <span class="number">4</span> <span class="number">17</span>:<span class="number">07</span> etc/<span class="number">11</span></span><br><span class="line">-rw-rw-r--   <span class="number">1</span> quiethea quiethea        <span class="number">0</span> Nov  <span class="number">4</span> <span class="number">17</span>:<span class="number">07</span> etc/<span class="number">11</span>/<span class="number">11</span></span><br><span class="line">-rw-rw-r--   <span class="number">1</span> quiethea quiethea        <span class="number">0</span> Nov  <span class="number">4</span> <span class="number">17</span>:<span class="number">07</span> etc/<span class="number">4</span></span><br><span class="line">drwxrwxr-x   <span class="number">2</span> quiethea quiethea        <span class="number">0</span> Nov  <span class="number">4</span> <span class="number">17</span>:<span class="number">07</span> etc/<span class="number">22</span></span><br><span class="line">-rw-rw-r--   <span class="number">1</span> quiethea quiethea        <span class="number">0</span> Nov  <span class="number">4</span> <span class="number">17</span>:<span class="number">07</span> etc/<span class="number">3</span></span><br><span class="line">-rw-rw-r--   <span class="number">1</span> quiethea quiethea        <span class="number">0</span> Nov  <span class="number">4</span> <span class="number">17</span>:<span class="number">07</span> etc/<span class="number">1</span></span><br><span class="line">-rw-rw-r--   <span class="number">1</span> quiethea quiethea        <span class="number">0</span> Nov  <span class="number">4</span> <span class="number">17</span>:<span class="number">07</span> etc/<span class="number">5</span></span><br><span class="line">这样显示得是将要恢复得文件得名称。</span><br></pre></td></tr></table></figure>
-<h4 id="其它"><a href="#其它" class="headerlink" title="[其它]"></a>[其它]</h4><p>现在，内核刚刚启动的时候，会事先挂一个initrd内存文件系统，这个initrd文件系统镜像可以由cpio制作。参见内核源码文档initrd.txt.</p>
-<p>*例如我有一个非常简单的文件系统rootfs.制作镜像方法如下：</p>
-<figure class="highlight xquery"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$cd</span> rootfs</span><br><span class="line"><span class="variable">$find</span> . | cpio -c -o -v |gzip -<span class="number">9</span> -n &gt;../ramdisk.img</span><br></pre></td></tr></table></figure>
-<p>这样，父目录下会生成一个ramdisk.img压缩文件系统镜像。</p>
-<p>*将镜像解压恢复成文件系统的命令：</p>
-<figure class="highlight xquery"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$mkdir</span> rootfs</span><br><span class="line"><span class="variable">$cp</span> ramdisk.img rootfs</span><br><span class="line"><span class="variable">$cd</span> rootfs</span><br><span class="line"><span class="variable">$mv</span> ramdisk.img ramdisk.img.gz</span><br><span class="line"><span class="variable">$gunzip</span> ramdisk.img.gz</span><br><span class="line"><span class="variable">$cpio</span> -i &lt;ramdisk.img</span><br><span class="line"><span class="variable">$rm</span> ramdisk.img</span><br></pre></td></tr></table></figure>
-<p>这样，当前目录下就是原来rootfs中的内容了。</p>
-<p>cpio常与find 配合使用</p>
-<h3 id="实例2"><a href="#实例2" class="headerlink" title="实例2"></a>实例2</h3><h4 id="1-文件或目录打包。"><a href="#1-文件或目录打包。" class="headerlink" title="1.文件或目录打包。　"></a>1.文件或目录打包。　</h4><p>打包有如下多种情况：<br>　<br>A)含子目录打包：</p>
-<figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">find</span> <span class="regexp">/usr/</span>local<span class="regexp">/hbchen/</span> -<span class="keyword">print</span>|cpio -o &gt; <span class="regexp">/tmp/</span>hbchen1.cpio</span><br></pre></td></tr></table></figure>
-<p>将/usr/local/hbchen目录下的文件与子目录打包成一个文件库为/tmp/hbchen1.cpio。　<br>若通过－o选项来打包整个目录下的所有文件与子目录,常先利用find目录名－print来找出所有文件与子目录的名称,通过管道“ ”传给cpio打包。　</p>
-<p>B)不含子目录的打包：</p>
-<figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ls <span class="regexp">/usr/</span>local<span class="regexp">/hbchen |cpio -o &gt; /</span>tmp<span class="regexp">/hbchen3.cpio</span></span><br></pre></td></tr></table></figure>
-<p>将/usr/local/hbchen目录下的文件(不含子目录下的文件)打包成一个文件库为/tmp/hbchen3.cpio。　</p>
-<p>C)特定文件打包：</p>
-<p>可利用文本搜索命令grep与管道配合,可以排除或选择特定类型的文件传给cpio打包。</p>
-<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">如: ls <span class="regexp">/usr/</span>local<span class="regexp">/hbchen/</span>*.txt |cpio -o &gt;<span class="regexp">/tmp/</span>hbchen0.cpio</span><br><span class="line">或  ls <span class="regexp">/usr/</span>local<span class="regexp">/hbchen |grep '\*.txt$' |cpio -o &gt;/</span>tmp/hbchen6.cpio</span><br><span class="line">find <span class="regexp">/usr/</span>local/hbchen目录下以.txt结尾的文件予以打包。</span><br></pre></td></tr></table></figure>
-<p>又如：<code>ls /usr/local/hbchen grep 1 cpio -o &gt;/tmp/hbchen9.cpio</code>,其意为找出/usr/local/hbchen目录下文件名中含有1字符的文件予以打包。　</p>
-<p><code>ls /usr/local/hbchen |grep -v 1 |cpio -o &gt; /tmp/hbchen11.cpio</code>,其意为找出/usr/local/hbchen目录下文件名中不含 1 字符的文件予以打包。－v选项在grep命令中的意思是排除含有字符串的行列。　</p>
-<p>如此,可充分利用Unix的管道和一些命令的强大功能来实现文件的打包。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/cpio命令详解/" data-id="cil6jv55b001b2sqyzz9qgtxo" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux命令/">Linux命令</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Linux命令面试问答" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/02/28/Linux命令面试问答/" class="article-date">
-  <time datetime="2016-02-28T12:03:10.000Z" itemprop="datePublished">2016-02-28</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Linux/">Linux</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/02/28/Linux命令面试问答/">Linux命令面试问答</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h4 id="问1：如何查看当前的Linux服务器运行级别？"><a href="#问1：如何查看当前的Linux服务器运行级别？" class="headerlink" title="问1：如何查看当前的Linux服务器运行级别？"></a>问1：如何查看当前的Linux服务器运行级别？</h4><p>答：<code>who -r</code> 和 <code>runlevel</code> 命令可以用来查看当前的Linux服务器的运行级别。Linux的运行级别有7种：</p>
-<pre><code>0 所有进程将被终止，机器将有序的停止，关机时系统处于这个运行级别   
-1 单用户模式。用于系统维护，只有少数进程运行，同时所有服务也不启动   
-2 多用户模式。和运行级别3一样，只是网络文件系统（NFS）服务没被启动   
-3 多用户模式。允许多用户登录系统，是系统默认的启动级别 
-4 留给用户自定义的运行级别  
-5 多用户模式，并且在系统启动后运行X-Window，给出一个图形化的登录窗口  
-6 所有进程被终止，系统重新启动 
-</code></pre><p>如果想要切换运行级别，可以利用init命令，输入 <code>init n</code> 就可以切换到运行级别n（0-6），如果系统支持图形界面（init5 级别需要安装X-WINDOWS），可以输入startx 直接进入init5 图形模式。</p>
-<p>刚刚输入init级别号，只是临时更改。如果需要修改系统默认的运行级别，可以用VI编辑 /etc/inittab 文件设置。如下图 default 后面的数字就是默认的运行级别，改好之后，重启Linux系统之后生效。</p>
-<p><img src="/pictures/Linux命令面试问答-修改系统默认运行级别.jpg" alt="/etc/inittab文件"></p>
-<h4 id="问2：如何查看Linux的默认网关？"><a href="#问2：如何查看Linux的默认网关？" class="headerlink" title="问2：如何查看Linux的默认网关？"></a>问2：如何查看Linux的默认网关？</h4><p>答：用<code>route -n</code> 或 <code>netstat -nr</code>命令，我们可以查看默认网关，除了默认网关信息，这两个命令还可以显示当前的路由表。</p>
-<h4 id="问3：cpio-命令是什么？"><a href="#问3：cpio-命令是什么？" class="headerlink" title="问3：cpio 命令是什么？"></a>问3：cpio 命令是什么？</h4><p>答：cpio命令是通过重定向的方式将文件进行打包备份，还原恢复的工具，它可以解压以“.cpio”或者“.tar”结尾的文件。</p>
-<p>详细请查看<a href="http://liubigbin.github.io/2016/02/28/cpio%E5%91%BD%E4%BB%A4%E8%AF%A6%E8%A7%A3/">这里！</a></p>
-<h3 id="问4：patch命令是什么，如何使用？"><a href="#问4：patch命令是什么，如何使用？" class="headerlink" title="问4：patch命令是什么，如何使用？"></a>问4：patch命令是什么，如何使用？</h3><p>答：顾名思义，patch命令用来用来将补丁写进文本文件里面。patch命令通常是接受diff的输出，并把文件的旧版本转换为新版本。</p>
-<p>举个例子：</p>
-<figure class="highlight vala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor"># diff -Naur old_file new _file &gt; diff_file</span></span><br></pre></td></tr></table></figure>
-<p>旧文件和新文件要么都是单个的文件要么就是包含文件的目录，-r参数支持目录树递归。一旦diff文件创建好，我们就可以在旧文件上打上补丁，把他变成新文件：</p>
-<figure class="highlight vala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor"># patch &lt; diff_file</span></span><br></pre></td></tr></table></figure>
-<h3 id="问题5：如何识别Linux系统中指定文件（-etc-fstab）的关联包（即查询一个已经安装的文件属于哪个软件包）？"><a href="#问题5：如何识别Linux系统中指定文件（-etc-fstab）的关联包（即查询一个已经安装的文件属于哪个软件包）？" class="headerlink" title="问题5：如何识别Linux系统中指定文件（/etc/fstab）的关联包（即查询一个已经安装的文件属于哪个软件包）？"></a>问题5：如何识别Linux系统中指定文件（/etc/fstab）的关联包（即查询一个已经安装的文件属于哪个软件包）？</h3><p>答：命令<code>rmp -qf /etc/fstab</code>可以列出提供”/etc/fstab”这个文件的包。</p>
-<p>RPM是RedHat Package Manager（RedHat软件包管理工具）类似Windows里面的“添加/删除程序”</p>
-<p>rpm 执行安装包，二进制包（Binary）以及源代码包（Source）两种。二进制包可以直接安装在计算机中，而源代码包将会由RPM自动编译、安装。源代码包经常以src.rpm作为后缀名。</p>
-<p>常用命令组合：</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">－ivh：安装显示安装进度<span class="comment">--install--verbose--hash</span></span><br><span class="line">－Uvh：升级软件包<span class="comment">--Update；</span></span><br><span class="line">－qpl：列出RPM软件包内的文件信息[Query Package list]；</span><br><span class="line">－qpi：列出RPM软件包的描述信息[Query Package <span class="operator"><span class="keyword">install</span> <span class="keyword">package</span>(s)]；</span><br><span class="line">－qf：查找指定文件属于哪个RPM软件包[<span class="keyword">Query</span> <span class="keyword">File</span>]；</span><br><span class="line">－Va：校验所有的RPM软件包，查找丢失的文件[<span class="keyword">View</span> Lost]；</span><br><span class="line">－<span class="keyword">e</span>：删除包</span></span><br></pre></td></tr></table></figure>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">rpm -q samba <span class="comment">//查询程序是否安装</span></span><br><span class="line"></span><br><span class="line">rpm -ivh  /media/cdrom/RedHat/RPMS/samba-<span class="number">3.0</span><span class="number">.10</span>-<span class="number">1.4</span>E.i386.rpm <span class="comment">//按路径安装并显示进度</span></span><br><span class="line">rpm -ivh --relocate /=/opt/gaim gaim-<span class="number">1.3</span><span class="number">.0</span>-<span class="number">1.f</span>c4.i386.rpm    <span class="comment">//指定安装目录</span></span><br><span class="line"></span><br><span class="line">rpm -ivh --test gaim-<span class="number">1.3</span><span class="number">.0</span>-<span class="number">1.f</span>c4.i386.rpm　　　 <span class="comment">//用来检查依赖关系；并不是真正的安装；</span></span><br><span class="line">rpm -Uvh --oldpackage gaim-<span class="number">1.3</span><span class="number">.0</span>-<span class="number">1.f</span>c4.i386.rpm <span class="comment">//新版本降级为旧版本</span></span><br><span class="line"></span><br><span class="line">rpm -qa | grep httpd　　　　　 ＃[搜索指定rpm包是否安装]--all搜索*httpd*</span><br><span class="line">rpm -ql httpd　　　　　　　　　＃[搜索rpm包]--<span class="built_in">list</span>所有文件安装目录</span><br><span class="line"></span><br><span class="line">rpm -qpi Linux-<span class="number">1.4</span>-<span class="number">6.</span>i368.rpm　＃[查看rpm包]--query--package--install package信息</span><br><span class="line">rpm -qpf Linux-<span class="number">1.4</span>-<span class="number">6.</span>i368.rpm　＃[查看rpm包]--file</span><br><span class="line">rpm -qpR file.rpm　　　　　　　＃[查看包]依赖关系</span><br><span class="line">rpm2cpio file.rpm |cpio -div    ＃[抽出文件]</span><br><span class="line"></span><br><span class="line">rpm -ivh file.rpm 　＃[安装新的rpm]--install--verbose--hash</span><br><span class="line">rpm -ivh</span><br><span class="line"></span><br><span class="line">rpm -Uvh file.rpm    ＃[升级一个rpm]--upgrade</span><br><span class="line">rpm -e file.rpm      ＃[删除一个rpm包]--erase</span><br></pre></td></tr></table></figure>
-<p>常用参数：</p>
-<figure class="highlight haml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">Install/Upgrade/Erase options:</span><br><span class="line"></span><br><span class="line">-<span class="ruby">i, --install                     install package(s)</span><br><span class="line"></span>-<span class="ruby">v, --verbose                     provide more detailed output</span><br><span class="line"></span>-<span class="ruby">h, --hash                        print hash marks as package installs (good with -v)</span><br><span class="line"></span>-<span class="ruby">e, --erase                       erase (uninstall) package</span><br><span class="line"></span>-<span class="ruby"><span class="constant">U</span>, --upgrade=&lt;packagefile&gt;+      upgrade package(s)</span><br><span class="line"></span>－-replacepkge                    无论软件包是否已被安装，都强行安装软件包</span><br><span class="line">-<span class="ruby">-test                            安装测试，并不实际安装</span><br><span class="line"></span>-<span class="ruby">-nodeps                          忽略软件包的依赖关系强行安装</span><br><span class="line"></span>-<span class="ruby">-force                           忽略软件包及文件的冲突</span><br><span class="line"></span></span><br><span class="line">Query options (with -q or --query):</span><br><span class="line">-<span class="ruby">a, --all                         query/verify all packages</span><br><span class="line"></span>-<span class="ruby">p, --package                     query/verify a package file</span><br><span class="line"></span>-<span class="ruby">l, --list                        list files <span class="keyword">in</span> package</span><br><span class="line"></span>-<span class="ruby">d, --docfiles                    list all documentation files</span><br><span class="line"></span>-<span class="ruby">f, --file                        query/verify package(s) owning file</span></span><br></pre></td></tr></table></figure>
-<h3 id="问题6：Linux系统中的-proc文件系统有什么用？"><a href="#问题6：Linux系统中的-proc文件系统有什么用？" class="headerlink" title="问题6：Linux系统中的/proc文件系统有什么用？"></a>问题6：Linux系统中的/proc文件系统有什么用？</h3><p>答：/proc文件系统是一个基于内存的文件系统，维护着有关于当前正在运行的内核状态信息，其中包括CPU、内存、分区划分、<br>I/O地址、直接内存访问通道和正在运行的进程。这个文件系统所代表的并不是各种实际存储信息的文件，他们指向的是内存里的信息。<br>/proc文件系统是由系统自动维护的。</p>
-<h3 id="问题7-如何在-usr目录下找出大小超过10MB的文件？"><a href="#问题7-如何在-usr目录下找出大小超过10MB的文件？" class="headerlink" title="问题7: 如何在/usr目录下找出大小超过10MB的文件？"></a>问题7: 如何在/usr目录下找出大小超过10MB的文件？</h3><p>答：<code>find /usr -size +10M</code></p>
-<h3 id="问题8：如何在-home目录下找出120天之前被修改过的文件？"><a href="#问题8：如何在-home目录下找出120天之前被修改过的文件？" class="headerlink" title="问题8：如何在/home目录下找出120天之前被修改过的文件？"></a>问题8：如何在/home目录下找出120天之前被修改过的文件？</h3><p>答：<code>find /home -mtime +120</code></p>
-<h3 id="问题9：如何在-var目录下找出90天之内未被访问过的文件？"><a href="#问题9：如何在-var目录下找出90天之内未被访问过的文件？" class="headerlink" title="问题9：如何在/var目录下找出90天之内未被访问过的文件？"></a>问题9：如何在/var目录下找出90天之内未被访问过的文件？</h3><p>答：<code>find /var \! -atime -90</code></p>
-<h3 id="问题10：在整个目录树下查找文件“core”，如果发现则无需提示，直接删除他们？"><a href="#问题10：在整个目录树下查找文件“core”，如果发现则无需提示，直接删除他们？" class="headerlink" title="问题10：在整个目录树下查找文件“core”，如果发现则无需提示，直接删除他们？"></a>问题10：在整个目录树下查找文件“core”，如果发现则无需提示，直接删除他们？</h3><p>答：<code>find / -name core -exec rm {} \;</code> , -exec  参数后面跟的是command命令，它的终止是以;为结束标志的，所以这句命令后面的分号是不可缺少的，考虑到各个系统中分号会有不同的意义，所以前面加反斜杠。</p>
-<h3 id="问题11：strings命令有什么作用？"><a href="#问题11：strings命令有什么作用？" class="headerlink" title="问题11：strings命令有什么作用？"></a>问题11：strings命令有什么作用？</h3><p>答：strings命令用来提取和显示非文本文件中的文本字符串。</p>
-<h3 id="问题12：tee过滤器有什么作用？"><a href="#问题12：tee过滤器有什么作用？" class="headerlink" title="问题12：tee过滤器有什么作用？"></a>问题12：tee过滤器有什么作用？</h3><p>答：tee过滤器用来想多个目标发送输出的内容。如果用于管道的话，他可以将输出复制一份到文件，兵复制另外一份到屏幕上（或一些其他的程序）。</p>
-<p>详细请查看<a href="http://liubigbin.github.io/2016/02/28/tee%E5%91%BD%E4%BB%A4%E8%AF%A6%E8%A7%A3/">这里</a></p>
-<h3 id="问题13：export-PS1-quot-LOGNAME-hostname-PWD-quot-这条指令是在做什么？"><a href="#问题13：export-PS1-quot-LOGNAME-hostname-PWD-quot-这条指令是在做什么？" class="headerlink" title="问题13：export PS1=&quot;$LOGNAME@hostname:\:$PWD:&quot; 这条指令是在做什么？"></a>问题13：<code>export PS1=&quot;$LOGNAME@hostname:\:$PWD:&quot;</code> 这条指令是在做什么？</h3><p>答：这条export命令会更改登录提示符来显示用户名、本机名、和当前的工作目录。</p>
-<h3 id="问题14：ll-awk-‘-print-3-“owns”-9-’这条命令是在做什么？"><a href="#问题14：ll-awk-‘-print-3-“owns”-9-’这条命令是在做什么？" class="headerlink" title="问题14：ll | awk ‘{print $3, “owns”, $9}’这条命令是在做什么？"></a>问题14：ll | awk ‘{print $3, “owns”, $9}’这条命令是在做什么？</h3><p>答：会显示这些文件的名称和他们的拥有者。</p>
-<p>详细请看<a href="http://liubigbin.github.io/2016/02/28/awk%E5%91%BD%E4%BB%A4%E8%AF%A6%E8%A7%A3/">awk命令详解</a></p>
-<h3 id="问题15：Linux中at命令有什么用？"><a href="#问题15：Linux中at命令有什么用？" class="headerlink" title="问题15：Linux中at命令有什么用？"></a>问题15：Linux中at命令有什么用？</h3><p>答：at命令用来安排一个程序在未来的做一次性执行。所以有提交的任务都会被放在/var/spool/at目录下，并且到了执行时间的时候通过atd守护进程来执行。</p>
-<p>详细请看<a href="http://liubigbin.github.io/2016/02/28/at%E5%91%BD%E4%BB%A4%E8%AF%A6%E8%A7%A3/">at命令详解</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/Linux命令面试问答/" data-id="cil6jv55i001k2sqybaowbdnr" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux命令/">Linux命令</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Linux 文件权限" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/02/28/Linux 文件权限/" class="article-date">
-  <time datetime="2016-02-28T11:45:25.000Z" itemprop="datePublished">2016-02-28</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>UNIX�¿�����ls -l �����������ļ���Ȩ�ޡ���ls�������õ��ı�ʾ���ĸ�ʽ�����������ģ�-rwxr-xr-x ����������һ�¸�ʽ����ʾ����˼�����ֱ�ʾ����һ����ʮλ��</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">9 8 7 6 5 4 3 2 1 0&#10;&#10;- r w x r - x r - x</span><br></pre></td></tr></table></figure>
-<p>��9λ��ʾ�ļ�����,����Ϊp��d��l��s��c��b��-��<br><figure class="highlight haml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">p��ʾ�����ܵ��ļ�</span><br><span class="line"></span><br><span class="line">d��ʾĿ¼�ļ�</span><br><span class="line"></span><br><span class="line">l��ʾ���������ļ�</span><br><span class="line"></span><br><span class="line">-<span class="ruby">��ʾ��ͨ�ļ�</span><br><span class="line"></span></span><br><span class="line">s��ʾsocket�ļ�</span><br><span class="line"></span><br><span class="line">c��ʾ�ַ��豸�ļ�</span><br><span class="line"></span><br><span class="line">b��ʾ���豸�ļ�</span><br></pre></td></tr></table></figure></p>
-<p>��8-6λ��5-3λ��2-0λ�ֱ���ʾ�ļ������ߵ�Ȩ�ޣ�ͬ���û���Ȩ�ޣ������û���Ȩ�ޣ�����ʽΪrwx��<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">r��ʾ�ɶ������Զ����ļ�������</span><br><span class="line"></span><br><span class="line">w��ʾ��д�������޸��ļ�������</span><br><span class="line"></span><br><span class="line">x��ʾ��ִ�У���������������</span><br><span class="line"></span><br><span class="line">û��Ȩ�޵�λ����-��ʾ</span><br></pre></td></tr></table></figure></p>
-<p>���ӣ�<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ls -l myfile��ʾΪ��</span><br><span class="line"></span><br><span class="line">-rwxr-x--- <span class="number">1</span> foo staff <span class="number">7734</span> Apr <span class="number">05</span> <span class="number">17</span>:<span class="number">07</span> myfile</span><br></pre></td></tr></table></figure></p>
-<p>��ʾ�ļ�myfile����ͨ�ļ����ļ�����������foo�û�����foo�û�����staff�飬�ļ�ֻ��1��Ӳ���ӣ�������7734���ֽڣ������޸�ʱ��4��5��17:07��</p>
-<p>������foo���ļ��ж�дִ��Ȩ�ޣ�staff���ĳ�Ա���ļ��ж���ִ��Ȩ�ޣ��������û��������ļ�û��Ȩ�ޡ�</p>
-<p>����һ���ļ���������SUID��SGIDλ�����ֱ������������߻�ͬ���û���Ȩ�޵Ŀ�ִ��λ�ϡ����磺<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span>��-rwsr-xr-x ��ʾSUID��������Ȩ���п�ִ��λ������</span><br><span class="line"></span><br><span class="line"><span class="number">2</span>��-rwSr--r-- ��ʾSUID�����ã���������Ȩ���п�ִ��λû�б�����</span><br><span class="line"></span><br><span class="line"><span class="number">3</span>��-rwxr-sr-x ��ʾSGID��ͬ���û�Ȩ���п�ִ��λ������</span><br><span class="line"></span><br><span class="line"><span class="number">4</span>��-rw-r-Sr-- ��ʾSGID�����ã���ͬ���û�Ȩ���п�ִ��λû�б���</span><br></pre></td></tr></table></figure></p>
-<p>��ʵ��UNIX��ʵ���У��ļ�Ȩ����12��������λ��ʾ��������λ���ϵ�ֵ��</p>
-<p>1����ʾ����Ӧ��Ȩ�ޣ�<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">11</span> <span class="number">10</span> <span class="number">9</span> <span class="number">8</span> <span class="number">7</span> <span class="number">6</span> <span class="number">5</span> <span class="number">4</span> <span class="number">3</span> <span class="number">2</span> <span class="number">1</span> <span class="number">0</span></span><br><span class="line"></span><br><span class="line">S G T r w x r w x r w x</span><br></pre></td></tr></table></figure></p>
-<p>��11λΪSUIDλ����10λΪSGIDλ����9λΪstickyλ����8-0λ��Ӧ������������rwxλ��<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">11</span> <span class="number">10</span> <span class="number">9</span> <span class="number">8</span> <span class="number">7</span> <span class="number">6</span> <span class="number">5</span> <span class="number">4</span> <span class="number">3</span> <span class="number">2</span> <span class="number">1</span> <span class="number">0</span></span><br><span class="line"></span><br><span class="line">������-rwsr-xr-x��ֵΪ�� <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span></span><br><span class="line"></span><br><span class="line">-rw-r-Sr--��ֵΪ�� <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span></span><br></pre></td></tr></table></figure></p>
-<p>���ļ���SUID��SUID���������£�<br><figure class="highlight perl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">chmod</span> u+<span class="keyword">s</span> filename ����SUIDλ</span><br><span class="line"></span><br><span class="line"><span class="keyword">chmod</span> u-<span class="keyword">s</span> filename ȥ��SUID����</span><br><span class="line"></span><br><span class="line"><span class="keyword">chmod</span> g+<span class="keyword">s</span> filename ����SGIDλ</span><br><span class="line"></span><br><span class="line"><span class="keyword">chmod</span> g-<span class="keyword">s</span> filename ȥ��SGID����</span><br></pre></td></tr></table></figure></p>
-<p>����һ�ַ�����chmod�����ð˽��Ʊ�ʾ���������á�����������ǰ����12λȨ�ޱ�ʾ��Ҳ�ܼ򵥡�</p>
-<h3 id="SUID��SGID����ϸ����"><a href="#SUID��SGID����ϸ����" class="headerlink" title="SUID��SGID����ϸ����"></a>SUID��SGID����ϸ����</h3><p>����SUID��SGID����ִ�г��򣨳����Ŀ�ִ��λ�����ã�ʱ�����ã�����ִ��λֻ����ͨ�ļ���Ŀ¼�ļ������壬�����������������ļ���SUID��SGIDλ��û�ж��������ġ�</p>
-<p>���Ƚ���ͨ�ļ���SUID��SGID�����á����ӣ�</p>
-<p>������ͨ�ļ�myfile������foo�û��ģ��ǿ�ִ�еģ�����û��SUIDλ��ls������ʾ���£�<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-rwxr-xr-x <span class="number">1</span> foo staff <span class="number">7734</span> Apr <span class="number">05</span> <span class="number">17</span>:<span class="number">07</span> myfile</span><br></pre></td></tr></table></figure></p>
-<p>�κ��û�������ִ������������UNIX���ں��Ǹ���ʲô��ȷ��һ�����̶���Դ�ķ���Ȩ�޵��أ����������̵������û��ģ���Ч��ID������user id��group id���û�������id�������鵽�Լ��Ļ������û���user id��group id��</p>
-<p>����һ����user id ��group id�⣬����������֮Ϊeffective ��id��������Чid���������ĸ�id��ʾΪ��uid��gid��euid��egid���ں���Ҫ�Ǹ���euid��egid��ȷ�����̶���Դ�ķ���Ȩ�ޡ�</p>
-<p>һ����������û��SUID��SGIDλ����euid=uid egid=gid���ֱ������������������û���uid��gid������kevin�û���uid��gid�ֱ�Ϊ204��202��foo�û���uid��gidΪ200��201��kevin����myfile�����γɵĽ��̵�euid=uid=204��egid=gid=202���ں˸�����Щֵ���жϽ��̶���Դ���ʵ����ƣ���ʵ����kevin�û�����Դ���ʵ�Ȩ�ޣ���fooû��ϵ��</p>
-<p>����һ������������SUID����euid��egid���ɱ����еĳ����������ߵ�uid��gid������kevin�û�����myfile��euid=200��egid=201��uid=204��gid=202�����������̾�����������foo����Դ����Ȩ�ޡ�</p>
-<p>SUID�����þ����������ñ���û����ӦȨ�޵��û�������������ʱ�����Է�����û��Ȩ�޷��ʵ���Դ��passwd����һ�������������ӡ�</p>
-<p>SUID�����ȼ���SGID�ߣ���һ����ִ�г���������SUID����SGID���Զ�������Ӧ��egid��</p>
-<p>��������һ�����ӣ�</p>
-<p>UNIXϵͳ��һ��/dev/kmem���豸�ļ�����һ���ַ��豸�ļ��������洢�˺��ĳ���Ҫ���ʵ����ݣ������û��Ŀ�����������ļ����ܸ�һ�����û���д��</p>
-<p><code>Ȩ����Ϊ��cr--r----- 1 root system 2, 1 May 25 1998 kmem</code></p>
-<p>��ps�ȳ���Ҫ�������ļ�����ps��Ȩ���������£�<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-r-xr-sr-x <span class="number">1</span> bin system <span class="number">59346</span> Apr <span class="number">05</span> <span class="number">1998</span> ps</span><br></pre></td></tr></table></figure></p>
-<p>����һ��������SGID�ĳ��򣬶�ps���û���bin������root�����Բ�������SUID������kmem��������ע���ˣ�bin��root������system�飬����ps������SGID��һ���û�ִ��ps���ͻ�����system���û���Ȩ�ޣ����ļ�kmem��ͬ���û���Ȩ���ǿɶ�������һ���û�ִ��ps��û�����ˡ�����Щ��˵��Ϊʲô����ps��������Ϊroot�û��ĳ�����Ȼ������SUIDλ����Ҳ����������ȷ���Խ������⣬��ʵ����Ϊʲô���������أ���ΪSGID�ķ��ձ�SUIDС�ö࣬���Գ���ϵͳ��ȫ�Ŀ��ǣ�Ӧ�þ�����SGID����SUID�ĳ������������ܵĻ���������˵��һ��SGID��Ŀ¼��Ӱ�졣SUID��Ŀ¼û��Ӱ�졣����һ��Ŀ¼������SGIDλ����ô�����κ�һ���û�������Ŀ¼��дȨ�޵Ļ�����������Ŀ¼���������ļ����鶼���Զ�תΪ����Ŀ¼���������ڵ��飬���ļ������߲��䣬�������ڽ��������ļ����û���</p>
-<p>���������ļ�a.txt<br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="id">#ls</span> -l <span class="tag">a</span><span class="class">.txt</span></span><br><span class="line"></span><br><span class="line">-rwxrwxrwx</span><br><span class="line"></span><br><span class="line"><span class="id">#chmod</span> <span class="number">4777</span> <span class="tag">a</span><span class="class">.txt</span></span><br><span class="line"></span><br><span class="line">-rwsrwxrwx ======&gt;ע��sλ��</span><br><span class="line"></span><br><span class="line"><span class="id">#chmod</span> <span class="number">2777</span> <span class="tag">a</span><span class="class">.txt</span></span><br><span class="line"></span><br><span class="line">-rwxrwsrwx ======&gt;ע��sλ��</span><br><span class="line"></span><br><span class="line"><span class="id">#chmod</span> <span class="number">7777</span> <span class="tag">a</span><span class="class">.txt</span></span><br><span class="line"></span><br><span class="line">-rwsrwxswt ======&gt;������t,t���������ڴ��о�������<span class="tag">a</span><span class="class">.txt</span>,��ʡϵͳ�ټ��ص�ʱ��.</span><br></pre></td></tr></table></figure></p>
-<p>�����ٿ�ǰ������ SUID/SGID����:<br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="id">#cd</span> /sbin</span><br><span class="line"></span><br><span class="line">#./lsusb</span><br><span class="line"></span><br><span class="line">...</span><br><span class="line"></span><br><span class="line"><span class="id">#su</span> <span class="function"><span class="title">aaa</span><span class="params">(��ͨ�û�)</span></span></span><br><span class="line"></span><br><span class="line">$./lsusb</span><br><span class="line"></span><br><span class="line">...</span><br></pre></td></tr></table></figure></p>
-<p>�ǲ���������ʾ����<br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$su</span></span><br><span class="line"></span><br><span class="line"><span class="id">#chmod</span> <span class="number">4755</span> lsusb</span><br><span class="line"></span><br><span class="line"><span class="id">#su</span> aaa</span><br><span class="line"></span><br><span class="line">$./lsusb</span><br></pre></td></tr></table></figure></p>
-<p>… �����������𣿱�����ֻ��root�û�����ִ�е��������SUID��,��ͨ�û��Ϳ�����rootһ�����ã�Ȩ�������ˡ������Ƕ����ļ���˵�ģ�����Ŀ¼Ҳ��࣡</p>
-<p>Ŀ¼��S����ʹ���ڸ�Ŀ¼�´������κ��ļ�����Ŀ¼���ڸ�Ŀ¼��ӵ�е��飬Ŀ¼��T����ʹ�ø�Ŀ¼�������߼�root����ɾ����Ŀ¼�����ж���s��S������SUID/SGID��Ҫ������Ȩ�ޣ�������ls -l���ͻῴ��S,֤���������õ�SUID/SGIDû�������á�</p>
-<p>Why we need suid,how do we use suid?</p>
-<p>r – ������</p>
-<p>���� w – д����</p>
-<p>���� x – ִ������</p>
-<p>���� s – SUID/SGID</p>
-<p>���� t – stickyλ</p>
-<p>��ô suid/sgid����ʲô�ģ� Ϊʲô����suidλ�أ�</p>
-<p>Ҫ�������������������ǿ������⣺������ÿ���û������Լ������룿</p>
-<p>�û��޸����룬��ͨ����������passwd��ʵ�ֵġ����ձ���Ҫ�޸�/etc/passwd�ļ�����passwd���ļ��������ǣ�<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">#ls -l /etc/passwd</span></span><br><span class="line"></span><br><span class="line">-rw-r--r-- <span class="number">1</span> root root <span class="number">2520</span> Jul <span class="number">12</span> <span class="number">18</span>:<span class="number">25</span> passwd</span><br></pre></td></tr></table></figure></p>
-<p>���ǿ��Կ���passwd�ļ�ֻ�ж���root�û��ǿ�д�ģ����������е����û���˵����û��дȨ�޵ġ� ��ôһ����ͨ���û������ܹ�ͨ������passwd�����޸�����passwd�ļ��أ�</p>
-<p>Ϊ�˽����������⣬SUID/SGID��Ӧ�˶���������AT&amp;T����������ר���� �Ǻǡ�</p>
-<p>SUID��SGID�����ν������������أ�</p>
-<p>���ȣ�����Ҫ֪��һ�㣺���������е�ʱ������һЩ���ԣ����а��� ʵ���û�ID,ʵ����ID,��Ч�û�ID,��Ч��ID�ȡ� ʵ���û�ID��ʵ����ID��ʶ������˭��˭��������������,һ����2���ֶ��ڵ�½ʱ�򶨣���һ����½�Ự�ڼ䣬 ��Щֵ�����ϲ��ı䡣</p>
-<p>����Ч�û�ID����Ч��ID�������˽���������ʱ��Ȩ�ޡ��ں��ھ򶨽����Ƿ����ļ���ȡȨ��ʱ���ǲ����˽��̵���Ч�û�ID�������жϵġ�</p>
-<p>֪�������㣬����������SUID�Ľ���;����</p>
-<p>��һ������������ΪSUIDλʱ���ں˾�֪������������������ʱ����Ӧ����Ϊ���ļ����������������������򡣼��ó������е�ʱ������Ч�û�ID�Ǹó����������ߡ��ٸ����ӣ�<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@sgrid5 bin]<span class="preprocessor"># ls -l passwd</span></span><br><span class="line"></span><br><span class="line">-r-s--s--x <span class="number">1</span> root root <span class="number">16336</span> Feb <span class="number">14</span> <span class="number">2003</span> passwd</span><br></pre></td></tr></table></figure></p>
-<p>��Ȼ����test��½ϵͳ�����ǵ�������passwd����������������ʱ��������passwd������SUIDλ��������Ȼ���̵�ʵ���û�ID��test��Ӧ��ID�����ǽ��̵���Ч�û�ID����passwd�ļ���������root��ID,���˿����޸�/etc/passwd�ļ���</p>
-<p>�����ǿ�����һ�����ӡ�</p>
-<p>ping����Ӧ�ù㷺�����Բ��������Ƿ�����������ping���������ǲ�����ICMPЭ�飬��Ҫ����ICMP���ġ�����ֻ��root�û����ܽ���ICMP���ģ����ν������������أ�ͬ����Ҳ��ͨ��SUIDλ��������<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[root@sgrid5 bin]<span class="preprocessor"># ls -l /bin/ping</span></span><br><span class="line"></span><br><span class="line">-rwsr-sr-x <span class="number">1</span> root root <span class="number">28628</span> Jan <span class="number">25</span> <span class="number">2003</span> /bin/ping</span><br></pre></td></tr></table></figure></p>
-<p>���ǿ��Բ���һ�£�����ȥ��ping��SUIDλ��������ͨ�û�ȥ�������������ô����<br><figure class="highlight autoit"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[root<span class="constant">@sgrid5</span> bin]<span class="preprocessor">#chmod u-s /bin/ping</span></span><br><span class="line"></span><br><span class="line">[root<span class="constant">@sgrid5</span> bin]<span class="preprocessor"># ls -l ping</span></span><br><span class="line"></span><br><span class="line">-rwxr-xr-x <span class="number">1</span> root root <span class="number">28628</span> Jan <span class="number">25</span> <span class="number">2003</span> <span class="built_in">ping</span></span><br><span class="line"></span><br><span class="line">[root<span class="constant">@sgrid5</span> bin]<span class="preprocessor">#su test</span></span><br><span class="line"></span><br><span class="line">[test<span class="constant">@sgrid5</span> bin]$ <span class="built_in">ping</span> byhh.net</span><br><span class="line"></span><br><span class="line"><span class="built_in">ping</span>: icmp open socket: Operation <span class="literal">not</span> permitted</span><br></pre></td></tr></table></figure></p>
-<p>SUID��Ȼ�ܺ��˽�����һЩ���⣬����ͬʱҲ������һЩ��ȫ������</p>
-<p>��Ϊ������ SUID λ�ĳ�������������(ͨ�������������ȷ���),��ôhacker�Ϳ����õ�rootȨ�ޡ�</p>
-<p>�����ڰ�ȫ�����ر�Ҫע����Щ������SUID�ĳ�����</p>
-<p>ͨ�����µ����������ҵ�ϵͳ�����е�������suid���ļ���<br><figure class="highlight vim"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@sgrid5 /]# <span class="keyword">find</span> / -perm -<span class="number">04000</span> -<span class="built_in">type</span> <span class="keyword">f</span> -<span class="keyword">ls</span></span><br></pre></td></tr></table></figure></p>
-<p>��������Ϊʲô��4000�����ҿ��Կ�һ��ǰ����st_mode�ĸ�bit�������������ˡ�</p>
-<p>����Щ������suid�ĳ���������ò��ϵģ�������ȡ���ó�����suidλ��</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/Linux 文件权限/" data-id="cil6jv54b00002sqy5h2t2stn" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-图解TCP-IP协议" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/02/26/图解TCP-IP协议/" class="article-date">
-  <time datetime="2016-02-26T07:46:21.000Z" itemprop="datePublished">2016-02-26</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/计算机网络/">计算机网络</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/02/26/图解TCP-IP协议/">图解TCP/IP协议</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>&#160; &#160; &#160; &#160;本文通过两个图来梳理TCP-IP协议相关知识。TCP通信过程包括三个步骤：建立TCP连接通道，传输数据，断开TCP连接通道。如图1所示，给出了TCP通信过程的示意图。<br><img src="/pictures/tcp-ip-handshark.png" alt="图1 TCP三次握手四次挥手"></p>
-<h4 id="图1主要包括三部分：建立连接、传输数据、断开连接。"><a href="#图1主要包括三部分：建立连接、传输数据、断开连接。" class="headerlink" title="图1主要包括三部分：建立连接、传输数据、断开连接。"></a>图1主要包括三部分：建立连接、传输数据、断开连接。</h4><p>&#160; &#160; &#160; &#160;1)建立TCP连接很简单，通过三次握手便可建立连接。</p>
-<p>&#160; &#160; &#160; &#160;2)建立好连接后，开始传输数据。TCP数据传输牵涉到的概念很多：超时重传、快速重传、流量控制、拥塞控制等等。</p>
-<p>&#160; &#160; &#160; &#160;3)断开连接的过程也很简单，通过四次握手完成断开连接的过程。</p>
-<h3 id="三次握手建立连接："><a href="#三次握手建立连接：" class="headerlink" title="三次握手建立连接："></a>三次握手建立连接：</h3><p>&#160; &#160; &#160; &#160;第一次握手：客户端发送syn包(seq=x)到服务器，并进入SYN_SEND状态，等待服务器确认；</p>
-<p>&#160; &#160; &#160; &#160;第二次握手：服务器收到syn包，必须确认客户的SYN（ack=x+1），同时自己也发送一个SYN包（seq=y），即SYN+ACK包，此时服务器进入SYN_RECV状态；</p>
-<p>&#160; &#160; &#160; &#160;第三次握手：客户端收到服务器的SYN＋ACK包，向服务器发送确认包ACK(ack=y+1)，此包发送完毕，客户端和服务器进入ESTABLISHED状态，完成三次握手。</p>
-<p>&#160; &#160; &#160; &#160;握手过程中传送的包里不包含数据，三次握手完毕后，客户端与服务器才正式开始传送数据。理想状态下，TCP连接一旦建立，在通信双方中的任何一方主动关闭连接之前，TCP 连接都将被一直保持下去。</p>
-<h3 id="传输数据过程："><a href="#传输数据过程：" class="headerlink" title="传输数据过程："></a>传输数据过程：</h3><h4 id="a-超时重传"><a href="#a-超时重传" class="headerlink" title="a.超时重传"></a>a.超时重传</h4><p>&#160; &#160; &#160; &#160;超时重传机制用来保证TCP传输的可靠性。每次发送数据包时，发送的数据报都有seq号，接收端收到数据后，会回复ack进行确认，表示某一seq号数据已经收到。发送方在发送了某个seq包后，等待一段时间，如果没有收到对应的ack回复，就会认为报文丢失，会重传这个数据包。</p>
-<h4 id="b-快速重传"><a href="#b-快速重传" class="headerlink" title="b.快速重传"></a>b.快速重传</h4><p>&#160; &#160; &#160; &#160;接受数据一方发现有数据包丢掉了。就会发送ack报文告诉发送端重传丢失的报文。如果发送端连续收到标号相同的ack包，则会触发客户端的快速重传。比较超时重传和快速重传，可以发现超时重传是发送端在傻等超时，然后触发重传；而快速重传则是接收端主动告诉发送端数据没收到，然后触发发送端重传。</p>
-<h4 id="c-流量控制"><a href="#c-流量控制" class="headerlink" title="c.流量控制"></a>c.流量控制</h4><p>&#160; &#160; &#160; &#160;这里主要说TCP滑动窗流量控制。TCP头里有一个字段叫Window，又叫Advertised-Window，这个字段是接收端告诉发送端自己还有多少缓冲区可以接收数据。于是发送端就可以根据这个接收端的处理能力来发送数据，而不会导致接收端处理不过来。 滑动窗可以是提高TCP传输效率的一种机制。</p>
-<h4 id="d-拥塞控制"><a href="#d-拥塞控制" class="headerlink" title="d.拥塞控制"></a>d.拥塞控制</h4><p>&#160; &#160; &#160; &#160;滑动窗用来做流量控制。流量控制只关注发送端和接受端自身的状况，而没有考虑整个网络的通信情况。拥塞控制，则是基于整个网络来考虑的。考虑一下这样的场景：某一时刻网络上的延时突然增加，那么，TCP对这个事做出的应对只有重传数据，但是，重传会导致网络的负担更重，于是会导致更大的延迟以及更多的丢包，于是，这个情况就会进入恶性循环被不断地放大。试想一下，如果一个网络内有成千上万的TCP连接都这么行事，那么马上就会形成“网络风暴”，TCP这个协议就会拖垮整个网络。为此，TCP引入了拥塞控制策略。拥塞策略算法主要包括：慢启动，拥塞避免，拥塞发生，快速恢复。</p>
-<h3 id="四次握手断开连接："><a href="#四次握手断开连接：" class="headerlink" title="四次握手断开连接："></a>四次握手断开连接：</h3><p>&#160; &#160; &#160; &#160;第一次挥手：主动关闭方发送一个FIN，用来关闭主动方到被动关闭方的数据传送，也就是主动关闭方告诉被动关闭方：我已经不会再给你发数据了(当然，在fin包之前发送出去的数据，如果没有收到对应的ack确认报文，主动关闭方依然会重发这些数据)，但此时主动关闭方还可以接受数据。</p>
-<p>&#160; &#160; &#160; &#160;第二次挥手：被动关闭方收到FIN包后，发送一个ACK给对方，确认序号为收到序号+1（与SYN相同，一个FIN占用一个序号）。</p>
-<p>&#160; &#160; &#160; &#160;第三次挥手：被动关闭方发送一个FIN，用来关闭被动关闭方到主动关闭方的数据传送，也就是告诉主动关闭方，我的数据也发送完了，不会再给你发数据了。</p>
-<p>&#160; &#160; &#160; &#160;第四次挥手：主动关闭方收到FIN后，发送一个ACK给被动关闭方，确认序号为收到序号+1，至此，完成四次挥手。</p>
-<p>图2给出了TCP通信过程中的状态转移图，理解此图是我们理解TCP-IP协议的关键。<br><img src="/pictures/zhuangtaitu.jpeg" alt="图2 TCP状态转移图"></p>
-<h3 id="状态图详细解读："><a href="#状态图详细解读：" class="headerlink" title="状态图详细解读："></a>状态图详细解读：</h3><p>1.CLOSED：起始点，在超时或者连接关闭时候进入此状态。</p>
-<p>2.LISTEN：服务端在等待连接过来时候的状态，服务端为此要调用socket，bind,listen函数，就能进入此状态。此称为应用程序被动打开（等待客户端来连接）。</p>
-<p>3.SYN_SENT:客户端发起连接，发送SYN给服务器端。如果服务器端不能连接，则直接进入CLOSED状态。</p>
-<p>4.SYN_RCVD：跟3对应，服务器端接受客户端的SYN请求，服务器端由LISTEN状态进入SYN_RCVD状态。同时服务器端要回应一个ACK，同时发送一个SYN给客户端；另外一种情况，客户端在发起SYN的同时接收到服务器端得SYN请求，客户端就会由SYN_SENT到SYN_RCVD状态。</p>
-<p>5.ESTABLISHED：服务器端和客户端在完成3次握手进入状态，说明已经可以开始传输数据了。</p>
-<p>&#160; &#160; &#160; &#160;以上是建立连接时服务器端和客户端产生的状态转移说明。相对来说比较简单明了，如果你对三次握手比较熟悉，建立连接时的状态转移还是很容易理解。</p>
-<p>&#160; &#160; &#160; &#160;下面，我们来看看连接关闭时候的状态转移说明，关闭需要进行4次双方的交互，还包括要处理一些善后工作（TIME_WAIT状态），注意，这里主动关闭的一方或被动关闭的一方不是指特指服务器端或者客户端，是相对于谁先发起关闭请求来说的：</p>
-<p>6.FIN_WAIT_1:主动关闭的一方，由状态5进入此状态。具体的动作是发送FIN给对方。</p>
-<p>7.FIN_WAIT_2:主动关闭的一方，接收到对方的FIN-ACK(即fin包的回应包)，进入此状态。</p>
-<p>8.CLOSE_WAIT：接收到FIN以后，被动关闭的一方进入此状态。具体动作是接收到FIN，同时发送ACK。(之所以叫close_wait可以理解为被动关闭方此时正在等待上层应用发出关闭连接指令)</p>
-<p>9.LAST_ACK：被动关闭的一方，发起关闭请求，由状态8进入此状态。具体动作是发送FIN给对方，同时在接收到ACK时进入CLOSED状态。</p>
-<p>10.CLOSING：两边同时发起关闭请求时，会由FIN_WAIT_1进入此状态。具体动作是接收到FIN请求，同时响应一个ACK。</p>
-<p>11.TIME_WAIT：最纠结的状态来了。从状态图上可以看出，有3个状态可以转化成它，我们一一来分析：</p>
-<pre><code>a.由FIN_WAIT_2进入此状态：在双方不同时发起FIN的情况下，主动关闭的一方在完成自身发起的关闭请求后，
-  接收到被动关闭一方的FIN后进入的状态。
-
-b.由CLOSING状态进入:双方同时发起关闭，都做了发起FIN的请求，同时接收到了FIN并做了ACK的情况下，由CLOSING状态进入。
-
-c.由FIN_WAIT_1状态进入：同时接受到FIN（对方发起），ACK（本身发起的FIN回应），与b的区别在于本身发起的FIN回应的ACK先于
-  对方的FIN请求到达，而b是FIN先到达。这种情况概率最小。
-</code></pre><p>关闭的4次连接最难理解的状态是TIME_WAIT，存在TIME_WAIT的2个理由：</p>
-<p>1.可靠地实现TCP全双工连接的终止。</p>
-<p>2.允许老的重复分节在网络中消逝。</p>
-<h3 id="附："><a href="#附：" class="headerlink" title="附："></a>附：</h3><h4 id="慢热启动算法-–-Slow-Start"><a href="#慢热启动算法-–-Slow-Start" class="headerlink" title="慢热启动算法 – Slow Start"></a>慢热启动算法 – Slow Start</h4><p>&#160; &#160; &#160; &#160;首先，我们来看一下TCP的慢热启动。慢启动的意思是，刚刚加入网络的连接，一点一点地提速，不要一上来就像那些特权车一样霸道地把路占满。新同学上高速还是要慢一点，不要把已经在高速上的秩序给搞乱了。</p>
-<p>慢启动的算法如下(cwnd全称Congestion Window)：</p>
-<p>1）连接建好的开始先初始化cwnd = 1，表明可以传一个MSS大小的数据。</p>
-<p>2）每当收到一个ACK，cwnd++; 呈线性上升</p>
-<p>3）每当过了一个RTT，cwnd = cwnd*2; 呈指数让升</p>
-<p>4）还有一个ssthresh（slow start threshold），是一个上限，当cwnd &gt;= ssthresh时，就会进入“拥塞避免算法”（后面会说这个算法）</p>
-<p>&#160; &#160; &#160; &#160;所以，我们可以看到，如果网速很快的话，ACK也会返回得快，RTT也会短，那么，这个慢启动就一点也不慢。</p>
-<h4 id="拥塞避免算法-–-Congestion-Avoidance"><a href="#拥塞避免算法-–-Congestion-Avoidance" class="headerlink" title="拥塞避免算法 – Congestion Avoidance"></a>拥塞避免算法 – Congestion Avoidance</h4><p>&#160; &#160; &#160; &#160;前面说过，还有一个ssthresh（slow start threshold），是一个上限，当cwnd &gt;= ssthresh时，就会进入“拥塞避免算法”。一般来说ssthresh的值是65535，单位是字节，当cwnd达到这个值时后，算法如下：</p>
-<pre><code>1）收到一个ACK时，cwnd = cwnd + 1/cwnd
-
-2）当每过一个RTT时，cwnd = cwnd + 1
-</code></pre><p>&#160; &#160; &#160; &#160;这样就可以避免增长过快导致网络拥塞，慢慢的增加调整到网络的最佳值。很明显，是一个线性上升的算法。</p>
-<h3 id="拥塞状态时的算法"><a href="#拥塞状态时的算法" class="headerlink" title="拥塞状态时的算法"></a>拥塞状态时的算法</h3><p>&#160; &#160; &#160; &#160;前面我们说过，当丢包的时候，会有两种情况：</p>
-<p>&#160; &#160; &#160; &#160;1）等到RTO超时，重传数据包。TCP认为这种情况太糟糕，反应也很强烈。</p>
-<pre><code>sshthresh =  cwnd /2
-cwnd 重置为 1
-进入慢启动过程
-</code></pre><p>&#160; &#160; &#160; &#160;2）Fast Retransmit算法，也就是在收到3个duplicate ACK时就开启重传，而不用等到RTO超时。</p>
-<p>&#160; &#160; &#160; &#160;TCP Tahoe的实现和RTO超时一样。</p>
-<p>&#160; &#160; &#160; &#160;TCP Reno的实现是：</p>
-<pre><code>cwnd = cwnd /2
-sshthresh = cwnd
-进入快速恢复算法——Fast Recovery
-</code></pre><p>&#160; &#160; &#160; &#160;上面我们可以看到RTO超时后，sshthresh会变成cwnd的一半，这意味着，如果cwnd&lt;=sshthresh时出现的丢包，那么TCP的sshthresh就会减了一半，然后等cwnd又很快地以指数级增涨爬到这个地方时，就会成慢慢的线性增涨。我们可以看到，TCP是怎么通过这种强烈地震荡快速而小心得找到网站流量的平衡点的。</p>
-<h4 id="快速恢复算法-–-Fast-Recovery"><a href="#快速恢复算法-–-Fast-Recovery" class="headerlink" title="快速恢复算法 – Fast Recovery"></a>快速恢复算法 – Fast Recovery</h4><h5 id="TCP-Reno"><a href="#TCP-Reno" class="headerlink" title="TCP Reno"></a>TCP Reno</h5><p>&#160; &#160; &#160; &#160;这个算法定义在RFC5681。快速重传和快速恢复算法一般同时使用。快速恢复算法是认为，你还有3个Duplicated Acks说明网络也不那么糟糕，所以没有必要像RTO超时那么强烈。 注意，正如前面所说，进入Fast Recovery之前，cwnd 和 sshthresh已被更新：</p>
-<pre><code>cwnd = cwnd /2
-sshthresh = cwnd
-</code></pre><p>然后，真正的Fast Recovery算法如下：</p>
-<pre><code>cwnd = sshthresh  + 3 * MSS （3的意思是确认有3个数据包被收到了）
-重传Duplicated ACKs指定的数据包
-如果再收到 duplicated Acks，那么cwnd = cwnd +1
-如果收到了新的Ack，那么，cwnd = sshthresh ，然后就进入了拥塞避免的算法了。
-</code></pre><p>&#160; &#160; &#160; &#160;如果你仔细思考一下上面的这个算法，你就会知道，上面这个算法也有问题，那就是——它依赖于3个重复的Acks。注意，3个重复的Acks并不代表只丢了一个数据包，很有可能是丢了好多包。但这个算法只会重传一个，而剩下的那些包只能等到RTO超时，于是，进入了恶梦模式——超时一个窗口就减半一下，多个超时会超成TCP的传输速度呈级数下降，而且也不会触发Fast Recovery算法了。</p>
-<h5 id="TCP-New-Reno"><a href="#TCP-New-Reno" class="headerlink" title="TCP New Reno"></a>TCP New Reno</h5><p>&#160; &#160; &#160; &#160;于是，1995年，TCP New Reno（参见 RFC 6582 ）算法提出来，主要就是在没有SACK的支持下改进Fast Recovery算法的——</p>
-<p>&#160; &#160; &#160; &#160;当sender这边收到了3个Duplicated Acks，进入Fast Retransimit模式，开发重传重复Acks指示的那个包。如果只有这一个包丢了，那么，重传这个包后回来的Ack会把整个已经被sender传输出去的数据ack回来。如果没有的话，说明有多个包丢了。我们叫这个ACK为Partial ACK。</p>
-<p>&#160; &#160; &#160; &#160;一旦Sender这边发现了Partial ACK出现，那么，sender就可以推理出来有多个包被丢了，于是乎继续重传sliding window里未被ack的第一个包。直到再也收不到了Partial Ack，才真正结束Fast Recovery这个过程。</p>
-<p>&#160; &#160; &#160; &#160;我们可以看到，这个“Fast Recovery的变更”是一个非常激进的玩法，他同时延长了Fast Retransmit和Fast Recovery的过程。</p>
-<p>本文来自于<a href="http://www.cricode.com/3568.html" target="_blank" rel="external">快课网</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/26/图解TCP-IP协议/" data-id="cil6jv54u000l2sqyzu99immx" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TCP-IP/">TCP/IP</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-动态规划之整数划分" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/02/26/动态规划之整数划分/" class="article-date">
-  <time datetime="2016-02-26T07:03:41.000Z" itemprop="datePublished">2016-02-26</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/算法/">算法</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/02/26/动态规划之整数划分/">动态规划之整数划分</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>&#160; &#160; &#160; &#160;整数划分可以分为以下几个问题：</p>
-<h4 id="将n划分为不大于m的划分法"><a href="#将n划分为不大于m的划分法" class="headerlink" title="将n划分为不大于m的划分法"></a>将n划分为不大于m的划分法</h4><p><li>若是划分多个整数可以存在相同的：</li><br><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">dp[<span class="link_label">n</span>][<span class="link_reference">m</span>]= dp[<span class="link_label">n</span>][<span class="link_reference">m-1</span>]+ dp[<span class="link_label">n-m</span>][<span class="link_reference">m</span>]  </span><br><span class="line">dp[<span class="link_label">n</span>][<span class="link_reference">m</span>]表示整数 n 的划分中，每个数不大于 m 的划分数。则划分数可以分为两种情况:</span><br><span class="line">  a.划分中每个数都小于 m，相当于每个数不大于 m- 1, 故划分数为 dp[<span class="link_label">n</span>][<span class="link_reference">m-1</span>].</span><br><span class="line">  b.划分中有一个数为 m. 那就在 n中减去 m ,剩下的就相当于把 n-m 进行划分，故划分数为 dp[<span class="link_label">n-m</span>][<span class="link_reference">m</span>];</span><br></pre></td></tr></table></figure></p>
-<p><li>若是划分多个不同的整数：</li><br><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">dp[<span class="link_label">n</span>][<span class="link_reference">m</span>]= dp[<span class="link_label">n</span>][<span class="link_reference">m-1</span>]+ dp[<span class="link_label">n-m</span>][<span class="link_reference">m-1</span>]   dp[<span class="link_label">n</span>][<span class="link_reference">m</span>]表示整数n的划分中，每个数不大于 m 的划分数。</span><br><span class="line">同样划分情况分为两种情况：</span><br><span class="line"><span class="code">    a.划分中每个数都小于m,相当于每个数不大于 m-1,划分数为 dp[n][m-1].</span></span><br><span class="line"><span class="code">    b.划分中有一个数为 m.在n中减去m,剩下相当对n-m进行划分，并且每一个数不大于m-1，故划分数为 dp[n-m][m-1]</span></span><br></pre></td></tr></table></figure></p>
-<h4 id="将n划分成k个数的划分法："><a href="#将n划分成k个数的划分法：" class="headerlink" title="将n划分成k个数的划分法："></a>将n划分成k个数的划分法：</h4><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">dp[<span class="link_label">n</span>][<span class="link_reference">k</span>]= dp[<span class="link_label">n-k</span>][<span class="link_reference">k</span>]+ dp[<span class="link_label">n-1</span>][<span class="link_reference">k-1</span>];</span><br><span class="line">方法可以分为两类：</span><br><span class="line"><span class="code">    第一类: n 份中不包含 1 的分法，为保证每份都 &gt;= 2，可以先拿出 k 个 1 分到每一份，然后再把剩下的 n- k 分成 k 份</span></span><br><span class="line"><span class="code">           即可，分法有: dp[n-k][k]</span></span><br><span class="line">  　第二类: n 份中至少有一份为 1 的分法，可以先那出一个 1 作为单独的1份，剩下的 n- 1 再分成 k- 1 份即可，</span><br><span class="line"><span class="code">           分法有：dp[n-1][k-1]</span></span><br></pre></td></tr></table></figure>
-<h4 id="将n划分成若干奇数的划分法："><a href="#将n划分成若干奇数的划分法：" class="headerlink" title="将n划分成若干奇数的划分法："></a>将n划分成若干奇数的划分法：</h4><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">g[<span class="link_label">i</span>][<span class="link_reference">j</span>]:将i划分为j个偶数</span><br><span class="line">f[<span class="link_label">i</span>][<span class="link_reference">j</span>]:将i划分为j个奇数</span><br><span class="line">g[<span class="link_label">i</span>][<span class="link_reference">j</span>] = f[<span class="link_label">i - j</span>][<span class="link_reference">j</span>];</span><br><span class="line">f[<span class="link_label">i</span>][<span class="link_reference">j</span>] = f[<span class="link_label">i - 1</span>][<span class="link_reference">j - 1</span>] + g[<span class="link_label">i - j</span>][<span class="link_reference">j</span>];</span><br><span class="line">方法可以分为两类：</span><br><span class="line"><span class="code">    第一类：i中拿出j个1分到每一份中，将剩余的i-j分成j个奇数</span></span><br><span class="line"><span class="code">    第二类：一份包含奇数1，剩余的i-1分成j-1个奇数；另一种，每份至少大于1，将j个1拿出来分到每一份中，其余i-j分成j份</span></span><br></pre></td></tr></table></figure>
-<p>代码如下所示(转载)：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">#<span class="keyword">include</span><span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span><span class="string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">define</span> nmax <span class="number">51</span></span></span><br><span class="line"><span class="keyword">int</span> num[nmax][nmax]; <span class="comment">//将i划分为不大于j的个数</span></span><br><span class="line"><span class="keyword">int</span> num1[nmax][nmax]; <span class="comment">//将i划分为不大于j的不同的数</span></span><br><span class="line"><span class="keyword">int</span> num2[nmax][nmax]; <span class="comment">//将i划分为j个数</span></span><br><span class="line"><span class="keyword">int</span> f[nmax][nmax]; <span class="comment">//将i划分为j个奇数</span></span><br><span class="line"><span class="keyword">int</span> g[nmax][nmax]; <span class="comment">//将i划分为j个偶数</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">init</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> i, j;</span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; nmax; i++) &#123;</span><br><span class="line">        num[i][<span class="number">0</span>] = <span class="number">0</span>, num[<span class="number">0</span>][i] = <span class="number">0</span>, num1[i][<span class="number">0</span>] = <span class="number">0</span>, num1[<span class="number">0</span>][i] = <span class="number">0</span>, num2[i][<span class="number">0</span>] =</span><br><span class="line">                <span class="number">0</span>, num2[<span class="number">0</span>][i] = <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">1</span>; i &lt; nmax; i++) &#123;</span><br><span class="line">        <span class="keyword">for</span> (j = <span class="number">1</span>; j &lt; nmax; j++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (i &lt; j) &#123;</span><br><span class="line">                num[i][j] = num[i][i];</span><br><span class="line">                num1[i][j] = num1[i][i];</span><br><span class="line">                num2[i][j] = <span class="number">0</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (i == j) &#123;</span><br><span class="line">                num[i][j] = num[i][j - <span class="number">1</span>] + <span class="number">1</span>;</span><br><span class="line">                num1[i][j] = num1[i][j - <span class="number">1</span>] + <span class="number">1</span>;</span><br><span class="line">                num2[i][j] = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                num[i][j] = num[i][j - <span class="number">1</span>] + num[i - j][j];</span><br><span class="line">                num1[i][j] = num1[i][j - <span class="number">1</span>] + num1[i - j][j - <span class="number">1</span>];</span><br><span class="line">                num2[i][j] = num2[i - <span class="number">1</span>][j - <span class="number">1</span>] + num2[i - j][j];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    f[<span class="number">0</span>][<span class="number">0</span>] = <span class="number">1</span>, g[<span class="number">0</span>][<span class="number">0</span>] = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">1</span>; i &lt; nmax; i++) &#123;</span><br><span class="line">        <span class="keyword">for</span> (j = <span class="number">1</span>; j &lt;= i; j++) &#123;</span><br><span class="line">            g[i][j] = f[i - j][j];</span><br><span class="line">            f[i][j] = f[i - <span class="number">1</span>][j - <span class="number">1</span>] + g[i - j][j];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line"><span class="preprocessor">#<span class="keyword">ifndef</span> ONLINE_JUDGE</span></span><br><span class="line">    freopen(<span class="string">"data.in"</span>, <span class="string">"r"</span>, <span class="built_in">stdin</span>);</span><br><span class="line"><span class="preprocessor">#<span class="keyword">endif</span></span></span><br><span class="line">    <span class="keyword">int</span> n, k, i, res0, res1, res2, res3, res4;</span><br><span class="line">    init();</span><br><span class="line">    <span class="keyword">while</span> (~<span class="built_in">scanf</span>(<span class="string">"%d %d"</span>, &amp;n, &amp;k)) &#123;</span><br><span class="line">        res0 = num[n][n];</span><br><span class="line">        res1 = num2[n][k];</span><br><span class="line">        res2 = num[n][k];</span><br><span class="line">        <span class="keyword">for</span> (i = <span class="number">0</span>, res3 = <span class="number">0</span>; i &lt;= n; i++) &#123;</span><br><span class="line">            res3 += f[n][i];</span><br><span class="line">        &#125;</span><br><span class="line">        res4 = num1[n][n];</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%d\n%d\n%d\n%d\n%d\n\n"</span>, res0, res1, res2, res3, res4);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/26/动态规划之整数划分/" data-id="cil6jv55400112sqyjjvdr0v1" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/动态规划/">动态规划</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-双线程动态规划之探寻宝藏" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/02/26/双线程动态规划之探寻宝藏/" class="article-date">
-  <time datetime="2016-02-26T06:25:40.000Z" itemprop="datePublished">2016-02-26</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/算法/">算法</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/02/26/双线程动态规划之探寻宝藏/">双线程动态规划之探寻宝藏</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h3 id="探-寻-宝-藏"><a href="#探-寻-宝-藏" class="headerlink" title="探 寻 宝 藏"></a>探 寻 宝 藏</h3><p>时间限制：1000 ms  |  内存限制：65535 KB</p>
-<p>难度：5</p>
-<p>描述</p>
-<p>&#160; &#160; &#160; &#160;传说HMH大沙漠中有一个M*N迷宫，里面藏有许多宝物。某天，Dr.Kong找到了迷宫的地图，他发现迷宫内处处有宝物，最珍贵的宝物就藏在右下角，迷宫的进出口在左上角。当然，迷宫中的通路不是平坦的，到处都是陷阱。Dr.Kong决定让他的机器人卡多去探险。但机器人卡多从左上角走到右下角时，只会向下走或者向右走。从右下角往回走到左上角时，只会向上走或者向左走，而且卡多不走回头路。（即：一个点最多经过一次）。当然卡多顺手也拿走沿路的每个宝物。Dr.Kong希望他的机器人卡多尽量多地带出宝物。请你编写程序，帮助Dr.Kong计算一下，卡多最多能带出多少宝物。</p>
-<p>输入<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">第一行： K 表示有多少组测试数据。</span><br><span class="line">接下来对每组测试数据：</span><br><span class="line">第<span class="number">1</span>行: M N</span><br><span class="line">第<span class="number">2</span>~M+<span class="number">1</span>行： Ai1 Ai2 ……AiN (i=<span class="number">1</span>,…..,m)</span><br></pre></td></tr></table></figure></p>
-<p>【约束条件】<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">2</span>≤k≤<span class="number">5</span> <span class="number">1</span>≤M, N≤<span class="number">50</span> <span class="number">0</span>≤Aij≤<span class="number">100</span> (i=<span class="number">1</span>,….,M; j=<span class="number">1</span>,…,N)</span><br><span class="line">所有数据都是整数。 数据之间有一个空格。</span><br></pre></td></tr></table></figure></p>
-<p>输出<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">对于每组测试数据，输出一行：机器人卡多携带出最多价值的宝物数</span><br><span class="line">样例输入</span><br><span class="line"><span class="number">22</span> <span class="number">30</span> <span class="number">10</span> <span class="number">1010</span> <span class="number">10</span> <span class="number">803</span> <span class="number">30</span> <span class="number">3</span> <span class="number">92</span> <span class="number">8</span> <span class="number">55</span> <span class="number">7</span> <span class="number">100</span></span><br><span class="line">样例输出</span><br><span class="line"><span class="number">120134</span></span><br></pre></td></tr></table></figure></p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">#<span class="keyword">include</span><span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span><span class="string">&lt;cstring&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span><span class="string">&lt;algorithm&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="preprocessor">#<span class="keyword">define</span> N <span class="number">52</span></span></span><br><span class="line"> <span class="keyword">int</span> dp[<span class="number">105</span>][N][N],<span class="built_in">map</span>[N][N];</span><br><span class="line"> <span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span><br><span class="line"> </span>&#123;</span><br><span class="line">	 <span class="keyword">int</span> test;</span><br><span class="line">	 <span class="built_in">cin</span>&gt;&gt;test;</span><br><span class="line">	 <span class="keyword">while</span>(test--)</span><br><span class="line">	 &#123;</span><br><span class="line">		 <span class="keyword">int</span> m,n;</span><br><span class="line">		 <span class="built_in">cin</span>&gt;&gt;m&gt;&gt;n;</span><br><span class="line">		 <span class="keyword">int</span> i,j;</span><br><span class="line">		 <span class="keyword">for</span>(i=<span class="number">1</span>;i&lt;=m;++i)</span><br><span class="line">			 <span class="keyword">for</span>(j=<span class="number">1</span>;j&lt;=n;++j)</span><br><span class="line">				 <span class="built_in">cin</span>&gt;&gt;<span class="built_in">map</span>[i][j];</span><br><span class="line"></span><br><span class="line">		 <span class="built_in">memset</span>(dp,<span class="number">0</span>,<span class="keyword">sizeof</span>(dp));</span><br><span class="line">		 <span class="keyword">int</span> all=m+n;</span><br><span class="line">		 <span class="keyword">int</span> k,t1=<span class="number">0</span>,t2=<span class="number">0</span>,ans=<span class="number">0</span>;</span><br><span class="line">		 <span class="keyword">int</span> x1,y1,x2,y2;</span><br><span class="line"></span><br><span class="line">		 dp[<span class="number">2</span>][<span class="number">1</span>][<span class="number">1</span>]=<span class="built_in">map</span>[<span class="number">1</span>][<span class="number">1</span>];</span><br><span class="line">		 <span class="keyword">for</span>(k=<span class="number">2</span>;k&lt;=all;++k)</span><br><span class="line">			 <span class="keyword">for</span>(x1=<span class="number">1</span>;x1&lt;=m;++x1)</span><br><span class="line">				 <span class="keyword">for</span>(x2=<span class="number">1</span>;x2&lt;=m;++x2)</span><br><span class="line">				&#123;</span><br><span class="line">					y1=k-x1;</span><br><span class="line">					y2=k-x2;</span><br><span class="line">					<span class="keyword">if</span>(y1&lt;<span class="number">0</span>||y2&lt;<span class="number">0</span>||y1&gt;n||y2&gt;n)</span><br><span class="line">						<span class="keyword">continue</span>;</span><br><span class="line">					<span class="keyword">if</span>(y1==y2)</span><br><span class="line">						<span class="keyword">continue</span>;</span><br><span class="line"></span><br><span class="line">					t1=max(dp[k-<span class="number">1</span>][x1-<span class="number">1</span>][x2],dp[k-<span class="number">1</span>][x1-<span class="number">1</span>][x2-<span class="number">1</span>]);</span><br><span class="line">					t2=max(dp[k-<span class="number">1</span>][x1][x2],dp[k-<span class="number">1</span>][x1][x2-<span class="number">1</span>]);</span><br><span class="line">					dp[k][x1][x2]=max(t1,t2)+ <span class="built_in">map</span>[x1][y1] + <span class="built_in">map</span>[x2][y2];</span><br><span class="line">				 &#125;</span><br><span class="line">		<span class="built_in">cout</span>&lt;&lt;dp[all-<span class="number">1</span>][m][m-<span class="number">1</span>]+<span class="built_in">map</span>[m][n]&lt;&lt;endl;</span><br><span class="line">	 &#125;</span><br><span class="line">	 <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
-<p><br></p>
-<font color="red">&#160; &#160; &#160; &#160;感觉上面的代码可以直接使用<a href="http://liubigbin.github.io/2016/02/26/%E5%8F%8C%E7%BA%BF%E7%A8%8B%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92%E4%B9%8B%E4%BC%A0%E7%BA%B8%E6%9D%A1/">传纸条的代码</a>，只不过最后的输出值直接加上举证左上角的值和右下角的值就好了，具体能不能行得通还有待验证？？？</font>
-
-<p>因为每次只用K,K-1，所以第K步可以换为二维 ，内存少了六倍</p>
-<p>优化内存AC代码：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">#<span class="keyword">include</span><span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span><span class="string">&lt;cstring&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span><span class="string">&lt;algorithm&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="preprocessor">#<span class="keyword">define</span> N <span class="number">52</span></span></span><br><span class="line"><span class="keyword">int</span> dp[<span class="number">2</span>][N][N],<span class="built_in">map</span>[N][N];</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span><br><span class="line"></span>&#123;</span><br><span class="line">  <span class="keyword">int</span> test;</span><br><span class="line">  <span class="built_in">cin</span>&gt;&gt;test;</span><br><span class="line">  <span class="keyword">while</span>(test--)</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">int</span> m,n;</span><br><span class="line">    <span class="built_in">cin</span>&gt;&gt;m&gt;&gt;n;</span><br><span class="line">    <span class="keyword">int</span> i,j;</span><br><span class="line">    <span class="keyword">for</span>(i=<span class="number">1</span>;i&lt;=m;++i)</span><br><span class="line">      <span class="keyword">for</span>(j=<span class="number">1</span>;j&lt;=n;++j)</span><br><span class="line">        <span class="built_in">cin</span>&gt;&gt;<span class="built_in">map</span>[i][j];</span><br><span class="line"></span><br><span class="line">    <span class="built_in">memset</span>(dp,<span class="number">0</span>,<span class="keyword">sizeof</span>(dp));</span><br><span class="line">    <span class="keyword">int</span> all=m+n;</span><br><span class="line">    <span class="keyword">int</span> k,t1=<span class="number">0</span>,t2=<span class="number">0</span>,ans=<span class="number">0</span>;</span><br><span class="line">    <span class="keyword">int</span> x1,y1,x2,y2;</span><br><span class="line"></span><br><span class="line">    dp[<span class="number">2</span>][<span class="number">1</span>][<span class="number">1</span>]=<span class="built_in">map</span>[<span class="number">1</span>][<span class="number">1</span>];</span><br><span class="line"><span class="keyword">for</span>(k=<span class="number">2</span>;k&lt;=all;++k)</span><br><span class="line">  <span class="keyword">for</span>(x1=<span class="number">1</span>;x1&lt;=m;++x1)</span><br><span class="line">    <span class="keyword">for</span>(x2=<span class="number">1</span>;x2&lt;=m;++x2)</span><br><span class="line">   &#123;</span><br><span class="line">     y1=k-x1;</span><br><span class="line">     y2=k-x2;</span><br><span class="line">     <span class="keyword">if</span>(y1&lt;<span class="number">0</span>||y2&lt;<span class="number">0</span>||y1&gt;n||y2&gt;n)</span><br><span class="line">       <span class="keyword">continue</span>;</span><br><span class="line">     <span class="keyword">if</span>(y1==y2)</span><br><span class="line">       <span class="keyword">continue</span>;</span><br><span class="line"></span><br><span class="line">     t1=max(dp[k%<span class="number">2</span>][x1-<span class="number">1</span>][x2],dp[k%<span class="number">2</span>][x1-<span class="number">1</span>][x2-<span class="number">1</span>]);</span><br><span class="line">     t2=max(dp[k%<span class="number">2</span>][x1][x2],dp[k%<span class="number">2</span>][x1][x2-<span class="number">1</span>]);</span><br><span class="line">     dp[(k+<span class="number">1</span>)%<span class="number">2</span>][x1][x2]=max(t1,t2)+ <span class="built_in">map</span>[x1][y1] + <span class="built_in">map</span>[x2][y2];</span><br><span class="line">    &#125;</span><br><span class="line"><span class="built_in">cout</span>&lt;&lt;dp[(all%<span class="number">2</span>)][m][m-<span class="number">1</span>]+<span class="built_in">map</span>[m][n]&lt;&lt;endl;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>以上内容来自别人的CSDN博客，因为觉得写的很不错，所以就记录了下来，如果想看原创，请点击<a href=" http://m.blog.csdn.net/article/details?id=24369927" target="_blank" rel="external">这里</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/26/双线程动态规划之探寻宝藏/" data-id="cil6jv54x000q2sqyw3518a6g" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/动态规划/">动态规划</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a></li></ul>
 
     </footer>
   </div>
@@ -842,7 +801,7 @@ sshthresh = cwnd
   
   
     <nav id="page-nav">
-      <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/">Next &raquo;</a>
+      <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/2/">Next &raquo;</a>
     </nav>
   
 </section>
@@ -853,7 +812,7 @@ sshthresh = cwnd
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">1</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">1</span></li></ul>
     </div>
   </div>
 
@@ -862,7 +821,7 @@ sshthresh = cwnd
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
     </div>
   </div>
 
@@ -871,7 +830,7 @@ sshthresh = cwnd
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/Linux命令/" style="font-size: 20px;">Linux命令</a> <a href="/tags/TCP-IP/" style="font-size: 10px;">TCP/IP</a> <a href="/tags/动态规划/" style="font-size: 16.67px;">动态规划</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/棋盘动态规划/" style="font-size: 13.33px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 13.33px;">爬虫</a> <a href="/tags/随记/" style="font-size: 13.33px;">随记</a>
+      <a href="/tags/Linux命令/" style="font-size: 20px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 17.5px;">Linux用户管理</a> <a href="/tags/TCP-IP/" style="font-size: 10px;">TCP/IP</a> <a href="/tags/动态规划/" style="font-size: 15px;">动态规划</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/棋盘动态规划/" style="font-size: 12.5px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 12.5px;">爬虫</a> <a href="/tags/随记/" style="font-size: 12.5px;">随记</a>
     </div>
   </div>
 
@@ -880,7 +839,7 @@ sshthresh = cwnd
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">16</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
     </div>
   </div>
 
@@ -892,23 +851,23 @@ sshthresh = cwnd
       <ul>
         
           <li>
-            <a href="/2016/02/28/基于用户的协同过滤算法/">基于用户的协同过滤算法</a>
+            <a href="/2016/02/29/磁盘的分割、格式化、检验与挂载/">磁盘的分割、格式化、检验与挂载</a>
           </li>
         
           <li>
-            <a href="/2016/02/28/at命令详解/">at命令详解</a>
+            <a href="/2016/02/29/Linux文件系统之df，du以及ln命令/">Linux文件系统之df，du以及ln命令</a>
           </li>
         
           <li>
-            <a href="/2016/02/28/awk命令详解/">awk命令详解</a>
+            <a href="/2016/02/29/Linux磁盘概念/">Linux磁盘概念</a>
           </li>
         
           <li>
-            <a href="/2016/02/28/tee命令详解/">tee命令详解</a>
+            <a href="/2016/02/29/Linux-User、Group切换/">Linux User、Group切换</a>
           </li>
         
           <li>
-            <a href="/2016/02/28/cpio命令详解/">cpio命令详解</a>
+            <a href="/2016/02/29/Linux用户管理实例/">Linux用户管理实例</a>
           </li>
         
       </ul>

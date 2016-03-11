@@ -65,6 +65,81 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-双线程动态规划之传纸条" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/02/26/双线程动态规划之传纸条/" class="article-date">
+  <time datetime="2016-02-26T05:03:31.000Z" itemprop="datePublished">2016-02-26</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/算法/">算法</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/02/26/双线程动态规划之传纸条/">双线程动态规划之传纸条</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>&#160; &#160; &#160; &#160;最近在做天梯的时候，遇到了传纸条题目，一时想不出来，于是在网上百度了一下解题的方法，依然是动态规划，但是采用的是双线程的动态规划，感觉有点新鲜，于是记录了下来！<br>题目是这样子的：</p>
+<p>&#160; &#160; &#160; &#160;小渊和小轩是好朋友也是同班同学，他们在一起总有谈不完的话题。一次素质拓展活动中，班上同学安排做成一个m行n列的矩阵，而小渊和小轩被安排在矩阵对角线的两端，因此，他们就无法直接交谈了。幸运的是，他们可以通过传纸条来进行交流。纸条要经由许多同学传到对方手里，小渊坐在矩阵的左上角，坐标(1,1)，小轩坐在矩阵的右下角，坐标(m,n)。从小渊传到小轩的纸条只可以向下或者向右传递，从小轩传给小渊的纸条只可以向上或者向左传递。</p>
+<p>&#160; &#160; &#160; &#160;在活动进行中，小渊希望给小轩传递一张纸条，同时希望小轩给他回复。班里每个同学都可以帮他们传递，但只会帮他们一次，也就是说如果此人在小渊递给小轩纸条的时候帮忙，那么在小轩递给小渊的时候就不会再帮忙。反之亦然。</p>
+<p>&#160; &#160; &#160; &#160;还有一件事情需要注意，全班每个同学愿意帮忙的好感度有高有低（注意：小渊和小轩的好心程度没有定义，输入时用0表示），可以用一个0-100的自然数来表示，数越大表示越好心。小渊和小轩希望尽可能找好心程度高的同学来帮忙传纸条，即找到来回两条传递路径，使得这两条路径上同学的好心程度只和最大。现在，请你帮助小渊和小轩找到这样的两条路径。</p>
+<p>输入描述 Input Description</p>
+<p>&#160; &#160; &#160; &#160;输入的第一行有2个用空格隔开的整数m和n，表示班里有m行n列（1&lt;=m,n&lt;=50）。</p>
+<p>&#160; &#160; &#160; &#160;接下来的m行是一个m*n的矩阵，矩阵中第i行j列的整数表示坐在第i行j列的学生的好心程度。每行的n个整数之间用空格隔开。</p>
+<p>输出描述 Output Description</p>
+<p>&#160; &#160; &#160; &#160;输出共一行，包含一个整数，表示来回两条路上参与传递纸条的学生的好心程度之和的最大值。</p>
+<p>样例输入 Sample Input</p>
+<pre><code>3 3
+
+0 3 9
+
+2 8 5
+
+5 7 0
+</code></pre><p>样例输出 Sample Output</p>
+<pre><code>34
+</code></pre><h4 id="双线程DP的思想："><a href="#双线程DP的思想：" class="headerlink" title="双线程DP的思想："></a>双线程DP的思想：</h4><p>&#160; &#160; &#160; &#160;dp[k,x1,y1,x2,y2]表示第k步第一个纸条在(x1,y1)时和第二个纸条在(x2,y2)时的最优解…当然要保证x1!=x2&amp;&amp;y1!=y2 ,则它的上一步可能有四种情况：</p>
+<p><li>第一个纸条的位置在（x1, y1-1）, 第二纸条的位置为(x2, y2-1)，此时的状态为dp[k-1][x1][y1-1][x2][y2-1]</li></p>
+<p><li>第一个纸条的位置在（x1, y1-1）, 第二纸条的位置为(x2-1, y2)，此时的状态为dp[k-1][x1][y1-1][x2-1][y2]</li></p>
+<p><li>第一个纸条的位置在（x1-1, y1）, 第二纸条的位置为(x2, y2-1)，此时的状态为dp[k-1][x1-1][y1][x2][y2-1]</li></p>
+<p><li>第一个纸条的位置在（x1-1, y1）, 第二纸条的位置为(x2-1, y2)，此时的状态为dp[k-1][x1-1][y1][x2-1][y2])</li><br><br><br>状态转移方程为：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">dp[k][x1][y1][x2][y2]=max(</span><br><span class="line">                          dp[k-<span class="number">1</span>][x1][y1-<span class="number">1</span>][x2][y2-<span class="number">1</span>],</span><br><span class="line">                          dp[k-<span class="number">1</span>][x1][y1-<span class="number">1</span>][x2-<span class="number">1</span>][y2],</span><br><span class="line">                          dp[k-<span class="number">1</span>][x1-<span class="number">1</span>][y1][x2][y2-<span class="number">1</span>],</span><br><span class="line">                          dp[k-<span class="number">1</span>][x1-<span class="number">1</span>][y1][x2-<span class="number">1</span>][y2]</span><br><span class="line">                          )</span><br><span class="line">                      +<span class="built_in">map</span>[x1][y1]+<span class="built_in">map</span>[x2][y2];</span><br></pre></td></tr></table></figure>
+<p>但是上面的复杂度太高，但通过观察发现可以用三维数组来表示,因为每次只能向下或者向右。前一步（x1,y1）  向下：(x1+1，y1),  向右（x1,y1+1），前一步（x2,y2）  向下：(x2+1，y2),  向右（x2,y2+1）注意到没有？行标列标和相等！！！<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">k=x1+y1;</span><br><span class="line">k=x2+y2;</span><br></pre></td></tr></table></figure></p>
+<p>所以y1,y2就可以用k-x1,k-x2代替，顺利降为 三维；</p>
+<p>上面状态转移方程可以换为：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">dp[k][x1][x2] = max(</span><br><span class="line">                    dp[k-<span class="number">1</span>][x1][x2],</span><br><span class="line">                    dp[k-<span class="number">1</span>][x1][x2-<span class="number">1</span>],</span><br><span class="line">                    dp[k-<span class="number">1</span>][x1-<span class="number">1</span>][x2],</span><br><span class="line">                    dp[k-<span class="number">1</span>][x1-<span class="number">1</span>][x2-<span class="number">1</span>]</span><br><span class="line">                   )</span><br><span class="line">                + <span class="built_in">map</span>[i][k-i] + <span class="built_in">map</span>[j][k-j];</span><br></pre></td></tr></table></figure></p>
+<p>dp[k][x1][x2]来表示第k步第一个纸条和第二个纸条横坐标分别在x1和x2时的最优解,只需要保证x1!=x2即可;</p>
+<p>x1==x2时dp[k][x1][x2]==0…</p>
+<p>&#160; &#160; &#160; &#160;K表示map的第几条斜线  一共有m+n-1条斜线，在这个题中  第一和最后一条斜线不参与，因为两对角的好心度 定义为0；而在探寻宝藏这题中，两对角也有价值，所以需要加上两对角的值.</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">#<span class="keyword">include</span><span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span><span class="string">&lt;cstring&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span><span class="string">&lt;algorithm&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="preprocessor">#<span class="keyword">define</span> N <span class="number">52</span></span></span><br><span class="line"> <span class="keyword">int</span> dp[<span class="number">105</span>][N][N],<span class="built_in">map</span>[N][N];</span><br><span class="line"> <span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span><br><span class="line"> </span>&#123;</span><br><span class="line">	 <span class="keyword">int</span> test;</span><br><span class="line">	 <span class="built_in">cin</span>&gt;&gt;test;</span><br><span class="line">	 <span class="keyword">while</span>(test--)</span><br><span class="line">	 &#123;</span><br><span class="line">		 <span class="keyword">int</span> m,n;</span><br><span class="line">		 <span class="built_in">cin</span>&gt;&gt;m&gt;&gt;n;</span><br><span class="line">		 <span class="keyword">int</span> i,j;</span><br><span class="line">		 <span class="keyword">for</span>(i=<span class="number">1</span>;i&lt;=m;++i)</span><br><span class="line">			 <span class="keyword">for</span>(j=<span class="number">1</span>;j&lt;=n;++j)</span><br><span class="line">				 <span class="built_in">cin</span>&gt;&gt;<span class="built_in">map</span>[i][j];</span><br><span class="line"></span><br><span class="line">		 <span class="built_in">memset</span>(dp,<span class="number">0</span>,<span class="keyword">sizeof</span>(dp));</span><br><span class="line">		 <span class="keyword">int</span> all=m+n;</span><br><span class="line">		 <span class="keyword">int</span> k,t1=<span class="number">0</span>,t2=<span class="number">0</span>,ans=<span class="number">0</span>;</span><br><span class="line">		 <span class="keyword">int</span> x1,y1,x2,y2;</span><br><span class="line"></span><br><span class="line">		 <span class="comment">//dp[2][1][1]=map[1][1];</span></span><br><span class="line">		 <span class="keyword">for</span>(k=<span class="number">2</span>;k&lt;=all;++k)</span><br><span class="line">			 <span class="keyword">for</span>(x1=<span class="number">1</span>;x1&lt;=m;++x1)</span><br><span class="line">				 <span class="keyword">for</span>(x2=<span class="number">1</span>;x2&lt;=m;++x2)</span><br><span class="line">				&#123;</span><br><span class="line">					y1=k-x1;</span><br><span class="line">					y2=k-x2;</span><br><span class="line">					<span class="keyword">if</span>(y1&lt;<span class="number">0</span>||y2&lt;<span class="number">0</span>||y1&gt;n||y2&gt;n)</span><br><span class="line">						<span class="keyword">continue</span>;</span><br><span class="line">					<span class="keyword">if</span>(y1==y2)</span><br><span class="line">						<span class="keyword">continue</span>;</span><br><span class="line"></span><br><span class="line">					t1=max(dp[k-<span class="number">1</span>][x1-<span class="number">1</span>][x2],dp[k-<span class="number">1</span>][x1-<span class="number">1</span>][x2-<span class="number">1</span>]);</span><br><span class="line">					t2=max(dp[k-<span class="number">1</span>][x1][x2],dp[k-<span class="number">1</span>][x1][x2-<span class="number">1</span>]);</span><br><span class="line">					dp[k][x1][x2]=max(t1,t2)+ <span class="built_in">map</span>[x1][y1] + <span class="built_in">map</span>[x2][y2];</span><br><span class="line">				 &#125;</span><br><span class="line">		<span class="built_in">cout</span>&lt;&lt;dp[all-<span class="number">1</span>][m][m-<span class="number">1</span>]&lt;&lt;endl;</span><br><span class="line">	 &#125;</span><br><span class="line">	 <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<p>以上内容大部分来自别人的CSDN博客，因为觉得写的很不错，所以就记录了下来，如果想看原创，请点击<a href=" http://m.blog.csdn.net/article/details?id=24369927" target="_blank" rel="external">这里</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/02/26/双线程动态规划之传纸条/" data-id="cilntatf40013ksqy6zssy5h1" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/动态规划/">动态规划</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-通过git提交或更新代码到github" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2016/02/25/通过git提交或更新代码到github/" class="article-date">
@@ -117,7 +192,7 @@ $ git push origin master
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/25/通过git提交或更新代码到github/" data-id="cilnqzzpy0005vcqyuywzv83p" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/25/通过git提交或更新代码到github/" data-id="cilntatem0005ksqyivikzlp9" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/随记/">随记</a></li></ul>
@@ -164,7 +239,7 @@ $ git push origin master
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/24/爬取leetcode所有accepted算法题的代码/" data-id="cilnqzzq3000gvcqys0rqgjmg" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/24/爬取leetcode所有accepted算法题的代码/" data-id="cilntates000gksqy90dcwvv0" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/爬虫/">爬虫</a></li></ul>
@@ -212,7 +287,7 @@ url_con.setRequestProperty(&quot;Cookie&quot;, &quot;your browser&apos;s cookie 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/24/爬虫绕过登陆方法/" data-id="cilnqzzq1000cvcqyf3va1ej5" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/24/爬虫绕过登陆方法/" data-id="cilntatep000cksqyblwni5ig" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/爬虫/">爬虫</a></li></ul>
@@ -301,7 +376,7 @@ branch: master
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/24/怎样搭建自己的Hexo博客/" data-id="cilnqzzq4000jvcqyj0623a5f" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/24/怎样搭建自己的Hexo博客/" data-id="cilntateu000jksqyxp5ekjbn" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/随记/">随记</a></li></ul>
@@ -352,7 +427,7 @@ branch: master
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/24/hello-world/" data-id="cilnqzzqo001evcqym628n80z" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/24/hello-world/" data-id="cilntatfa001eksqyss57e19l" class="article-share-link">Share</a>
       
       
     </footer>
@@ -375,7 +450,7 @@ branch: master
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">15</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">1</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">16</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">1</span></li></ul>
     </div>
   </div>
 
@@ -402,7 +477,7 @@ branch: master
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
     </div>
   </div>
 
@@ -412,6 +487,10 @@ branch: master
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2016/03/11/Linux-之守护进程、僵死进程与孤儿进程/">Linux 之守护进程、僵死进程与孤儿进程</a>
+          </li>
         
           <li>
             <a href="/2016/03/11/IO-多路复用之select、poll、epoll详解/">IO 多路复用之select、poll、epoll详解</a>
@@ -427,10 +506,6 @@ branch: master
         
           <li>
             <a href="/2016/02/29/Linux文件系统之df，du以及ln命令/">Linux文件系统之df，du以及ln命令</a>
-          </li>
-        
-          <li>
-            <a href="/2016/02/29/Linux磁盘概念/">Linux磁盘概念</a>
           </li>
         
       </ul>

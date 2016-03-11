@@ -65,6 +65,161 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-IO-多路复用之select、poll、epoll详解" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/03/11/IO-多路复用之select、poll、epoll详解/" class="article-date">
+  <time datetime="2016-03-11T12:31:52.000Z" itemprop="datePublished">2016-03-11</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/03/11/IO-多路复用之select、poll、epoll详解/">IO 多路复用之select、poll、epoll详解</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>select，poll，epoll都是IO多路复用的机制。I/O多路复用就是通过一种机制，一个进程可以监视多个描述符，一旦某个描述符就绪（一般是读就绪或者写就绪），能够通知程序进行相应的读写操作。但select，poll，epoll本质上都是同步I/O，因为他们都需要在读写事件就绪后自己负责进行读写，也就是说这个读写过程是阻塞的，而异步I/O则无需自己负责进行读写，异步I/O的实现会负责把数据从内核拷贝到用户空间。</p>
+<h3 id="select"><a href="#select" class="headerlink" title="select"></a>select</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">select</span> <span class="params">(<span class="keyword">int</span> maxfdp1, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, <span class="keyword">struct</span> timeval *timeout)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>select 函数监视的文件描述符分3类，分别是writefds、readfds、和exceptfds。调用后select函数会阻塞，直到有描述副就绪（有数据 可读、可写、或者有except），或者超时（timeout指定等待时间，如果立即返回设为null即可），函数返回。当select函数返回后，可以 通过遍历fdset，来找到就绪的描述符。<br>select目前几乎在所有的平台上支持，其良好跨平台支持也是它的一个优点。但是select有一下三个缺点：</p>
+<p>1: 当个进程能够监控的文件描述符的数量受到限制（最大为1024，由FD_SETSIZE宏定义决定，修改需要重新编译内核）<br>2：每一次调用select，都需要将文件描述符set复制到内核里面，增加了系统开销<br>3: select采用轮询的方式，每一次内核都要遍历 [0，maxfdp1)这么多个文件描述符，即使文件描述符set里面只有一个值为maxfdp的文件描述符，而且返回的时候，<br>   程序需要遍历所有监控的文件描述符来获得可读写的文件描述符</p>
+<h3 id="poll"><a href="#poll" class="headerlink" title="poll"></a>poll</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">poll</span> <span class="params">(<span class="keyword">struct</span> pollfd *fds, <span class="keyword">unsigned</span> <span class="keyword">int</span> nfds, <span class="keyword">int</span> timeout)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>不同与select使用三个位图来表示三个fdset的方式，poll使用一个 pollfd的指针实现。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">全选复制放进笔记<span class="keyword">struct</span> pollfd &#123;</span><br><span class="line">    <span class="keyword">int</span> fd; <span class="comment">/* file descriptor */</span></span><br><span class="line">    <span class="keyword">short</span> events; <span class="comment">/* requested events to watch */</span></span><br><span class="line">    <span class="keyword">short</span> revents; <span class="comment">/* returned events witnessed */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>pollfd结构包含了要监视的event和发生的event，不再使用select“参数-值”传递的方式。同时，pollfd并没有最大数量限制（但是数量过大后性能也是会下降）。 和select函数一样，poll返回后，需要轮询pollfd来获取就绪的描述符。</p>
+<p>从上面看，select和poll都需要在返回后，通过遍历文件描述符来获取已经就绪的socket。事实上，同时连接的大量客户端在一时刻可能只有很少的处于就绪状态，因此随着监视的描述符数量的增长，其效率也会线性下降。</p>
+<h3 id="epoll"><a href="#epoll" class="headerlink" title="epoll"></a>epoll</h3><h4 id="epoll操作过程"><a href="#epoll操作过程" class="headerlink" title="epoll操作过程"></a>epoll操作过程</h4><p>epoll是在2.6内核中提出的，是之前的select和poll的增强版本。相对于select和poll来说，epoll更加灵活，没有描述符限制。epoll使用一个文件描述符管理多个描述符，将用户关系的文件描述符的事件存放到内核的一个事件表中，这样在用户空间和内核空间的copy只需一次。</p>
+<p>epoll操作过程需要三个接口，分别如下：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">int epoll_create(int size)；//创建一个epoll的句柄，size用来告诉内核这个监听的数目一共有多大</span><br><span class="line">int epoll_ctl(int epfd, int op, int fd, struct epoll_event *event)；</span><br><span class="line">int epoll_wait(int epfd, struct epoll_event * events, int maxevents, int timeout);</span><br></pre></td></tr></table></figure>
+<ol>
+<li>int epoll_create(int size):</li>
+</ol>
+<p>创建一个epoll的句柄，size用来告诉内核这个监听的数目一共有多大，这个参数不同于select()中的第一个参数，给出最大监听的fd+1的值，参数size并不是限制了epoll所能监听的描述符最大个数，只是对内核初始分配内部数据结构的一个建议。<br>当创建好epoll句柄后，它就会占用一个fd值，在linux下如果查看/proc/进程id/fd/，是能够看到这个fd的，所以在使用完epoll后，必须调用close()关闭，否则可能导致fd被耗尽。</p>
+<ol>
+<li>int epoll_ctl(int epfd, int op, int fd, struct epoll_event *event):<figure class="highlight haml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">函数是对指定描述符fd执行op操作。</span><br><span class="line">-<span class="ruby"> epfd：是epoll_create()的返回值。</span><br><span class="line"></span>-<span class="ruby"> op：表示op操作，用三个宏来表示：添加<span class="constant">EPOLL_CTL_ADD</span>，删除<span class="constant">EPOLL_CTL_DEL</span>，修改<span class="constant">EPOLL_CTL_MOD</span>。分别添加、删除和修改对fd的监听事件。</span><br><span class="line"></span>-<span class="ruby"> fd：是需要监听的fd（文件描述符）</span><br><span class="line"></span>-<span class="ruby"> epoll_event：是告诉内核需要监听什么事</span></span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>struct epoll_event结构如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> epoll_event &#123;</span><br><span class="line">  <span class="keyword">__uint32_t</span> events;  <span class="comment">/* Epoll events */</span></span><br><span class="line">  <span class="keyword">epoll_data_t</span> data;  <span class="comment">/* User data variable */</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">//events可以是以下几个宏的集合：</span></span><br><span class="line">EPOLLIN ：表示对应的文件描述符可以读（包括对端SOCKET正常关闭）；</span><br><span class="line">EPOLLOUT：表示对应的文件描述符可以写；</span><br><span class="line">EPOLLPRI：表示对应的文件描述符有紧急的数据可读（这里应该表示有带外数据到来）；</span><br><span class="line">EPOLLERR：表示对应的文件描述符发生错误；</span><br><span class="line">EPOLLHUP：表示对应的文件描述符被挂断；</span><br><span class="line">EPOLLET： 将EPOLL设为边缘触发(Edge Triggered)模式，这是相对于水平触发(Level Triggered)来说的。</span><br><span class="line">EPOLLONESHOT：只监听一次事件，当监听完这次事件之后，如果还需要继续监听这个socket的话，需要再次把这个socket加入到EPOLL队列里</span><br></pre></td></tr></table></figure>
+<ol>
+<li>int epoll_wait(int epfd, struct epoll_event * events, int maxevents, int timeout)</li>
+</ol>
+<p>等待epfd上的io事件，最多返回maxevents个事件。<br>参数events用来从内核得到事件的集合，maxevents告之内核这个events有多大，这个maxevents的值不能大于创建epoll_create()时的size，参数timeout是超时时间（毫秒，0会立即返回，-1将不确定，也有说法说是永久阻塞）。该函数返回需要处理的事件数目，如返回0表示已超时。</p>
+<h4 id="工作模式"><a href="#工作模式" class="headerlink" title="工作模式"></a>工作模式</h4><p>epoll对文件描述符的操作有两种模式：LT（level trigger）和ET（edge trigger）。LT模式是默认模式，LT模式与ET模式的区别如下：</p>
+<p>LT模式：当epoll_wait检测到描述符事件发生并将此事件通知应用程序，应用程序可以不立即处理该事件。下次调用epoll_wait时，会再次响应应用程序并通知此事件。<br>　　ET模式：当epoll_wait检测到描述符事件发生并将此事件通知应用程序，应用程序必须立即处理该事件。如果不处理，下次调用epoll_wait时，不会再次响应应用程序并通知此事件。</p>
+<ol>
+<li>LT模式</li>
+</ol>
+<p>LT(level triggered)是缺省的工作方式，并且同时支持block和no-block socket.在这种做法中，内核告诉你一个文件描述符是否就绪了，然后你可以对这个就绪的fd进行IO操作。如果你不作任何操作，内核还是会继续通知你的。</p>
+<ol>
+<li>ET模式</li>
+</ol>
+<p>ET(edge-triggered)是高速工作方式，只支持no-block socket。在这种模式下，当描述符从未就绪变为就绪时，内核通过epoll告诉你。然后它会假设你知道文件描述符已经就绪，并且不会再为那个文件描述符发送更多的就绪通知，直到你做了某些操作导致那个文件描述符不再为就绪状态了(比如，你在发送，接收或者接收请求，或者发送接收的数据少于一定量时导致了一个EWOULDBLOCK 错误）。但是请注意，如果一直不对这个fd作IO操作(从而导致它再次变成未就绪)，内核不会发送更多的通知(only once)</p>
+<p>ET模式在很大程度上减少了epoll事件被重复触发的次数，因此效率要比LT模式高。epoll工作在ET模式的时候，必须使用非阻塞套接口，以避免由于一个文件句柄的阻塞读/阻塞写操作把处理多个文件描述符的任务饿死。</p>
+<p>在 select/poll中，进程只有在调用一定的方法后，内核才对所有监视的文件描述符进行扫描，而epoll事先通过epoll_ctl()来注册一 个文件描述符，一旦基于某个文件描述符就绪时，内核会采用类似callback的回调机制，迅速激活这个文件描述符，当进程调用epoll_wait() 时便得到通知。(此处去掉了遍历文件描述符，而是通过监听回调的的机制。这正是epoll的魅力所在。)</p>
+<p>epoll的优点主要是一下几个方面：</p>
+<ol>
+<li><p>监视的描述符数量不受限制，它所支持的FD上限是最大可以打开文件的数目，这个数字一般远大于2048,举个例子,在1GB内存的机器上大约是10万左 右，具体数目可以cat /proc/sys/fs/file-max察看,一般来说这个数目和系统内存关系很大。select的最大缺点就是进程打开的fd是有数量限制的。这对 于连接数量比较大的服务器来说根本不能满足。虽然也可以选择多进程的解决方案( Apache就是这样实现的)，不过虽然linux上面创建进程的代价比较小，但仍旧是不可忽视的，加上进程间数据同步远比不上线程间同步的高效，所以也不是一种完美的方案。</p>
+</li>
+<li><p>IO的效率不会随着监视fd的数量的增长而下降。epoll不同于select和poll轮询的方式，而是通过每个fd定义的回调函数来实现的。只有就绪的fd才会执行回调函数。</p>
+</li>
+<li><p>文件描述符只需要复制一次到内核，不需要每一次调用函数都进行文件描述符的内核复制</p>
+</li>
+</ol>
+<p>如果没有大量的idle -connection或者dead-connection，epoll的效率并不会比select/poll高很多，但是当遇到大量的idle- connection，就会发现epoll的效率大大高于select/poll。</p>
+<p>下面是在<a href="http://www.cnblogs.com/Anker/archive/2013/08/17/3263780.html" target="_blank" rel="external">这里</a>复制的一份epoll的代码：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;errno.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;netinet/in.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;arpa/inet.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;sys/epoll.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#<span class="keyword">define</span> IPADDRESS   <span class="string">"127.0.0.1"</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">define</span> PORT        <span class="number">8787</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">define</span> MAXSIZE     <span class="number">1024</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">define</span> LISTENQ     <span class="number">5</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">define</span> FDSIZE      <span class="number">1000</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">define</span> EPOLLEVENTS <span class="number">100</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">//函数声明</span></span><br><span class="line"><span class="comment">//创建套接字并进行绑定</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">socket_bind</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* ip,<span class="keyword">int</span> port)</span></span>;</span><br><span class="line"><span class="comment">//IO多路复用epoll</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">do_epoll</span><span class="params">(<span class="keyword">int</span> listenfd)</span></span>;</span><br><span class="line"><span class="comment">//事件处理函数</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span></span><br><span class="line"><span class="title">handle_events</span><span class="params">(<span class="keyword">int</span> epollfd,<span class="keyword">struct</span> epoll_event *events,<span class="keyword">int</span> num,<span class="keyword">int</span> listenfd,<span class="keyword">char</span> *buf)</span></span>;</span><br><span class="line"><span class="comment">//处理接收到的连接</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">handle_accpet</span><span class="params">(<span class="keyword">int</span> epollfd,<span class="keyword">int</span> listenfd)</span></span>;</span><br><span class="line"><span class="comment">//读处理</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">do_read</span><span class="params">(<span class="keyword">int</span> epollfd,<span class="keyword">int</span> fd,<span class="keyword">char</span> *buf)</span></span>;</span><br><span class="line"><span class="comment">//写处理</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">do_write</span><span class="params">(<span class="keyword">int</span> epollfd,<span class="keyword">int</span> fd,<span class="keyword">char</span> *buf)</span></span>;</span><br><span class="line"><span class="comment">//添加事件</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">add_event</span><span class="params">(<span class="keyword">int</span> epollfd,<span class="keyword">int</span> fd,<span class="keyword">int</span> state)</span></span>;</span><br><span class="line"><span class="comment">//修改事件</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">modify_event</span><span class="params">(<span class="keyword">int</span> epollfd,<span class="keyword">int</span> fd,<span class="keyword">int</span> state)</span></span>;</span><br><span class="line"><span class="comment">//删除事件</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">delete_event</span><span class="params">(<span class="keyword">int</span> epollfd,<span class="keyword">int</span> fd,<span class="keyword">int</span> state)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc,<span class="keyword">char</span> *argv[])</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span>  listenfd;</span><br><span class="line">    listenfd = socket_bind(IPADDRESS,PORT);</span><br><span class="line">    listen(listenfd,LISTENQ);</span><br><span class="line">    do_epoll(listenfd);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">socket_bind</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* ip,<span class="keyword">int</span> port)</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span>  listenfd;</span><br><span class="line">    <span class="keyword">struct</span> sockaddr_in servaddr;</span><br><span class="line">    listenfd = socket(AF_INET,SOCK_STREAM,<span class="number">0</span>);</span><br><span class="line">    <span class="keyword">if</span> (listenfd == -<span class="number">1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        perror(<span class="string">"socket error:"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    bzero(&amp;servaddr,<span class="keyword">sizeof</span>(servaddr));</span><br><span class="line">    servaddr.sin_family = AF_INET;</span><br><span class="line">    inet_pton(AF_INET,ip,&amp;servaddr.sin_addr);</span><br><span class="line">    servaddr.sin_port = htons(port);</span><br><span class="line">    <span class="keyword">if</span> (bind(listenfd,(<span class="keyword">struct</span> sockaddr*)&amp;servaddr,<span class="keyword">sizeof</span>(servaddr)) == -<span class="number">1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        perror(<span class="string">"bind error: "</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> listenfd;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">do_epoll</span><span class="params">(<span class="keyword">int</span> listenfd)</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> epollfd;</span><br><span class="line">    <span class="keyword">struct</span> epoll_event events[EPOLLEVENTS];</span><br><span class="line">    <span class="keyword">int</span> ret;</span><br><span class="line">    <span class="keyword">char</span> buf[MAXSIZE];</span><br><span class="line">    <span class="built_in">memset</span>(buf,<span class="number">0</span>,MAXSIZE);</span><br><span class="line">    <span class="comment">//创建一个描述符</span></span><br><span class="line">    epollfd = epoll_create(FDSIZE);</span><br><span class="line">    <span class="comment">//添加监听描述符事件</span></span><br><span class="line">    add_event(epollfd,listenfd,EPOLLIN);</span><br><span class="line">    <span class="keyword">for</span> ( ; ; )</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">//获取已经准备好的描述符事件</span></span><br><span class="line">        ret = epoll_wait(epollfd,events,EPOLLEVENTS,-<span class="number">1</span>);</span><br><span class="line">        handle_events(epollfd,events,ret,listenfd,buf);</span><br><span class="line">    &#125;</span><br><span class="line">    close(epollfd);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span></span><br><span class="line"><span class="title">handle_events</span><span class="params">(<span class="keyword">int</span> epollfd,<span class="keyword">struct</span> epoll_event *events,<span class="keyword">int</span> num,<span class="keyword">int</span> listenfd,<span class="keyword">char</span> *buf)</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> i;</span><br><span class="line">    <span class="keyword">int</span> fd;</span><br><span class="line">    <span class="comment">//进行选好遍历</span></span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>;i &lt; num;i++)</span><br><span class="line">    &#123;</span><br><span class="line">        fd = events[i].data.fd;</span><br><span class="line">        <span class="comment">//根据描述符的类型和事件类型进行处理</span></span><br><span class="line">        <span class="keyword">if</span> ((fd == listenfd) &amp;&amp;(events[i].events &amp; EPOLLIN))</span><br><span class="line">            handle_accpet(epollfd,listenfd);</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (events[i].events &amp; EPOLLIN)</span><br><span class="line">            do_read(epollfd,fd,buf);</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> (events[i].events &amp; EPOLLOUT)</span><br><span class="line">            do_write(epollfd,fd,buf);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">handle_accpet</span><span class="params">(<span class="keyword">int</span> epollfd,<span class="keyword">int</span> listenfd)</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> clifd;</span><br><span class="line">    <span class="keyword">struct</span> sockaddr_in cliaddr;</span><br><span class="line">    <span class="keyword">socklen_t</span>  cliaddrlen;</span><br><span class="line">    clifd = accept(listenfd,(<span class="keyword">struct</span> sockaddr*)&amp;cliaddr,&amp;cliaddrlen);</span><br><span class="line">    <span class="keyword">if</span> (clifd == -<span class="number">1</span>)</span><br><span class="line">        perror(<span class="string">"accpet error:"</span>);</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"accept a new client: %s:%d\n"</span>,inet_ntoa(cliaddr.sin_addr),cliaddr.sin_port);</span><br><span class="line">        <span class="comment">//添加一个客户描述符和事件</span></span><br><span class="line">        add_event(epollfd,clifd,EPOLLIN);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">do_read</span><span class="params">(<span class="keyword">int</span> epollfd,<span class="keyword">int</span> fd,<span class="keyword">char</span> *buf)</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> nread;</span><br><span class="line">    nread = read(fd,buf,MAXSIZE);</span><br><span class="line">    <span class="keyword">if</span> (nread == -<span class="number">1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        perror(<span class="string">"read error:"</span>);</span><br><span class="line">        close(fd);</span><br><span class="line">        delete_event(epollfd,fd,EPOLLIN);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (nread == <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>,<span class="string">"client close.\n"</span>);</span><br><span class="line">        close(fd);</span><br><span class="line">        delete_event(epollfd,fd,EPOLLIN);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"read message is : %s"</span>,buf);</span><br><span class="line">        <span class="comment">//修改描述符对应的事件，由读改为写</span></span><br><span class="line">        modify_event(epollfd,fd,EPOLLOUT);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">do_write</span><span class="params">(<span class="keyword">int</span> epollfd,<span class="keyword">int</span> fd,<span class="keyword">char</span> *buf)</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> nwrite;</span><br><span class="line">    nwrite = write(fd,buf,<span class="built_in">strlen</span>(buf));</span><br><span class="line">    <span class="keyword">if</span> (nwrite == -<span class="number">1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        perror(<span class="string">"write error:"</span>);</span><br><span class="line">        close(fd);</span><br><span class="line">        delete_event(epollfd,fd,EPOLLOUT);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        modify_event(epollfd,fd,EPOLLIN);</span><br><span class="line">    <span class="built_in">memset</span>(buf,<span class="number">0</span>,MAXSIZE);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">add_event</span><span class="params">(<span class="keyword">int</span> epollfd,<span class="keyword">int</span> fd,<span class="keyword">int</span> state)</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">struct</span> epoll_event ev;</span><br><span class="line">    ev.events = state;</span><br><span class="line">    ev.data.fd = fd;</span><br><span class="line">    epoll_ctl(epollfd,EPOLL_CTL_ADD,fd,&amp;ev);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">delete_event</span><span class="params">(<span class="keyword">int</span> epollfd,<span class="keyword">int</span> fd,<span class="keyword">int</span> state)</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">struct</span> epoll_event ev;</span><br><span class="line">    ev.events = state;</span><br><span class="line">    ev.data.fd = fd;</span><br><span class="line">    epoll_ctl(epollfd,EPOLL_CTL_DEL,fd,&amp;ev);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">modify_event</span><span class="params">(<span class="keyword">int</span> epollfd,<span class="keyword">int</span> fd,<span class="keyword">int</span> state)</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">struct</span> epoll_event ev;</span><br><span class="line">    ev.events = state;</span><br><span class="line">    ev.data.fd = fd;</span><br><span class="line">    epoll_ctl(epollfd,EPOLL_CTL_MOD,fd,&amp;ev);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/03/11/IO-多路复用之select、poll、epoll详解/" data-id="cilnqzzof0000vcqyzwykd7ro" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Linux-I-O-模型" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/03/11/Linux-I-O-模型/" class="article-date">
+  <time datetime="2016-03-11T11:18:01.000Z" itemprop="datePublished">2016-03-11</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/03/11/Linux-I-O-模型/">Linux I/O 模型</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>unix下有5中可用的I/O模型，分别为：</p>
+<h4 id="阻塞式I-O"><a href="#阻塞式I-O" class="headerlink" title="阻塞式I/O"></a>阻塞式I/O</h4><h4 id="非阻塞式I-O"><a href="#非阻塞式I-O" class="headerlink" title="非阻塞式I/O"></a>非阻塞式I/O</h4><h4 id="I-O复用（事件驱动IO，-select、poll和epoll）"><a href="#I-O复用（事件驱动IO，-select、poll和epoll）" class="headerlink" title="I/O复用（事件驱动IO， select、poll和epoll）"></a>I/O复用（事件驱动IO， <a>select、poll和epoll）</a></h4><h4 id="信号驱动式I-O（SIGIO）"><a href="#信号驱动式I-O（SIGIO）" class="headerlink" title="信号驱动式I/O（SIGIO）"></a>信号驱动式I/O（SIGIO）</h4><h4 id="异步I-O"><a href="#异步I-O" class="headerlink" title="异步I/O"></a>异步I/O</h4><p>要先理解I/O模型，需要先知道IO发生时所涉及到的步骤和对象，对于一个network IO (这里我们以read举例)，它会涉及到两个系统对象，一个是调用这个IO的process (or thread)，另一个就是系统内核(kernel)。当一个read操作发生时，它会经历两个阶段：<br><figure class="highlight livecodeserver"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span> 等待数据准备 (Waiting <span class="keyword">for</span> <span class="operator">the</span> data <span class="built_in">to</span> be ready)</span><br><span class="line"></span><br><span class="line"><span class="number">2</span> 将数据从内核拷贝到进程中 (Copying <span class="operator">the</span> data <span class="built_in">from</span> <span class="operator">the</span> kernel <span class="built_in">to</span> <span class="operator">the</span> <span class="built_in">process</span>)</span><br></pre></td></tr></table></figure></p>
+<p>记住这两点很重要，因为这些IO Model的区别就是在两个阶段上各有不同的情况。</p>
+<h3 id="阻塞式I-O模型"><a href="#阻塞式I-O模型" class="headerlink" title="阻塞式I/O模型"></a>阻塞式I/O模型</h3><p>在linux中，默认情况下所有的socket都是blocking，一个典型的读操作流程大概是这样：<br><img src="/pictures/LinuxI/O模型-阻塞IO.png" alt=""></p>
+<p>当用户进程调用了recvfrom这个系统调用，kernel就开始了IO的第一个阶段：准备数据。对于network io来说，很多时候数据在一开始还没有到达（比如，还没有收到一个完整的UDP包），这个时候kernel就要等待足够的数据到来。而在用户进程这边，整个进程会被阻塞。当kernel一直等到数据准备好了，它就会将数据从kernel中拷贝到用户内存，然后kernel返回结果，用户进程才解除block的状态，重新运行起来。<br>所以，blocking IO的特点就是在IO执行的两个阶段都被block了。</p>
+<h3 id="非阻塞式I-O-模型"><a href="#非阻塞式I-O-模型" class="headerlink" title="非阻塞式I/O 模型"></a>非阻塞式I/O 模型</h3><p>非阻塞的接口相比于阻塞型接口的显著差异在于，在被调用之后立即返回。使用如下的函数可以将某句柄 fd 设为非阻塞状态。</p>
+<pre><code>fcntl( fd, F_SETFL, O_NONBLOCK );
+</code></pre><p>linux下，可以通过设置socket使其变为non-blocking。当对一个non-blocking socket执行读操作时，流程是这个样子：<br><img src="/pictures/LinuxIO模型-非阻塞IO.png" alt=""></p>
+<p>从图中可以看出，当用户进程发出read操作时，如果kernel中的数据还没有准备好，那么它并不会block用户进程，而是立刻返回一个error。从用户进程角度讲 ，它发起一个read操作后，并不需要等待，而是马上就得到了一个结果。用户进程判断结果是一个error时，它就知道数据还没有准备好，于是它可以再次发送read操作。一旦kernel中的数据准备好了，并且又再次收到了用户进程的system call，那么它马上就将数据拷贝到了用户内存，然后返回。<br>所以，用户进程其实是需要不断的主动询问kernel数据好了没有。</p>
+<font color="red">但是上述模型绝不被推荐。因为，循环调用 recv() 将大幅度推高 CPU 占用率；此外，在这个方案中，recv() 更多的是起到检测“操作是否完成”的作用，实际操作系统提供了更为高效的检测“操作是否完成“作用的接口，例如 select()。</font>
+
+<h3 id="I-O复用（事件驱动IO，-select、poll和epoll）-1"><a href="#I-O复用（事件驱动IO，-select、poll和epoll）-1" class="headerlink" title="I/O复用（事件驱动IO， select、poll和epoll）"></a>I/O复用（事件驱动IO， select、poll和epoll）</h3><p>我们都知道，select/epoll的好处就在于单个process就可以同时处理多个网络连接的IO。它的基本原理就是select/epoll这个function会不断的轮询所负责的所有socket，当某个socket有数据到达了，就通知用户进程。它的流程如图：<br><img src="/pictures/LinuxIO模型-多路IO复用.png" alt=""></p>
+<p>当用户进程调用了select，那么整个进程会被block，而同时，kernel会“监视”所有select负责的socket，当任何一个socket中的数据准备好了，select就会返回。这个时候用户进程再调用read操作，将数据从kernel拷贝到用户进程。<br>这个图和blocking IO的图其实并没有太大的不同，事实上，还更差一些。因为这里需要使用两个system call (select 和 recvfrom)，而blocking IO只调用了一个system call (recvfrom)。但是，用select的优势在于它可以同时处理多个connection。（多说一句。所以，如果处理的连接数不是很高的话，使用select/epoll的web server不一定比使用multi-threading + blocking IO的web server性能更好，可能延迟还更大。select/epoll的优势并不是对于单个连接能处理得更快，而是在于能处理更多的连接。）<br>在IO multiplexing Model中，实际中，对于每一个socket，一般都设置成为non-blocking，但是，如上图所示，整个用户的process其实是一直被block的。只不过process是被select这个函数block，而不是被socket IO给block。</p>
+<h3 id="信号驱动式I-O（SIGIO）-1"><a href="#信号驱动式I-O（SIGIO）-1" class="headerlink" title="信号驱动式I/O（SIGIO）"></a>信号驱动式I/O（SIGIO）</h3><p>我们也可以使用信号，让内核在描述符就绪时发送SIGIO信号通知我们。这种模型就是信号驱动模式IO，如下图所示：<br><img src="/pictures/LinuxIO模型-信号驱动IO.png" alt=""></p>
+<p>我们先开启套接字的信号驱动模式，并通过sigaction系统调用安装一个信号处理函数。该系统调用将立刻返回，我们的进程继续工作，也就是说它没有被阻塞。当数据报准备好读取时，内核就为该进程产生一个SIGIO信号。我们随后既可以在信号处理函数中调用recvfrom读取数据报，并通知主循环数据已经准备好，也可以立刻通知主循环，然让他读取数据报。</p>
+<p>无论如何处理信号，这种模型的优势在于等待数据报到达期间进程不被阻塞。主循环可以继续执行，只要等待来自信号处理函数的通知：既可以是数据报以准备好被处理，也可以是数据报已准备好被读取。</p>
+<h3 id="异步I-O-1"><a href="#异步I-O-1" class="headerlink" title="异步I/O"></a>异步I/O</h3><p>linux下的asynchronous IO其实用得很少。先看一下它的流程：<br><img src="/pictures/LinuxIO模型-异步IO.png" alt=""><br>用户进程发起read操作之后，立刻就可以开始去做其它的事。而另一方面，从kernel的角度，当它受到一个asynchronous read之后，首先它会立刻返回，所以不会对用户进程产生任何block。然后，kernel会等待数据准备完成，然后将数据拷贝到用户内存，当这一切都完成之后，kernel会给用户进程发送一个signal，告诉它read操作完成了。</p>
+<p>阻塞与非阻塞的区别：</p>
+<p>由图形我们可以知道，其实两者的而区别只在于当内核没有数据的时候，程序阻塞或不阻塞，如果内核没有数据的时候，程序一直等待的话，那么属于阻塞IO，如果没有数据的时候立刻返回，就是非阻塞IO。</p>
+<p>同步和异步IO的区别：</p>
+<p>同步IO与异步IO的区别就是在IO操作期间，程序有没有出现过阻塞，不管是内核数据准备期间，还是数据从内核复制到用户空间期间，只要是出现过阻塞的，那么就是同步IO，由上面的分析我们可以知道，其实阻塞式I/O，非阻塞式I/O，I/O复用（事件驱动IO， select、poll和epoll），信号驱动式I/O（SIGIO）都属于同步IO。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/03/11/Linux-I-O-模型/" data-id="cilnqzzre002avcqyb1uy4ubj" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-磁盘的分割、格式化、检验与挂载" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2016/02/29/磁盘的分割、格式化、检验与挂载/" class="article-date">
@@ -118,7 +273,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/29/磁盘的分割、格式化、检验与挂载/" data-id="cil8ufou1000ajgqyiyp9ukn0" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/29/磁盘的分割、格式化、检验与挂载/" data-id="cilnqzzq0000avcqy29lrlnqy" class="article-share-link">Share</a>
       
       
     </footer>
@@ -172,7 +327,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/29/Linux文件系统之df，du以及ln命令/" data-id="cil8ufov3001ujgqy8v2wywmm" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/29/Linux文件系统之df，du以及ln命令/" data-id="cilnqzzr6001vvcqy5bdit4jo" class="article-share-link">Share</a>
       
       
     </footer>
@@ -287,7 +442,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/29/Linux磁盘概念/" data-id="cil8ufouy001pjgqypodjqjne" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/29/Linux磁盘概念/" data-id="cilnqzzr2001pvcqyaf4w0fnv" class="article-share-link">Share</a>
       
       
     </footer>
@@ -371,7 +526,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/29/Linux-User、Group切换/" data-id="cil8ufov90023jgqy40dggd10" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/29/Linux-User、Group切换/" data-id="cilnqzzrb0024vcqy4nr2a238" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a></li></ul>
@@ -456,7 +611,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/29/Linux用户管理实例/" data-id="cil8ufov0001rjgqyyvh0d86e" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/29/Linux用户管理实例/" data-id="cilnqzzr4001rvcqy3t3hsmg9" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a></li></ul>
@@ -512,7 +667,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/29/Linux-Group-管理/" data-id="cil8ufotn0000jgqypryvjb4m" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/29/Linux-Group-管理/" data-id="cilnqzzrg002dvcqyn1bdffna" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a></li></ul>
@@ -585,7 +740,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/Linux-User-管理/" data-id="cil8ufovb0026jgqy7exeu6s9" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/28/Linux-User-管理/" data-id="cilnqzzrd0027vcqyq0jihara" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a></li></ul>
@@ -642,155 +797,10 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/Linux-中SUID、SGID和SBIT的用途/" data-id="cil8ufov6001zjgqy13u49igf" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/28/Linux-中SUID、SGID和SBIT的用途/" data-id="cilnqzzr90020vcqy0gap95sd" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-基于用户的协同过滤算法" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/02/28/基于用户的协同过滤算法/" class="article-date">
-  <time datetime="2016-02-28T12:43:10.000Z" itemprop="datePublished">2016-02-28</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/机器学习/">机器学习</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/02/28/基于用户的协同过滤算法/">基于用户的协同过滤算法</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h3 id="什么是推荐算法"><a href="#什么是推荐算法" class="headerlink" title="什么是推荐算法"></a>什么是推荐算法</h3><p>&#160; &#160; &#160; &#160;推荐算法最早在1992年就提出来了，但是火起来实际上是最近这些年的事情，因为互联网的爆发，有了更大的数据量可以供我们使用，推荐算法才有了很大的用武之地。</p>
-<p>&#160; &#160; &#160; &#160;最开始，所以我们在网上找资料，都是进yahoo，然后分门别类的点进去，找到你想要的东西，这是一个人工过程，到后来，我们用google，直接搜索自己需要的内容，这些都可以比较精准的找到你想要的东西，但是，如果我自己都不知道自己要找什么肿么办？最典型的例子就是，如果我打开豆瓣找电影，或者我去买说，我实际上不知道我想要买什么或者看什么，这时候推荐系统就可以派上用场了。</p>
-<h4 id="推荐算法的条件"><a href="#推荐算法的条件" class="headerlink" title="推荐算法的条件"></a>推荐算法的条件</h4><p>&#160; &#160; &#160; &#160;推荐算法从92年开始，发展到现在也有20年了，当然，也出了各种各样的推荐算法，但是不管怎么样，都绕不开几个条件，这是推荐的基本条件</p>
-<li>根据和你共同喜好的人来给你推荐</li><br><li>根据你喜欢的物品找出和它相似的来给你推荐</li><br><li>根据你给出的关键字来给你推荐，这实际上就退化成搜索算法了</li><br><li>根据上面的几种条件组合起来给你推荐</li>
-
-<p>&#160; &#160; &#160; &#160;实际上，现有的条件就这些啦，至于怎么发挥这些条件就是八仙过海各显神通了，这么多年沉淀了一些好的算法，今天这篇文章要讲的基于用户的协同过滤算法就是其中的一个，这也是最早出现的推荐算法，并且发展到今天，基本思想没有什么变化，无非就是在处理速度上，计算相似度的算法上出现了一些差别而已。</p>
-<h4 id="基于用户的协同过滤算法"><a href="#基于用户的协同过滤算法" class="headerlink" title="基于用户的协同过滤算法"></a>基于用户的协同过滤算法</h4><p>&#160; &#160; &#160; &#160;我们先做个词法分析基于用户说明这个算法是以用户为主体的算法，这种以用户为主体的算法比较强调的是社会性的属性，也就是说这类算法更加强调把和你有相似爱好的其他的用户的物品推荐给你，与之对应的是基于物品的推荐算法，这种更加强调把和你你喜欢的物品相似的物品推荐给你。然后就是协同过滤了，所谓协同就是大家一起帮助你啦，然后后面跟个过滤，就是大家是商量过后才把结果告诉你的，不然信息量太大了。</p>
-<p>&#160; &#160; &#160; &#160;所以，综合起来说就是这么一个算法，那些和你有相似爱好的小伙伴们一起来商量一下，然后告诉你什么东西你会喜欢。</p>
-<h3 id="算法描述"><a href="#算法描述" class="headerlink" title="算法描述"></a>算法描述</h3><h4 id="相似性计算"><a href="#相似性计算" class="headerlink" title="相似性计算"></a>相似性计算</h4><p>&#160; &#160; &#160; &#160;我们尽量不使用复杂的数学公式，一是怕大家看不懂，难理解，二是我是用mac写的blog,公式不好画，太麻烦了。。</p>
-<p>&#160; &#160; &#160; &#160;所谓计算相似度，有两个比较经典的算法</p>
-<li>Jaccard算法，就是交集除以并集，详细可以看看我这篇文章。</li><br><li>余弦距离相似性算法，这个算法应用很广，一般用来计算向量间的相似度，具体公式大家google一下吧，或者看看这里</li><br><li>各种其他算法，比如欧氏距离算法等等。</li>
-
-<p>&#160; &#160; &#160; &#160;不管使用Jaccard还是用余弦算法，本质上需要做的还是求两个向量的相似程度，使用哪种算法完全取决于现实情况。</p>
-<p>&#160; &#160; &#160; &#160;我们在本文中用的是余弦距离相似性来计算两个用户之间的相似度。</p>
-<h5 id="与目标用户最相邻的K个用户"><a href="#与目标用户最相邻的K个用户" class="headerlink" title="与目标用户最相邻的K个用户"></a>与目标用户最相邻的K个用户</h5><p>&#160; &#160; &#160; &#160;我们知道，在找和你兴趣爱好相似的小伙伴的时候，我们可能可以找到几百个，但是有些是好基友，但有些只是普通朋友，那么一般的，我们会定一个数K，和你最相似的K个小伙伴就是你的好基友了，他们的爱好可能和你的爱好相差不大，让他们来推荐东西给你（比如肥皂）是最好不过了。</p>
-<p>&#160; &#160; &#160; &#160;何为和你相似呢？简单的说就是，比如你喜欢macbook,iphone,ipad，A小伙伴喜欢macbook,iphone,note2,小米盒子,肥皂，蜡烛,B小伙伴喜欢macbook,iphone,ipad,肥皂,润肤霜,C女神喜欢雅诗兰黛,SK2,香奈儿，D屌丝喜欢ipad,诺基亚8250，小霸王学习机那么很明显，B小伙伴和你更加相似，而C女神完全和你不在一个档次上，那我们推荐的时候会把肥皂推荐给你，因为我们觉得肥皂可能最适合你。</p>
-<p>&#160; &#160; &#160; &#160;那么，如何找出这K个基友呢？最直接的办法就是把目标用户和数据库中的所有用户进行比较，找出和目标用户最相似的K个用户，这就是好基友了。</p>
-<p>&#160; &#160; &#160; &#160;这么做理论上是没什么问题的，但是当数据量巨大的时候，计算K个基友的时间将会非常长，而且你想想就知道，数据库中的大部分用户其实和你是没有什么交集的，所没必要计算所有用户了，只需要计算和你有交集的用户就行了。要计算和你有交集的用户，就要用到物品到用户的反查表，什么是反查表呢？很简单，还是是上面那个AB小伙伴和C女神的例子，反查表就是喜欢macbook的有你，A，B，喜欢iphone的有你，B。。。就是喜欢某些物品的用户，有了这个表，我们就可以看出来，和你有关系的用户就只有A和B，D了，而C女神和你没有任何交集，所以不用去想C了。</p>
-<p>&#160; &#160; &#160; &#160;这样，我们有了A和B,D，然后就分别计算A和B,D与你的相似度，不管用哪个相似性公式，我们算出来都是B和你更相似(在这个例子中，一般会用Jaccard来计算，因为这些向量不是特别好余弦化)，但如果此时我们的K设定为2，那么我们就得出了与你最相邻的基友是B和A。</p>
-<p>&#160; &#160; &#160; &#160;这就是与目标用户最相邻的K个用户的计算。</p>
-<h5 id="通过这K个用户来推荐商品了"><a href="#通过这K个用户来推荐商品了" class="headerlink" title="通过这K个用户来推荐商品了"></a>通过这K个用户来推荐商品了</h5><p>&#160; &#160; &#160; &#160;好了，你的好基友我们也算出来了，接下来要向你推荐商品了。但是我们可推荐的商品有小米盒子，note2，蜡烛，润肤霜，肥皂这么四种，到底哪种才是你需要的呢？这里的算法就比较广泛了，我们可以不排序，都一股脑推荐给你，但这明显可能有些你不怎么感兴趣，我们也可以做一些处理，假如我们算出来A和你的相似度是25%，B和你的相似度是80%，那么对于上面这些产品，我们的推荐度可以这么来算</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">小米盒子: <span class="number">1</span>*<span class="number">0.25</span> = <span class="number">0.25</span></span><br><span class="line">note2: <span class="number">1</span>*<span class="number">0.25</span> = <span class="number">0.25</span></span><br><span class="line">蜡烛: <span class="number">1</span>*<span class="number">0.25</span> = <span class="number">0.25</span></span><br><span class="line">润肤霜: <span class="number">1</span>*<span class="number">0.8</span> = <span class="number">0.8</span></span><br><span class="line">肥皂: <span class="number">1</span>*<span class="number">0.8</span>+<span class="number">1</span>*<span class="number">0.25</span>=<span class="number">1.05</span></span><br></pre></td></tr></table></figure>
-<p>&#160; &#160; &#160; &#160;这样就一目了然了，很明显，我们会首先把肥皂推荐给你，这个可能是你最需要的，其次是润肤霜，然后才是蜡烛，小米盒子和note2。</p>
-<p>当然，你可以把上述结果归一化或者用其他你觉得合适的方式来计算推荐度，不管怎么算，推荐度还是得和基友与你相似度有关系，就是那个0.8和0.25一定要用上，不然前面白算了。</p>
-<h3 id="算法总结"><a href="#算法总结" class="headerlink" title="算法总结"></a>算法总结</h3><p>&#160; &#160; &#160; &#160;好了，通过这个例子，你大概知道了为什么会推荐肥皂给你了吧，这就是基于用户的协同推荐算法的描述，总结起来就是这么几步</p>
-<li>计算其他用户和你的相似度，可以使用反差表忽略一部分用户</li><br><li>根据相似度的高低找出K个与你最相似的邻居</li><br><li>在这些邻居喜欢的物品中，根据邻居与你的远近程度算出每一件物品的推荐度</li><br><li>根据每一件物品的推荐度高低给你推荐物品。</li>
-
-<p>&#160; &#160; &#160; &#160;比如上面那个例子，首先，我们通过反查表忽略掉了C女神，然后计算出A和B,D与你的相似度，然后根据K=2找出最相似的邻居A和B，接着根据A,B与你相似度计算出每件物品的推荐度并排序，最后根据排好序的推荐度给你推荐商品。</p>
-<p>怎么样，是不是很简单啊。</p>
-<h3 id="算法存在的问题"><a href="#算法存在的问题" class="headerlink" title="算法存在的问题"></a>算法存在的问题</h3><p>&#160; &#160; &#160; &#160;这个算法实现起来也比较简单，但是在实际应用中有时候也会有问题的。比如一些非常流行的商品可能很多人都喜欢，这种商品推荐给你就没什么意义了，所以计算的时候需要对这种商品加一个权重或者把这种商品完全去掉也行。再有，对于一些通用的东西，比如买书的时候的工具书，如现代汉语词典，新华字典神马的，通用性太强了，推荐也没什么必要了。这些都是推荐系统的脏数据，如何去掉脏数据，这是数据预处理的时候事情了，这里就不多说了。</p>
-<p>本文来自<a href="http://blog.csdn.net/ygrx/article/details/15501679" target="_blank" rel="external">这里</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/基于用户的协同过滤算法/" data-id="cil8ufoub000mjgqycxgm31wa" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/推荐算法/">推荐算法</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-at命令详解" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/02/28/at命令详解/" class="article-date">
-  <time datetime="2016-02-28T12:40:18.000Z" itemprop="datePublished">2016-02-28</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Linux/">Linux</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/02/28/at命令详解/">at命令详解</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>at命令用来安排一个程序在未来的做一次性执行。所以有提交的任务都会被放在/var/spool/at目录下，并且到了执行时间的时候通过atd守护进程来执行。</p>
-<p>1．命令格式：</p>
-<p>at[参数][时间]</p>
-<p>2．命令功能：</p>
-<p>在一个指定的时间执行一个指定任务，只能执行一次，且需要开启atd进程（<code>ps -ef | grep atd</code>查看， 开启用<code>/etc/init.d/atd start or restart</code>； 开机即启动则需要运行 <code>chkconfig --level 2345 atd on</code>）。</p>
-<p>3．命令参数：</p>
-<figure class="highlight haml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">-<span class="ruby">m 当指定的任务被完成之后，将给用户发送邮件，即使没有标准输出</span><br><span class="line"></span>-<span class="ruby"><span class="constant">I</span> atq的别名</span><br><span class="line"></span>-<span class="ruby">d atrm的别名</span><br><span class="line"></span>-<span class="ruby">v 显示任务将被执行的时间</span><br><span class="line"></span>-<span class="ruby">c 打印任务的内容到标准输出</span><br><span class="line"></span>-<span class="ruby"><span class="constant">V</span> 显示版本信息</span><br><span class="line"></span>-<span class="ruby">q&lt;列队&gt; 使用指定的列队</span><br><span class="line"></span>-<span class="ruby">f&lt;文件&gt; 从指定文件读入任务而不是从标准输入读入</span><br><span class="line"></span>-<span class="ruby">t&lt;时间参数&gt; 以时间参数的形式提交要运行的任务</span></span><br></pre></td></tr></table></figure>
-<p>at允许使用一套相当复杂的指定时间的方法。他能够接受在当天的hh:mm（小时:分钟）式的时间指定。假如该时间已过去，那么就放在第二天执行。当然也能够使用midnight（深夜），noon（中午），teatime（饮茶时间，一般是下午4点）等比较模糊的 词语来指定时间。用户还能够采用12小时计时制，即在时间后面加上AM（上午）或PM（下午）来说明是上午还是下午。 也能够指定命令执行的具体日期，指定格式为month day（月 日）或mm/dd/yy（月/日/年）或dd.mm.yy（日.月.年）。指定的日期必须跟在指定时间的后面。</p>
-<p>上面介绍的都是绝对计时法，其实还能够使用相对计时法，这对于安排不久就要执行的命令是很有好处的。指定格式为：now + count time-units ，now就是当前时间，time-units是时间单位，这里能够是minutes（分钟）、hours（小时）、days（天）、weeks（星期）。count是时间的数量，究竟是几天，还是几小时，等等。 更有一种计时方法就是直接使用today（今天）、tomorrow（明天）来指定完成命令的时间。</p>
-<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">TIME</span>：时间格式，这里可以定义出什么时候要进行 <span class="tag">at</span> 这项任务的时间，格式有：</span><br><span class="line"><span class="tag">HH</span><span class="pseudo">:MM</span></span><br><span class="line"><span class="tag">ex</span>&gt; 04<span class="pseudo">:00</span></span><br><span class="line">在今日的 <span class="tag">HH</span><span class="pseudo">:MM</span> 时刻进行，若该时刻已超过，则明天的 <span class="tag">HH</span><span class="pseudo">:MM</span> 进行此任务。</span><br><span class="line"><span class="tag">HH</span><span class="pseudo">:MM</span> <span class="tag">YYYY-MM-DD</span></span><br><span class="line"><span class="tag">ex</span>&gt; 04<span class="pseudo">:00</span> 2009<span class="tag">-03-17</span></span><br><span class="line">强制规定在某年某月的某一天的特殊时刻进行该项任务</span><br><span class="line"><span class="tag">HH</span><span class="pseudo">:MM</span><span class="attr_selector">[am|pm]</span> <span class="attr_selector">[Month]</span> <span class="attr_selector">[Date]</span></span><br><span class="line"><span class="tag">ex</span>&gt; 04<span class="tag">pm</span> <span class="tag">March</span> 17</span><br><span class="line">也是一样，强制在某年某月某日的某时刻进行该项任务</span><br><span class="line"><span class="tag">HH</span><span class="pseudo">:MM</span><span class="attr_selector">[am|pm]</span> + <span class="tag">number</span> <span class="attr_selector">[minutes|hours|days|weeks]</span></span><br><span class="line"><span class="tag">ex</span>&gt; <span class="tag">now</span> + 5 <span class="tag">minutes</span></span><br><span class="line"><span class="tag">ex</span>&gt; 04<span class="tag">pm</span> + 3 <span class="tag">days</span></span><br><span class="line">就是说，在某个时间点再加几个时间后才进行该项任务。</span><br></pre></td></tr></table></figure>
-<p>4．使用实例：<br>实例1：三天后的下午 5 点锺执行 /bin/ls<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">命令：</span><br><span class="line">at <span class="number">5</span>pm+<span class="number">3</span> days</span><br><span class="line">输出：</span><br><span class="line">[root@localhost ~]<span class="preprocessor"># at <span class="number">5</span>pm+<span class="number">3</span> days</span></span><br><span class="line">at&gt; /bin/ls</span><br><span class="line">at&gt; &lt;EOT&gt;</span><br><span class="line">job <span class="number">7</span> at <span class="number">2013</span>-<span class="number">01</span>-<span class="number">08</span> <span class="number">17</span>:<span class="number">00</span></span><br><span class="line">[root@localhost ~]<span class="preprocessor">#</span></span><br></pre></td></tr></table></figure></p>
-<p>实例2：明天17点钟，输出时间到指定文件内</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">at 17:20 tomorrow&#10;&#36755;&#20986;&#65306;&#10;[root@localhost ~]# at 17:20 tomorrow&#10;at&#62; date &#62;/root/2013.log         &#10;at&#62; &#60;EOT&#62;&#10;job 8 at 2013-01-06 17:20&#10;[root@localhost ~]#</span><br></pre></td></tr></table></figure>
-<p>实例3：计划任务设定后，在没有执行之前我们可以用atq命令来查看系统没有执行工作任务<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">命令：</span><br><span class="line">atq</span><br><span class="line">输出：</span><br><span class="line">[root@localhost ~]<span class="preprocessor"># atq</span></span><br><span class="line"><span class="number">8</span>       <span class="number">2013</span>-<span class="number">01</span>-<span class="number">06</span> <span class="number">17</span>:<span class="number">20</span> a root</span><br><span class="line"><span class="number">7</span>       <span class="number">2013</span>-<span class="number">01</span>-<span class="number">08</span> <span class="number">17</span>:<span class="number">00</span> a root</span><br><span class="line">[root@localhost ~]<span class="preprocessor">#</span></span><br></pre></td></tr></table></figure></p>
-<p>实例4：删除已经设置的任务<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">命令：</span><br><span class="line">atrm <span class="number">7</span></span><br><span class="line">输出：</span><br><span class="line">[root@localhost ~]<span class="preprocessor"># atq</span></span><br><span class="line"><span class="number">8</span>       <span class="number">2013</span>-<span class="number">01</span>-<span class="number">06</span> <span class="number">17</span>:<span class="number">20</span> a root</span><br><span class="line"><span class="number">7</span>       <span class="number">2013</span>-<span class="number">01</span>-<span class="number">08</span> <span class="number">17</span>:<span class="number">00</span> a root</span><br><span class="line">[root@localhost ~]<span class="preprocessor"># atrm <span class="number">7</span></span></span><br><span class="line">[root@localhost ~]<span class="preprocessor"># atq</span></span><br><span class="line"><span class="number">8</span>       <span class="number">2013</span>-<span class="number">01</span>-<span class="number">06</span> <span class="number">17</span>:<span class="number">20</span> a root</span><br><span class="line">[root@localhost ~]<span class="preprocessor">#</span></span><br></pre></td></tr></table></figure></p>
-<p>实例5：显示已经设置的任务内容<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">命令：</span><br><span class="line">at -c <span class="number">8</span></span><br><span class="line">输出：</span><br><span class="line">[root@localhost ~]<span class="comment"># at -c 8</span></span><br><span class="line"><span class="shebang">#!/bin/sh</span></span><br><span class="line"><span class="comment"># atrun uid=0 gid=0</span></span><br><span class="line"><span class="comment"># mail     root 0</span></span><br><span class="line"><span class="built_in">umask</span> <span class="number">22</span>此处省略n个字符</span><br><span class="line">date &gt;/root/<span class="number">2013</span>.log</span><br><span class="line">[root@localhost ~]<span class="comment">#</span></span><br></pre></td></tr></table></figure></p>
-<p>5．atd 的启动与 at 运行的方式：</p>
-<p>5.1 atd 的启动</p>
-<p>要使用一次性计划任务时，我们的 Linux 系统上面必须要有负责这个计划任务的服务，那就是 atd 服务。 不过并非所有的 Linux distributions 都默认会把他打开的，所以，某些时刻我们需要手动将atd 服务激活才行。 激活的方法很简单，就是这样：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">命令：</span><br><span class="line">/etc/init.d/atd start</span><br><span class="line">/etc/init.d/atd restart</span><br><span class="line">输出：</span><br><span class="line">[root@localhost /]<span class="preprocessor"># /etc/init.d/atd start</span></span><br><span class="line">[root@localhost /]<span class="preprocessor"># /etc/init.d/atd</span></span><br><span class="line">用法：/etc/init.d/atd &#123;start|stop|restart|condrestart|status&#125;</span><br><span class="line">[root@localhost /]<span class="preprocessor"># /etc/init.d/atd stop</span></span><br><span class="line">停止 atd：[确定]</span><br><span class="line">[root@localhost /]<span class="preprocessor"># ps -ef|grep atd</span></span><br><span class="line">root     <span class="number">25062</span> <span class="number">24951</span>  <span class="number">0</span> <span class="number">14</span>:<span class="number">53</span> pts/<span class="number">0</span>    <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> grep atd</span><br><span class="line">[root@localhost /]<span class="preprocessor"># /etc/init.d/atd start</span></span><br><span class="line">[确定]td：[确定]</span><br><span class="line">[root@localhost /]<span class="preprocessor"># ps -ef|grep atd</span></span><br><span class="line">root     <span class="number">25068</span>     <span class="number">1</span>  <span class="number">0</span> <span class="number">14</span>:<span class="number">53</span> ?        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> /usr/sbin/atd</span><br><span class="line">root     <span class="number">25071</span> <span class="number">24951</span>  <span class="number">0</span> <span class="number">14</span>:<span class="number">53</span> pts/<span class="number">0</span>    <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> grep atd</span><br><span class="line">[root@localhost /]<span class="preprocessor"># /etc/init.d/atd restart</span></span><br><span class="line">停止 atd：[确定]</span><br><span class="line">[确定]td：[确定]</span><br><span class="line">[root@localhost /]<span class="preprocessor">#</span></span><br></pre></td></tr></table></figure></p>
-<p>说明：</p>
-<p>/etc/init.d/atd start 没有启动的时候，直接启动atd服务</p>
-<p>/etc/init.d/atd restart 服务已经启动后，重启 atd 服务</p>
-<p>备注：配置一下启动时就启动这个服务，免得每次重新启动都得再来一次</p>
-<figure class="highlight coffeescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">命令：</span><br><span class="line">chkconfig atd <span class="literal">on</span></span><br><span class="line">输出：</span><br><span class="line">[root<span class="property">@localhost</span> /]<span class="comment"># chkconfig atd on</span></span><br><span class="line">[root<span class="property">@localhost</span> /]<span class="comment">#</span></span><br></pre></td></tr></table></figure>
-<p>5.2 at 的运行方式</p>
-<p>既然是计划任务，那么应该会有任务执行的方式，并且将这些任务排进行程表中。那么产生计划任务的方式是怎么进行的? 事实上，我们使用 at 这个命令来产生所要运行的计划任务，并将这个计划任务以文字档的方式写入 /var/spool/at/ 目录内，该工作便能等待 atd 这个服务的取用与运行了。就这么简单。不过，并不是所有的人都可以进行 at 计划任务。为什么? 因为系统安全的原因。很多主机被所谓的攻击破解后，最常发现的就是他们的系统当中多了很多的黑客程序， 这些程序非常可能运用一些计划任务来运行或搜集你的系统运行信息,并定时的发送给黑客。 所以，除非是你认可的帐号，否则先不要让他们使用 at 命令。那怎么达到使用 at 的可控呢?</p>
-<p>我们可以利用 /etc/at.allow 与 /etc/at.deny 这两个文件来进行 at 的使用限制。加上这两个文件后， at 的工作情况是这样的：</p>
-<p>先找寻 /etc/at.allow 这个文件，写在这个文件中的使用者才能使用 at ，没有在这个文件中的使用者则不能使用 at (即使没有写在 at.deny 当中);如果 /etc/at.allow 不存在，就寻找 /etc/at.deny 这个文件，若写在这个 at.deny 的使用者则不能使用 at ，而没有在这个 at.deny 文件中的使用者，就可以使用 at 命令了。</p>
-<p>如果两个文件都不存在，那么只有 root 可以使用 at 这个命令。</p>
-<p>透过这个说明，我们知道 /etc/at.allow 是管理较为严格的方式，而 /etc/at.deny 则较为松散 (因为帐号没有在该文件中，就能够运行 at 了)。在一般的 distributions 当中，由于假设系统上的所有用户都是可信任的， 因此系统通常会保留一个空的 /etc/at.deny 文件，意思是允许所有人使用 at 命令的意思 (您可以自行检查一下该文件)。 不过，万一你不希望有某些使用者使用 at 的话，将那个使用者的帐号写入 /etc/at.deny 即可！ 一个帐号写一行。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/at命令详解/" data-id="cil8ufouw001mjgqyh1x1zhbz" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux命令/">Linux命令</a></li></ul>
 
     </footer>
   </div>
@@ -812,7 +822,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">1</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">15</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">1</span></li></ul>
     </div>
   </div>
 
@@ -821,7 +831,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
     </div>
   </div>
 
@@ -830,7 +840,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/Linux命令/" style="font-size: 20px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 17.5px;">Linux用户管理</a> <a href="/tags/TCP-IP/" style="font-size: 10px;">TCP/IP</a> <a href="/tags/动态规划/" style="font-size: 15px;">动态规划</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/棋盘动态规划/" style="font-size: 12.5px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 12.5px;">爬虫</a> <a href="/tags/随记/" style="font-size: 12.5px;">随记</a>
+      <a href="/tags/Linux-网络编程/" style="font-size: 12.5px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 20px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 17.5px;">Linux用户管理</a> <a href="/tags/TCP-IP/" style="font-size: 10px;">TCP/IP</a> <a href="/tags/动态规划/" style="font-size: 15px;">动态规划</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/棋盘动态规划/" style="font-size: 12.5px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 12.5px;">爬虫</a> <a href="/tags/随记/" style="font-size: 12.5px;">随记</a>
     </div>
   </div>
 
@@ -839,7 +849,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
     </div>
   </div>
 
@@ -851,6 +861,14 @@
       <ul>
         
           <li>
+            <a href="/2016/03/11/IO-多路复用之select、poll、epoll详解/">IO 多路复用之select、poll、epoll详解</a>
+          </li>
+        
+          <li>
+            <a href="/2016/03/11/Linux-I-O-模型/">Linux I/O 模型</a>
+          </li>
+        
+          <li>
             <a href="/2016/02/29/磁盘的分割、格式化、检验与挂载/">磁盘的分割、格式化、检验与挂载</a>
           </li>
         
@@ -860,14 +878,6 @@
         
           <li>
             <a href="/2016/02/29/Linux磁盘概念/">Linux磁盘概念</a>
-          </li>
-        
-          <li>
-            <a href="/2016/02/29/Linux-User、Group切换/">Linux User、Group切换</a>
-          </li>
-        
-          <li>
-            <a href="/2016/02/29/Linux用户管理实例/">Linux用户管理实例</a>
           </li>
         
       </ul>

@@ -65,6 +65,80 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-平衡二叉查找树-AVL树" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/03/12/平衡二叉查找树-AVL树/" class="article-date">
+  <time datetime="2016-03-12T05:24:02.000Z" itemprop="datePublished">2016-03-12</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/数据结构/">数据结构</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/03/12/平衡二叉查找树-AVL树/">平衡二叉查找树(AVL树)</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>本文转载自：<a href="http://www.cppblog.com/cxiaojia/archive/2012/08/20/187776.html" target="_blank" rel="external">一步一步写平衡二叉树（AVL树）</a></p>
+<p>平衡二叉树（Balanced Binary Tree）是二叉查找树的一个进化体，也是第一个引入平衡概念的二叉树。1962年，G.M. Adelson-Velsky 和 E.M. Landis发明了这棵树，所以它又叫AVL树。平衡二叉树要求对于每一个节点来说，它的左右子树的高度之差不能超过1，如果插入或者删除一个节点使得高度之差大于1，就要进行节点之间的旋转，将二叉树重新维持在一个平衡状态。这个方案很好的解决了二叉查找树退化成链表的问题，把插入，查找，删除的时间复杂度最好情况和最坏情况都维持在O(logN)。但是频繁旋转会使插入和删除牺牲掉O(logN)左右的时间，不过相对二叉查找树来说，时间上稳定了很多。<br><img src="/pictures/数据结构/树结构/AVL树1.png" alt="两颗二叉查找树，只有右边的是AVL树"></p>
+<h2 id="下面对于AVL树的构建进行描述："><a href="#下面对于AVL树的构建进行描述：" class="headerlink" title="下面对于AVL树的构建进行描述："></a>下面对于AVL树的构建进行描述：</h2><h4 id="第一步：节点信息"><a href="#第一步：节点信息" class="headerlink" title="第一步：节点信息"></a>第一步：节点信息</h4><p>相对于二叉查找树的节点来说，我们需要用一个属性二叉树的高度，目的是维护插入和删除过程中的旋转算法。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//AVL树节点信息</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;</span><br><span class="line"><span class="keyword">class</span> TreeNode</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">public</span>:</span><br><span class="line">        TreeNode():lson(<span class="literal">NULL</span>),rson(<span class="literal">NULL</span>),freq(<span class="number">1</span>),hgt(<span class="number">0</span>)&#123;&#125;</span><br><span class="line">        T data;<span class="comment">//值</span></span><br><span class="line">        <span class="keyword">int</span> hgt;<span class="comment">//以此节点为根的树的高度</span></span><br><span class="line">        <span class="keyword">unsigned</span> <span class="keyword">int</span> freq;<span class="comment">//频率</span></span><br><span class="line">        TreeNode* lson;<span class="comment">//指向左儿子的地址</span></span><br><span class="line">        TreeNode* rson;<span class="comment">//指向右儿子的地址</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h4 id="第二步：平衡二叉树类的声明"><a href="#第二步：平衡二叉树类的声明" class="headerlink" title="第二步：平衡二叉树类的声明"></a>第二步：平衡二叉树类的声明</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//AVL树类的属性和方法声明</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;</span><br><span class="line"><span class="keyword">class</span> AVLTree</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">private</span>:</span><br><span class="line">        TreeNode&lt;T&gt;* root;<span class="comment">//根节点</span></span><br><span class="line">        <span class="function"><span class="keyword">void</span> <span class="title">insertpri</span><span class="params">(TreeNode&lt;T&gt;* &amp;node,T x)</span></span>;<span class="comment">//插入</span></span><br><span class="line">        TreeNode&lt;T&gt;* findpri(TreeNode&lt;T&gt;* node,T x);<span class="comment">//查找</span></span><br><span class="line">        <span class="function"><span class="keyword">void</span> <span class="title">insubtree</span><span class="params">(TreeNode&lt;T&gt;* node)</span></span>;<span class="comment">//中序遍历</span></span><br><span class="line">        <span class="function"><span class="keyword">void</span> <span class="title">Deletepri</span><span class="params">(TreeNode&lt;T&gt;* &amp;node,T x)</span></span>;<span class="comment">//删除</span></span><br><span class="line">        <span class="function"><span class="keyword">int</span> <span class="title">height</span><span class="params">(TreeNode&lt;T&gt;* node)</span></span>;<span class="comment">//求树的高度</span></span><br><span class="line">        <span class="function"><span class="keyword">void</span> <span class="title">SingRotateLeft</span><span class="params">(TreeNode&lt;T&gt;* &amp;k2)</span></span>;<span class="comment">//左左情况下的旋转</span></span><br><span class="line">        <span class="function"><span class="keyword">void</span> <span class="title">SingRotateRight</span><span class="params">(TreeNode&lt;T&gt;* &amp;k2)</span></span>;<span class="comment">//右右情况下的旋转</span></span><br><span class="line">        <span class="function"><span class="keyword">void</span> <span class="title">DoubleRotateLR</span><span class="params">(TreeNode&lt;T&gt;* &amp;k3)</span></span>;<span class="comment">//左右情况下的旋转</span></span><br><span class="line">        <span class="function"><span class="keyword">void</span> <span class="title">DoubleRotateRL</span><span class="params">(TreeNode&lt;T&gt;* &amp;k3)</span></span>;<span class="comment">//右左情况下的旋转</span></span><br><span class="line">        <span class="function"><span class="keyword">int</span> <span class="title">Max</span><span class="params">(<span class="keyword">int</span> cmpa,<span class="keyword">int</span> cmpb)</span></span>;<span class="comment">//求最大值</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span>:</span><br><span class="line">        AVLTree():root(<span class="literal">NULL</span>)&#123;&#125;</span><br><span class="line">        <span class="function"><span class="keyword">void</span> <span class="title">insert</span><span class="params">(T x)</span></span>;<span class="comment">//插入接口</span></span><br><span class="line">        TreeNode&lt;T&gt;* find(T x);<span class="comment">//查找接口</span></span><br><span class="line">        <span class="function"><span class="keyword">void</span> <span class="title">Delete</span><span class="params">(T x)</span></span>;<span class="comment">//删除接口</span></span><br><span class="line">        <span class="function"><span class="keyword">void</span> <span class="title">traversal</span><span class="params">()</span></span>;<span class="comment">//遍历接口</span></span><br><span class="line"></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h4 id="第三步：两个辅助方法"><a href="#第三步：两个辅助方法" class="headerlink" title="第三步：两个辅助方法"></a>第三步：两个辅助方法</h4><p>　　旋转算法需要借助于两个功能的辅助，一个是求树的高度，一个是求两个高度的最大值。这里规定，一棵空树的高度为-1，只有一个根节点的树的高度为0，以后每多一层高度加1。为了解决指针NULL这种情况，写了一个求高度的函数，这个函数还是很有必要的。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//计算以节点为根的树的高度</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;</span><br><span class="line"><span class="keyword">int</span> AVLTree&lt;T&gt;::height(TreeNode&lt;T&gt;* node)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span>(node!=<span class="literal">NULL</span>)</span><br><span class="line">        <span class="keyword">return</span> node-&gt;hgt;</span><br><span class="line">    <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//求最大值</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;</span><br><span class="line"><span class="keyword">int</span> AVLTree&lt;T&gt;::Max(<span class="keyword">int</span> cmpa,<span class="keyword">int</span> cmpb)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">return</span> cmpa&gt;cmpb?cmpa:cmpb;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="第四步：旋转"><a href="#第四步：旋转" class="headerlink" title="第四步：旋转"></a>第四步：旋转</h4><p>对于一个平衡的节点，由于任意节点最多有两个儿子，因此高度不平衡时，此节点的两颗子树的高度差2.容易看出，这种不平衡出现在下面四种情况：<br><img src="/pictures/数据结构/树结构/AVL树2.png" alt="四种不平衡树的情况"></p>
+<p>1、6节点的左子树3节点高度比右子树7节点大2，左子树3节点的左子树1节点高度大于右子树4节点，这种情况成为<font color="red">左左</font>。</p>
+<p>2、6节点的左子树2节点高度比右子树7节点大2，左子树2节点的左子树1节点高度小于右子树4节点，这种情况成为<font color="red">左右</font>。</p>
+<p>3、2节点的左子树1节点高度比右子树5节点小2，右子树5节点的左子树3节点高度大于右子树6节点，这种情况成为<font color="red">右左</font>。</p>
+<p>4、2节点的左子树1节点高度比右子树4节点小2，右子树4节点的左子树3节点高度小于右子树6节点，这种情况成为<font color="red">右右</font>。</p>
+<p>从图中可以可以看出，1和4两种情况是对称的，这两种情况的旋转算法是一致的，只需要经过<font color="red">一次旋转</font>就可以达到目标，我们称之为<font color="red">单旋转</font>。2和3两种情况也是对称的，这两种情况的旋转算法也是一致的，需要进行<font color="red">两次旋转</font>，我们称之为<font color="red">双旋转</font>。</p>
+<h4 id="第五步：单旋转"><a href="#第五步：单旋转" class="headerlink" title="第五步：单旋转"></a>第五步：单旋转</h4><p>单旋转是针对于左左和右右这两种情况的解决方案，这两种情况是对称的，只要解决了左左这种情况，右右就很好办了。图3是左左情况的解决方案，节点k2不满足平衡特性，因为它的左子树k1比右子树Z深2层，而且k1子树中，更深的一层的是k1的左子树X子树，所以属于左左情况。</p>
+<p><img src="/pictures/数据结构/树结构/AVL树3.png" alt="左左情况下的单旋转过程"></p>
+<p>为使树恢复平衡，我们把k2变成这棵树的根节点，因为k2大于k1，把k2置于k1的右子树上，而原本在k1右子树的Y大于k1，小于k2，就把Y置于k2的左子树上，这样既满足了二叉查找树的性质，又满足了平衡二叉树的性质。</p>
+<p>这样的操作只需要一部分指针改变，结果我们得到另外一颗二叉查找树，它是一棵AVL树，因为X向上一移动了一层，Y还停留在原来的层面上，Z向下移动了一层。整棵树的新高度和之前没有在左子树上插入的高度相同，插入操作使得X高度长高了。因此，由于这颗子树高度没有变化，所以通往根节点的路径就不需要继续旋转了。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//左左情况下的旋转</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;</span><br><span class="line"><span class="keyword">void</span> AVLTree&lt;T&gt;::SingRotateLeft(TreeNode&lt;T&gt;* &amp;k2)</span><br><span class="line">&#123;</span><br><span class="line">    TreeNode&lt;T&gt;* k1;</span><br><span class="line">    k1=k2-&gt;lson;</span><br><span class="line">    k2-&gt;lson=k1-&gt;rson;</span><br><span class="line">    k1-&gt;rson=k2;</span><br><span class="line"></span><br><span class="line">    k2-&gt;hgt=Max(height(k2-&gt;lson),height(k2-&gt;rson))+<span class="number">1</span>;</span><br><span class="line">    k1-&gt;hgt=Max(height(k1-&gt;lson),k2-&gt;hgt)+<span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//右右情况下的旋转</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;</span><br><span class="line"><span class="keyword">void</span> AVLTree&lt;T&gt;::SingRotateRight(TreeNode&lt;T&gt;* &amp;k2)</span><br><span class="line">&#123;</span><br><span class="line">    TreeNode&lt;T&gt;* k1;</span><br><span class="line">    k1=k2-&gt;rson;</span><br><span class="line">    k2-&gt;rson=k1-&gt;lson;</span><br><span class="line">    k1-&gt;lson=k2;</span><br><span class="line"></span><br><span class="line">    k2-&gt;hgt=Max(height(k2-&gt;lson),height(k2-&gt;rson))+<span class="number">1</span>;</span><br><span class="line">    k1-&gt;hgt=Max(height(k1-&gt;rson),k2-&gt;hgt)+<span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="第六步：双旋转"><a href="#第六步：双旋转" class="headerlink" title="第六步：双旋转"></a>第六步：双旋转</h4><p>对于左右和右左这两种情况，单旋转不能使它达到一个平衡状态，要经过两次旋转。双旋转是针对于这两种情况的解决方案，同样的，这样两种情况也是对称的，只要解决了左右这种情况，右左就很好办了。图4是左右情况的解决方案，节点k3不满足平衡特性，因为它的左子树k1比右子树Z深2层，而且k1子树中，更深的一层的是k1的右子树k2子树，所以属于左右情况。</p>
+<p><img src="/pictures/数据结构/树结构/AVL树4.png" alt="左右情况下的双旋转过程"></p>
+<p>为使树恢复平衡，我们需要进行两步，第一步，把k1作为根，进行一次<font color="red">右右旋转</font>，旋转之后就变成了<font color="red">左左</font>情况，所以第二步再进行一次<font color="red">左左旋转</font>，最后得到了一棵以k2为根的平衡二叉树树。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//左右情况的旋转</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;</span><br><span class="line"><span class="keyword">void</span> AVLTree&lt;T&gt;::DoubleRotateLR(TreeNode&lt;T&gt;* &amp;k3)</span><br><span class="line">&#123;</span><br><span class="line">    SingRotateRight(k3-&gt;lson);</span><br><span class="line">    SingRotateLeft(k3);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//右左情况的旋转</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;</span><br><span class="line"><span class="keyword">void</span> AVLTree&lt;T&gt;::DoubleRotateRL(TreeNode&lt;T&gt;* &amp;k3)</span><br><span class="line">&#123;</span><br><span class="line">    SingRotateLeft(k3-&gt;rson);</span><br><span class="line">    SingRotateRight(k3);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="第七步：插入"><a href="#第七步：插入" class="headerlink" title="第七步：插入"></a>第七步：插入</h4><p>插入的方法和二叉查找树基本一样，区别是，插入完成后需要从插入的节点开始维护一个到根节点的路径，每经过一个节点都要维持树的平衡。维持树的平衡要根据高度差的特点选择不同的旋转算法。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//插入</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;</span><br><span class="line"><span class="keyword">void</span> AVLTree&lt;T&gt;::insertpri(TreeNode&lt;T&gt;* &amp;node,T x)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span>(node==<span class="literal">NULL</span>)<span class="comment">//如果节点为空,就在此节点处加入x信息</span></span><br><span class="line">    &#123;</span><br><span class="line">        node=<span class="keyword">new</span> TreeNode&lt;T&gt;();</span><br><span class="line">        node-&gt;data=x;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>(node-&gt;data&gt;x)<span class="comment">//如果x小于节点的值,就继续在节点的左子树中插入x</span></span><br><span class="line">    &#123;</span><br><span class="line">        insertpri(node-&gt;lson,x);</span><br><span class="line">        <span class="keyword">if</span>(<span class="number">2</span>==height(node-&gt;lson)-height(node-&gt;rson))</span><br><span class="line">            <span class="keyword">if</span>(x&lt;node-&gt;lson-&gt;data)</span><br><span class="line">                SingRotateLeft(node);</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">                DoubleRotateLR(node);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>(node-&gt;data&lt;x)<span class="comment">//如果x大于节点的值,就继续在节点的右子树中插入x</span></span><br><span class="line">    &#123;</span><br><span class="line">        insertpri(node-&gt;rson,x);</span><br><span class="line">        <span class="keyword">if</span>(<span class="number">2</span>==height(node-&gt;rson)-height(node-&gt;lson))<span class="comment">//如果高度之差为2的话就失去了平衡,需要旋转</span></span><br><span class="line">            <span class="keyword">if</span>(x&gt;node-&gt;rson-&gt;data)</span><br><span class="line">                SingRotateRight(node);</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">                DoubleRotateRL(node);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> ++(node-&gt;freq);<span class="comment">//如果相等,就把频率加1</span></span><br><span class="line">    node-&gt;hgt=Max(height(node-&gt;lson),height(node-&gt;rson));</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//插入接口</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;</span><br><span class="line"><span class="keyword">void</span> AVLTree&lt;T&gt;::insert(T x)</span><br><span class="line">&#123;</span><br><span class="line">    insertpri(root,x);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="第八步：查找"><a href="#第八步：查找" class="headerlink" title="第八步：查找"></a>第八步：查找</h4><p>和二叉查找树相比，查找方法没有变法，不过根据存储的特性，AVL树能维持在一个O(logN)的稳定的时间，而二叉查找树则相当不稳定。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//查找</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;</span><br><span class="line">TreeNode&lt;T&gt;* AVLTree&lt;T&gt;::findpri(TreeNode&lt;T&gt;* node,T x)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span>(node==<span class="literal">NULL</span>)<span class="comment">//如果节点为空说明没找到,返回NULL</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>(node-&gt;data&gt;x)<span class="comment">//如果x小于节点的值,就继续在节点的左子树中查找x</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> findpri(node-&gt;lson,x);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>(node-&gt;data&lt;x)<span class="comment">//如果x大于节点的值,就继续在节点的左子树中查找x</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> findpri(node-&gt;rson,x);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">return</span> node;<span class="comment">//如果相等,就找到了此节点</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//查找接口</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;</span><br><span class="line">TreeNode&lt;T&gt;* AVLTree&lt;T&gt;::find(T x)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">return</span> findpri(root,x);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="第九步：删除"><a href="#第九步：删除" class="headerlink" title="第九步：删除"></a>第九步：删除</h4><p>删除的方法也和二叉查找树的一致，区别是，删除完成后，需要从删除节点的父亲开始向上维护树的平衡一直到根节点。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//删除</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;</span><br><span class="line"><span class="keyword">void</span> AVLTree&lt;T&gt;::Deletepri(TreeNode&lt;T&gt;* &amp;node,T x)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span>(node==<span class="literal">NULL</span>) <span class="keyword">return</span> ;<span class="comment">//没有找到值是x的节点</span></span><br><span class="line">    <span class="keyword">if</span>(x &lt; node-&gt;data)</span><br><span class="line">    &#123;</span><br><span class="line">         Deletepri(node-&gt;lson,x);<span class="comment">//如果x小于节点的值,就继续在节点的左子树中删除x</span></span><br><span class="line">         <span class="keyword">if</span>(<span class="number">2</span>==height(node-&gt;rson)-height(node-&gt;lson))</span><br><span class="line">            <span class="keyword">if</span>(node-&gt;rson-&gt;lson!=<span class="literal">NULL</span>&amp;&amp;(height(node-&gt;rson-&gt;lson)&gt;height(node-&gt;rson-&gt;rson)) )</span><br><span class="line">                DoubleRotateRL(node);</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">                SingRotateRight(node);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>(x &gt; node-&gt;data)</span><br><span class="line">    &#123;</span><br><span class="line">         Deletepri(node-&gt;rson,x);<span class="comment">//如果x大于节点的值,就继续在节点的右子树中删除x</span></span><br><span class="line">         <span class="keyword">if</span>(<span class="number">2</span>==height(node-&gt;lson)-height(node-&gt;rson))</span><br><span class="line">            <span class="keyword">if</span>(node-&gt;lson-&gt;rson!=<span class="literal">NULL</span>&amp;&amp; (height(node-&gt;lson-&gt;rson)&gt;height(node-&gt;lson-&gt;lson) ))</span><br><span class="line">                DoubleRotateLR(node);</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">                SingRotateLeft(node);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">else</span><span class="comment">//如果相等,此节点就是要删除的节点</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span>(node-&gt;lson&amp;&amp;node-&gt;rson)<span class="comment">//此节点有两个儿子</span></span><br><span class="line">        &#123;</span><br><span class="line">            TreeNode&lt;T&gt;* temp=node-&gt;rson;<span class="comment">//temp指向节点的右儿子</span></span><br><span class="line">            <span class="keyword">while</span>(temp-&gt;lson!=<span class="literal">NULL</span>) temp=temp-&gt;lson;<span class="comment">//找到右子树中值最小的节点</span></span><br><span class="line">            <span class="comment">//把右子树中最小节点的值赋值给本节点</span></span><br><span class="line">            node-&gt;data=temp-&gt;data;</span><br><span class="line">            node-&gt;freq=temp-&gt;freq;</span><br><span class="line">            Deletepri(node-&gt;rson,temp-&gt;data);<span class="comment">//删除右子树中最小值的节点</span></span><br><span class="line">            <span class="keyword">if</span>(<span class="number">2</span>==height(node-&gt;lson)-height(node-&gt;rson))</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">if</span>(node-&gt;lson-&gt;rson!=<span class="literal">NULL</span>&amp;&amp; (height(node-&gt;lson-&gt;rson)&gt;height(node-&gt;lson-&gt;lson) ))</span><br><span class="line">                    DoubleRotateLR(node);</span><br><span class="line">                <span class="keyword">else</span></span><br><span class="line">                    SingRotateLeft(node);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span><span class="comment">//此节点有1个或0个儿子</span></span><br><span class="line">        &#123;</span><br><span class="line">            TreeNode&lt;T&gt;* temp=node;</span><br><span class="line">            <span class="keyword">if</span>(node-&gt;lson==<span class="literal">NULL</span>)<span class="comment">//有右儿子或者没有儿子</span></span><br><span class="line">            node=node-&gt;rson;</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span>(node-&gt;rson==<span class="literal">NULL</span>)<span class="comment">//有左儿子</span></span><br><span class="line">            node=node-&gt;lson;</span><br><span class="line">            <span class="keyword">delete</span>(temp);</span><br><span class="line">            temp=<span class="literal">NULL</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>(node==<span class="literal">NULL</span>) <span class="keyword">return</span>;</span><br><span class="line">    node-&gt;hgt=Max(height(node-&gt;lson),height(node-&gt;rson))+<span class="number">1</span>;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//删除接口</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;</span><br><span class="line"><span class="keyword">void</span> AVLTree&lt;T&gt;::Delete(T x)</span><br><span class="line">&#123;</span><br><span class="line">    Deletepri(root,x);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="第十步：中序遍历"><a href="#第十步：中序遍历" class="headerlink" title="第十步：中序遍历"></a>第十步：中序遍历</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//中序遍历函数</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;</span><br><span class="line"><span class="keyword">void</span> AVLTree&lt;T&gt;::insubtree(TreeNode&lt;T&gt;* node)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span>(node==<span class="literal">NULL</span>) <span class="keyword">return</span>;</span><br><span class="line">    insubtree(node-&gt;lson);<span class="comment">//先遍历左子树</span></span><br><span class="line">    <span class="built_in">cout</span>&lt;&lt;node-&gt;data&lt;&lt;<span class="string">" "</span>;<span class="comment">//输出根节点</span></span><br><span class="line">    insubtree(node-&gt;rson);<span class="comment">//再遍历右子树</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//中序遍历接口</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;</span><br><span class="line"><span class="keyword">void</span> AVLTree&lt;T&gt;::traversal()</span><br><span class="line">&#123;</span><br><span class="line">    insubtree(root);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="第十一步：关于效率"><a href="#第十一步：关于效率" class="headerlink" title="第十一步：关于效率"></a>第十一步：关于效率</h4><p>此数据结构插入、查找和删除的时间复杂度均为O(logN)，但是插入和删除需要额外的旋转算法需要的时间，有时旋转过多也会影响效率。</p>
+<p>关于递归和非递归。我用的是递归的方法进行插入，查找和删除，而非递归的方法一般来说要比递归的方法快很多，但是我感觉非递归的方法写出来会比较困难，所以我还是选择了递归的方法。</p>
+<p>还有一种效率的问题是关于高度信息的存储，由于我们需要的仅仅是高度的差，不需要知道这棵树的高度，所以只需要使用两个二进制位就可以表示这个差。这样可以避免平衡因子的重复计算，可以稍微的加快一些速度，不过代码也丧失了相对简明性和清晰度。如果采用递归写法的话，这种微加速就更显得微乎其微了。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/03/12/平衡二叉查找树-AVL树/" data-id="cilopnd6y000mqkqy719vpzd6" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/树结构/">树结构</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-Linux-之守护进程、僵死进程与孤儿进程" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2016/03/11/Linux-之守护进程、僵死进程与孤儿进程/" class="article-date">
@@ -147,7 +221,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/11/Linux-之守护进程、僵死进程与孤儿进程/" data-id="cilntatfp0020ksqy6n1f9s7b" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/11/Linux-之守护进程、僵死进程与孤儿进程/" data-id="cilopnd7v0025qkqygwigpwmf" class="article-share-link">Share</a>
       
       
     </footer>
@@ -228,7 +302,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/11/IO-多路复用之select、poll、epoll详解/" data-id="cilntated0000ksqyeqty7pkj" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/11/IO-多路复用之select、poll、epoll详解/" data-id="cilopnd5j0000qkqy0xet2736" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a></li></ul>
@@ -288,7 +362,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/11/Linux-I-O-模型/" data-id="cilntatfw002cksqyse71wjwe" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/11/Linux-I-O-模型/" data-id="cilopnd82002hqkqy726z8cmy" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a></li></ul>
@@ -353,7 +427,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/29/磁盘的分割、格式化、检验与挂载/" data-id="cilntaten000aksqycfsqywlm" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/29/磁盘的分割、格式化、检验与挂载/" data-id="cilopnd6q000aqkqyab682rpt" class="article-share-link">Share</a>
       
       
     </footer>
@@ -407,7 +481,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/29/Linux文件系统之df，du以及ln命令/" data-id="cilntatfm001vksqydxbcq5dr" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/29/Linux文件系统之df，du以及ln命令/" data-id="cilopnd7s0020qkqyd27xb3r1" class="article-share-link">Share</a>
       
       
     </footer>
@@ -522,7 +596,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/29/Linux磁盘概念/" data-id="cilntatfi001pksqyi0zfiloe" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/29/Linux磁盘概念/" data-id="cilopnd7n001uqkqyfxekhuq2" class="article-share-link">Share</a>
       
       
     </footer>
@@ -606,7 +680,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/29/Linux-User、Group切换/" data-id="cilntatft0026ksqymvygodc5" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/29/Linux-User、Group切换/" data-id="cilopnd7y002bqkqy8k89cpw9" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a></li></ul>
@@ -691,7 +765,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/29/Linux用户管理实例/" data-id="cilntatfk001rksqyax4qecxs" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/29/Linux用户管理实例/" data-id="cilopnd7q001wqkqyu1mmgpu3" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a></li></ul>
@@ -747,80 +821,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/29/Linux-Group-管理/" data-id="cilntatfx002fksqyi1dnhgnb" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Linux-User-管理" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/02/28/Linux-User-管理/" class="article-date">
-  <time datetime="2016-02-28T15:23:51.000Z" itemprop="datePublished">2016-02-28</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Linux/">Linux</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/02/28/Linux-User-管理/">Linux User 管理</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h3 id="关于用户"><a href="#关于用户" class="headerlink" title="关于用户"></a>关于用户</h3><p>Linux账号管理需要涉及到两个文件/etc/passwd和/etc/shadow,早期的Unix系统的密码是放在/etc/passwd这个文件上面的，但由于该文件的特性是所有程序都能够读取，这样一来很容易造成密码数据被窃取，所以才把密码放在/etc/shadow这个文件上，所以在/etc/passwd文件里面的密码字段就只有一个X。</p>
-<p>与用户管理相关的指令有：useradd、passwd、usermod、userdel</p>
-<h4 id="useradd"><a href="#useradd" class="headerlink" title="useradd"></a>useradd</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]<span class="preprocessor"># useradd [-u UID] [-g 初始群组] [-G 次要群组] [-mM]\</span><br><span class="line">&gt; [-c 说明栏] [-d 家目录的绝对路径] [-s shell] 使用者账号名</span></span><br><span class="line"> 选项不参数：</span><br><span class="line">  -u ：后面接的是 UID ，是一组数字。直接指定一个特定的UID 给这个账号；</span><br><span class="line">  -g ：后面接的那个组名就是我们上面提到的 initial group 啦～ 该群组的 GID 会被放置到 /etc/passwd 的第四个字段内。</span><br><span class="line">  -G ：后面接的组名则是这个账号还可以加入的群组。 这个选项与参数会修改 /etc/group 内的相关资料喔！</span><br><span class="line">  -M ：强制！不要建立用户家目录！(系统账号默认值)</span><br><span class="line">  -m ：强制！要建立用户家目录！(一般账号默认值)</span><br><span class="line">  -c ：这个就是 /etc/passwd 的第五栏的说明内容啦～可以随便我们设定啦～</span><br><span class="line">  -d ：指定某个目录成为家目录，而不要使用默认值。务必使用绝对路径！</span><br><span class="line">  -r ：建立一个系统的账号，这个账号的 UID 会有限制 (参考 /etc/login.defs) -s ：后面接一个 shell ，若没有指定则预设是 /bin/bash的啦～</span><br><span class="line">  -e ：后面接一个日期，格式为『YYYY-MM-DD』此项目可写入 shadow 第八字段， 亦即账号失效日的设定项目啰；</span><br><span class="line">  -f ：后面接 shadow 的第七字段项目，指定密码是否会失效。<span class="number">0</span>为立刻失效， -<span class="number">1</span> 为永远不失效(密码只会过期而强制登入时重新设定而已。)</span><br><span class="line"></span><br><span class="line">范例一：完全参考默认值建立一个用户，名称为 vbird1</span><br><span class="line">  [root@www ~]<span class="preprocessor"># useradd vbird1</span></span><br><span class="line">  [root@www ~]<span class="preprocessor"># ll -d /home/vbird1</span></span><br><span class="line">  drwx------ <span class="number">4</span> vbird1 vbird1 <span class="number">4096</span> Feb <span class="number">25</span> <span class="number">09</span>:<span class="number">38</span> /home/vbird1</span><br><span class="line">  <span class="preprocessor"># 默认会建立用户家目录，且权限为 <span class="number">700</span> ！这是重点！</span></span><br><span class="line">  [root@www ~]<span class="preprocessor"># grep vbird1 /etc/passwd /etc/shadow /etc/group</span></span><br><span class="line">  /etc/passwd:vbird1:x:<span class="number">504</span>:<span class="number">505</span>::/home/vbird1:/bin/bash</span><br><span class="line">  /etc/shadow:vbird1:!!:<span class="number">14300</span>:<span class="number">0</span>:<span class="number">99999</span>:<span class="number">7</span>:::</span><br><span class="line">  /etc/group:vbird1:x:<span class="number">505</span>: &lt;==预设会建立一个与账号一模一样的群组名</span><br></pre></td></tr></table></figure>
-<p>执行该命令后，系统会帮我们处理几个动作：</p>
-<li>在/etc/passwd中建立一行与账号相关的数据</li><br><li>在/etc/shadow文件里面将此账号的密码相关数据写进去，但是此时的密码字段为空</li><br><li>在/etc/group文件里面新建一行与账号名称一样的群组信息</li><br><li>在/home底下建立一个与账号一样的目录为用户的家目录(该动作不一定会执行，如果建立的是系统用户或是参数中限制不创建用户目录的话将不执行)，且权限为700。</li>
-
-<p>执行useradd后，一般都会接着执行passwd命令来设置刚创建的用户的密码。</p>
-<p>passwd命令参数：</p>
-<p><img src="/pictures/Linux-User-管理-passwd命令参数1.png" alt=""><br><img src="/pictures/Linux-User-管理-passwd命令参数2.png" alt=""></p>
-<font color="red">在执行passwd的时候，一般用户会要求输入旧的密码，而对于root用户来说，在修改其他用户或是自己用户的密码时，不需要输入旧密码，只需要直接输入新密码就可以了！</font>
-
-<h4 id="usermod"><a href="#usermod" class="headerlink" title="usermod"></a>usermod</h4><p>我们可以通过usermod来修改用户的相关数据，当然也可以直接修改/etc/passwd、/etc/shadow、/etc/group三个文件。</p>
-<p><img src="/pictures/Linux-User-管理-usermod命令参数.png" alt=""></p>
-<h4 id="userdel"><a href="#userdel" class="headerlink" title="userdel"></a>userdel</h4><p>userdel用来删除用户，与用户相关的数据有：</p>
-<li>用户账号密码相关参数：/etc/passwd, /etc/shadow</li><br><li>使用者相关群组数据：/etc/group, /etc/gshadow</li><br><li>用户个人数据：/home/username, /var/spool/mail/username …</li>
-
-<p>整个指令的用法很简单：</p>
-<p><img src="/pictures/Linux-User-管理-userdel命令参数.png" alt=""></p>
-<p>其实用户在系统上用过一阵时间后，会在系统的其他地方留下用户的其他文件，所以，如果想要完整的删除用户的所有数据，在执行<code>userdel -r username</code>之前，最好先执行<code>find / -user username</code>查出系统的属于username的档案，然后再加以删除！</p>
-<p>useradd、usermod、userdel这三个命令只有root才可以执行，那么一般用户要怎样修改自己的个人账号信息呢，可以有以下的命令来执行：</p>
-<h4 id="finger"><a href="#finger" class="headerlink" title="finger"></a>finger</h4><p>finger 的中文字面意义是：『手指』或者是『指纹』的意思。这个 finger 可以查阅很多用户相的信息喔！ 大部分都是在 /etc/passwd 这个档案里面的信息啦！我们就先来检查检查用户信息吧！</p>
-<p><img src="/pictures/Linux-User-管理-finger命令参数.png" alt=""></p>
-<p>由于finger类似于指纹功能，他会将用户的相关属性列出来！如上表所示，其实他列出来的几乎都是 /etc/passwd 档案里面的东西。列出的信息说明如下：</p>
-<li>Login：为使用者账号，亦即 /etc/passwd 内的第一字段;</li><br><li>Name：为全名，亦即 /etc/passwd 内的第五字段(也称为批注)；</li><br><li>Directory：就是家目录了；</li><br><li>Shell：就是使用的 Shell 档案所在；</li><br><li>Never logged in.：figner 还会调查用户登入主机的情况喔！</li><br><li>No mail.：调查 /var/spool/mail 当中的信箱资料；</li><br><li>No Plan.：调查 ~vbird1/.plan 档案，并将该档案取出来说明！</li>
-
-<h4 id="chfn"><a href="#chfn" class="headerlink" title="chfn"></a>chfn</h4><p>chfn 有点像是： change finger 的意思！这玩意的使用方法如下：</p>
-<p><img src="/pictures/Linux-User-管理-chfn命令参数.png" alt=""></p>
-<p>这个指令说实在的，除非是你的主机有很多的用户，否则倒真是用不着这个程序！这就有点像是 bbs里头更改你『个人属性』的那一个资料啦！不过还是可以自己玩一玩！尤其是用来提醒自己相关资料啦！</p>
-<h4 id="chsh"><a href="#chsh" class="headerlink" title="chsh"></a>chsh</h4><p>这就是 change shell 的简写！使用方法就更简单了！</p>
-<p><img src="/pictures/Linux-User-管理-chsh命令参数.png" alt=""></p>
-<p>不论是 chfn 与 chsh ，都是能够让一般用户修改 /etc/passwd 这个系统文件的！所以你猜猜，这两个档案的权限是什么？ 一定是 <a href="/2016/02/28/Linux-%E4%B8%ADSUID%E3%80%81SGID%E5%92%8CSBIT%E7%9A%84%E7%94%A8%E9%80%94/">SUID</a> 的功能啦！</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/Linux-User-管理/" data-id="cilntatfu0029ksqyxel752kk" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/29/Linux-Group-管理/" data-id="cilopnd84002kqkqy9u0eo6r8" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a></li></ul>
@@ -845,7 +846,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">16</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">1</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">16</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">1</span></li></ul>
     </div>
   </div>
 
@@ -854,7 +855,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
     </div>
   </div>
 
@@ -863,7 +864,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/Linux-网络编程/" style="font-size: 12.5px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 20px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 17.5px;">Linux用户管理</a> <a href="/tags/TCP-IP/" style="font-size: 10px;">TCP/IP</a> <a href="/tags/动态规划/" style="font-size: 15px;">动态规划</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/棋盘动态规划/" style="font-size: 12.5px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 12.5px;">爬虫</a> <a href="/tags/随记/" style="font-size: 12.5px;">随记</a>
+      <a href="/tags/Linux-网络编程/" style="font-size: 12.5px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 20px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 17.5px;">Linux用户管理</a> <a href="/tags/TCP-IP/" style="font-size: 10px;">TCP/IP</a> <a href="/tags/动态规划/" style="font-size: 15px;">动态规划</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/树结构/" style="font-size: 10px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 12.5px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 12.5px;">爬虫</a> <a href="/tags/随记/" style="font-size: 12.5px;">随记</a>
     </div>
   </div>
 
@@ -872,7 +873,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
     </div>
   </div>
 
@@ -882,6 +883,10 @@
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2016/03/12/平衡二叉查找树-AVL树/">平衡二叉查找树(AVL树)</a>
+          </li>
         
           <li>
             <a href="/2016/03/11/Linux-之守护进程、僵死进程与孤儿进程/">Linux 之守护进程、僵死进程与孤儿进程</a>
@@ -897,10 +902,6 @@
         
           <li>
             <a href="/2016/02/29/磁盘的分割、格式化、检验与挂载/">磁盘的分割、格式化、检验与挂载</a>
-          </li>
-        
-          <li>
-            <a href="/2016/02/29/Linux文件系统之df，du以及ln命令/">Linux文件系统之df，du以及ln命令</a>
           </li>
         
       </ul>

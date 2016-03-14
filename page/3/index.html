@@ -65,6 +65,54 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-动态规划之整数划分" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/02/26/动态规划之整数划分/" class="article-date">
+  <time datetime="2016-02-26T07:03:41.000Z" itemprop="datePublished">2016-02-26</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/算法/">算法</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/02/26/动态规划之整数划分/">动态规划之整数划分</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>&#160; &#160; &#160; &#160;整数划分可以分为以下几个问题：</p>
+<h4 id="将n划分为不大于m的划分法"><a href="#将n划分为不大于m的划分法" class="headerlink" title="将n划分为不大于m的划分法"></a>将n划分为不大于m的划分法</h4><p><li>若是划分多个整数可以存在相同的：</li><br><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">dp[<span class="link_label">n</span>][<span class="link_reference">m</span>]= dp[<span class="link_label">n</span>][<span class="link_reference">m-1</span>]+ dp[<span class="link_label">n-m</span>][<span class="link_reference">m</span>]  </span><br><span class="line">dp[<span class="link_label">n</span>][<span class="link_reference">m</span>]表示整数 n 的划分中，每个数不大于 m 的划分数。则划分数可以分为两种情况:</span><br><span class="line">  a.划分中每个数都小于 m，相当于每个数不大于 m- 1, 故划分数为 dp[<span class="link_label">n</span>][<span class="link_reference">m-1</span>].</span><br><span class="line">  b.划分中有一个数为 m. 那就在 n中减去 m ,剩下的就相当于把 n-m 进行划分，故划分数为 dp[<span class="link_label">n-m</span>][<span class="link_reference">m</span>];</span><br></pre></td></tr></table></figure></p>
+<p><li>若是划分多个不同的整数：</li><br><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">dp[<span class="link_label">n</span>][<span class="link_reference">m</span>]= dp[<span class="link_label">n</span>][<span class="link_reference">m-1</span>]+ dp[<span class="link_label">n-m</span>][<span class="link_reference">m-1</span>]   dp[<span class="link_label">n</span>][<span class="link_reference">m</span>]表示整数n的划分中，每个数不大于 m 的划分数。</span><br><span class="line">同样划分情况分为两种情况：</span><br><span class="line"><span class="code">    a.划分中每个数都小于m,相当于每个数不大于 m-1,划分数为 dp[n][m-1].</span></span><br><span class="line"><span class="code">    b.划分中有一个数为 m.在n中减去m,剩下相当对n-m进行划分，并且每一个数不大于m-1，故划分数为 dp[n-m][m-1]</span></span><br></pre></td></tr></table></figure></p>
+<h4 id="将n划分成k个数的划分法："><a href="#将n划分成k个数的划分法：" class="headerlink" title="将n划分成k个数的划分法："></a>将n划分成k个数的划分法：</h4><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">dp[<span class="link_label">n</span>][<span class="link_reference">k</span>]= dp[<span class="link_label">n-k</span>][<span class="link_reference">k</span>]+ dp[<span class="link_label">n-1</span>][<span class="link_reference">k-1</span>];</span><br><span class="line">方法可以分为两类：</span><br><span class="line"><span class="code">    第一类: n 份中不包含 1 的分法，为保证每份都 &gt;= 2，可以先拿出 k 个 1 分到每一份，然后再把剩下的 n- k 分成 k 份</span></span><br><span class="line"><span class="code">           即可，分法有: dp[n-k][k]</span></span><br><span class="line">  　第二类: n 份中至少有一份为 1 的分法，可以先那出一个 1 作为单独的1份，剩下的 n- 1 再分成 k- 1 份即可，</span><br><span class="line"><span class="code">           分法有：dp[n-1][k-1]</span></span><br></pre></td></tr></table></figure>
+<h4 id="将n划分成若干奇数的划分法："><a href="#将n划分成若干奇数的划分法：" class="headerlink" title="将n划分成若干奇数的划分法："></a>将n划分成若干奇数的划分法：</h4><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">g[<span class="link_label">i</span>][<span class="link_reference">j</span>]:将i划分为j个偶数</span><br><span class="line">f[<span class="link_label">i</span>][<span class="link_reference">j</span>]:将i划分为j个奇数</span><br><span class="line">g[<span class="link_label">i</span>][<span class="link_reference">j</span>] = f[<span class="link_label">i - j</span>][<span class="link_reference">j</span>];</span><br><span class="line">f[<span class="link_label">i</span>][<span class="link_reference">j</span>] = f[<span class="link_label">i - 1</span>][<span class="link_reference">j - 1</span>] + g[<span class="link_label">i - j</span>][<span class="link_reference">j</span>];</span><br><span class="line">方法可以分为两类：</span><br><span class="line"><span class="code">    第一类：i中拿出j个1分到每一份中，将剩余的i-j分成j个奇数</span></span><br><span class="line"><span class="code">    第二类：一份包含奇数1，剩余的i-1分成j-1个奇数；另一种，每份至少大于1，将j个1拿出来分到每一份中，其余i-j分成j份</span></span><br></pre></td></tr></table></figure>
+<p>代码如下所示(转载)：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">#<span class="keyword">include</span><span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span><span class="string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">define</span> nmax <span class="number">51</span></span></span><br><span class="line"><span class="keyword">int</span> num[nmax][nmax]; <span class="comment">//将i划分为不大于j的个数</span></span><br><span class="line"><span class="keyword">int</span> num1[nmax][nmax]; <span class="comment">//将i划分为不大于j的不同的数</span></span><br><span class="line"><span class="keyword">int</span> num2[nmax][nmax]; <span class="comment">//将i划分为j个数</span></span><br><span class="line"><span class="keyword">int</span> f[nmax][nmax]; <span class="comment">//将i划分为j个奇数</span></span><br><span class="line"><span class="keyword">int</span> g[nmax][nmax]; <span class="comment">//将i划分为j个偶数</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">init</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> i, j;</span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; nmax; i++) &#123;</span><br><span class="line">        num[i][<span class="number">0</span>] = <span class="number">0</span>, num[<span class="number">0</span>][i] = <span class="number">0</span>, num1[i][<span class="number">0</span>] = <span class="number">0</span>, num1[<span class="number">0</span>][i] = <span class="number">0</span>, num2[i][<span class="number">0</span>] =</span><br><span class="line">                <span class="number">0</span>, num2[<span class="number">0</span>][i] = <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">1</span>; i &lt; nmax; i++) &#123;</span><br><span class="line">        <span class="keyword">for</span> (j = <span class="number">1</span>; j &lt; nmax; j++) &#123;</span><br><span class="line">            <span class="keyword">if</span> (i &lt; j) &#123;</span><br><span class="line">                num[i][j] = num[i][i];</span><br><span class="line">                num1[i][j] = num1[i][i];</span><br><span class="line">                num2[i][j] = <span class="number">0</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (i == j) &#123;</span><br><span class="line">                num[i][j] = num[i][j - <span class="number">1</span>] + <span class="number">1</span>;</span><br><span class="line">                num1[i][j] = num1[i][j - <span class="number">1</span>] + <span class="number">1</span>;</span><br><span class="line">                num2[i][j] = <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                num[i][j] = num[i][j - <span class="number">1</span>] + num[i - j][j];</span><br><span class="line">                num1[i][j] = num1[i][j - <span class="number">1</span>] + num1[i - j][j - <span class="number">1</span>];</span><br><span class="line">                num2[i][j] = num2[i - <span class="number">1</span>][j - <span class="number">1</span>] + num2[i - j][j];</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    f[<span class="number">0</span>][<span class="number">0</span>] = <span class="number">1</span>, g[<span class="number">0</span>][<span class="number">0</span>] = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">for</span> (i = <span class="number">1</span>; i &lt; nmax; i++) &#123;</span><br><span class="line">        <span class="keyword">for</span> (j = <span class="number">1</span>; j &lt;= i; j++) &#123;</span><br><span class="line">            g[i][j] = f[i - j][j];</span><br><span class="line">            f[i][j] = f[i - <span class="number">1</span>][j - <span class="number">1</span>] + g[i - j][j];</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line"><span class="preprocessor">#<span class="keyword">ifndef</span> ONLINE_JUDGE</span></span><br><span class="line">    freopen(<span class="string">"data.in"</span>, <span class="string">"r"</span>, <span class="built_in">stdin</span>);</span><br><span class="line"><span class="preprocessor">#<span class="keyword">endif</span></span></span><br><span class="line">    <span class="keyword">int</span> n, k, i, res0, res1, res2, res3, res4;</span><br><span class="line">    init();</span><br><span class="line">    <span class="keyword">while</span> (~<span class="built_in">scanf</span>(<span class="string">"%d %d"</span>, &amp;n, &amp;k)) &#123;</span><br><span class="line">        res0 = num[n][n];</span><br><span class="line">        res1 = num2[n][k];</span><br><span class="line">        res2 = num[n][k];</span><br><span class="line">        <span class="keyword">for</span> (i = <span class="number">0</span>, res3 = <span class="number">0</span>; i &lt;= n; i++) &#123;</span><br><span class="line">            res3 += f[n][i];</span><br><span class="line">        &#125;</span><br><span class="line">        res4 = num1[n][n];</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%d\n%d\n%d\n%d\n%d\n\n"</span>, res0, res1, res2, res3, res4);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/02/26/动态规划之整数划分/" data-id="cilruf90n001fi0qydsb6pbmq" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/动态规划/">动态规划</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-双线程动态规划之探寻宝藏" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2016/02/26/双线程动态规划之探寻宝藏/" class="article-date">
@@ -109,7 +157,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/26/双线程动态规划之探寻宝藏/" data-id="cilopnd770011qkqy08oliara" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/26/双线程动态规划之探寻宝藏/" data-id="cilruf90i0014i0qymhr4766c" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/动态规划/">动态规划</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a></li></ul>
@@ -184,7 +232,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/26/双线程动态规划之传纸条/" data-id="cilopnd790018qkqy3wljk15w" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/26/双线程动态规划之传纸条/" data-id="cilruf90l001bi0qywrmshbgd" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/动态规划/">动态规划</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a></li></ul>
@@ -248,7 +296,7 @@ $ git push origin master
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/25/通过git提交或更新代码到github/" data-id="cilopnd6n0005qkqykoyifrbi" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/25/通过git提交或更新代码到github/" data-id="cilruf9000005i0qy8c7mgdnr" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/随记/">随记</a></li></ul>
@@ -295,7 +343,7 @@ $ git push origin master
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/24/爬取leetcode所有accepted算法题的代码/" data-id="cilopnd6t000gqkqyft0g7xru" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/24/爬取leetcode所有accepted算法题的代码/" data-id="cilruf908000li0qygduixawo" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/爬虫/">爬虫</a></li></ul>
@@ -343,7 +391,7 @@ url_con.setRequestProperty(&quot;Cookie&quot;, &quot;your browser&apos;s cookie 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/24/爬虫绕过登陆方法/" data-id="cilopnd6r000cqkqywdqsx9tv" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/24/爬虫绕过登陆方法/" data-id="cilruf906000hi0qyijjafu8m" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/爬虫/">爬虫</a></li></ul>
@@ -432,7 +480,7 @@ branch: master
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/24/怎样搭建自己的Hexo博客/" data-id="cilopnd6v000jqkqy4abdxe9o" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/24/怎样搭建自己的Hexo博客/" data-id="cilruf90b000oi0qykh673zzl" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/随记/">随记</a></li></ul>
@@ -483,7 +531,7 @@ branch: master
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/24/hello-world/" data-id="cilopnd7g001jqkqy4vn68f71" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/24/hello-world/" data-id="cilruf90r001mi0qyjo1p9bwy" class="article-share-link">Share</a>
       
       
     </footer>
@@ -506,7 +554,7 @@ branch: master
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">16</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">1</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">16</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">2</span></li></ul>
     </div>
   </div>
 
@@ -515,7 +563,7 @@ branch: master
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
     </div>
   </div>
 
@@ -524,7 +572,7 @@ branch: master
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/Linux-网络编程/" style="font-size: 12.5px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 20px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 17.5px;">Linux用户管理</a> <a href="/tags/TCP-IP/" style="font-size: 10px;">TCP/IP</a> <a href="/tags/动态规划/" style="font-size: 15px;">动态规划</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/树结构/" style="font-size: 10px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 12.5px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 12.5px;">爬虫</a> <a href="/tags/随记/" style="font-size: 12.5px;">随记</a>
+      <a href="/tags/Linux-网络编程/" style="font-size: 12.5px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 20px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 17.5px;">Linux用户管理</a> <a href="/tags/TCP-IP/" style="font-size: 12.5px;">TCP/IP</a> <a href="/tags/动态规划/" style="font-size: 15px;">动态规划</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/树结构/" style="font-size: 10px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 12.5px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 12.5px;">爬虫</a> <a href="/tags/随记/" style="font-size: 12.5px;">随记</a>
     </div>
   </div>
 
@@ -533,7 +581,7 @@ branch: master
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
     </div>
   </div>
 
@@ -543,6 +591,10 @@ branch: master
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2016/03/14/网络层协议/">网络层协议</a>
+          </li>
         
           <li>
             <a href="/2016/03/12/平衡二叉查找树-AVL树/">平衡二叉查找树(AVL树)</a>
@@ -558,10 +610,6 @@ branch: master
         
           <li>
             <a href="/2016/03/11/Linux-I-O-模型/">Linux I/O 模型</a>
-          </li>
-        
-          <li>
-            <a href="/2016/02/29/磁盘的分割、格式化、检验与挂载/">磁盘的分割、格式化、检验与挂载</a>
           </li>
         
       </ul>

@@ -65,9 +65,9 @@
       <div class="outer">
         <section id="main">
   
-    <article id="post-网络层协议" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-TCP_IP模型常用协议" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/2016/03/14/网络层协议/" class="article-date">
+    <a href="/2016/03/14/TCP_IP模型常用协议/" class="article-date">
   <time datetime="2016-03-14T10:01:27.000Z" itemprop="datePublished">2016-03-14</time>
 </a>
     
@@ -83,7 +83,7 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2016/03/14/网络层协议/">网络层协议</a>
+      <a class="article-title" href="/2016/03/14/TCP_IP模型常用协议/">TCP/IP模型常用协议</a>
     </h1>
   
 
@@ -91,7 +91,7 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>本文主要讲解一下网络层中用到的几个比较主要的协议：ICMP、ARP、RARP、RIP以及BGP协议<br><img src="pictures/网络层协议/TCP_IP模型与OSI模型.jpg" alt=""><br>在OSI模型中，arp和rarp是归属于数据链路层的协议，但是在TCP/IP模型中，两者都归类为网络层协议。</p>
+        <p>本文主要讲解一下TCP/IP模型中用到的几个比较主要的协议：ICMP、ARP、RARP、RIP以及BGP协议<br><img src="pictures/网络层协议/TCP_IP模型与OSI模型.jpg" alt=""><br>在OSI模型中，arp和rarp是归属于数据链路层的协议，但是在TCP/IP模型中，两者都归类为网络层协议。</p>
 <h2 id="ICMP协议"><a href="#ICMP协议" class="headerlink" title="ICMP协议"></a>ICMP协议</h2><p>ICMP(Internet Control Message Protocol)是介于网络层和传输层的协议。它的主要功能是传输网络诊断信息。</p>
 <p>ICMP传输的信息可以分为两类，一类是错误(error)信息，这一类信息可用来诊断网络故障。我们已经知道，IP协议的工作方式是“Best Effort”，如果IP包没有被传送到目的地，或者IP包发生错误，IP协议本身不会做进一步的努力。但上游发送IP包的主机和接力的路由器并不知道下游发生了错误和故障，它们可能继续发送IP包。通过ICMP包，下游的路由器和主机可以将错误信息汇报给上游，从而让上游的路由器和主机进行调整。需要注意的是，ICMP只提供特定类型的错误汇报，它不能帮助IP协议成为“可靠”(reliable)的协议。另一类信息是咨询(Informational)性质的，比如某台计算机询问路径上的每个路由器都是谁，然后各个路由器同样用ICMP包回答。</p>
 <p>(ICMP基于IP协议。也就是说，一个ICMP包需要封装在IP包中，然后在互联网传送。ICMP是IP套装的必须部分，也就是说，任何一个支持IP协议的计算机，都要同时实现ICMP。)</p>
@@ -109,13 +109,13 @@
 <p>这样，经过几次ARP请求之后，ARP cache会达到稳定。如果局域网上设备发生变动，ARP重复上面过程。</p>
 <p>(在Linux下，可以使用$arp命令来查看ARP的过程。ARP协议只用于IPv4。IPv6使用Neighbor Discovery Protocol来替代ARP的功能。)</p>
 <p>RARP协议则刚好相反，它将MAC地址解析成为对应的IP地址，现在已很少单独使用。</p>
-<h2 id="RIP协议"><a href="#RIP协议" class="headerlink" title="RIP协议"></a>RIP协议</h2><p>RIP协议被用来生成路由表信息，它通过距离来决定routing table，所以属于distance-vector protocol。对于RIP来说，所谓的距离是从出发地到目的地途径的路由器数目(hop number)</p>
-<h2 id="BGP协议"><a href="#BGP协议" class="headerlink" title="BGP协议"></a>BGP协议</h2><p>RIP出于技术上的原因(looping hops)，认为距离超过15的IP不可到达。所以RIP更多用于互联网的一部分(比如整个中国电信的网络)。这样一个互联网的部分往往属于同一个ISP或者有同一个管理机构，所以叫做自治系统(AS,autonomous system)。自治系统内部的主机和路由根据通向外部的边界路由器来和其它的自治系统通信。各个边界路由器之间通过BGP(Border Gateway Protocol)来生成自己前往其它AS的routing table，而自治系统内部则参照边界路由器，使用RIP来决定routing table。BGP的基本工作过程与RIP类似，但在考虑距离的同时，也权衡比如政策、连接性能等其他因素，再决定交通的走向(routing table)。</p>
+<h2 id="RIP协议"><a href="#RIP协议" class="headerlink" title="RIP协议"></a>RIP协议</h2><p>RIP协议是基于UDP协议来实现的，所以属于应用层协议。<br>RIP协议被用来生成路由表信息，它通过距离来决定routing table，所以属于distance-vector protocol。对于RIP来说，所谓的距离是从出发地到目的地途径的路由器数目(hop number)</p>
+<h2 id="BGP协议"><a href="#BGP协议" class="headerlink" title="BGP协议"></a>BGP协议</h2><p>BGP协议基于TCP协议来实现，所以属于应用层协议。<br>RIP出于技术上的原因(looping hops)，认为距离超过15的IP不可到达。所以RIP更多用于互联网的一部分(比如整个中国电信的网络)。这样一个互联网的部分往往属于同一个ISP或者有同一个管理机构，所以叫做自治系统(AS,autonomous system)。自治系统内部的主机和路由根据通向外部的边界路由器来和其它的自治系统通信。各个边界路由器之间通过BGP(Border Gateway Protocol)来生成自己前往其它AS的routing table，而自治系统内部则参照边界路由器，使用RIP来决定routing table。BGP的基本工作过程与RIP类似，但在考虑距离的同时，也权衡比如政策、连接性能等其他因素，再决定交通的走向(routing table)。</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/14/网络层协议/" data-id="cilruf902000ai0qyscel1wlx" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/14/TCP_IP模型常用协议/" data-id="cilrv11mt0000bcqye7thr35e" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TCP-IP/">TCP/IP</a></li></ul>
@@ -891,7 +891,7 @@
       <ul>
         
           <li>
-            <a href="/2016/03/14/网络层协议/">网络层协议</a>
+            <a href="/2016/03/14/TCP_IP模型常用协议/">TCP/IP模型常用协议</a>
           </li>
         
           <li>

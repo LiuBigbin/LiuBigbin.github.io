@@ -3,17 +3,18 @@
 <head>
   <meta charset="utf-8">
   
-  <title>Category: 机器学习 | LiuYongbin</title>
+  <title>域名污染 | LiuYongbin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description">
-<meta property="og:type" content="website">
-<meta property="og:title" content="LiuYongbin">
-<meta property="og:url" content="http://liubigbin.github.io/categories/机器学习/index.html">
+  <meta name="description" content="域名服务器缓存污染（DNS cache pollution），又称域名服务器缓存投毒（DNS cache poisoning），是指一些刻意制造或无意中制造出来的域名服务器封包，把域名指往不正确的IP地址。一般来说，在互联网上都有可信赖的域名服务器，但为减低网络上的流量压力，一般的域名服务器都会把从上游的域名服务器获得的解析记录暂存起来，待下次有其他机器要求解析域名时，可以立即提供服务。一旦有关域">
+<meta property="og:type" content="article">
+<meta property="og:title" content="域名污染">
+<meta property="og:url" content="http://liubigbin.github.io/2016/03/15/域名污染/index.html">
 <meta property="og:site_name" content="LiuYongbin">
-<meta property="og:description">
+<meta property="og:description" content="域名服务器缓存污染（DNS cache pollution），又称域名服务器缓存投毒（DNS cache poisoning），是指一些刻意制造或无意中制造出来的域名服务器封包，把域名指往不正确的IP地址。一般来说，在互联网上都有可信赖的域名服务器，但为减低网络上的流量压力，一般的域名服务器都会把从上游的域名服务器获得的解析记录暂存起来，待下次有其他机器要求解析域名时，可以立即提供服务。一旦有关域">
+<meta property="og:updated_time" content="2016-03-15T09:23:43.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="LiuYongbin">
-<meta name="twitter:description">
+<meta name="twitter:title" content="域名污染">
+<meta name="twitter:description" content="域名服务器缓存污染（DNS cache pollution），又称域名服务器缓存投毒（DNS cache poisoning），是指一些刻意制造或无意中制造出来的域名服务器封包，把域名指往不正确的IP地址。一般来说，在互联网上都有可信赖的域名服务器，但为减低网络上的流量压力，一般的域名服务器都会把从上游的域名服务器获得的解析记录暂存起来，待下次有其他机器要求解析域名时，可以立即提供服务。一旦有关域">
   
     <link rel="alternative" href="/atom.xml" title="LiuYongbin" type="application/atom+xml">
   
@@ -63,39 +64,65 @@
   </div>
 </header>
       <div class="outer">
-        <section id="main">
-  
-  
-    
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2016" class="archive-year">2016</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2016/02/28/基于用户的协同过滤算法/" class="archive-article-date">
-  <time datetime="2016-02-28T12:43:10.000Z" itemprop="datePublished">2月 28</time>
+        <section id="main"><article id="post-域名污染" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/03/15/域名污染/" class="article-date">
+  <time datetime="2016-03-15T09:17:09.000Z" itemprop="datePublished">2016-03-15</time>
 </a>
-      
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/计算机网络/">计算机网络</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2016/02/28/基于用户的协同过滤算法/">基于用户的协同过滤算法</a>
+    <h1 class="article-title" itemprop="name">
+      域名污染
     </h1>
   
 
-    </header>
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>域名服务器缓存污染（DNS cache pollution），又称域名服务器缓存投毒（DNS cache poisoning），是指一些刻意制造或无意中制造出来的域名服务器封包，把域名指往不正确的IP地址。一般来说，在互联网上都有可信赖的域名服务器，但为减低网络上的流量压力，一般的域名服务器都会把从上游的域名服务器获得的解析记录暂存起来，待下次有其他机器要求解析域名时，可以立即提供服务。一旦有关域名的局域域名服务器的缓存受到污染，就会把域名内的电脑导引往错误的服务器或服务器的网址。</p>
+<p>域名服务器缓存污染可能是因为域名服务器软件的设计错误而产生，但亦可能由别有用心者透过研究开放架构的域名服务器系统来利用当中的漏洞。为防止局域的域名服务器缓存污染除了要定时更新服务器的软件以外，可能还需要人手变更某些设定，以控制服务器对可疑的域名封包作出筛选。</p>
+<p>一般来说，一部连上了互联网的电脑都会使用互联网服务供应商提供的域名服务器。这个服务器一般只会服务供应商的客户，通常都会将部分客户曾经请求过的域名暂存起来，这种服务器被称为非权威服务器，其应答称非权威应答。缓存污染攻击就是针对这一种服务器，以影响服务器的使用者或下游服务。</p>
+<p>在中国大陆，对所有经过防火长城的在UDP的53端口上的域名查询进行IDS入侵检测，一经发现与黑名单关键词相匹配的域名查询请求，会马上伪装成目标域名的解析服务器返回虚假的查询结果。由于通常的域名查询没有任何认证机制，而且域名查询通常基于无连接不可靠的UDP协议，查询者只能接受最先到达的格式正确结果，并丢弃之后的结果。</p>
+<p>对于不了解相关知识的网民来说，由于系统默认使用的ISP提供的域名查询服务器查询国外的权威服务器时即被防火长城污染，进而使其缓存受到污染，因此默认情况下查询ISP的服务器就会获得虚假IP地址；而用户直接查询境外域名查询服务器（比如 Google Public DNS）时有可能会直接被防火长城污染，从而在没有任何防范机制的情况下仍然不能获得目标网站正确的IP地址。<br>因为TCP连接的机制可靠，防火长城理论上未对TCP协议下的域名查询进行污染，故现在能透过强制使用TCP协议查询真实的IP地址。而现实的情况是，防火长城对于真实的IP地址也可能会采取其它的手段进行封锁，或者对查询行为使用连接重置的方法进行拦截，故能否真正访问可能还需要其它翻墙的手段。</p>
+<h3 id="ISP域名劫持"><a href="#ISP域名劫持" class="headerlink" title="ISP域名劫持"></a>ISP域名劫持</h3><p>中国的互联网服务提供商经常劫持部分域名，转到自己指定的网站，以提供自己的广告。</p>
+<p>以上内容来自于<a href="https://zh.wikipedia.org/zh-cn/%E5%9F%9F%E5%90%8D%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%BC%93%E5%AD%98%E6%B1%A1%E6%9F%93#ISP.E5.9F.9F.E5.90.8D.E5.8A.AB.E6.8C.81" target="_blank" rel="external">维基百科</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/03/15/域名污染/" data-id="cilt7p4kn000w4sqyav8mj8un" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TCP-IP/">TCP/IP</a></li></ul>
+
+    </footer>
   </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2016/03/15/NAT以及内网穿透/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">NAT以及内网穿透</div>
+    </a>
+  
+</nav>
+
+  
 </article>
-  
-  
-    </div></section>
-  
+
 </section>
         
           <aside id="sidebar">

@@ -3,34 +3,24 @@
 <head>
   <meta charset="utf-8">
   
-  <title>tee命令详解 | LiuYongbin</title>
+  <title>从整数的补码到用位运算实现任何两个数的加减法 | LiuYongbin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="tee过滤器用来想多个目标发送输出的内容。如果用于管道的话，他可以将输出复制一份到文件，兵复制另外一份到屏幕上（或一些其他的程序）。
-1ll /etc | nl | tee /temp//ll.out
-在以上例子中，从ll输出可以捕获到/temp/ll.out文件中，并且同样在屏幕上显示出来。
-tee [ -a ] [ -i ] [檔案 … ]
-参数:
-檔案 一个或多个档案，能够接收 tee-d">
+  <meta name="description" content="在计算机中，数值是以补码的形式存储的，正整数的补码就是其原码，负整数的补码就是其绝对值的原码所有位取反再加1。
+例如：-7的补码：因为是负数，则符号位为“1”,整个为10000111；其余7位为-7的绝对值+7的原码  0000111按位取反为1111000；再加1，所以-7的补码是11111001。简单点就是10000000（ 128）-0000111（7）=11111001（121）
+由上面的">
 <meta property="og:type" content="article">
-<meta property="og:title" content="tee命令详解">
-<meta property="og:url" content="http://liubigbin.github.io/2016/02/28/tee命令详解/index.html">
+<meta property="og:title" content="从整数的补码到用位运算实现任何两个数的加减法">
+<meta property="og:url" content="http://liubigbin.github.io/2016/03/16/从整数的补码到用位运算实现任何两个数的加减法/index.html">
 <meta property="og:site_name" content="LiuYongbin">
-<meta property="og:description" content="tee过滤器用来想多个目标发送输出的内容。如果用于管道的话，他可以将输出复制一份到文件，兵复制另外一份到屏幕上（或一些其他的程序）。
-1ll /etc | nl | tee /temp//ll.out
-在以上例子中，从ll输出可以捕获到/temp/ll.out文件中，并且同样在屏幕上显示出来。
-tee [ -a ] [ -i ] [檔案 … ]
-参数:
-檔案 一个或多个档案，能够接收 tee-d">
-<meta property="og:image" content="http://liubigbin.github.io/pictures/Linux命令面试问答-tee命令.png">
-<meta property="og:updated_time" content="2016-02-28T12:34:04.000Z">
+<meta property="og:description" content="在计算机中，数值是以补码的形式存储的，正整数的补码就是其原码，负整数的补码就是其绝对值的原码所有位取反再加1。
+例如：-7的补码：因为是负数，则符号位为“1”,整个为10000111；其余7位为-7的绝对值+7的原码  0000111按位取反为1111000；再加1，所以-7的补码是11111001。简单点就是10000000（ 128）-0000111（7）=11111001（121）
+由上面的">
+<meta property="og:updated_time" content="2016-03-16T07:26:55.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="tee命令详解">
-<meta name="twitter:description" content="tee过滤器用来想多个目标发送输出的内容。如果用于管道的话，他可以将输出复制一份到文件，兵复制另外一份到屏幕上（或一些其他的程序）。
-1ll /etc | nl | tee /temp//ll.out
-在以上例子中，从ll输出可以捕获到/temp/ll.out文件中，并且同样在屏幕上显示出来。
-tee [ -a ] [ -i ] [檔案 … ]
-参数:
-檔案 一个或多个档案，能够接收 tee-d">
+<meta name="twitter:title" content="从整数的补码到用位运算实现任何两个数的加减法">
+<meta name="twitter:description" content="在计算机中，数值是以补码的形式存储的，正整数的补码就是其原码，负整数的补码就是其绝对值的原码所有位取反再加1。
+例如：-7的补码：因为是负数，则符号位为“1”,整个为10000111；其余7位为-7的绝对值+7的原码  0000111按位取反为1111000；再加1，所以-7的补码是11111001。简单点就是10000000（ 128）-0000111（7）=11111001（121）
+由上面的">
   
     <link rel="alternative" href="/atom.xml" title="LiuYongbin" type="application/atom+xml">
   
@@ -80,14 +70,14 @@ tee [ -a ] [ -i ] [檔案 … ]
   </div>
 </header>
       <div class="outer">
-        <section id="main"><article id="post-tee命令详解" class="article article-type-post" itemscope itemprop="blogPost">
+        <section id="main"><article id="post-从整数的补码到用位运算实现任何两个数的加减法" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/2016/02/28/tee命令详解/" class="article-date">
-  <time datetime="2016-02-28T12:29:32.000Z" itemprop="datePublished">2016-02-28</time>
+    <a href="/2016/03/16/从整数的补码到用位运算实现任何两个数的加减法/" class="article-date">
+  <time datetime="2016-03-16T06:46:15.000Z" itemprop="datePublished">2016-03-16</time>
 </a>
     
   <div class="article-category">
-    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+    <a class="article-category-link" href="/categories/C与C/">C与C++</a>
   </div>
 
   </div>
@@ -98,7 +88,7 @@ tee [ -a ] [ -i ] [檔案 … ]
         
   
     <h1 class="article-title" itemprop="name">
-      tee命令详解
+      从整数的补码到用位运算实现任何两个数的加减法
     </h1>
   
 
@@ -106,35 +96,24 @@ tee [ -a ] [ -i ] [檔案 … ]
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p><img src="/pictures/Linux命令面试问答-tee命令.png" alt="tee命令示意图">tee过滤器用来想多个目标发送输出的内容。如果用于管道的话，他可以将输出复制一份到文件，兵复制另外一份到屏幕上（或一些其他的程序）。</p>
-<figure class="highlight gherkin"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ll /etc |<span class="string"> nl </span>|<span class="string"> tee /temp//ll.out</span></span><br></pre></td></tr></table></figure>
-<p>在以上例子中，从ll输出可以捕获到/temp/ll.out文件中，并且同样在屏幕上显示出来。</p>
-<p>tee [ -a ] [ -i ] [檔案 … ]</p>
-<p>参数:</p>
-<p>檔案 一个或多个档案，能够接收 tee-d 的输出。</p>
-<p>Flags:</p>
-<p>-a 追加到目标文件而不是覆盖<br>-i 忽略中断。</p>
-<p>tee命令读取标准输入，把这些内容同时输出到标准输出和（多个）文件中（read from standard input and write to standard output and files. Copy standard input to each FILE, and also to standard output. If a FILE is -, copy again to standard output.）。在info tee中说道：tee命令可以重定向标准输出到多个文件（<code>tee&#39;: Redirect output to multiple files. The</code>tee’ command copies standard input to standard output and also to any files given as arguments.  This is useful when you want not only to send some data down a pipe, but also to save a copy.）。要注意的是：在使用管道线时，前一个命令的标准错误输出不会被tee读取。</p>
-<p>常用参数</p>
-<p>格式：tee</p>
-<p>只输出到标准输出，因为没有指定文件嘛。</p>
-<p>格式：tee file</p>
-<p>输出到标准输出的同时，保存到文件file中。如果文件不存在，则创建；如果已经存在，则覆盖之。（If a file being written to does not already exist, it is created. If a file being written to already exists, the data it previously<br>contained is overwritten unless the `-a’ option is used.）</p>
-<p>格式：tee -a file</p>
-<p>输出到标准输出的同时，追加到文件file中。如果文件不存在，则创建；如果已经存在，就在末尾追加内容，而不是覆盖。</p>
-<p>格式：tee -</p>
-<p>输出到标准输出两次。（A FILE of <code>-&#39; causes</code>tee’ to send another copy of input to standard output, but this is typically not that useful as the copies are interleaved.）</p>
-<p>格式：tee file1 file2 -</p>
-<p>输出到标准输出两次，同时保存到file1和file2中。</p>
-<h4 id="使用tee命令把标准错误输出也保存到文件"><a href="#使用tee命令把标准错误输出也保存到文件" class="headerlink" title="使用tee命令把标准错误输出也保存到文件"></a>使用tee命令把标准错误输出也保存到文件</h4><figure class="highlight mel"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[root<span class="variable">@web</span> ~]# <span class="keyword">ls</span> <span class="string">"*"</span></span><br><span class="line"><span class="keyword">ls</span>: <span class="variable">*:</span> 没有那个文件或目录</span><br><span class="line">[root<span class="variable">@web</span> ~]# <span class="keyword">ls</span> <span class="string">"*"</span> | tee -</span><br><span class="line"><span class="keyword">ls</span>: <span class="variable">*:</span> 没有那个文件或目录</span><br><span class="line">[root<span class="variable">@web</span> ~]# <span class="keyword">ls</span> <span class="string">"*"</span> | tee <span class="keyword">ls</span>.txt</span><br><span class="line"><span class="keyword">ls</span>: <span class="variable">*:</span> 没有那个文件或目录</span><br><span class="line">[root<span class="variable">@web</span> ~]# cat <span class="keyword">ls</span>.txt</span><br><span class="line">[root<span class="variable">@web</span> ~]# <span class="keyword">ls</span> <span class="string">"*"</span> <span class="number">2</span>&gt;&amp;<span class="number">1</span> | tee <span class="keyword">ls</span>.txt</span><br><span class="line"><span class="keyword">ls</span>: <span class="variable">*:</span> 没有那个文件或目录</span><br><span class="line">[root<span class="variable">@web</span> ~]# cat <span class="keyword">ls</span>.txt</span><br><span class="line"><span class="keyword">ls</span>: <span class="variable">*:</span> 没有那个文件或目录</span><br><span class="line">[root<span class="variable">@web</span> ~]#</span><br></pre></td></tr></table></figure>
+        <p>在计算机中，数值是以补码的形式存储的，正整数的补码就是其原码，负整数的补码就是其绝对值的原码所有位取反再加1。</p>
+<p>例如：-7的补码：因为是负数，则符号位为“1”,整个为10000111；其余7位为-7的绝对值+7的原码<br>  0000111按位取反为1111000；再加1，所以-7的补码是11111001。简单点就是10000000（ 128）-0000111（7）=11111001（121）</p>
+<p>由上面的例子也可以知道，要求一个负整数的补码，在一个字节大小的情况下，只需要求128减去该负数的绝对值所得到的差的原码就行。</p>
+<p>计算机之所以要把负数存储为其补码，是因为想把减法变成加法，这样减去一个负数，就相当于加上该负数的补码。</p>
+<p>想要将一个正整数取反的话，那么只需要对该正整数按位取反再加1就可以了，相反的，如果是负整数转正整数的话，就是先减一在按位取反，下面的c语言的整数取反代码：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span>  </span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">change</span><span class="params">(<span class="keyword">int</span> num)</span>  </span><br><span class="line"></span>&#123;  </span><br><span class="line">    <span class="keyword">if</span> (num &lt; <span class="number">0</span>)  </span><br><span class="line">    &#123;  </span><br><span class="line">        num = ~(num - <span class="number">1</span>);  </span><br><span class="line">    &#125;  </span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (num &gt;<span class="number">0</span>)  </span><br><span class="line">    &#123;  </span><br><span class="line">        num = ~num + <span class="number">1</span>;  </span><br><span class="line">    &#125;  </span><br><span class="line">    <span class="keyword">return</span> num;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>现在来看看怎样通过位运算来实现连个整数的加法。</p>
+<p>我们知道，在位的角度来看加法，一个位加后，要么需要进位，要么不需要，需要进位的是因为两个加数相同的位的值都是1，不需要进位是因为相同位的值不都是1，不需要进位的情况下，只需要两个数进行异或运算就可以了，进位的情况下，需要两个加数先进行&amp;运算，得到进位的值，在左移一位，这样再递归的进行两个数的相加，知道没有进位为止，也就是两个加数&amp;运算后的值为0。代码如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"> <span class="function"><span class="keyword">int</span> <span class="title">add</span> <span class="params">(<span class="keyword">int</span> a , <span class="keyword">int</span>  b)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">     <span class="keyword">return</span>  b ? add ((a  ^  b) , (a &amp; b)&lt;&lt;<span class="number">1</span>) : a ;</span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line"> <span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> *argv[])</span></span><br><span class="line"> </span>&#123;</span><br><span class="line">     <span class="keyword">int</span> a  ,  c ;</span><br><span class="line"></span><br><span class="line">     <span class="built_in">scanf</span> (<span class="string">"%d%d"</span>,&amp;a , &amp;c) ;</span><br><span class="line"></span><br><span class="line">     <span class="built_in">printf</span> (<span class="string">"val = %d\n"</span> , add (a , c) );</span><br><span class="line"></span><br><span class="line">     <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<p>如果想要实现两个整数相减的话，那么可以利用补码的思想，先将减数取反，得到其补码，在利用上面的加法进行求和。</p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/tee命令详解/" data-id="ciluiytv5001nnkqyv45v135w" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/16/从整数的补码到用位运算实现任何两个数的加减法/" data-id="ciluiytv1001inkqyuelne83x" class="article-share-link">Share</a>
       
       
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux命令/">Linux命令</a></li></ul>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/位运算/">位运算</a></li></ul>
 
     </footer>
   </div>
@@ -142,19 +121,10 @@ tee [ -a ] [ -i ] [檔案 … ]
     
 <nav id="article-nav">
   
-    <a href="/2016/02/28/awk命令详解/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Newer</strong>
-      <div class="article-nav-title">
-        
-          awk命令详解
-        
-      </div>
-    </a>
   
-  
-    <a href="/2016/02/28/cpio命令详解/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/2016/03/15/域名污染/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">cpio命令详解</div>
+      <div class="article-nav-title">域名污染</div>
     </a>
   
 </nav>

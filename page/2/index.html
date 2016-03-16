@@ -65,6 +65,121 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-Linux磁盘概念" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/02/29/Linux磁盘概念/" class="article-date">
+  <time datetime="2016-02-29T11:57:39.000Z" itemprop="datePublished">2016-02-29</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/02/29/Linux磁盘概念/">Linux磁盘概念</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>个人计算机常见的磁盘接口有两种， 分别是IDE不SATA接口，目前(2009)的主流已经是SATA接口了。</p>
+<p>以IDE接口来说，由于一个IDE扁平电缆可以连接两个IDE装置，又通常主机都会提供两个IDE接口，因此最多可以接到四个IDE装置。 也就是说，如果你已经有一个光盘设备了，那么最多就只能再接三颗IDE接口的磁盘啰。 这两个IDE接口通常被称为IDE1(primary)及IDE2(secondary)， 而每条扁平电缆上面癿IDE装置可以被区分为Master不Slave。这四个IDE装置癿文件名为：</p>
+<p><font color="red">以下的名称以及顺序都是固定的</font></p>
+<table>
+<thead>
+<tr>
+<th>IDE\Jumper</th>
+<th style="text-align:center">Master</th>
+<th style="text-align:right">Slave</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>IED1（primary）</td>
+<td style="text-align:center">/dev/hda</td>
+<td style="text-align:right">/dev/hdb</td>
+</tr>
+<tr>
+<td>IED2（Secondary）</td>
+<td style="text-align:center">/dev/hdc</td>
+<td style="text-align:right">/dev/hdd</td>
+</tr>
+</tbody>
+</table>
+<p>再以SATA接口来说，由于SATA/USB/SCSI等磁盘接口都是使用SCSI模块来驱动的， 因此这些接口的磁盘装置文件名都是/dev/sd[a-p]的格式。 但是与IDE接口不同的是，SATA/USB接口的磁盘根本就没有一定的顺序，那如何决定他的装置文件名呢？ 这个时候就得要根据Linux核心侦测到磁盘的顺序了！这里以底下的例子来让你了解：</p>
+<p>例题：</p>
+<p>如果你的PC上面有两个SATA磁盘以及一个USB磁盘，而主板上面有六个SATA的插槽。这两个SATA磁盘分别安插在主板上的SATA1, SATA5插槽上， 请问这三个磁盘在<br>Linux中的装置文件名为何？</p>
+<p>答：由与是使用侦测到的顺序来决定装置文件名，<font color="red">并非与实际插槽代号有关</font>，因此装置癿文件名如下：</p>
+<ol>
+<li>SATA1插槽上的檔名：/dev/sda</li>
+<li>SATA5插槽上的檔名：/dev/sdb</li>
+<li>USB磁盘(开机完成后才被系统捉到)：/dev/sdc</li>
+</ol>
+<h3 id="磁盘"><a href="#磁盘" class="headerlink" title="磁盘"></a>磁盘</h3><p>一颗磁盘的数据主要存在其盘面上，磁盘面由磁柱构成，磁柱又可以分为很多的扇区。一颗磁盘最重要的扇区就是第一个扇区，这里记录着正科磁盘最重要的信息，主要有两个重要的信息：</p>
+<ol>
+<li>主要启动记录区MBR（Master Boot Record）：可以安装开机管理程序的地方，有466 Bytes</li>
+<li>分割表（partition table）: 记录整颗磁盘分割信息，有64bytes</li>
+</ol>
+<p>由于分割表只有64bytes，所以只能存储四笔的分割信息，也就是说，磁盘的主要分割区只有四个。如果想要分割跟多的区的话，就只能通过extend延伸分割的方式来处理了。延伸分割的目的是使用额外的扇区来记录分割信息，延伸分割本身并不能被拿来格式化。 然后我们可以透过延伸分割所指向的那个区块继续作分割的记录。如下图所示：</p>
+<p><img src="/pictures/Linux磁盘概念-磁盘延伸分割.png" alt=""></p>
+<p>上述的分割槽在Linux系统中的装置文件名分别如下：</p>
+<ol>
+<li>P1:/dev/hda1</li>
+<li>P2:/dev/hda2</li>
+<li>L1:/dev/hda5</li>
+<li>L2:/dev/hda6</li>
+<li>L3:/dev/hda7</li>
+<li>L4:/dev/hda8</li>
+<li>L5:/dev/hda9</li>
+</ol>
+<p>要注意的是：如果延伸分割被破坏，所有逻辑分割将会被删除。因为逻辑分割的信息都记录在延伸分割里面。</p>
+<p>磁盘需要分割的原因主要有两个：</p>
+<ol>
+<li>数据的安全性：由于各个分割区之间是互相独立的，一个区数据坏了并不影响其他数据区的数据</li>
+<li>系统性能的考虑：由于数据只能存在一个分割区上，因此当需要读取数据的时候，磁头只会搜索该区所在的磁柱的范围，是的磁臂的摆动幅度不会太大，从而加快了数据的读取。</li>
+</ol>
+<h3 id="开机流程与主要启动记录区-MBR"><a href="#开机流程与主要启动记录区-MBR" class="headerlink" title="开机流程与主要启动记录区(MBR)"></a>开机流程与主要启动记录区(MBR)</h3><p>计算机主板上面有两个东西，一个是CMOS，主要记录各项硬件参数且嵌入到主板上面的存储器，另外一个就是BIOS，写入到主板上面的一个韧体（也就是一个软件程序）。开机时，计算机会先运行BIOS，该程序会根据用户的设定来取得能够开机的硬盘，并且读取该硬盘的第一个扇区中的MBR区域，该位置存放的是最基本的开机管理程序（boot loader），此时BIOS运行结束，记下来就是开机管理程序的事情了。</p>
+<p>开机管理程序的任务就是加载核心档案，由于开机管理程序是操作系统在安装的时候所提供的，所以他可以识别硬盘内的文件系统格式，从而加载核心档案，然后接下来就是核心档案的工作了，开机管理程序到此结束。接下来就是操作系统的任务了！</p>
+<p>简答来说，这个开机的流程为：</p>
+<ol>
+<li>BIOS：开机主动执行的韧体，会识别可一个可开机的装置；</li>
+<li>MBR：第一个可开机装置的第一个扇区内的主要启动记录区，含有开机管理程序</li>
+<li>开机管理程序（boot loader）：一支可读取核心档案来执行的软件程序</li>
+<li>核心档案：开始操作系统的功能。</li>
+</ol>
+<p>至于多重引导开机的情况，可以参考下图：</p>
+<p><img src="/pictures/Linux磁盘概念-多重引导.png" alt=""></p>
+<p>在上图中我们可以发现，MBR的开机管理程序提供两个选单，选单一(M1)可以直接加载Windows癿核心档案来开机；选单事(M2)则是将开机管理工作交给第二个分割槽的启动扇区(boot sector)。当使用者在开机的时候选择选单二时，那么整个开机管理工作就会交给第二分割槽的开机管理程序了。当第二个开机管理程序启动后，该开机管理程序内(上图中)仅有一个开机选单，因此就能够使用Linu的核心档案来开机啰。 这就是多重引导的工作情况啦！我们将上图作个总结：</p>
+<ol>
+<li>每个分割槽都拥有自己的启动扇区(boot sector)</li>
+<li>图中的系统槽为第一及第二分割槽，</li>
+<li>实际可开机的核心档案是放置到各分割槽内的！</li>
+<li>loader只会识识自己的系统槽内的可开机核心档案，以及其他loader而已；</li>
+<li>loader可直接指向或者是间接将管理权转交给另一个管理程序。</li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/02/29/Linux磁盘概念/" data-id="ciluiytvl0028nkqynvknn2ct" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-Linux-User、Group切换" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2016/02/29/Linux-User、Group切换/" class="article-date">
@@ -139,7 +254,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/29/Linux-User、Group切换/" data-id="cilt7p4lq002k4sqyo0g5olx9" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/29/Linux-User、Group切换/" data-id="ciluiytvz002pnkqygc16g0zz" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a></li></ul>
@@ -224,7 +339,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/29/Linux用户管理实例/" data-id="cilt7p4lg00254sqy1ygj7zym" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/29/Linux用户管理实例/" data-id="ciluiytvn002ankqyuxuv11fr" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a></li></ul>
@@ -280,7 +395,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/29/Linux-Group-管理/" data-id="cilt7p4lx002t4sqy9vf4r14y" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/29/Linux-Group-管理/" data-id="ciluiytw7002ynkqyp3ee86w9" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a></li></ul>
@@ -353,7 +468,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/Linux-User-管理/" data-id="cilt7p4ls002n4sqyyh3wmzx0" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/28/Linux-User-管理/" data-id="ciluiytw2002snkqysa8nyt75" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a></li></ul>
@@ -410,7 +525,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/Linux-中SUID、SGID和SBIT的用途/" data-id="cilt7p4lo002g4sqyu6muu7fk" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/28/Linux-中SUID、SGID和SBIT的用途/" data-id="ciluiytvv002lnkqysg2s164x" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a></li></ul>
@@ -483,7 +598,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/基于用户的协同过滤算法/" data-id="cilt7p4kl000r4sqyj55lljo9" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/28/基于用户的协同过滤算法/" data-id="ciluiytul000rnkqy3ll1qz94" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/推荐算法/">推荐算法</a></li></ul>
@@ -555,7 +670,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/at命令详解/" data-id="cilt7p4l6001u4sqy8xplxr8b" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/28/at命令详解/" data-id="ciluiytve001znkqyvekoudtk" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux命令/">Linux命令</a></li></ul>
@@ -655,7 +770,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/awk命令详解/" data-id="cilt7p4l5001r4sqykz4ecp5w" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/28/awk命令详解/" data-id="ciluiytvb001wnkqygmkmsjoa" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux命令/">Linux命令</a></li></ul>
@@ -718,84 +833,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/tee命令详解/" data-id="cilt7p4ky001i4sqypxzzd924" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux命令/">Linux命令</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-cpio命令详解" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/02/28/cpio命令详解/" class="article-date">
-  <time datetime="2016-02-28T12:23:51.000Z" itemprop="datePublished">2016-02-28</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Linux/">Linux</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/02/28/cpio命令详解/">cpio命令详解</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>cpio命令是通过重定向的方式将文件进行打包备份，还原恢复的工具，它可以解压以“.cpio”或者“.tar”结尾的文件。</p>
-<p>选项 含义<br><figure class="highlight haml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">-<span class="ruby">o 将文件拷贝打包成文件或者将文件输出到设备上。</span><br><span class="line"></span>-<span class="ruby">i 将打包文件解压或者将设备上的备份还原到系统。</span><br><span class="line"></span>-<span class="ruby">t 查看cpio打包的文件内容或者输出到设备上的文件内容。</span><br><span class="line"></span>-<span class="ruby">v 显示打包过程中的文件名称。</span><br><span class="line"></span>-<span class="ruby">d 在cpio还原文件的过程中，自动的建立相应的目录。</span><br><span class="line"></span>-<span class="ruby">c 一种较新的存储方式。</span><br><span class="line"></span>-<span class="ruby"><span class="constant">B</span> 让默认的<span class="constant">Blocks</span>可以增大到<span class="number">5120</span> bytes，默认<span class="constant">Blocks</span>为<span class="number">512</span> bytes，这样做的好处是可以加快存取速度。</span></span><br></pre></td></tr></table></figure></p>
-<p>注意:</p>
-<p>1)cpio恢复的路径，如果cpio在打包备份的时候用的是绝对路径，那么在恢复的时候会自动恢复到这些绝对路径下，同理，如果在打包备份用的是相对路径，还原时也将恢复到相对路径下。</p>
-<p>2)cpio无法直接读取文件，它需要每个文件或者目录的完整路径名才能识别读取，而find命令的输出刚好做到了这点，因此，cpio命令一般和find命令配合使用。</p>
-<p>3)cpio恢复的时候不会自动覆盖同名文件。</p>
-<p>4)不会创建目录而是直接解压到当前文件夹。</p>
-<h4 id="举例"><a href="#举例" class="headerlink" title="[举例]"></a>[举例]</h4><p>*将etc目录备份：</p>
-<figure class="highlight dos"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">find</span> ./etc -<span class="built_in">print</span> |cpio -ov &gt;etc.cpio</span><br></pre></td></tr></table></figure>
-<p>*要恢复文件的时候</p>
-<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="id">#cpio</span> -idv &lt;/root/etc.cpio</span><br></pre></td></tr></table></figure>
-<p>*只是查看etc.cpio文件，可以使用</p>
-<figure class="highlight vala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor"># cpio -tv &lt;etc.cpio</span></span><br></pre></td></tr></table></figure>
-<p>输入之后，输出如下：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">drwxrwxr-x   <span class="number">4</span> quiethea quiethea        <span class="number">0</span> Nov  <span class="number">4</span> <span class="number">17</span>:<span class="number">14</span> etc</span><br><span class="line">-rw-rw-r--   <span class="number">1</span> quiethea quiethea        <span class="number">0</span> Nov  <span class="number">4</span> <span class="number">17</span>:<span class="number">07</span> etc/<span class="number">2</span></span><br><span class="line">drwxrwxr-x   <span class="number">2</span> quiethea quiethea        <span class="number">0</span> Nov  <span class="number">4</span> <span class="number">17</span>:<span class="number">07</span> etc/<span class="number">11</span></span><br><span class="line">-rw-rw-r--   <span class="number">1</span> quiethea quiethea        <span class="number">0</span> Nov  <span class="number">4</span> <span class="number">17</span>:<span class="number">07</span> etc/<span class="number">11</span>/<span class="number">11</span></span><br><span class="line">-rw-rw-r--   <span class="number">1</span> quiethea quiethea        <span class="number">0</span> Nov  <span class="number">4</span> <span class="number">17</span>:<span class="number">07</span> etc/<span class="number">4</span></span><br><span class="line">drwxrwxr-x   <span class="number">2</span> quiethea quiethea        <span class="number">0</span> Nov  <span class="number">4</span> <span class="number">17</span>:<span class="number">07</span> etc/<span class="number">22</span></span><br><span class="line">-rw-rw-r--   <span class="number">1</span> quiethea quiethea        <span class="number">0</span> Nov  <span class="number">4</span> <span class="number">17</span>:<span class="number">07</span> etc/<span class="number">3</span></span><br><span class="line">-rw-rw-r--   <span class="number">1</span> quiethea quiethea        <span class="number">0</span> Nov  <span class="number">4</span> <span class="number">17</span>:<span class="number">07</span> etc/<span class="number">1</span></span><br><span class="line">-rw-rw-r--   <span class="number">1</span> quiethea quiethea        <span class="number">0</span> Nov  <span class="number">4</span> <span class="number">17</span>:<span class="number">07</span> etc/<span class="number">5</span></span><br><span class="line">这样显示得是将要恢复得文件得名称。</span><br></pre></td></tr></table></figure>
-<h4 id="其它"><a href="#其它" class="headerlink" title="[其它]"></a>[其它]</h4><p>现在，内核刚刚启动的时候，会事先挂一个initrd内存文件系统，这个initrd文件系统镜像可以由cpio制作。参见内核源码文档initrd.txt.</p>
-<p>*例如我有一个非常简单的文件系统rootfs.制作镜像方法如下：</p>
-<figure class="highlight xquery"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$cd</span> rootfs</span><br><span class="line"><span class="variable">$find</span> . | cpio -c -o -v |gzip -<span class="number">9</span> -n &gt;../ramdisk.img</span><br></pre></td></tr></table></figure>
-<p>这样，父目录下会生成一个ramdisk.img压缩文件系统镜像。</p>
-<p>*将镜像解压恢复成文件系统的命令：</p>
-<figure class="highlight xquery"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$mkdir</span> rootfs</span><br><span class="line"><span class="variable">$cp</span> ramdisk.img rootfs</span><br><span class="line"><span class="variable">$cd</span> rootfs</span><br><span class="line"><span class="variable">$mv</span> ramdisk.img ramdisk.img.gz</span><br><span class="line"><span class="variable">$gunzip</span> ramdisk.img.gz</span><br><span class="line"><span class="variable">$cpio</span> -i &lt;ramdisk.img</span><br><span class="line"><span class="variable">$rm</span> ramdisk.img</span><br></pre></td></tr></table></figure>
-<p>这样，当前目录下就是原来rootfs中的内容了。</p>
-<p>cpio常与find 配合使用</p>
-<h3 id="实例2"><a href="#实例2" class="headerlink" title="实例2"></a>实例2</h3><h4 id="1-文件或目录打包。"><a href="#1-文件或目录打包。" class="headerlink" title="1.文件或目录打包。　"></a>1.文件或目录打包。　</h4><p>打包有如下多种情况：<br>　<br>A)含子目录打包：</p>
-<figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">find</span> <span class="regexp">/usr/</span>local<span class="regexp">/hbchen/</span> -<span class="keyword">print</span>|cpio -o &gt; <span class="regexp">/tmp/</span>hbchen1.cpio</span><br></pre></td></tr></table></figure>
-<p>将/usr/local/hbchen目录下的文件与子目录打包成一个文件库为/tmp/hbchen1.cpio。　<br>若通过－o选项来打包整个目录下的所有文件与子目录,常先利用find目录名－print来找出所有文件与子目录的名称,通过管道“ ”传给cpio打包。　</p>
-<p>B)不含子目录的打包：</p>
-<figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ls <span class="regexp">/usr/</span>local<span class="regexp">/hbchen |cpio -o &gt; /</span>tmp<span class="regexp">/hbchen3.cpio</span></span><br></pre></td></tr></table></figure>
-<p>将/usr/local/hbchen目录下的文件(不含子目录下的文件)打包成一个文件库为/tmp/hbchen3.cpio。　</p>
-<p>C)特定文件打包：</p>
-<p>可利用文本搜索命令grep与管道配合,可以排除或选择特定类型的文件传给cpio打包。</p>
-<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">如: ls <span class="regexp">/usr/</span>local<span class="regexp">/hbchen/</span>*.txt |cpio -o &gt;<span class="regexp">/tmp/</span>hbchen0.cpio</span><br><span class="line">或  ls <span class="regexp">/usr/</span>local<span class="regexp">/hbchen |grep '\*.txt$' |cpio -o &gt;/</span>tmp/hbchen6.cpio</span><br><span class="line">find <span class="regexp">/usr/</span>local/hbchen目录下以.txt结尾的文件予以打包。</span><br></pre></td></tr></table></figure>
-<p>又如：<code>ls /usr/local/hbchen grep 1 cpio -o &gt;/tmp/hbchen9.cpio</code>,其意为找出/usr/local/hbchen目录下文件名中含有1字符的文件予以打包。　</p>
-<p><code>ls /usr/local/hbchen |grep -v 1 |cpio -o &gt; /tmp/hbchen11.cpio</code>,其意为找出/usr/local/hbchen目录下文件名中不含 1 字符的文件予以打包。－v选项在grep命令中的意思是排除含有字符串的行列。　</p>
-<p>如此,可充分利用Unix的管道和一些命令的强大功能来实现文件的打包。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/cpio命令详解/" data-id="cilt7p4l3001o4sqysd3viva2" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/28/tee命令详解/" data-id="ciluiytv5001nnkqyv45v135w" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux命令/">Linux命令</a></li></ul>
@@ -809,7 +847,7 @@
   
   
     <nav id="page-nav">
-      <a class="extend prev" rel="prev" href="/">&laquo; Prev</a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/3/">Next &raquo;</a>
+      <a class="extend prev" rel="prev" href="/">&laquo; Prev</a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><a class="extend next" rel="next" href="/page/3/">Next &raquo;</a>
     </nav>
   
 </section>
@@ -820,7 +858,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">16</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">4</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">16</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">4</span></li></ul>
     </div>
   </div>
 
@@ -829,7 +867,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
     </div>
   </div>
 
@@ -838,7 +876,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/Linux-网络编程/" style="font-size: 12.5px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 20px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 17.5px;">Linux用户管理</a> <a href="/tags/TCP-IP/" style="font-size: 17.5px;">TCP/IP</a> <a href="/tags/动态规划/" style="font-size: 15px;">动态规划</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/树结构/" style="font-size: 10px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 12.5px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 12.5px;">爬虫</a> <a href="/tags/随记/" style="font-size: 12.5px;">随记</a>
+      <a href="/tags/Linux-网络编程/" style="font-size: 12.5px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 20px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 17.5px;">Linux用户管理</a> <a href="/tags/TCP-IP/" style="font-size: 17.5px;">TCP/IP</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/动态规划/" style="font-size: 15px;">动态规划</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/树结构/" style="font-size: 10px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 12.5px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 12.5px;">爬虫</a> <a href="/tags/随记/" style="font-size: 12.5px;">随记</a>
     </div>
   </div>
 
@@ -847,7 +885,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
     </div>
   </div>
 
@@ -857,6 +895,10 @@
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2016/03/16/从整数的补码到用位运算实现任何两个数的加减法/">从整数的补码到用位运算实现任何两个数的加减法</a>
+          </li>
         
           <li>
             <a href="/2016/03/15/域名污染/">域名污染</a>
@@ -872,10 +914,6 @@
         
           <li>
             <a href="/2016/03/12/平衡二叉查找树-AVL树/">平衡二叉查找树(AVL树)</a>
-          </li>
-        
-          <li>
-            <a href="/2016/03/11/Linux-之守护进程、僵死进程与孤儿进程/">Linux 之守护进程、僵死进程与孤儿进程</a>
           </li>
         
       </ul>

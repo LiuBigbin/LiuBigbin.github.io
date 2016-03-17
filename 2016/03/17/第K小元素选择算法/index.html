@@ -3,17 +3,24 @@
 <head>
   <meta charset="utf-8">
   
-  <title>Category: 日志 | LiuYongbin</title>
+  <title>第K小元素选择算法 | LiuYongbin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description">
-<meta property="og:type" content="website">
-<meta property="og:title" content="LiuYongbin">
-<meta property="og:url" content="http://liubigbin.github.io/categories/日志/index.html">
+  <meta name="description" content="对于在一个无序的数组中找出第K小（大）的元素，目前有很多种方法，但是BFPRT算法是目前最好的算法，其复杂度在最好或最坏情况下都是O(n)。目前主要有一下几种思路：
+1、将n个数排序(比如快速排序或归并排序)，选取排序后的第k个数，时间复杂度为O(nlogn)。使用STL函数sort可以大大减少编码量。
+2、将方法1中的排序方法改为线性时间排序算法(如基数排序或计数排序)，时间复杂度为O(n)。但">
+<meta property="og:type" content="article">
+<meta property="og:title" content="第K小元素选择算法">
+<meta property="og:url" content="http://liubigbin.github.io/2016/03/17/第K小元素选择算法/index.html">
 <meta property="og:site_name" content="LiuYongbin">
-<meta property="og:description">
+<meta property="og:description" content="对于在一个无序的数组中找出第K小（大）的元素，目前有很多种方法，但是BFPRT算法是目前最好的算法，其复杂度在最好或最坏情况下都是O(n)。目前主要有一下几种思路：
+1、将n个数排序(比如快速排序或归并排序)，选取排序后的第k个数，时间复杂度为O(nlogn)。使用STL函数sort可以大大减少编码量。
+2、将方法1中的排序方法改为线性时间排序算法(如基数排序或计数排序)，时间复杂度为O(n)。但">
+<meta property="og:updated_time" content="2016-03-17T13:50:19.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="LiuYongbin">
-<meta name="twitter:description">
+<meta name="twitter:title" content="第K小元素选择算法">
+<meta name="twitter:description" content="对于在一个无序的数组中找出第K小（大）的元素，目前有很多种方法，但是BFPRT算法是目前最好的算法，其复杂度在最好或最坏情况下都是O(n)。目前主要有一下几种思路：
+1、将n个数排序(比如快速排序或归并排序)，选取排序后的第k个数，时间复杂度为O(nlogn)。使用STL函数sort可以大大减少编码量。
+2、将方法1中的排序方法改为线性时间排序算法(如基数排序或计数排序)，时间复杂度为O(n)。但">
   
     <link rel="alternative" href="/atom.xml" title="LiuYongbin" type="application/atom+xml">
   
@@ -63,115 +70,79 @@
   </div>
 </header>
       <div class="outer">
-        <section id="main">
-  
-  
-    
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2016" class="archive-year">2016</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2016/02/25/通过git提交或更新代码到github/" class="archive-article-date">
-  <time datetime="2016-02-25T07:48:06.000Z" itemprop="datePublished">2月 25</time>
+        <section id="main"><article id="post-第K小元素选择算法" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/03/17/第K小元素选择算法/" class="article-date">
+  <time datetime="2016-03-17T13:40:02.000Z" itemprop="datePublished">2016-03-17</time>
 </a>
-      
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/算法/">算法</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2016/02/25/通过git提交或更新代码到github/">通过git提交或更新代码到github</a>
+    <h1 class="article-title" itemprop="name">
+      第K小元素选择算法
     </h1>
   
 
-    </header>
-  </div>
-</article>
-  
+      </header>
     
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2016/02/24/爬取leetcode所有accepted算法题的代码/" class="archive-article-date">
-  <time datetime="2016-02-24T13:24:24.000Z" itemprop="datePublished">2月 24</time>
-</a>
+    <div class="article-entry" itemprop="articleBody">
       
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2016/02/24/爬取leetcode所有accepted算法题的代码/">爬取leetcode所有accepted算法题的代码</a>
-    </h1>
-  
+        <p>对于在一个无序的数组中找出第K小（大）的元素，目前有很多种方法，但是BFPRT算法是目前最好的算法，其复杂度在最好或最坏情况下都是O(n)。目前主要有一下几种思路：</p>
+<p>1、将n个数排序(比如快速排序或归并排序)，选取排序后的第k个数，时间复杂度为O(nlogn)。使用STL函数sort可以大大减少编码量。</p>
+<p>2、将方法1中的排序方法改为线性时间排序算法(如基数排序或计数排序)，时间复杂度为O(n)。但线性时间排序算法使用限制较多，不常使用。</p>
+<p>3、维护一个k个元素的最大堆，存储当前遇到的最小的k个数，时间复杂度为O(nlogk)。这种方法同样适用于海量数据的处理。</p>
+<p>4、部分的选择排序，即把最小的放在第1位，第二小的放在第2位，直到第k位为止，时间复杂度为O(kn)。实现非常简单。</p>
+<p>5、部分的快速排序（快速选择算法），每次划分之后判断第k个数在左右哪个部分，然后递归对应的部分，平均时间复杂度为O(n)。但最坏情况下复杂度为O(n^2)。</p>
+<p>6、BFPRT算法，修改快速选择算法的主元选取规则，使用中位数的中位数的作为主元，最坏情况下时间复杂度为O(n)。</p>
+<h4 id="BFPRT的算法步骤如下："><a href="#BFPRT的算法步骤如下：" class="headerlink" title="BFPRT的算法步骤如下："></a>BFPRT的算法步骤如下：</h4><ol>
+<li><p>将n个元素每5个一组，分成n/5(上界)组。</p>
+</li>
+<li><p>取出每一组的中位数，任意排序方法，比如插入排序。</p>
+</li>
+<li><p>递归的调用selection算法查找上一步中所有中位数的中位数，设为x，偶数个中位数的情况下设定为选取中间小的一个。</p>
+</li>
+<li><p>用x来分割数组，设小于等于x的个数为k，大于x的个数即为n-k。</p>
+</li>
+<li><p>若i==k，返回x；若i<k，在小于x的元素中递归查找第i小的元素；若i>k，在大于x的元素中递归查找第i-k小的元素。</k，在小于x的元素中递归查找第i小的元素；若i></p>
+</li>
+<li><p>终止条件：n=1时，返回的即是i小元素。</p>
+</li>
+</ol>
 
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2016/02/24/爬虫绕过登陆方法/" class="archive-article-date">
-  <time datetime="2016-02-24T12:43:10.000Z" itemprop="datePublished">2月 24</time>
-</a>
       
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2016/02/24/爬虫绕过登陆方法/">爬虫绕过登陆方法</a>
-    </h1>
-  
-
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2016/02/24/怎样搭建自己的Hexo博客/" class="archive-article-date">
-  <time datetime="2016-02-24T05:58:31.000Z" itemprop="datePublished">2月 24</time>
-</a>
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/03/17/第K小元素选择算法/" data-id="cilwc3ql00008n0qybg0vio25" class="article-share-link">Share</a>
       
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2016/02/24/怎样搭建自己的Hexo博客/">怎样搭建自己的Hexo博客</a>
-    </h1>
-  
-
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2016/02/24/hello-world/" class="archive-article-date">
-  <time datetime="2016-02-24T04:55:11.000Z" itemprop="datePublished">2月 24</time>
-</a>
       
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2016/02/24/hello-world/">Hello World</a>
-    </h1>
-  
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/数组/">数组</a></li></ul>
 
-    </header>
+    </footer>
   </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2016/03/17/C语言之static/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">C语言之static</div>
+    </a>
+  
+</nav>
+
+  
 </article>
-  
-  
-    </div></section>
-  
+
 </section>
         
           <aside id="sidebar">

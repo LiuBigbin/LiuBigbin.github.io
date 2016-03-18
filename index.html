@@ -91,7 +91,7 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>MySQL支持诸多存储引擎，而各种存储引擎对索引的支持也各不相同，因此MySQL数据库支持多种索引类型，如BTree索引，哈希索引，全文索引等等。这里只讲一下BTree索引。<br>如果对BTree不熟悉的，可以参考这里<a href="./%E9%82%A3%E5%AE%B6%E5%A7%93B%E7%9A%84%E6%A0%91/">那家姓B的树</a><br>在MySQL中，索引属于存储引擎级别的概念，不同存储引擎对索引的实现方式是不同的，本文主要讨论MyISAM和InnoDB两个存储引擎的索引实现方式。</p>
+        <p>MySQL支持诸多存储引擎，而各种存储引擎对索引的支持也各不相同，因此MySQL数据库支持多种索引类型，如BTree索引，哈希索引，全文索引等等。这里只讲一下BTree索引。<br>如果对BTree不熟悉的，可以参考这里<a href="/%E9%82%A3%E5%AE%B6%E5%A7%93B%E7%9A%84%E6%A0%91/">那家姓B的树</a><br>在MySQL中，索引属于存储引擎级别的概念，不同存储引擎对索引的实现方式是不同的，本文主要讨论MyISAM和InnoDB两个存储引擎的索引实现方式。</p>
 <h2 id="MyISAM索引实现"><a href="#MyISAM索引实现" class="headerlink" title="MyISAM索引实现"></a>MyISAM索引实现</h2><p>MyISAM引擎使用B+Tree作为索引结构，叶节点的data域存放的是数据记录的地址。下图是MyISAM索引的原理图：<br><img src="/pictures/数据结构/树结构/MySQL-MyISAM索引原理图.png" alt=""></p>
 <p>这里设表一共有三列，假设我们以Col1为主键，则图8是一个MyISAM表的主索引（Primary key）示意。可以看出MyISAM的索引文件仅仅保存数据记录的地址。在MyISAM中，主索引和辅助索引（Secondary key）在结构上没有任何区别，只是主索引要求key是唯一的，而辅助索引的key可以重复。如果我们在Col2上建立一个辅助索引，则此索引的结构如下图所示：<br><img src="/pictures/数据结构/树结构/MySQL-MyISAM索引原理图辅助索引.png" alt=""></p>
 <p>同样也是一颗B+Tree，data域保存数据记录的地址。因此，MyISAM中索引检索的算法为首先按照B+Tree搜索算法搜索索引，如果指定的Key存在，则取出其data域的值，然后以data域的值为地址，读取相应数据记录。</p>

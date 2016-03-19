@@ -65,6 +65,136 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-Linux-User-管理" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/02/28/Linux-User-管理/" class="article-date">
+  <time datetime="2016-02-28T15:23:51.000Z" itemprop="datePublished">2016-02-28</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/02/28/Linux-User-管理/">Linux User 管理</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="关于用户"><a href="#关于用户" class="headerlink" title="关于用户"></a>关于用户</h3><p>Linux账号管理需要涉及到两个文件/etc/passwd和/etc/shadow,早期的Unix系统的密码是放在/etc/passwd这个文件上面的，但由于该文件的特性是所有程序都能够读取，这样一来很容易造成密码数据被窃取，所以才把密码放在/etc/shadow这个文件上，所以在/etc/passwd文件里面的密码字段就只有一个X。</p>
+<p>与用户管理相关的指令有：useradd、passwd、usermod、userdel</p>
+<h4 id="useradd"><a href="#useradd" class="headerlink" title="useradd"></a>useradd</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]<span class="preprocessor"># useradd [-u UID] [-g 初始群组] [-G 次要群组] [-mM]\</span><br><span class="line">&gt; [-c 说明栏] [-d 家目录的绝对路径] [-s shell] 使用者账号名</span></span><br><span class="line"> 选项不参数：</span><br><span class="line">  -u ：后面接的是 UID ，是一组数字。直接指定一个特定的UID 给这个账号；</span><br><span class="line">  -g ：后面接的那个组名就是我们上面提到的 initial group 啦～ 该群组的 GID 会被放置到 /etc/passwd 的第四个字段内。</span><br><span class="line">  -G ：后面接的组名则是这个账号还可以加入的群组。 这个选项与参数会修改 /etc/group 内的相关资料喔！</span><br><span class="line">  -M ：强制！不要建立用户家目录！(系统账号默认值)</span><br><span class="line">  -m ：强制！要建立用户家目录！(一般账号默认值)</span><br><span class="line">  -c ：这个就是 /etc/passwd 的第五栏的说明内容啦～可以随便我们设定啦～</span><br><span class="line">  -d ：指定某个目录成为家目录，而不要使用默认值。务必使用绝对路径！</span><br><span class="line">  -r ：建立一个系统的账号，这个账号的 UID 会有限制 (参考 /etc/login.defs) -s ：后面接一个 shell ，若没有指定则预设是 /bin/bash的啦～</span><br><span class="line">  -e ：后面接一个日期，格式为『YYYY-MM-DD』此项目可写入 shadow 第八字段， 亦即账号失效日的设定项目啰；</span><br><span class="line">  -f ：后面接 shadow 的第七字段项目，指定密码是否会失效。<span class="number">0</span>为立刻失效， -<span class="number">1</span> 为永远不失效(密码只会过期而强制登入时重新设定而已。)</span><br><span class="line"></span><br><span class="line">范例一：完全参考默认值建立一个用户，名称为 vbird1</span><br><span class="line">  [root@www ~]<span class="preprocessor"># useradd vbird1</span></span><br><span class="line">  [root@www ~]<span class="preprocessor"># ll -d /home/vbird1</span></span><br><span class="line">  drwx------ <span class="number">4</span> vbird1 vbird1 <span class="number">4096</span> Feb <span class="number">25</span> <span class="number">09</span>:<span class="number">38</span> /home/vbird1</span><br><span class="line">  <span class="preprocessor"># 默认会建立用户家目录，且权限为 <span class="number">700</span> ！这是重点！</span></span><br><span class="line">  [root@www ~]<span class="preprocessor"># grep vbird1 /etc/passwd /etc/shadow /etc/group</span></span><br><span class="line">  /etc/passwd:vbird1:x:<span class="number">504</span>:<span class="number">505</span>::/home/vbird1:/bin/bash</span><br><span class="line">  /etc/shadow:vbird1:!!:<span class="number">14300</span>:<span class="number">0</span>:<span class="number">99999</span>:<span class="number">7</span>:::</span><br><span class="line">  /etc/group:vbird1:x:<span class="number">505</span>: &lt;==预设会建立一个与账号一模一样的群组名</span><br></pre></td></tr></table></figure>
+<p>执行该命令后，系统会帮我们处理几个动作：</p>
+<li>在/etc/passwd中建立一行与账号相关的数据</li><br><li>在/etc/shadow文件里面将此账号的密码相关数据写进去，但是此时的密码字段为空</li><br><li>在/etc/group文件里面新建一行与账号名称一样的群组信息</li><br><li>在/home底下建立一个与账号一样的目录为用户的家目录(该动作不一定会执行，如果建立的是系统用户或是参数中限制不创建用户目录的话将不执行)，且权限为700。</li>
+
+<p>执行useradd后，一般都会接着执行passwd命令来设置刚创建的用户的密码。</p>
+<p>passwd命令参数：</p>
+<p><img src="/pictures/Linux-User-管理-passwd命令参数1.png" alt=""><br><img src="/pictures/Linux-User-管理-passwd命令参数2.png" alt=""></p>
+<font color="red">在执行passwd的时候，一般用户会要求输入旧的密码，而对于root用户来说，在修改其他用户或是自己用户的密码时，不需要输入旧密码，只需要直接输入新密码就可以了！</font>
+
+<h4 id="usermod"><a href="#usermod" class="headerlink" title="usermod"></a>usermod</h4><p>我们可以通过usermod来修改用户的相关数据，当然也可以直接修改/etc/passwd、/etc/shadow、/etc/group三个文件。</p>
+<p><img src="/pictures/Linux-User-管理-usermod命令参数.png" alt=""></p>
+<h4 id="userdel"><a href="#userdel" class="headerlink" title="userdel"></a>userdel</h4><p>userdel用来删除用户，与用户相关的数据有：</p>
+<li>用户账号密码相关参数：/etc/passwd, /etc/shadow</li><br><li>使用者相关群组数据：/etc/group, /etc/gshadow</li><br><li>用户个人数据：/home/username, /var/spool/mail/username …</li>
+
+<p>整个指令的用法很简单：</p>
+<p><img src="/pictures/Linux-User-管理-userdel命令参数.png" alt=""></p>
+<p>其实用户在系统上用过一阵时间后，会在系统的其他地方留下用户的其他文件，所以，如果想要完整的删除用户的所有数据，在执行<code>userdel -r username</code>之前，最好先执行<code>find / -user username</code>查出系统的属于username的档案，然后再加以删除！</p>
+<p>useradd、usermod、userdel这三个命令只有root才可以执行，那么一般用户要怎样修改自己的个人账号信息呢，可以有以下的命令来执行：</p>
+<h4 id="finger"><a href="#finger" class="headerlink" title="finger"></a>finger</h4><p>finger 的中文字面意义是：『手指』或者是『指纹』的意思。这个 finger 可以查阅很多用户相的信息喔！ 大部分都是在 /etc/passwd 这个档案里面的信息啦！我们就先来检查检查用户信息吧！</p>
+<p><img src="/pictures/Linux-User-管理-finger命令参数.png" alt=""></p>
+<p>由于finger类似于指纹功能，他会将用户的相关属性列出来！如上表所示，其实他列出来的几乎都是 /etc/passwd 档案里面的东西。列出的信息说明如下：</p>
+<li>Login：为使用者账号，亦即 /etc/passwd 内的第一字段;</li><br><li>Name：为全名，亦即 /etc/passwd 内的第五字段(也称为批注)；</li><br><li>Directory：就是家目录了；</li><br><li>Shell：就是使用的 Shell 档案所在；</li><br><li>Never logged in.：figner 还会调查用户登入主机的情况喔！</li><br><li>No mail.：调查 /var/spool/mail 当中的信箱资料；</li><br><li>No Plan.：调查 ~vbird1/.plan 档案，并将该档案取出来说明！</li>
+
+<h4 id="chfn"><a href="#chfn" class="headerlink" title="chfn"></a>chfn</h4><p>chfn 有点像是： change finger 的意思！这玩意的使用方法如下：</p>
+<p><img src="/pictures/Linux-User-管理-chfn命令参数.png" alt=""></p>
+<p>这个指令说实在的，除非是你的主机有很多的用户，否则倒真是用不着这个程序！这就有点像是 bbs里头更改你『个人属性』的那一个资料啦！不过还是可以自己玩一玩！尤其是用来提醒自己相关资料啦！</p>
+<h4 id="chsh"><a href="#chsh" class="headerlink" title="chsh"></a>chsh</h4><p>这就是 change shell 的简写！使用方法就更简单了！</p>
+<p><img src="/pictures/Linux-User-管理-chsh命令参数.png" alt=""></p>
+<p>不论是 chfn 与 chsh ，都是能够让一般用户修改 /etc/passwd 这个系统文件的！所以你猜猜，这两个档案的权限是什么？ 一定是 <a href="/2016/02/28/Linux-%E4%B8%ADSUID%E3%80%81SGID%E5%92%8CSBIT%E7%9A%84%E7%94%A8%E9%80%94/">SUID</a> 的功能啦！</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/02/28/Linux-User-管理/" data-id="cilz68pke003404qy2mtr468y" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Linux-中SUID、SGID和SBIT的用途" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/02/28/Linux-中SUID、SGID和SBIT的用途/" class="article-date">
+  <time datetime="2016-02-28T13:58:12.000Z" itemprop="datePublished">2016-02-28</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/02/28/Linux-中SUID、SGID和SBIT的用途/">Linux 中SUID、SGID和SBIT的用途</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Linux中，用户的权限一般会根据用户的uid和gid来确定，但是在运行的时候，系统根据的是用户的有效uid和有效gid，本来的话，在执行文件前，用户的uid和gid是也就是用户的有效uid和有效gid，这也就决定了用户的权限，但是，当文档设置了suid和sgid后，用户的有效uid和gid将会改变，这也就是suid和sgid的功能。</p>
+<p>其实在UNIX的实现中，文件权限用12个二进制位表示，如果该位置上的值是1，表示有相应的权限：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">11</span> <span class="number">10</span> <span class="number">9</span> <span class="number">8</span> <span class="number">7</span> <span class="number">6</span> <span class="number">5</span> <span class="number">4</span> <span class="number">3</span> <span class="number">2</span> <span class="number">1</span> <span class="number">0</span></span><br><span class="line"></span><br><span class="line">S G T r w x r w x r w x</span><br></pre></td></tr></table></figure></p>
+<p>第11位为SUID位，第10位为SGID位，第9位为sticky位，第8-0位对应于上面的三组rwx位。</p>
+<p>给文件加SUID和SUID的命令如下：<br><figure class="highlight perl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">chmod</span> u+<span class="keyword">s</span> filename 设置SUID位</span><br><span class="line"></span><br><span class="line"><span class="keyword">chmod</span> u-<span class="keyword">s</span> filename 去掉SUID设置</span><br><span class="line"></span><br><span class="line"><span class="keyword">chmod</span> g+<span class="keyword">s</span> filename 设置SGID位</span><br><span class="line"></span><br><span class="line"><span class="keyword">chmod</span> g-<span class="keyword">s</span> filename 去掉SGID设置</span><br></pre></td></tr></table></figure></p>
+<p>另外一种方法是chmod命令用八进制表示方法的设置。如果明白了前面的12位权限表示法也很简单。如 <code>chmod 2770 filename</code>，将filename文件设置权限为<code>rwxrws---</code>,此时的sgid位有效，如果为<code>chmod  2760 filename</code>, 将filename文件设置权限为<code>rwxrwS---</code>,此时sgid无效。</p>
+<p>suid只对可执行文件有意义，sgid只对目录和可执行文件有意义。suid和sgid起作用的前提是，调用者对文件有执行权限，对目录有写以及执行权限，否则的话，即使设置了suid和sgid位，都会无效。</p>
+<p>由于SUID和SGID是在执行程序（程序的可执行位被设置）时起作用，而可执行位只对普通文件和目录文件有意义，所以设置其他种类文件的SUID和SGID位是没有多大意义的。</p>
+<p>当可执行文件设置了suid后，调用者在运行该文件的时候（前提是调用者有运行该文件的权限），将会暂时获得该文件拥有者的权限,此时调用者的有效uid就是文件拥有者的uid，例如，使用如下命令：<br><figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ls</span> -<span class="keyword">l</span> /usr/bin/passwd</span><br></pre></td></tr></table></figure></p>
+<p>我们会得到如下的结果：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-rwsr-xr-x <span class="number">1</span> root root <span class="number">42824</span> Sep <span class="number">13</span>  <span class="number">2012</span> /usr/bin/passwd</span><br></pre></td></tr></table></figure></p>
+<p>可以看到，在文件拥有者的执行位上出现为s而不是x,所以说passwd这个程序是具有SUID权限的。我们知道在修改用户密码的时候，用的就是passwd这个命令，而我们又知道在linux下面，用户密码是存储在/etc/shadow这个文件里面的。首先查看一下/etc/shadow这个文件的权限：<br><figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ls</span> -<span class="keyword">l</span> /etc/shadow</span><br></pre></td></tr></table></figure></p>
+<p>返回的结果如下：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-rw-r----- <span class="number">1</span> root shadow <span class="number">1138</span> Dec <span class="number">13</span> <span class="number">20</span>:<span class="number">00</span> /etc/shadow</span><br></pre></td></tr></table></figure></p>
+<p>由上面的结果，我们知道只有root可以往shadow文件中写入数据，其他用户连查看的权限都没有。那我们平时是怎么修改密码呢？没错，就是和SUID有关。当我们使用passwd命令时，就获得了passwd的所有者即root的权限，进而可以对shadow文件进行写入操作。</p>
+<p>SGID即Set GID的缩写，它出现在文件所属组权限的执行位上面，它对普通二进制文件和目录都有效。当它作用于普通文件时，和SUID类似，在执行该文件时，用户将获得该文件所属组的权限。当SGID作用于目录时，意义就非常重大了。当用户对某一目录有写和执行权限时，该用户就可以在该目录下建立文件，如果该目录用SGID修饰，则该用户在这个目录下建立的文件都是属于这个目录所属的组。</p>
+<p>SBIT即Sticky Bit，它出现在其他用户权限的执行位上，它只能用来修饰一个目录。当某一个目录拥有SBIT权限时，则任何一个能够在这个目录下建立文件的用户，该用户在这个目录下所建立的文件，只有该用户自己和root可以删除，其他用户均不可以。例如：<br><figure class="highlight avrasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ls -<span class="keyword">ld</span> /tmp</span><br></pre></td></tr></table></figure></p>
+<p>可以得到以下结果：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">drwxrwxrwt <span class="number">12</span> root root <span class="number">12288</span> Dec <span class="number">17</span> <span class="number">16</span>:<span class="number">33</span> /tmp</span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/02/28/Linux-中SUID、SGID和SBIT的用途/" data-id="cilz68pka002x04qy32buw9pe" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-基于用户的协同过滤算法" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2016/02/28/基于用户的协同过滤算法/" class="article-date">
@@ -126,7 +256,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/基于用户的协同过滤算法/" data-id="cilxse665000yywqyug900h6e" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/28/基于用户的协同过滤算法/" data-id="cilz68piy000y04qy90afvx4g" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/推荐算法/">推荐算法</a></li></ul>
@@ -198,7 +328,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/at命令详解/" data-id="cilxse67y0024ywqyxdvxt8li" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/28/at命令详解/" data-id="cilz68pjr002604qy48av2utt" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux命令/">Linux命令</a></li></ul>
@@ -298,7 +428,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/awk命令详解/" data-id="cilxse67w0021ywqyz8jr857a" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/28/awk命令详解/" data-id="cilz68pjp002304qyb1ry06ij" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux命令/">Linux命令</a></li></ul>
@@ -361,7 +491,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/tee命令详解/" data-id="cilxse67p001sywqyqcdzu7dn" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/28/tee命令详解/" data-id="cilz68pjh001s04qy7me5lujj" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux命令/">Linux命令</a></li></ul>
@@ -438,7 +568,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/cpio命令详解/" data-id="cilxse67u001yywqyrv5ggbt1" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/28/cpio命令详解/" data-id="cilz68pjn002004qynheo9rc0" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux命令/">Linux命令</a></li></ul>
@@ -520,7 +650,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/Linux命令面试问答/" data-id="cilxse68d002oywqymeax8i88" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/28/Linux命令面试问答/" data-id="cilz68pk3002q04qyfmj7a8wa" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux命令/">Linux命令</a></li></ul>
@@ -640,7 +770,7 @@ sshthresh = cwnd
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/26/图解TCP-IP协议/" data-id="cilxse6750018ywqyhabavm08" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/26/图解TCP-IP协议/" data-id="cilz68pj3001804qyrir0efq3" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TCP-IP/">TCP/IP</a></li></ul>
@@ -688,141 +818,10 @@ sshthresh = cwnd
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/26/动态规划之整数划分/" data-id="cilxse67h001lywqytv1dmobh" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/26/动态规划之整数划分/" data-id="cilz68pjb001l04qynusr3shp" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/动态规划/">动态规划</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-双线程动态规划之探寻宝藏" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/02/26/双线程动态规划之探寻宝藏/" class="article-date">
-  <time datetime="2016-02-26T06:25:40.000Z" itemprop="datePublished">2016-02-26</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/算法/">算法</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/02/26/双线程动态规划之探寻宝藏/">双线程动态规划之探寻宝藏</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h3 id="探-寻-宝-藏"><a href="#探-寻-宝-藏" class="headerlink" title="探 寻 宝 藏"></a>探 寻 宝 藏</h3><p>时间限制：1000 ms  |  内存限制：65535 KB</p>
-<p>难度：5</p>
-<p>描述</p>
-<p>&#160; &#160; &#160; &#160;传说HMH大沙漠中有一个M*N迷宫，里面藏有许多宝物。某天，Dr.Kong找到了迷宫的地图，他发现迷宫内处处有宝物，最珍贵的宝物就藏在右下角，迷宫的进出口在左上角。当然，迷宫中的通路不是平坦的，到处都是陷阱。Dr.Kong决定让他的机器人卡多去探险。但机器人卡多从左上角走到右下角时，只会向下走或者向右走。从右下角往回走到左上角时，只会向上走或者向左走，而且卡多不走回头路。（即：一个点最多经过一次）。当然卡多顺手也拿走沿路的每个宝物。Dr.Kong希望他的机器人卡多尽量多地带出宝物。请你编写程序，帮助Dr.Kong计算一下，卡多最多能带出多少宝物。</p>
-<p>输入<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">第一行： K 表示有多少组测试数据。</span><br><span class="line">接下来对每组测试数据：</span><br><span class="line">第<span class="number">1</span>行: M N</span><br><span class="line">第<span class="number">2</span>~M+<span class="number">1</span>行： Ai1 Ai2 ……AiN (i=<span class="number">1</span>,…..,m)</span><br></pre></td></tr></table></figure></p>
-<p>【约束条件】<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">2</span>≤k≤<span class="number">5</span> <span class="number">1</span>≤M, N≤<span class="number">50</span> <span class="number">0</span>≤Aij≤<span class="number">100</span> (i=<span class="number">1</span>,….,M; j=<span class="number">1</span>,…,N)</span><br><span class="line">所有数据都是整数。 数据之间有一个空格。</span><br></pre></td></tr></table></figure></p>
-<p>输出<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">对于每组测试数据，输出一行：机器人卡多携带出最多价值的宝物数</span><br><span class="line">样例输入</span><br><span class="line"><span class="number">22</span> <span class="number">30</span> <span class="number">10</span> <span class="number">1010</span> <span class="number">10</span> <span class="number">803</span> <span class="number">30</span> <span class="number">3</span> <span class="number">92</span> <span class="number">8</span> <span class="number">55</span> <span class="number">7</span> <span class="number">100</span></span><br><span class="line">样例输出</span><br><span class="line"><span class="number">120134</span></span><br></pre></td></tr></table></figure></p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">#<span class="keyword">include</span><span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span><span class="string">&lt;cstring&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span><span class="string">&lt;algorithm&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="preprocessor">#<span class="keyword">define</span> N <span class="number">52</span></span></span><br><span class="line"> <span class="keyword">int</span> dp[<span class="number">105</span>][N][N],<span class="built_in">map</span>[N][N];</span><br><span class="line"> <span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span><br><span class="line"> </span>&#123;</span><br><span class="line">	 <span class="keyword">int</span> test;</span><br><span class="line">	 <span class="built_in">cin</span>&gt;&gt;test;</span><br><span class="line">	 <span class="keyword">while</span>(test--)</span><br><span class="line">	 &#123;</span><br><span class="line">		 <span class="keyword">int</span> m,n;</span><br><span class="line">		 <span class="built_in">cin</span>&gt;&gt;m&gt;&gt;n;</span><br><span class="line">		 <span class="keyword">int</span> i,j;</span><br><span class="line">		 <span class="keyword">for</span>(i=<span class="number">1</span>;i&lt;=m;++i)</span><br><span class="line">			 <span class="keyword">for</span>(j=<span class="number">1</span>;j&lt;=n;++j)</span><br><span class="line">				 <span class="built_in">cin</span>&gt;&gt;<span class="built_in">map</span>[i][j];</span><br><span class="line"></span><br><span class="line">		 <span class="built_in">memset</span>(dp,<span class="number">0</span>,<span class="keyword">sizeof</span>(dp));</span><br><span class="line">		 <span class="keyword">int</span> all=m+n;</span><br><span class="line">		 <span class="keyword">int</span> k,t1=<span class="number">0</span>,t2=<span class="number">0</span>,ans=<span class="number">0</span>;</span><br><span class="line">		 <span class="keyword">int</span> x1,y1,x2,y2;</span><br><span class="line"></span><br><span class="line">		 dp[<span class="number">2</span>][<span class="number">1</span>][<span class="number">1</span>]=<span class="built_in">map</span>[<span class="number">1</span>][<span class="number">1</span>];</span><br><span class="line">		 <span class="keyword">for</span>(k=<span class="number">2</span>;k&lt;=all;++k)</span><br><span class="line">			 <span class="keyword">for</span>(x1=<span class="number">1</span>;x1&lt;=m;++x1)</span><br><span class="line">				 <span class="keyword">for</span>(x2=<span class="number">1</span>;x2&lt;=m;++x2)</span><br><span class="line">				&#123;</span><br><span class="line">					y1=k-x1;</span><br><span class="line">					y2=k-x2;</span><br><span class="line">					<span class="keyword">if</span>(y1&lt;<span class="number">0</span>||y2&lt;<span class="number">0</span>||y1&gt;n||y2&gt;n)</span><br><span class="line">						<span class="keyword">continue</span>;</span><br><span class="line">					<span class="keyword">if</span>(y1==y2)</span><br><span class="line">						<span class="keyword">continue</span>;</span><br><span class="line"></span><br><span class="line">					t1=max(dp[k-<span class="number">1</span>][x1-<span class="number">1</span>][x2],dp[k-<span class="number">1</span>][x1-<span class="number">1</span>][x2-<span class="number">1</span>]);</span><br><span class="line">					t2=max(dp[k-<span class="number">1</span>][x1][x2],dp[k-<span class="number">1</span>][x1][x2-<span class="number">1</span>]);</span><br><span class="line">					dp[k][x1][x2]=max(t1,t2)+ <span class="built_in">map</span>[x1][y1] + <span class="built_in">map</span>[x2][y2];</span><br><span class="line">				 &#125;</span><br><span class="line">		<span class="built_in">cout</span>&lt;&lt;dp[all-<span class="number">1</span>][m][m-<span class="number">1</span>]+<span class="built_in">map</span>[m][n]&lt;&lt;endl;</span><br><span class="line">	 &#125;</span><br><span class="line">	 <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
-<p><br></p>
-<font color="red">&#160; &#160; &#160; &#160;感觉上面的代码可以直接使用<a href="http://liubigbin.github.io/2016/02/26/%E5%8F%8C%E7%BA%BF%E7%A8%8B%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92%E4%B9%8B%E4%BC%A0%E7%BA%B8%E6%9D%A1/">传纸条的代码</a>，只不过最后的输出值直接加上举证左上角的值和右下角的值就好了，具体能不能行得通还有待验证？？？</font>
-
-<p>因为每次只用K,K-1，所以第K步可以换为二维 ，内存少了六倍</p>
-<p>优化内存AC代码：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">#<span class="keyword">include</span><span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span><span class="string">&lt;cstring&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span><span class="string">&lt;algorithm&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="preprocessor">#<span class="keyword">define</span> N <span class="number">52</span></span></span><br><span class="line"><span class="keyword">int</span> dp[<span class="number">2</span>][N][N],<span class="built_in">map</span>[N][N];</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span><br><span class="line"></span>&#123;</span><br><span class="line">  <span class="keyword">int</span> test;</span><br><span class="line">  <span class="built_in">cin</span>&gt;&gt;test;</span><br><span class="line">  <span class="keyword">while</span>(test--)</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">int</span> m,n;</span><br><span class="line">    <span class="built_in">cin</span>&gt;&gt;m&gt;&gt;n;</span><br><span class="line">    <span class="keyword">int</span> i,j;</span><br><span class="line">    <span class="keyword">for</span>(i=<span class="number">1</span>;i&lt;=m;++i)</span><br><span class="line">      <span class="keyword">for</span>(j=<span class="number">1</span>;j&lt;=n;++j)</span><br><span class="line">        <span class="built_in">cin</span>&gt;&gt;<span class="built_in">map</span>[i][j];</span><br><span class="line"></span><br><span class="line">    <span class="built_in">memset</span>(dp,<span class="number">0</span>,<span class="keyword">sizeof</span>(dp));</span><br><span class="line">    <span class="keyword">int</span> all=m+n;</span><br><span class="line">    <span class="keyword">int</span> k,t1=<span class="number">0</span>,t2=<span class="number">0</span>,ans=<span class="number">0</span>;</span><br><span class="line">    <span class="keyword">int</span> x1,y1,x2,y2;</span><br><span class="line"></span><br><span class="line">    dp[<span class="number">2</span>][<span class="number">1</span>][<span class="number">1</span>]=<span class="built_in">map</span>[<span class="number">1</span>][<span class="number">1</span>];</span><br><span class="line"><span class="keyword">for</span>(k=<span class="number">2</span>;k&lt;=all;++k)</span><br><span class="line">  <span class="keyword">for</span>(x1=<span class="number">1</span>;x1&lt;=m;++x1)</span><br><span class="line">    <span class="keyword">for</span>(x2=<span class="number">1</span>;x2&lt;=m;++x2)</span><br><span class="line">   &#123;</span><br><span class="line">     y1=k-x1;</span><br><span class="line">     y2=k-x2;</span><br><span class="line">     <span class="keyword">if</span>(y1&lt;<span class="number">0</span>||y2&lt;<span class="number">0</span>||y1&gt;n||y2&gt;n)</span><br><span class="line">       <span class="keyword">continue</span>;</span><br><span class="line">     <span class="keyword">if</span>(y1==y2)</span><br><span class="line">       <span class="keyword">continue</span>;</span><br><span class="line"></span><br><span class="line">     t1=max(dp[k%<span class="number">2</span>][x1-<span class="number">1</span>][x2],dp[k%<span class="number">2</span>][x1-<span class="number">1</span>][x2-<span class="number">1</span>]);</span><br><span class="line">     t2=max(dp[k%<span class="number">2</span>][x1][x2],dp[k%<span class="number">2</span>][x1][x2-<span class="number">1</span>]);</span><br><span class="line">     dp[(k+<span class="number">1</span>)%<span class="number">2</span>][x1][x2]=max(t1,t2)+ <span class="built_in">map</span>[x1][y1] + <span class="built_in">map</span>[x2][y2];</span><br><span class="line">    &#125;</span><br><span class="line"><span class="built_in">cout</span>&lt;&lt;dp[(all%<span class="number">2</span>)][m][m-<span class="number">1</span>]+<span class="built_in">map</span>[m][n]&lt;&lt;endl;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>以上内容来自别人的CSDN博客，因为觉得写的很不错，所以就记录了下来，如果想看原创，请点击<a href=" http://m.blog.csdn.net/article/details?id=24369927" target="_blank" rel="external">这里</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/26/双线程动态规划之探寻宝藏/" data-id="cilxse67a001bywqyyyyzhs59" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/动态规划/">动态规划</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-双线程动态规划之传纸条" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/02/26/双线程动态规划之传纸条/" class="article-date">
-  <time datetime="2016-02-26T05:03:31.000Z" itemprop="datePublished">2016-02-26</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/算法/">算法</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/02/26/双线程动态规划之传纸条/">双线程动态规划之传纸条</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>&#160; &#160; &#160; &#160;最近在做天梯的时候，遇到了传纸条题目，一时想不出来，于是在网上百度了一下解题的方法，依然是动态规划，但是采用的是双线程的动态规划，感觉有点新鲜，于是记录了下来！<br>题目是这样子的：</p>
-<p>&#160; &#160; &#160; &#160;小渊和小轩是好朋友也是同班同学，他们在一起总有谈不完的话题。一次素质拓展活动中，班上同学安排做成一个m行n列的矩阵，而小渊和小轩被安排在矩阵对角线的两端，因此，他们就无法直接交谈了。幸运的是，他们可以通过传纸条来进行交流。纸条要经由许多同学传到对方手里，小渊坐在矩阵的左上角，坐标(1,1)，小轩坐在矩阵的右下角，坐标(m,n)。从小渊传到小轩的纸条只可以向下或者向右传递，从小轩传给小渊的纸条只可以向上或者向左传递。</p>
-<p>&#160; &#160; &#160; &#160;在活动进行中，小渊希望给小轩传递一张纸条，同时希望小轩给他回复。班里每个同学都可以帮他们传递，但只会帮他们一次，也就是说如果此人在小渊递给小轩纸条的时候帮忙，那么在小轩递给小渊的时候就不会再帮忙。反之亦然。</p>
-<p>&#160; &#160; &#160; &#160;还有一件事情需要注意，全班每个同学愿意帮忙的好感度有高有低（注意：小渊和小轩的好心程度没有定义，输入时用0表示），可以用一个0-100的自然数来表示，数越大表示越好心。小渊和小轩希望尽可能找好心程度高的同学来帮忙传纸条，即找到来回两条传递路径，使得这两条路径上同学的好心程度只和最大。现在，请你帮助小渊和小轩找到这样的两条路径。</p>
-<p>输入描述 Input Description</p>
-<p>&#160; &#160; &#160; &#160;输入的第一行有2个用空格隔开的整数m和n，表示班里有m行n列（1&lt;=m,n&lt;=50）。</p>
-<p>&#160; &#160; &#160; &#160;接下来的m行是一个m*n的矩阵，矩阵中第i行j列的整数表示坐在第i行j列的学生的好心程度。每行的n个整数之间用空格隔开。</p>
-<p>输出描述 Output Description</p>
-<p>&#160; &#160; &#160; &#160;输出共一行，包含一个整数，表示来回两条路上参与传递纸条的学生的好心程度之和的最大值。</p>
-<p>样例输入 Sample Input</p>
-<pre><code>3 3
-
-0 3 9
-
-2 8 5
-
-5 7 0
-</code></pre><p>样例输出 Sample Output</p>
-<pre><code>34
-</code></pre><h4 id="双线程DP的思想："><a href="#双线程DP的思想：" class="headerlink" title="双线程DP的思想："></a>双线程DP的思想：</h4><p>&#160; &#160; &#160; &#160;dp[k,x1,y1,x2,y2]表示第k步第一个纸条在(x1,y1)时和第二个纸条在(x2,y2)时的最优解…当然要保证x1!=x2&amp;&amp;y1!=y2 ,则它的上一步可能有四种情况：</p>
-<p><li>第一个纸条的位置在（x1, y1-1）, 第二纸条的位置为(x2, y2-1)，此时的状态为dp[k-1][x1][y1-1][x2][y2-1]</li></p>
-<p><li>第一个纸条的位置在（x1, y1-1）, 第二纸条的位置为(x2-1, y2)，此时的状态为dp[k-1][x1][y1-1][x2-1][y2]</li></p>
-<p><li>第一个纸条的位置在（x1-1, y1）, 第二纸条的位置为(x2, y2-1)，此时的状态为dp[k-1][x1-1][y1][x2][y2-1]</li></p>
-<p><li>第一个纸条的位置在（x1-1, y1）, 第二纸条的位置为(x2-1, y2)，此时的状态为dp[k-1][x1-1][y1][x2-1][y2])</li><br><br><br>状态转移方程为：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">dp[k][x1][y1][x2][y2]=max(</span><br><span class="line">                          dp[k-<span class="number">1</span>][x1][y1-<span class="number">1</span>][x2][y2-<span class="number">1</span>],</span><br><span class="line">                          dp[k-<span class="number">1</span>][x1][y1-<span class="number">1</span>][x2-<span class="number">1</span>][y2],</span><br><span class="line">                          dp[k-<span class="number">1</span>][x1-<span class="number">1</span>][y1][x2][y2-<span class="number">1</span>],</span><br><span class="line">                          dp[k-<span class="number">1</span>][x1-<span class="number">1</span>][y1][x2-<span class="number">1</span>][y2]</span><br><span class="line">                          )</span><br><span class="line">                      +<span class="built_in">map</span>[x1][y1]+<span class="built_in">map</span>[x2][y2];</span><br></pre></td></tr></table></figure>
-<p>但是上面的复杂度太高，但通过观察发现可以用三维数组来表示,因为每次只能向下或者向右。前一步（x1,y1）  向下：(x1+1，y1),  向右（x1,y1+1），前一步（x2,y2）  向下：(x2+1，y2),  向右（x2,y2+1）注意到没有？行标列标和相等！！！<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">k=x1+y1;</span><br><span class="line">k=x2+y2;</span><br></pre></td></tr></table></figure></p>
-<p>所以y1,y2就可以用k-x1,k-x2代替，顺利降为 三维；</p>
-<p>上面状态转移方程可以换为：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">dp[k][x1][x2] = max(</span><br><span class="line">                    dp[k-<span class="number">1</span>][x1][x2],</span><br><span class="line">                    dp[k-<span class="number">1</span>][x1][x2-<span class="number">1</span>],</span><br><span class="line">                    dp[k-<span class="number">1</span>][x1-<span class="number">1</span>][x2],</span><br><span class="line">                    dp[k-<span class="number">1</span>][x1-<span class="number">1</span>][x2-<span class="number">1</span>]</span><br><span class="line">                   )</span><br><span class="line">                + <span class="built_in">map</span>[i][k-i] + <span class="built_in">map</span>[j][k-j];</span><br></pre></td></tr></table></figure></p>
-<p>dp[k][x1][x2]来表示第k步第一个纸条和第二个纸条横坐标分别在x1和x2时的最优解,只需要保证x1!=x2即可;</p>
-<p>x1==x2时dp[k][x1][x2]==0…</p>
-<p>&#160; &#160; &#160; &#160;K表示map的第几条斜线  一共有m+n-1条斜线，在这个题中  第一和最后一条斜线不参与，因为两对角的好心度 定义为0；而在探寻宝藏这题中，两对角也有价值，所以需要加上两对角的值.</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">#<span class="keyword">include</span><span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span><span class="string">&lt;cstring&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span><span class="string">&lt;algorithm&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="preprocessor">#<span class="keyword">define</span> N <span class="number">52</span></span></span><br><span class="line"> <span class="keyword">int</span> dp[<span class="number">105</span>][N][N],<span class="built_in">map</span>[N][N];</span><br><span class="line"> <span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span><br><span class="line"> </span>&#123;</span><br><span class="line">	 <span class="keyword">int</span> test;</span><br><span class="line">	 <span class="built_in">cin</span>&gt;&gt;test;</span><br><span class="line">	 <span class="keyword">while</span>(test--)</span><br><span class="line">	 &#123;</span><br><span class="line">		 <span class="keyword">int</span> m,n;</span><br><span class="line">		 <span class="built_in">cin</span>&gt;&gt;m&gt;&gt;n;</span><br><span class="line">		 <span class="keyword">int</span> i,j;</span><br><span class="line">		 <span class="keyword">for</span>(i=<span class="number">1</span>;i&lt;=m;++i)</span><br><span class="line">			 <span class="keyword">for</span>(j=<span class="number">1</span>;j&lt;=n;++j)</span><br><span class="line">				 <span class="built_in">cin</span>&gt;&gt;<span class="built_in">map</span>[i][j];</span><br><span class="line"></span><br><span class="line">		 <span class="built_in">memset</span>(dp,<span class="number">0</span>,<span class="keyword">sizeof</span>(dp));</span><br><span class="line">		 <span class="keyword">int</span> all=m+n;</span><br><span class="line">		 <span class="keyword">int</span> k,t1=<span class="number">0</span>,t2=<span class="number">0</span>,ans=<span class="number">0</span>;</span><br><span class="line">		 <span class="keyword">int</span> x1,y1,x2,y2;</span><br><span class="line"></span><br><span class="line">		 <span class="comment">//dp[2][1][1]=map[1][1];</span></span><br><span class="line">		 <span class="keyword">for</span>(k=<span class="number">2</span>;k&lt;=all;++k)</span><br><span class="line">			 <span class="keyword">for</span>(x1=<span class="number">1</span>;x1&lt;=m;++x1)</span><br><span class="line">				 <span class="keyword">for</span>(x2=<span class="number">1</span>;x2&lt;=m;++x2)</span><br><span class="line">				&#123;</span><br><span class="line">					y1=k-x1;</span><br><span class="line">					y2=k-x2;</span><br><span class="line">					<span class="keyword">if</span>(y1&lt;<span class="number">0</span>||y2&lt;<span class="number">0</span>||y1&gt;n||y2&gt;n)</span><br><span class="line">						<span class="keyword">continue</span>;</span><br><span class="line">					<span class="keyword">if</span>(y1==y2)</span><br><span class="line">						<span class="keyword">continue</span>;</span><br><span class="line"></span><br><span class="line">					t1=max(dp[k-<span class="number">1</span>][x1-<span class="number">1</span>][x2],dp[k-<span class="number">1</span>][x1-<span class="number">1</span>][x2-<span class="number">1</span>]);</span><br><span class="line">					t2=max(dp[k-<span class="number">1</span>][x1][x2],dp[k-<span class="number">1</span>][x1][x2-<span class="number">1</span>]);</span><br><span class="line">					dp[k][x1][x2]=max(t1,t2)+ <span class="built_in">map</span>[x1][y1] + <span class="built_in">map</span>[x2][y2];</span><br><span class="line">				 &#125;</span><br><span class="line">		<span class="built_in">cout</span>&lt;&lt;dp[all-<span class="number">1</span>][m][m-<span class="number">1</span>]&lt;&lt;endl;</span><br><span class="line">	 &#125;</span><br><span class="line">	 <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
-<p>以上内容大部分来自别人的CSDN博客，因为觉得写的很不错，所以就记录了下来，如果想看原创，请点击<a href=" http://m.blog.csdn.net/article/details?id=24369927" target="_blank" rel="external">这里</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/26/双线程动态规划之传纸条/" data-id="cilxse67e001hywqyxr4jy2fs" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/动态规划/">动态规划</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a></li></ul>
 
     </footer>
   </div>
@@ -844,7 +843,7 @@ sshthresh = cwnd
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">16</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">4</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">17</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">4</span></li></ul>
     </div>
   </div>
 
@@ -871,7 +870,7 @@ sshthresh = cwnd
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">14</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
     </div>
   </div>
 
@@ -883,6 +882,14 @@ sshthresh = cwnd
       <ul>
         
           <li>
+            <a href="/2016/03/19/malloc函数的实现原理/">malloc函数的实现原理</a>
+          </li>
+        
+          <li>
+            <a href="/2016/03/19/Linux-内存管理/">Linux 内存管理</a>
+          </li>
+        
+          <li>
             <a href="/2016/03/18/MySQL索引算法原理/">MySQL索引算法原理</a>
           </li>
         
@@ -892,14 +899,6 @@ sshthresh = cwnd
         
           <li>
             <a href="/2016/03/17/第K小元素选择算法/">第K小元素选择算法</a>
-          </li>
-        
-          <li>
-            <a href="/2016/03/17/C语言之static/">C语言之static</a>
-          </li>
-        
-          <li>
-            <a href="/2016/03/16/从整数的补码到用位运算实现任何两个数的加减法/">从整数的补码到用位运算实现任何两个数的加减法</a>
           </li>
         
       </ul>

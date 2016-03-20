@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>链接库以及编译过程 | LiuYongbin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="在Linux中，链接库有两种，静态链接库和动态链接库。静态链接库文件以.a作为后缀，动态链接库以.so作为文件名。
+一个源文件编程一个可运行的程序，需要进过两个步骤，编译跟链接。编译就是编译器将源文件编译成目标文件，以.o作为文件名后缀，生成目标文件后，接下来就是链接器的工作了。对于静态链接库，连接器将目标文件和所涉及到的库函数（引用的是静态链接库的函数）连接起来合成一个可执行的文件，此时的库函数">
+<meta property="og:type" content="article">
+<meta property="og:title" content="链接库以及编译过程">
+<meta property="og:url" content="http://liubigbin.github.io/2016/03/20/链接库以及编译过程/index.html">
+<meta property="og:site_name" content="LiuYongbin">
+<meta property="og:description" content="在Linux中，链接库有两种，静态链接库和动态链接库。静态链接库文件以.a作为后缀，动态链接库以.so作为文件名。
+一个源文件编程一个可运行的程序，需要进过两个步骤，编译跟链接。编译就是编译器将源文件编译成目标文件，以.o作为文件名后缀，生成目标文件后，接下来就是链接器的工作了。对于静态链接库，连接器将目标文件和所涉及到的库函数（引用的是静态链接库的函数）连接起来合成一个可执行的文件，此时的库函数">
+<meta property="og:image" content="http://liubigbin.github.io/pictures/Linux/链接库以及make-编译过程.png">
+<meta property="og:updated_time" content="2016-03-20T13:34:18.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="链接库以及编译过程">
+<meta name="twitter:description" content="在Linux中，链接库有两种，静态链接库和动态链接库。静态链接库文件以.a作为后缀，动态链接库以.so作为文件名。
+一个源文件编程一个可运行的程序，需要进过两个步骤，编译跟链接。编译就是编译器将源文件编译成目标文件，以.o作为文件名后缀，生成目标文件后，接下来就是链接器的工作了。对于静态链接库，连接器将目标文件和所涉及到的库函数（引用的是静态链接库的函数）连接起来合成一个可执行的文件，此时的库函数">
+  
+    <link rel="alternative" href="/atom.xml" title="LiuYongbin" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" type="text/css">
+  
+
+</head>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">LiuYongbin</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">Hey boy just do it!</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://liubigbin.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-链接库以及编译过程" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/03/20/链接库以及编译过程/" class="article-date">
+  <time datetime="2016-03-20T11:44:08.000Z" itemprop="datePublished">2016-03-20</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux-C与C/">Linux, C与C++</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      链接库以及编译过程
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>在Linux中，链接库有两种，静态链接库和动态链接库。静态链接库文件以.a作为后缀，动态链接库以.so作为文件名。</p>
+<p>一个源文件编程一个可运行的程序，需要进过两个步骤，编译跟链接。编译就是编译器将源文件编译成目标文件，以.o作为文件名后缀，生成目标文件后，接下来就是链接器的工作了。<br>对于静态链接库，连接器将目标文件和所涉及到的库函数（引用的是静态链接库的函数）连接起来合成一个可执行的文件，此时的库函数数据是直接存在可运行文件里面，这样的可运行程序在在生成后，就可以脱离静态库函数而成功运行了。但是所生成的可执行文件会比较大。对于动态链接库，只是做一下符号标记，在程序运行需要用到库函数的时候，才会将动态库里面的函数加载在内存中，由于不是直接的将库函数代码拷贝到自己的空间，只是一个符号链接，所生成的可运行文件就会比较小。</p>
+<h3 id="静态链接库、动态链接库各自的特点"><a href="#静态链接库、动态链接库各自的特点" class="headerlink" title="静态链接库、动态链接库各自的特点"></a>静态链接库、动态链接库各自的特点</h3><ol>
+<li><p>动态链接库有利于进程间资源共享<br>什么概念呢？就是说，某个程序的在运行中要调用某个动态链接库函数的时候，操作系统首先会查看所有正在运行的程序，看在内存里是否已有此库函数的拷贝了。如果有，则让其共享那一个拷贝；只有没有时才链接载入。这样的模式虽然会带来一些“动态链接”额外的开销，却大大的节省了系统的内存资源。C的标准库就是动态链接库，也就是说系统中所有运行的程序共享着同一个C标准库的代码段。而静态链接库则不同，如果系统中多个程序都要调用某个静态链接库函数时，则每个程序都要将这个库函数拷贝到自己的代码段，显然将占有更大的内存资源。</p>
+</li>
+<li><p>将一些程序升级变得简单。用静态库，如果库发生变化，使用库的程序要重新编译。使用动态库，只要动态库提供给该程序的接口没变，只要重新用新生成的动态库替换原来就可以了。</p>
+</li>
+<li><p>甚至可以真正坐到链接载入完全由程序员在程序代码中控制。<br>程序员在编写程序的时候，可以明确的指明什么时候或者什么情况下，链接载入哪个动态链接库函数。你可以有一个相当大的软件，但每次运行的时候，由于不同的操作需求，只有一小部分程序被载入内存。所有的函数本着“有需求才调入”的原则，于是大大节省了系统资源。比如现在的软件通常都能打开若干种不同类型的文件，这些读写操作通常都用动态链接库来实现。在一次运行当中，一般只有一种类型的文件将会被打开。所以直到程序知道文件的类型以后再载入相应的读写函数，而不是一开始就将所有的读写函数都载入，然后才发觉在整个程序中根本没有用到它们。</p>
+</li>
+<li><p>由于静态库在编译的时候，就将库函数装载到程序中去了，而动态库函数必须在运行的时候才装载，所以程序执行的时候，用静态库更快些。</p>
+</li>
+</ol>
+<h3 id="源文件的编译过程"><a href="#源文件的编译过程" class="headerlink" title="源文件的编译过程"></a>源文件的编译过程</h3><p>如果有一个源文件file.c需要编译，那么其编译过程如下图所示：<br><img src="/pictures/Linux/链接库以及make-编译过程.png" alt=""></p>
+<p>一般在执行命令<figure class="highlight"><figcaption><span>-o file file.c```，会转化成以下几个步骤：</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#10;&#29983;&#25104;&#39044;&#22788;&#29702;&#21518;&#30340;&#25991;&#20214;&#65306;</span><br></pre></td></tr></table></figure></p>
+<p>gcc -E -o file.i  file.<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">预处理文件到汇编代码：</span><br></pre></td></tr></table></figure></p>
+<p>gcc -s file.s file.c<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">汇编代码到目标文件：</span><br></pre></td></tr></table></figure></p>
+<p>gcc -c file.s<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">生成可执行文件：</span><br></pre></td></tr></table></figure></p>
+<p>gcc -o file file.o<br><figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">## 静态链接库创建</span><br><span class="line">所有的库，不管是静态库还是动态库，都是有<span class="class">.o</span>文件生成的，所以在创建库函数的时候，需要先生成<span class="class">.o</span>文件。</span><br></pre></td></tr></table></figure></p>
+<p>gcc -c file.c //生成file.o</p>
+<p>ar cr libfile.a file.o<br><figure class="highlight sqf"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="preprocessor">## 动态链接库的创建</span></span><br><span class="line">由于动态链接库函数的共享特性(故又叫共享库)，它们不会被拷贝到可执行文件中。在编译的时候，编译器只会做一些函数名之类的检查。在程序运行的时候，被调用的动态链接库函数被安置在内存的某个地方，所有调用它的程序将指向这个代码段。因此，这些代码必须实用相对地址，而不是绝对地址。在编译的时候，我们需要告诉编译器，这些对象文件是用来做动态链接库的，所以要用地址不无关代码（<span class="built_in">Position</span> <span class="built_in">Independent</span> Code （PIC））。</span><br><span class="line">对gcc编译器，只需添加上 -fPIC 标签，如：</span><br></pre></td></tr></table></figure></p>
+<p>gcc -fPIC -c file1.c<br>gcc -fPIC -c file2.c<br>gcc -shared libxxx.so file1.o file2.o<br><figure class="highlight vala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="preprocessor">## 静态链接库和动态链接库的使用</span></span><br><span class="line"></span><br><span class="line">由于是自己生成的链接库，所以在需要用到的时候，需要跟编译器说链接库放在那个位置：</span><br></pre></td></tr></table></figure></p>
+<p>gcc –o main main.o –L. –lxxxx</p>
+<h1 id="L-参数告诉编译器先到path目录下搜索libxxx-so文件，如果没有找到，继续搜索libxxx-a（静态库）。"><a href="#L-参数告诉编译器先到path目录下搜索libxxx-so文件，如果没有找到，继续搜索libxxx-a（静态库）。" class="headerlink" title="-L 参数告诉编译器先到path目录下搜索libxxx.so文件，如果没有找到，继续搜索libxxx.a（静态库）。"></a>-L 参数告诉编译器先到path目录下搜索libxxx.so文件，如果没有找到，继续搜索libxxx.a（静态库）。</h1><p>如果想要直接的搜索静态的链接库，那么加上-static 就可以了<br>gcc –o main main.o -static –L. –lxxxx<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">对于动态链接库，如果想要让程序能可以顺利运行的话，那么可以通过下面的三种方法：</span><br><span class="line"></span><br><span class="line"><span class="number">1.</span> 在程序运行期间，也需要告诉系统去哪里找你的动态链接库文件。在UNIX下是通过定义名为 LD_LIBRARY_PATH 的环境变量来实现的。只需将path赋值给此变量即可</span><br></pre></td></tr></table></figure></p>
+<p> export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/C_pram/practice<br> <figure class="highlight crystal"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">2</span>. 把库拷贝到/usr/<span class="class"><span class="keyword">lib</span>和/<span class="title">lib</span>目录下。</span></span><br><span class="line"></span><br><span class="line"><span class="number">3</span>. 修改/etc/ld.so.conf文件，把库所在的路径加到文件末尾，并执行sudo ldconfig刷新(需要超级用户权限)。这样，加入的目录下的所有库文件都可见.</span><br><span class="line"></span><br><span class="line">如果想要查看某个可执行文件依赖于那些库，可以使用ldd命令：</span><br></pre></td></tr></table></figure></p>
+<p>ldd executefilenam<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">查看静态库中的文件</span><br></pre></td></tr></table></figure></p>
+<p>　　[root@node56 lib]# ar -t libhycu.a<br>　　base64.c.o<br>　　binbuf.c.o<br>　　cache.c.o<br>　　chunk.c.o<br>　　codec_a.c.o<br>　　…<br>　　xort.c.o<br>　　[root@node56 lib]#<br>　　[root@node56 lib]# ar -tv libhycu.a<br>　　rw-r–r– 0/0   7220 Jul 29 19:18 2011 base64.c.o<br>　　rw-r–r– 0/0   2752 Jul 29 19:18 2011 binbuf.c.o<br>　　rw-r–r– 0/0  19768 Jul 29 19:18 2011 cache.c.o<br><figure class="highlight vim"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">查看动态库中的文件可以使用<span class="keyword">nm</span>命令</span><br></pre></td></tr></table></figure></p>
+<p>nm -D file.so<br><figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="xml">下面是在网上找的生成动态链接库的例子，原文参考<span class="tag">&lt;<span class="title">a</span> <span class="attribute">href</span>=<span class="value">"http://www.cnblogs.com/Xiao_bird/archive/2010/03/01/1675821.html"</span>&gt;</span>这里<span class="tag">&lt;/<span class="title">a</span>&gt;</span></span></span><br></pre></td></tr></table></figure></p>
+<p>/<em>mylib.h</em>/<br>void Print();</p>
+<p>/<em>mylib.c</em>/</p>
+<p>#include <stdio.h></stdio.h></p>
+<p>#include “mylib.h”</p>
+<p>void Print()<br>{<br>    printf(“This is in mylib\n”);<br>}<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">编译方法如下：</span><br></pre></td></tr></table></figure></p>
+<p>gcc -fpic -shared mylib.c -o mylib.so<br><figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">此时将生成<span class="tag">mylib</span><span class="class">.so</span>动态链接库文件。</span><br><span class="line"></span><br><span class="line">动态链接库在使用时，分为“隐式调用”和“显式调用”两种，如果是隐式调用，则与静态库的使用方法差不多，注意需要包含导出函数的头文件，即<span class="tag">mylib</span><span class="class">.h</span>：</span><br></pre></td></tr></table></figure></p>
+<p>#include <stdio.h></stdio.h></p>
+<p>#include “mylib.h”</p>
+<p>int main()<br>{<br>    Print();<br>}<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">编译方法：</span><br></pre></td></tr></table></figure></p>
+<p>gcc -o main main.c -L./ mylib.so<br><figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">注意要加上动态链接库的搜索路径，否则编译器只会到系统路径中去寻找。</span><br><span class="line"></span><br><span class="line">显式调用的方式，不必包含<span class="tag">mylib</span><span class="class">.h</span>，但是需要增加几个系统调用：</span><br></pre></td></tr></table></figure></p>
+<p>#include <stdio.h></stdio.h></p>
+<p>#include <dlfcn.h> // 显式加载需要用到的头文件</dlfcn.h></p>
+<p>int  main()<br>{<br>    void <em>pdlHandle = dlopen(“./mylib.so”, RTLD_LAZY); // RTLD_LAZY 延迟加载<br>    char </em>pszErr = dlerror();<br>    if( !pdlHandle || pszErr )<br>    {<br>        printf(“Load mylib failed!\n”)<br>        return 1;<br>    }</p>
+<pre><code>void (*Print)() = dlsym(pdlHandle, &quot;Print&quot;); // 定位动态链接库中的函数
+if( !Print )
+{
+    pszErr = dlerror();
+    printf(&quot;Find symbol failed!%s\n&quot;, pszErr);
+    dlclose(pdlHandle);
+    return 1;
+}
+
+Print(); // 调用动态链接库中的函数
+
+dlclose(pdlHandle); // 系统动态链接库引用数减1
+
+return 0;
+</code></pre><p>}<br>```<br>可以看到，显式调用的代码看上去要复杂很多，但是却比隐式调用要灵活，我们不必在编译时就确定要加载哪个动态链接库，可以在运行时再确定，甚至重新加载。</p>
+<p>看一下显式调用的编译方式：</p>
+<p>gcc -ldl -o main main.c</p>
+<p>注意要添加-ldl选项，以使用显式调用相关的函数调用。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/03/20/链接库以及编译过程/" data-id="cim0lx0w50003ygqy7zqquccc" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2016/03/19/malloc函数的实现原理/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">malloc函数的实现原理</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">17</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux-C与C/">Linux, C与C++</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">4</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Linux-网络编程/" style="font-size: 12.5px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 20px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 17.5px;">Linux用户管理</a> <a href="/tags/TCP-IP/" style="font-size: 17.5px;">TCP/IP</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/动态规划/" style="font-size: 15px;">动态规划</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/数组/" style="font-size: 10px;">数组</a> <a href="/tags/树结构/" style="font-size: 15px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 12.5px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 12.5px;">爬虫</a> <a href="/tags/随记/" style="font-size: 12.5px;">随记</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">15</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/03/20/链接库以及编译过程/">链接库以及编译过程</a>
+          </li>
+        
+          <li>
+            <a href="/2016/03/19/malloc函数的实现原理/">malloc函数的实现原理</a>
+          </li>
+        
+          <li>
+            <a href="/2016/03/19/Linux-内存管理/">Linux 内存管理</a>
+          </li>
+        
+          <li>
+            <a href="/2016/03/18/MySQL索引算法原理/">MySQL索引算法原理</a>
+          </li>
+        
+          <li>
+            <a href="/2016/03/18/那家姓B的树/">那家姓B的树</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 LiuYongbin<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js" type="text/javascript"></script>
+
+
+<script src="/js/script.js" type="text/javascript"></script>
+
+  </div>
+</body>
+</html>

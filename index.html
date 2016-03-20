@@ -65,6 +65,104 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-链接库以及编译过程" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/03/20/链接库以及编译过程/" class="article-date">
+  <time datetime="2016-03-20T11:44:08.000Z" itemprop="datePublished">2016-03-20</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux-C与C/">Linux, C与C++</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/03/20/链接库以及编译过程/">链接库以及编译过程</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>在Linux中，链接库有两种，静态链接库和动态链接库。静态链接库文件以.a作为后缀，动态链接库以.so作为文件名。</p>
+<p>一个源文件编程一个可运行的程序，需要进过两个步骤，编译跟链接。编译就是编译器将源文件编译成目标文件，以.o作为文件名后缀，生成目标文件后，接下来就是链接器的工作了。<br>对于静态链接库，连接器将目标文件和所涉及到的库函数（引用的是静态链接库的函数）连接起来合成一个可执行的文件，此时的库函数数据是直接存在可运行文件里面，这样的可运行程序在在生成后，就可以脱离静态库函数而成功运行了。但是所生成的可执行文件会比较大。对于动态链接库，只是做一下符号标记，在程序运行需要用到库函数的时候，才会将动态库里面的函数加载在内存中，由于不是直接的将库函数代码拷贝到自己的空间，只是一个符号链接，所生成的可运行文件就会比较小。</p>
+<h3 id="静态链接库、动态链接库各自的特点"><a href="#静态链接库、动态链接库各自的特点" class="headerlink" title="静态链接库、动态链接库各自的特点"></a>静态链接库、动态链接库各自的特点</h3><ol>
+<li><p>动态链接库有利于进程间资源共享<br>什么概念呢？就是说，某个程序的在运行中要调用某个动态链接库函数的时候，操作系统首先会查看所有正在运行的程序，看在内存里是否已有此库函数的拷贝了。如果有，则让其共享那一个拷贝；只有没有时才链接载入。这样的模式虽然会带来一些“动态链接”额外的开销，却大大的节省了系统的内存资源。C的标准库就是动态链接库，也就是说系统中所有运行的程序共享着同一个C标准库的代码段。而静态链接库则不同，如果系统中多个程序都要调用某个静态链接库函数时，则每个程序都要将这个库函数拷贝到自己的代码段，显然将占有更大的内存资源。</p>
+</li>
+<li><p>将一些程序升级变得简单。用静态库，如果库发生变化，使用库的程序要重新编译。使用动态库，只要动态库提供给该程序的接口没变，只要重新用新生成的动态库替换原来就可以了。</p>
+</li>
+<li><p>甚至可以真正坐到链接载入完全由程序员在程序代码中控制。<br>程序员在编写程序的时候，可以明确的指明什么时候或者什么情况下，链接载入哪个动态链接库函数。你可以有一个相当大的软件，但每次运行的时候，由于不同的操作需求，只有一小部分程序被载入内存。所有的函数本着“有需求才调入”的原则，于是大大节省了系统资源。比如现在的软件通常都能打开若干种不同类型的文件，这些读写操作通常都用动态链接库来实现。在一次运行当中，一般只有一种类型的文件将会被打开。所以直到程序知道文件的类型以后再载入相应的读写函数，而不是一开始就将所有的读写函数都载入，然后才发觉在整个程序中根本没有用到它们。</p>
+</li>
+<li><p>由于静态库在编译的时候，就将库函数装载到程序中去了，而动态库函数必须在运行的时候才装载，所以程序执行的时候，用静态库更快些。</p>
+</li>
+</ol>
+<h3 id="源文件的编译过程"><a href="#源文件的编译过程" class="headerlink" title="源文件的编译过程"></a>源文件的编译过程</h3><p>如果有一个源文件file.c需要编译，那么其编译过程如下图所示：<br><img src="/pictures/Linux/链接库以及make-编译过程.png" alt=""></p>
+<p>一般在执行命令<figure class="highlight"><figcaption><span>-o file file.c```，会转化成以下几个步骤：</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#10;&#29983;&#25104;&#39044;&#22788;&#29702;&#21518;&#30340;&#25991;&#20214;&#65306;</span><br></pre></td></tr></table></figure></p>
+<p>gcc -E -o file.i  file.<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">预处理文件到汇编代码：</span><br></pre></td></tr></table></figure></p>
+<p>gcc -s file.s file.c<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">汇编代码到目标文件：</span><br></pre></td></tr></table></figure></p>
+<p>gcc -c file.s<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">生成可执行文件：</span><br></pre></td></tr></table></figure></p>
+<p>gcc -o file file.o<br><figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">## 静态链接库创建</span><br><span class="line">所有的库，不管是静态库还是动态库，都是有<span class="class">.o</span>文件生成的，所以在创建库函数的时候，需要先生成<span class="class">.o</span>文件。</span><br></pre></td></tr></table></figure></p>
+<p>gcc -c file.c //生成file.o</p>
+<p>ar cr libfile.a file.o<br><figure class="highlight sqf"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="preprocessor">## 动态链接库的创建</span></span><br><span class="line">由于动态链接库函数的共享特性(故又叫共享库)，它们不会被拷贝到可执行文件中。在编译的时候，编译器只会做一些函数名之类的检查。在程序运行的时候，被调用的动态链接库函数被安置在内存的某个地方，所有调用它的程序将指向这个代码段。因此，这些代码必须实用相对地址，而不是绝对地址。在编译的时候，我们需要告诉编译器，这些对象文件是用来做动态链接库的，所以要用地址不无关代码（<span class="built_in">Position</span> <span class="built_in">Independent</span> Code （PIC））。</span><br><span class="line">对gcc编译器，只需添加上 -fPIC 标签，如：</span><br></pre></td></tr></table></figure></p>
+<p>gcc -fPIC -c file1.c<br>gcc -fPIC -c file2.c<br>gcc -shared libxxx.so file1.o file2.o<br><figure class="highlight vala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="preprocessor">## 静态链接库和动态链接库的使用</span></span><br><span class="line"></span><br><span class="line">由于是自己生成的链接库，所以在需要用到的时候，需要跟编译器说链接库放在那个位置：</span><br></pre></td></tr></table></figure></p>
+<p>gcc –o main main.o –L. –lxxxx</p>
+<h1 id="L-参数告诉编译器先到path目录下搜索libxxx-so文件，如果没有找到，继续搜索libxxx-a（静态库）。"><a href="#L-参数告诉编译器先到path目录下搜索libxxx-so文件，如果没有找到，继续搜索libxxx-a（静态库）。" class="headerlink" title="-L 参数告诉编译器先到path目录下搜索libxxx.so文件，如果没有找到，继续搜索libxxx.a（静态库）。"></a>-L 参数告诉编译器先到path目录下搜索libxxx.so文件，如果没有找到，继续搜索libxxx.a（静态库）。</h1><p>如果想要直接的搜索静态的链接库，那么加上-static 就可以了<br>gcc –o main main.o -static –L. –lxxxx<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">对于动态链接库，如果想要让程序能可以顺利运行的话，那么可以通过下面的三种方法：</span><br><span class="line"></span><br><span class="line"><span class="number">1.</span> 在程序运行期间，也需要告诉系统去哪里找你的动态链接库文件。在UNIX下是通过定义名为 LD_LIBRARY_PATH 的环境变量来实现的。只需将path赋值给此变量即可</span><br></pre></td></tr></table></figure></p>
+<p> export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/C_pram/practice<br> <figure class="highlight crystal"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">2</span>. 把库拷贝到/usr/<span class="class"><span class="keyword">lib</span>和/<span class="title">lib</span>目录下。</span></span><br><span class="line"></span><br><span class="line"><span class="number">3</span>. 修改/etc/ld.so.conf文件，把库所在的路径加到文件末尾，并执行sudo ldconfig刷新(需要超级用户权限)。这样，加入的目录下的所有库文件都可见.</span><br><span class="line"></span><br><span class="line">如果想要查看某个可执行文件依赖于那些库，可以使用ldd命令：</span><br></pre></td></tr></table></figure></p>
+<p>ldd executefilenam<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">查看静态库中的文件</span><br></pre></td></tr></table></figure></p>
+<p>　　[root@node56 lib]# ar -t libhycu.a<br>　　base64.c.o<br>　　binbuf.c.o<br>　　cache.c.o<br>　　chunk.c.o<br>　　codec_a.c.o<br>　　…<br>　　xort.c.o<br>　　[root@node56 lib]#<br>　　[root@node56 lib]# ar -tv libhycu.a<br>　　rw-r–r– 0/0   7220 Jul 29 19:18 2011 base64.c.o<br>　　rw-r–r– 0/0   2752 Jul 29 19:18 2011 binbuf.c.o<br>　　rw-r–r– 0/0  19768 Jul 29 19:18 2011 cache.c.o<br><figure class="highlight vim"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">查看动态库中的文件可以使用<span class="keyword">nm</span>命令</span><br></pre></td></tr></table></figure></p>
+<p>nm -D file.so<br><figure class="highlight http"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="xml">下面是在网上找的生成动态链接库的例子，原文参考<span class="tag">&lt;<span class="title">a</span> <span class="attribute">href</span>=<span class="value">"http://www.cnblogs.com/Xiao_bird/archive/2010/03/01/1675821.html"</span>&gt;</span>这里<span class="tag">&lt;/<span class="title">a</span>&gt;</span></span></span><br></pre></td></tr></table></figure></p>
+<p>/<em>mylib.h</em>/<br>void Print();</p>
+<p>/<em>mylib.c</em>/</p>
+<p>#include <stdio.h></stdio.h></p>
+<p>#include “mylib.h”</p>
+<p>void Print()<br>{<br>    printf(“This is in mylib\n”);<br>}<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">编译方法如下：</span><br></pre></td></tr></table></figure></p>
+<p>gcc -fpic -shared mylib.c -o mylib.so<br><figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">此时将生成<span class="tag">mylib</span><span class="class">.so</span>动态链接库文件。</span><br><span class="line"></span><br><span class="line">动态链接库在使用时，分为“隐式调用”和“显式调用”两种，如果是隐式调用，则与静态库的使用方法差不多，注意需要包含导出函数的头文件，即<span class="tag">mylib</span><span class="class">.h</span>：</span><br></pre></td></tr></table></figure></p>
+<p>#include <stdio.h></stdio.h></p>
+<p>#include “mylib.h”</p>
+<p>int main()<br>{<br>    Print();<br>}<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">编译方法：</span><br></pre></td></tr></table></figure></p>
+<p>gcc -o main main.c -L./ mylib.so<br><figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">注意要加上动态链接库的搜索路径，否则编译器只会到系统路径中去寻找。</span><br><span class="line"></span><br><span class="line">显式调用的方式，不必包含<span class="tag">mylib</span><span class="class">.h</span>，但是需要增加几个系统调用：</span><br></pre></td></tr></table></figure></p>
+<p>#include <stdio.h></stdio.h></p>
+<p>#include <dlfcn.h> // 显式加载需要用到的头文件</dlfcn.h></p>
+<p>int  main()<br>{<br>    void <em>pdlHandle = dlopen(“./mylib.so”, RTLD_LAZY); // RTLD_LAZY 延迟加载<br>    char </em>pszErr = dlerror();<br>    if( !pdlHandle || pszErr )<br>    {<br>        printf(“Load mylib failed!\n”)<br>        return 1;<br>    }</p>
+<pre><code>void (*Print)() = dlsym(pdlHandle, &quot;Print&quot;); // 定位动态链接库中的函数
+if( !Print )
+{
+    pszErr = dlerror();
+    printf(&quot;Find symbol failed!%s\n&quot;, pszErr);
+    dlclose(pdlHandle);
+    return 1;
+}
+
+Print(); // 调用动态链接库中的函数
+
+dlclose(pdlHandle); // 系统动态链接库引用数减1
+
+return 0;
+</code></pre><p>}<br>```<br>可以看到，显式调用的代码看上去要复杂很多，但是却比隐式调用要灵活，我们不必在编译时就确定要加载哪个动态链接库，可以在运行时再确定，甚至重新加载。</p>
+<p>看一下显式调用的编译方式：</p>
+<p>gcc -ldl -o main main.c</p>
+<p>注意要添加-ldl选项，以使用显式调用相关的函数调用。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/03/20/链接库以及编译过程/" data-id="cim0lx0w50003ygqy7zqquccc" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-malloc函数的实现原理" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2016/03/19/malloc函数的实现原理/" class="article-date">
@@ -169,7 +267,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/19/malloc函数的实现原理/" data-id="cilz68pjj001w04qy5myd3pmh" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/19/malloc函数的实现原理/" data-id="cim0lx0xd001zygqyihkhfzlz" class="article-share-link">Share</a>
       
       
     </footer>
@@ -221,7 +319,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/19/Linux-内存管理/" data-id="cilz68pk7002t04qy6e365356" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/19/Linux-内存管理/" data-id="cim0lx0y3002wygqykvzeuaid" class="article-share-link">Share</a>
       
       
     </footer>
@@ -328,7 +426,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/18/MySQL索引算法原理/" data-id="cilz68pjx002f04qyiti34qdc" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/18/MySQL索引算法原理/" data-id="cim0lx0xs002iygqypp9jt0sx" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/树结构/">树结构</a></li></ul>
@@ -406,7 +504,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/18/那家姓B的树/" data-id="cilz68pif000304qy966zjm62" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/18/那家姓B的树/" data-id="cim0lx0w90006ygqyqh0ssfzx" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/树结构/">树结构</a></li></ul>
@@ -469,7 +567,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/17/第K小元素选择算法/" data-id="cilz68pil000d04qynmrrksv5" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/17/第K小元素选择算法/" data-id="cim0lx0wf000gygqypdg2l6gp" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/数组/">数组</a></li></ul>
@@ -527,7 +625,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/17/C语言之static/" data-id="cilz68pi4000004qyl9j1yjr4" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/17/C语言之static/" data-id="cim0lx0vp0000ygqyq8wh2mof" class="article-share-link">Share</a>
       
       
     </footer>
@@ -577,7 +675,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/16/从整数的补码到用位运算实现任何两个数的加减法/" data-id="cilz68pje001o04qyngcczbct" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/16/从整数的补码到用位运算实现任何两个数的加减法/" data-id="cim0lx0x8001rygqyaj091iyu" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/位运算/">位运算</a></li></ul>
@@ -626,7 +724,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/15/域名污染/" data-id="cilz68pj1001304qyaggkjaew" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/15/域名污染/" data-id="cim0lx0wv0016ygqyysygav4x" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TCP-IP/">TCP/IP</a></li></ul>
@@ -694,69 +792,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/15/NAT以及内网穿透/" data-id="cilz68pjv002c04qyylmm88g3" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TCP-IP/">TCP/IP</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-TCP_IP模型常用协议" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/03/14/TCP_IP模型常用协议/" class="article-date">
-  <time datetime="2016-03-14T10:01:27.000Z" itemprop="datePublished">2016-03-14</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/计算机网络/">计算机网络</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/03/14/TCP_IP模型常用协议/">TCP/IP模型常用协议</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>本文主要讲解一下TCP/IP模型中用到的几个比较主要的协议：ICMP、ARP、RARP、RIP以及BGP协议<br><img src="pictures/网络层协议/TCP_IP模型与OSI模型.jpg" alt=""><br>在OSI模型中，arp和rarp是归属于数据链路层的协议，但是在TCP/IP模型中，两者都归类为网络层协议。</p>
-<h2 id="ICMP协议"><a href="#ICMP协议" class="headerlink" title="ICMP协议"></a>ICMP协议</h2><p>ICMP(Internet Control Message Protocol)是介于网络层和传输层的协议。它的主要功能是传输网络诊断信息。</p>
-<p>ICMP传输的信息可以分为两类，一类是错误(error)信息，这一类信息可用来诊断网络故障。我们已经知道，IP协议的工作方式是“Best Effort”，如果IP包没有被传送到目的地，或者IP包发生错误，IP协议本身不会做进一步的努力。但上游发送IP包的主机和接力的路由器并不知道下游发生了错误和故障，它们可能继续发送IP包。通过ICMP包，下游的路由器和主机可以将错误信息汇报给上游，从而让上游的路由器和主机进行调整。需要注意的是，ICMP只提供特定类型的错误汇报，它不能帮助IP协议成为“可靠”(reliable)的协议。另一类信息是咨询(Informational)性质的，比如某台计算机询问路径上的每个路由器都是谁，然后各个路由器同样用ICMP包回答。</p>
-<p>(ICMP基于IP协议。也就是说，一个ICMP包需要封装在IP包中，然后在互联网传送。ICMP是IP套装的必须部分，也就是说，任何一个支持IP协议的计算机，都要同时实现ICMP。)</p>
-<p>ICMP协议是实现ping命令和traceroute命令的基础。这两个工具常用于网络排错。</p>
-<h3 id="常见的ICMP包类型"><a href="#常见的ICMP包类型" class="headerlink" title="常见的ICMP包类型"></a>常见的ICMP包类型</h3><h4 id="回音"><a href="#回音" class="headerlink" title="回音"></a>回音</h4><p>回音(Echo)属于咨询信息。ping命令就是利用了该类型的ICMP包。当使用ping命令的时候，将向目标主机发送Echo-询问类型的ICMP包，而目标主机在接收到该ICMP包之后，会回复Echo-回答类型的ICMP包，并将询问ICMP包包含在数据部分。ping命令是我们进行网络排查的一个重要工具。如果一个IP地址可以通过ping命令收到回复，那么其他的网络协议通信方式也很有可能成功。</p>
-<h4 id="源头冷却"><a href="#源头冷却" class="headerlink" title="源头冷却"></a>源头冷却</h4><p>源头冷却(source quench)属于错误信息。如果某个主机快速的向目的地传送数据，而目的地主机没有匹配的处理能力，目的地主机可以向出发主机发出该类型的ICMP包，提醒出发主机放慢发送速度(请温柔一点吧)。</p>
-<h4 id="目的地无法到达"><a href="#目的地无法到达" class="headerlink" title="目的地无法到达"></a>目的地无法到达</h4><p>目的地无法到达(Destination Unreachable)属于错误信息。如果一个路由器接收到一个没办法进一步接力的IP包，它会向出发主机发送该类型的ICMP包。比如当IP包到达最后一个路由器，路由器发现目的地主机down机，就会向出发主机发送目的地无法到达(Destination Unreachable)类型的ICMP包。目的地无法到达还可能有其他的原因，比如不存在接力路径，比如不被接收的端口号等等。</p>
-<h4 id="超时"><a href="#超时" class="headerlink" title="超时"></a>超时</h4><p>超时(Time Exceeded)属于错误信息。IPv4中的Time to Live(TTL)和IPv6中的Hop Limit会随着经过的路由器而递减，当这个区域值减为0时，就认为该IP包超时(Time Exceeded)。Time Exceeded就是TTL减为0时的路由器发给出发主机的ICMP包，通知它发生了超时错误。</p>
-<p>traceroute就利用了这种类型的ICMP包。traceroute命令用来发现IP接力路径(route)上的各个路由器。它向目的地发送IP包，第一次的时候，将TTL设置为1，引发第一个路由器的Time Exceeded错误。这样，第一个路由器回复ICMP包，从而让出发主机知道途径的第一个路由器的信息。随后TTL被设置为2、3、4，…，直到到达目的主机。这样，沿途的每个路由器都会向出发主机发送ICMP包来汇报错误。traceroute将ICMP包的信息打印在屏幕上，就是接力路径的信息了。</p>
-<h4 id="重新定向"><a href="#重新定向" class="headerlink" title="重新定向"></a>重新定向</h4><p>重新定向(redirect)属于错误信息。当一个路由器收到一个IP包，对照其routing table，发现自己不应该收到该IP包，它会向出发主机发送重新定向类型的ICMP，提醒出发主机修改自己的routing table。</p>
-<h4 id="IPv6的Neighbor-Discovery"><a href="#IPv6的Neighbor-Discovery" class="headerlink" title="IPv6的Neighbor Discovery"></a>IPv6的Neighbor Discovery</h4><p>ARP协议用于发现周边的IP地址和MAC地址的对应。然而，ARP协议只用于IPv4，IPv6并不使用ARP协议。IPv6包通过邻居探索(ND, Neighbor Discovery)来实现ARP的功能。ND的工作方式与ARP类似，但它基于ICMP协议。ICMP包有Neighbor Solicitation和Neighbor Advertisement类型。这两个类型分别对应ARP协议的询问和回复信息。</p>
-<p>ICMP协议是IP协议的排错帮手，它可以帮助人们及时发现IP通信中出现的故障。基于ICMP的ping和traceroute也构成了重要的网络诊断工具。然而，需要注意的是，尽管ICMP的设计是出于好的意图，但ICMP却经常被黑客借用进行网络攻击，比如利用伪造的IP包引发大量的ICMP回复，并将这些ICMP包导向受害主机，从而形成DoS攻击。而redirect类型的ICMP包可以引起某个主机更改自己的routing table，所以也被用作攻击工具。许多站点选择忽视某些类型的ICMP包来提高自身的安全性。</p>
-<h2 id="ARP协议、RARP协议"><a href="#ARP协议、RARP协议" class="headerlink" title="ARP协议、RARP协议"></a>ARP协议、RARP协议</h2><p>在上面的过程中，我们实际上假设了，每一台主机和路由都能了解局域网内的IP地址和MAC地址的对应关系，这是实现IP包封装(encapsulation)到帧的基本条件。IP地址与MAC地址的对应是通过ARP协议传播到局域网的每个主机和路由。每一台主机或路由中都有一个ARP cache，用以存储局域网内IP地址和MAC地址如何对应。</p>
-<p>ARP协议(ARP介于连接层和网络层之间，ARP包需要包裹在一个帧中)的工作方式如下：主机会发出一个ARP包，该ARP包中包含有自己的IP地址和MAC地址。通过ARP包，主机以广播的形式询问局域网上所有的主机和路由：我是IP地址xxxx，我的MAC地址是xxxx，有人知道199.165.146.4的MAC地址吗？拥有该IP地址的主机会回复发出请求的主机：哦，我知道，这个IP地址属于我的一个NIC，它的MAC地址是xxxxxx。由于发送ARP请求的主机采取的是广播形式，并附带有自己的IP地址和MAC地址，其他的主机和路由会同时检查自己的ARP cache，如果不符合，则更新自己的ARP cache。</p>
-<p>这样，经过几次ARP请求之后，ARP cache会达到稳定。如果局域网上设备发生变动，ARP重复上面过程。</p>
-<p>(在Linux下，可以使用$arp命令来查看ARP的过程。ARP协议只用于IPv4。IPv6使用Neighbor Discovery Protocol来替代ARP的功能。)</p>
-<p>RARP协议则刚好相反，它将MAC地址解析成为对应的IP地址，现在已很少单独使用。</p>
-<h2 id="RIP协议"><a href="#RIP协议" class="headerlink" title="RIP协议"></a>RIP协议</h2><p>RIP协议是基于UDP协议来实现的，所以属于应用层协议。<br>RIP协议被用来生成路由表信息，它通过距离来决定routing table，所以属于distance-vector protocol。对于RIP来说，所谓的距离是从出发地到目的地途径的路由器数目(hop number)</p>
-<h2 id="BGP协议"><a href="#BGP协议" class="headerlink" title="BGP协议"></a>BGP协议</h2><p>BGP协议基于TCP协议来实现，所以属于应用层协议。<br>RIP出于技术上的原因(looping hops)，认为距离超过15的IP不可到达。所以RIP更多用于互联网的一部分(比如整个中国电信的网络)。这样一个互联网的部分往往属于同一个ISP或者有同一个管理机构，所以叫做自治系统(AS,autonomous system)。自治系统内部的主机和路由根据通向外部的边界路由器来和其它的自治系统通信。各个边界路由器之间通过BGP(Border Gateway Protocol)来生成自己前往其它AS的routing table，而自治系统内部则参照边界路由器，使用RIP来决定routing table。BGP的基本工作过程与RIP类似，但在考虑距离的同时，也权衡比如政策、连接性能等其他因素，再决定交通的走向(routing table)。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/14/TCP_IP模型常用协议/" data-id="cilz68pjt002904qyjuta9qaa" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/15/NAT以及内网穿透/" data-id="cim0lx0xr002fygqyjzhymb77" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TCP-IP/">TCP/IP</a></li></ul>
@@ -781,7 +817,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">17</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">4</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">17</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux-C与C/">Linux, C与C++</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">4</span></li></ul>
     </div>
   </div>
 
@@ -808,7 +844,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">14</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">15</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
     </div>
   </div>
 
@@ -818,6 +854,10 @@
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2016/03/20/链接库以及编译过程/">链接库以及编译过程</a>
+          </li>
         
           <li>
             <a href="/2016/03/19/malloc函数的实现原理/">malloc函数的实现原理</a>
@@ -833,10 +873,6 @@
         
           <li>
             <a href="/2016/03/18/那家姓B的树/">那家姓B的树</a>
-          </li>
-        
-          <li>
-            <a href="/2016/03/17/第K小元素选择算法/">第K小元素选择算法</a>
           </li>
         
       </ul>

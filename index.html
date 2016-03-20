@@ -103,8 +103,8 @@
 <li><p>由于静态库在编译的时候，就将库函数装载到程序中去了，而动态库函数必须在运行的时候才装载，所以程序执行的时候，用静态库更快些。</p>
 </li>
 </ol>
-<h3 id="源文件的编译过程"><a href="#源文件的编译过程" class="headerlink" title="源文件的编译过程"></a>源文件的编译过程</h3><p>如果有一个源文件file.c需要编译，那么其编译过程如下图所示：<br><img src="/pictures/Linux/链接库以及make-编译过程.png" alt=""></p>
-<p>一般在执行命令<figure class="highlight"><figcaption><span>-o file file.c```，会转化成以下几个步骤：</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#10;&#29983;&#25104;&#39044;&#22788;&#29702;&#21518;&#30340;&#25991;&#20214;&#65306;</span><br></pre></td></tr></table></figure></p>
+<h3 id="源文件的编译过程"><a href="#源文件的编译过程" class="headerlink" title="源文件的编译过程"></a>源文件的编译过程</h3><p>如果有一个源文件file.c需要编译，那么其编译过程如下图所示：<br><img src="/pictures/Linux/链接库以及编译过程-编译过程.png" alt=""></p>
+<p>一般在执行命令 <figure class="highlight"><figcaption><span>-o file file.c``` ，会转化成以下几个步骤：</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#10;&#29983;&#25104;&#39044;&#22788;&#29702;&#21518;&#30340;&#25991;&#20214;&#65306;</span><br></pre></td></tr></table></figure></p>
 <p>gcc -E -o file.i  file.<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">预处理文件到汇编代码：</span><br></pre></td></tr></table></figure></p>
 <p>gcc -s file.s file.c<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">汇编代码到目标文件：</span><br></pre></td></tr></table></figure></p>
 <p>gcc -c file.s<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">生成可执行文件：</span><br></pre></td></tr></table></figure></p>

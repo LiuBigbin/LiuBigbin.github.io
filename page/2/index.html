@@ -65,6 +65,74 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-NAT以及内网穿透" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/03/15/NAT以及内网穿透/" class="article-date">
+  <time datetime="2016-03-15T07:21:42.000Z" itemprop="datePublished">2016-03-15</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/计算机网络/">计算机网络</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/03/15/NAT以及内网穿透/">NAT以及内网穿透</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="NAT"><a href="#NAT" class="headerlink" title="NAT"></a>NAT</h2><p>NAT分两种类型：NAT和NAPT。</p>
+<h3 id="NAT-Network-Address-Translation-网络地址转换"><a href="#NAT-Network-Address-Translation-网络地址转换" class="headerlink" title="NAT(Network Address Translation)网络地址转换"></a>NAT(Network Address Translation)网络地址转换</h3><p>NAT属接入广域网(WAN)技术，是一种将私有（保留）地址转化为合法IP地址的转换技术，它被广泛应用于各种类型Internet接入方式和各种类型的网络中。原因很简单，NAT不仅完美地解决了lP地址不足的问题，而且还能够有效地避免来自网络外部的攻击，隐藏并保护网络内部的计算机。NAT（Network Address Translation，网络地址转换）是将IP数据包头中的IP地址转换为另一个IP 地址的过程。在实际应用中，NAT 主要用于实现私有网络访问公共网络的功能。这种通过使用少量的公有IP 地址代表较多的私有IP地址的方式，将有助于减缓可用IP 地址空间的枯竭。</p>
+<h3 id="NAPT-Network-Address-Port-Translation-网络地址端口转换"><a href="#NAPT-Network-Address-Port-Translation-网络地址端口转换" class="headerlink" title="NAPT(Network Address Port Translation)网络地址端口转换"></a>NAPT(Network Address Port Translation)网络地址端口转换</h3><p>NAPT是人们比较熟悉的一种转换方式。NAPT普遍应用于接入设备中，它可以将中小型的网络隐藏在一个合法的IP地址后面。NAPT与动态地址NAT不同，它将内部连接映射到外部网络中的一个单独的IP地址上，同时在该地址上加上一个由NAT设备选定的TCP端口号。NAPT是一种较流行的NAT的变体通过转换TCP或UDP协议端口号以及地址来提供并发性。除了一对源和目的IP地址以外，这个表还包括一对源和目的协议端口号，以及NAT盒使用的一个协议端口号。NAPT的主要优势在于，能够使用一个全球有效IP地址获得通用性。主要缺点在于其通信仅限于TCP或UDP。只要所有通信都采用TCP或UDP，NAPT就允许一台内部计算机访问多台外部计算机，并允许多台内部主机访问同一台外部计算机，相互之间不会发生冲突。</p>
+<h4 id="NAPT的四种类型"><a href="#NAPT的四种类型" class="headerlink" title="NAPT的四种类型"></a>NAPT的四种类型</h4><ol>
+<li><p>Full Cone NAT：所有来自同一个内部Tuple X的请求均被NAT转换至同一个外部Tuple Y，而不管这些请求是不是属于同一个应用或者是多个应用的。除此之外，当X-Y的转换关系建立之后，任意外部主机均可随时将Y中的地址和端口作为目标地址和目标端口，向内部主机发送UDP报文，由于对外部请求的来源无任何限制，因此这种方式虽然足够简单，但却不那么安全</p>
+</li>
+<li><p>Restricted Cone NAT：它是Full Cone的受限版本：所有来自同一个内部Tuple X的请求均被NAT转换至同一个外部Tuple Y，这与Full Cone相同，但不同的是，只有当内部主机曾经发送过报文给外部主机（假设其IP地址为Z）后，外部主机才能以Y中的信息作为目标地址和目标端口，向内部主机发送UDP请求报文，这意味着，NAT设备只向内转发（目标地址/端口转换）那些来自于当前已知的外部主机的UDP报文，从而保障了外部请求来源的安全性</p>
+</li>
+<li><p>Port Restricted Cone NAT：它是Restricted Cone NAT的进一步受限版。只有当内部主机曾经发送过报文给外部主机（假设其IP地址为Z且端口为P）之后，外部主机才能以Y中的信息作为目标地址和目标端口，向内部主机发送UDP报文，同时，其请求报文的源端口必须为P，这一要求进一步强化了对外部报文请求来源的限制，从而较Restrictd Cone更具安全性</p>
+</li>
+<li><p>Symmetric NAT：这是一种比所有Cone NAT都要更为灵活的转换方式：在Cone NAT中，内部主机的内部Tuple与外部Tuple的转换映射关系是独立于内部主机所发出的UDP报文中的目标地址及端口的，即与目标Tuple无关；在Symmetric NAT中，目标Tuple则成为了NAT设备建立转换关系的一个重要考量：只有来自于同一个内部Tuple 、且针对同一目标Tuple的请求才被NAT转换至同一个外部Tuple，否则的话，NAT将为之分配一个新的外部Tuple；打个比方，当内部主机以相同的内部Tuple对2个不同的目标Tuple发送UDP报文时，此时NAT将会为内部主机分配两个不同的外部Tuple，并且建立起两个不同的内、外部Tuple转换关系。与此同时，只有接收到了内部主机所发送的数据包的外部主机才能向内部主机返回UDP报文，这里对外部返回报文来源的限制是与Port Restricted Cone一致的。不难看出，如果说Full Cone是要求最宽松NAT UDP转换方式，那么，Symmetric NAT则是要求最严格的NAT方式，其不仅体现在转换关系的建立上，而且还体现在对外部报文来源的限制方面。</p>
+</li>
+</ol>
+<h2 id="内网穿透"><a href="#内网穿透" class="headerlink" title="内网穿透"></a>内网穿透</h2><p>内网穿透是一个比较大的研究问题，这里只是根据自己的理解对其进行简答的原理描述而已。</p>
+<p>内网穿透的实现方法根据不同A、B双方不同的NAPT类型而不同，一般如果两侧的NAT类型都是Cone NAT类型，那么就可以实现双向的通讯。如果两侧都是Symmetric NAT，或是一侧是Symmetric NAT另一侧是Port Restricted Cone，那么将不能实现双向通讯。</p>
+<p>由于内网机器可以访问外网的机器，而外网的机器不能访问内网的机器，之所以不能访问，那是因为在内网端的NAT上没有对应的内网机器IP端口转换记录，所以NAT找不到对应的内部机器，所以直接的把数据包给丢掉。所以，如果想要实现内网穿透，那么就必须要先知道内网机器在NAT上的所对应的公网IP：Port信息，而且必须让NAT产生这条信息。那么怎么才可以使得内网的NAT产生该信息，而且另一端能获得这条转换后的公网IP：Port信息呢？此时需要第三方公网服务器S的支持。</p>
+<p>内网机器A发送一条信息给公网服务器S，公网服务器得到了A经过NAT转换后的公网IP：port信息，并记录下来，另一侧的内网机器B同样发送信息给公网服务器S，S得到了B的转换后的公网IP：Port信息，此时在A的NAT和B的NAT都分别产生了A和B的内网IP：Port转换为公网IP：Port的映射信息，在S把对方的转换后的公网IP：Port信息分别告诉给A、B后，就可以根据不同的NAT类型来实现内网的穿透了。</p>
+<ol>
+<li><p>Full Cone NAT类型的最容易，因为不会对外网的请求来源进行限制，所以可以直接进行双向通讯了。</p>
+</li>
+<li><p>Restricted Cone NAT类型和Port Restricted Cone NAT类型需要有一侧发起第一次注定失败的请求，例如：B发起对A的请求，此时在B的NAT上就会有B对A的请求记录，但是在A的NAT上面并没有对应的A请求B的记录，所以B发起的请求会被A的NAT给丢弃，但是此时的B已经对A打好洞了，所以如果此时A发起请求，或是数据给B（A侧打洞），那么由于B的NAT有对应的B请求过A的记录，所以数据包能以顺利的到达B。那么在数据顺利到达B后，由于A给B发送了数据（不管成功或失败），才是在A的NAT上也有对应的A请求过B的记录，所以此时如果有新的B的数据包发给A，那么A的NAT就会直接的根据映射将数据包转给A，实现了B与A的通信。</p>
+</li>
+<li><p>Symmetric NAT，由于该类型的NAT的映射对象不是内网的IP：Port，而是外网的IP：Port信息，所以对不同的外网IP：Port请求会得到不同的IP：port转换，请求服务器S会得到一条IP：Port转换，请求对侧也会得到一条不同的IP：Port转换，又由于ymmetric NAT对外部返回报文来源的限制是与Port Restricted Cone一致的，所以这种类型不能实现双方的通讯。</p>
+</li>
+</ol>
+<p>对于内网穿透，网上一般都是UDP实现的，而且该技术已经很成熟了，对于TCP的实现，有说可以实现的，有说不可以实现的，由于自己没有具体的写代码实现过，不过感觉根据UDP的实现思路，TCP应该也是可以实现内网穿透的！</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/03/15/NAT以及内网穿透/" data-id="cim2vxaq7002eb0qyqfzyxswi" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TCP-IP/">TCP/IP</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-TCP_IP模型常用协议" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2016/03/14/TCP_IP模型常用协议/" class="article-date">
@@ -115,7 +183,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/14/TCP_IP模型常用协议/" data-id="cim0lx0xo002cygqyvh5q3kmi" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/14/TCP_IP模型常用协议/" data-id="cim2vxaq5002bb0qyw1wssfry" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TCP-IP/">TCP/IP</a></li></ul>
@@ -189,7 +257,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/12/平衡二叉查找树-AVL树/" data-id="cim0lx0wq000yygqymb3xniat" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/12/平衡二叉查找树-AVL树/" data-id="cim2vxap9000xb0qyn0eqosr0" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/树结构/">树结构</a></li></ul>
@@ -283,7 +351,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/11/Linux-之守护进程、僵死进程与孤儿进程/" data-id="cim0lx0y4002yygqyv3bjtzxm" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/11/Linux-之守护进程、僵死进程与孤儿进程/" data-id="cim2vxaqp002zb0qy03tv28ag" class="article-share-link">Share</a>
       
       
     </footer>
@@ -364,7 +432,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/11/IO-多路复用之select、poll、epoll详解/" data-id="cim0lx0yf003hygqyo4wk2ew5" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/11/IO-多路复用之select、poll、epoll详解/" data-id="cim2vxar0003ib0qyv2c00m7b" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a></li></ul>
@@ -424,7 +492,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/11/Linux-I-O-模型/" data-id="cim0lx0yc003aygqyzxdq1gun" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/11/Linux-I-O-模型/" data-id="cim2vxaqx003bb0qygb1zqpsu" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a></li></ul>
@@ -489,7 +557,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/29/磁盘的分割、格式化、检验与挂载/" data-id="cim0lx0wi000lygqyxn2l0e62" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/29/磁盘的分割、格式化、检验与挂载/" data-id="cim2vxap0000kb0qyf62vp7vj" class="article-share-link">Share</a>
       
       
     </footer>
@@ -543,7 +611,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/29/Linux文件系统之df，du以及ln命令/" data-id="cim0lx0xy002rygqy6dmk2nnj" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/29/Linux文件系统之df，du以及ln命令/" data-id="cim2vxaqg002qb0qy4wfvftxz" class="article-share-link">Share</a>
       
       
     </footer>
@@ -658,7 +726,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/29/Linux磁盘概念/" data-id="cim0lx0xu002lygqydk9zkubs" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/29/Linux磁盘概念/" data-id="cim2vxaqd002kb0qyazvd9pzj" class="article-share-link">Share</a>
       
       
     </footer>
@@ -742,92 +810,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/29/Linux-User、Group切换/" data-id="cim0lx0y90034ygqyyb1asx29" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Linux用户管理实例" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/02/29/Linux用户管理实例/" class="article-date">
-  <time datetime="2016-02-29T04:01:50.000Z" itemprop="datePublished">2016-02-29</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Linux/">Linux</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/02/29/Linux用户管理实例/">Linux用户管理实例</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>账号管理不是随意建置几个账号就算了！有时候我们需要考虑到一部主机上面可能有多个账号在协同工作！举例来说，在大学任教时，我们学校的专题生是需要分组的，这些同一组的同学间必须要能够互相修改对方的数据文件，但是同时这些同学又需要保留自己的私密数据，因此直接公开家目录是不适宜的。那该如何是好？ 为此，我们底下提供几个例子来让大家思考看看啰：</p>
-<p>任务一：单纯的完成上头交代的任务，假设我们需要的账号数据如下，你该如何实作？</p>
-<table>
-<thead>
-<tr>
-<th>账号名称</th>
-<th style="text-align:center">账号全名</th>
-<th style="text-align:right">支援次要群组</th>
-<th style="text-align:right">是否可登入主机</th>
-<th style="text-align:right">密码</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>user1</td>
-<td style="text-align:center">1st user</td>
-<td style="text-align:right">mygroup1</td>
-<td style="text-align:right">可以</td>
-<td style="text-align:right">password</td>
-</tr>
-<tr>
-<td>user2</td>
-<td style="text-align:center">2nd user</td>
-<td style="text-align:right">mygroup1</td>
-<td style="text-align:right">可以</td>
-<td style="text-align:right">password</td>
-</tr>
-<tr>
-<td>user3</td>
-<td style="text-align:center">3rd user</td>
-<td style="text-align:right">无额外支持</td>
-<td style="text-align:right">不可以</td>
-<td style="text-align:right">password</td>
-</tr>
-</tbody>
-</table>
-<p>处理方法如下所示：</p>
-<p><img src="/pictures/Linux用户管理实例-任务1a.png" alt=""></p>
-<p><img src="/pictures/Linux用户管理实例-任务1b.png" alt=""></p>
-<p>要注意的地方主要有：myuser1 与 myuser2 都有支援次要群组，但该群组不见得会存在，因此需要先手动建立他！ 然后 myuser3 是『不可登入系统』的账号，因此需要使用 /sbin/nologin 这个 shell 来给予，这样该账号就无法登入啰！ 这样是否理解啊！接下来再来讨论比较难一些的环境！如果是专题环境该如何制作？</p>
-<p>任务二：我的使用者 pro1, pro2, pro3 是同一个项目计划的开发人员，我想要让这三个用户在同一个目录底下工作， 但这三个用户还是拥有自己的家目录与基本的私有群组。假设我要让这个项目计划在 /srv/projecta 目录下开发， 可以如何进行？</p>
-<p><img src="/pictures/Linux用户管理实例-任务2.png" alt=""></p>
-<p>由于此项目计划只能够给 pro1, pro2, pro3 三个人使用，所以 /srv/projecta 的权限设定一定要正确才行！ 所以该目录群组一定是 projecta ，但是权限怎么会是 2770 呢？还让得<a href="/2016/02/28/Linux-%E4%B8%ADSUID%E3%80%81SGID%E5%92%8CSBIT%E7%9A%84%E7%94%A8%E9%80%94/">SGID</a> 吧？为了让三个使用者能够互相修改对方的档案， 这个 SGID 是必须要存在的喔！</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/29/Linux用户管理实例/" data-id="cim0lx0xw002nygqy7uoochz2" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/29/Linux-User、Group切换/" data-id="cim2vxaqt0035b0qysmu4k5a5" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a></li></ul>
@@ -852,7 +835,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">17</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">4</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">4</span></li></ul>
     </div>
   </div>
 
@@ -879,7 +862,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">15</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">16</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
     </div>
   </div>
 
@@ -889,6 +872,10 @@
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2016/03/21/Linux任务调度机制/">Linux任务调度机制</a>
+          </li>
         
           <li>
             <a href="/2016/03/20/链接库以及编译过程/">链接库以及编译过程</a>
@@ -904,10 +891,6 @@
         
           <li>
             <a href="/2016/03/18/MySQL索引算法原理/">MySQL索引算法原理</a>
-          </li>
-        
-          <li>
-            <a href="/2016/03/18/那家姓B的树/">那家姓B的树</a>
           </li>
         
       </ul>

@@ -13,7 +13,7 @@ staticstatic可以">
 <meta property="og:site_name" content="LiuYongbin">
 <meta property="og:description" content="externextern 用来声明一个外部变量或是函数，表示该变量已经在其他的地方定义了，这里只是做一个引用而已，不会产生新的变量。对于extern修饰的变量，编译器会在所在的文件先看看有没有对该变量的定义，有的话，直接应用，没有的话再到其他的文件里面进行查找。由于变量已经在其他的地方定义了，所以extern int a = 10;这种写法是不对的，会造成重定义错误！
 staticstatic可以">
-<meta property="og:updated_time" content="2016-04-07T06:32:53.000Z">
+<meta property="og:updated_time" content="2016-04-07T06:33:49.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="C++之auto、static、extern、register">
 <meta name="twitter:description" content="externextern 用来声明一个外部变量或是函数，表示该变量已经在其他的地方定义了，这里只是做一个引用而已，不会产生新的变量。对于extern修饰的变量，编译器会在所在的文件先看看有没有对该变量的定义，有的话，直接应用，没有的话再到其他的文件里面进行查找。由于变量已经在其他的地方定义了，所以extern int a = 10;这种写法是不对的，会造成重定义错误！
@@ -97,9 +97,9 @@ staticstatic可以">
 <h2 id="static"><a href="#static" class="headerlink" title="static"></a>static</h2><p>static可以用来修饰变量和函数。</p>
 <h4 id="修饰变量"><a href="#修饰变量" class="headerlink" title="修饰变量"></a>修饰变量</h4><p>static修饰的变量都存在静态数据区里面，由于静态数据区内存都是被系统初始化为0的，所以static修饰的变量默认初始值为0。<br>static修饰的变量的作用域只限制于该变量所在的文件，外面的文件不可以使用该变量，所以多个文件可以有相同的变量名（需要使用static修饰），只要在编译的最后链接阶段，在全局情况下，不出现相同的变量名就好。</p>
 <h4 id="修饰函数"><a href="#修饰函数" class="headerlink" title="修饰函数"></a>修饰函数</h4><p>static修饰的函数主要有两个作用：限定该函数的作用域为本文件可见以及static函数在内存中只有一份，普通函数在每个被调用中维持一份拷贝，因此对于static函数的调用会比普通函数快很多。</p>
-<h2 id="类中的static"><a href="#类中的static" class="headerlink" title="类中的static"></a>类中的static</h2><p>在类中，static修饰的成员变量或是函数表明该变量或是函数是属于类的，所以没有对应的this指针。static修饰的函数只能访问类的static修饰的成员变量，并且static修饰的函数不能是虚函数。</p>
-<p>##auto<br>普通局部栈变量，是自动存储，这种对象会自动创建和销毁 ，建议这个变量要放在堆栈上面，调用函数时分配内存，函数结束时释放内存。一般隐藏auto默认为自动存储类别。我们程序都变量大多是自动变量。auto不能修饰全局变量，因为该变量的内存是放在栈上面的，有系统自动创建和销毁，所以不能用来修饰全局变量。在函数里面，一般所声明的变量都是直接的默认为auto的。</p>
-<p>##register<br>寄存器变量，请求编译器将这个变量保存在CPU的寄存器中，从而加快程序的运行。系统的寄存器是有限制的,声明变量时如:<code>register int i</code>.这种存储类型可以用于频繁使用的变量。实际上现在一般的编译器都忽略auto和register申明，现在的编译器自己能够区分最好将那些变量放置在寄存器中，那些放置在堆栈中；甚至于将一些变量有时存放在堆栈，有时存放在寄存器中。</p>
+<h4 id="类中的static"><a href="#类中的static" class="headerlink" title="类中的static"></a>类中的static</h4><p>在类中，static修饰的成员变量或是函数表明该变量或是函数是属于类的，所以没有对应的this指针。static修饰的函数只能访问类的static修饰的成员变量，并且static修饰的函数不能是虚函数。</p>
+<h2 id="auto"><a href="#auto" class="headerlink" title="auto"></a>auto</h2><p>普通局部栈变量，是自动存储，这种对象会自动创建和销毁 ，建议这个变量要放在堆栈上面，调用函数时分配内存，函数结束时释放内存。一般隐藏auto默认为自动存储类别。我们程序都变量大多是自动变量。auto不能修饰全局变量，因为该变量的内存是放在栈上面的，有系统自动创建和销毁，所以不能用来修饰全局变量。在函数里面，一般所声明的变量都是直接的默认为auto的。</p>
+<h2 id="register"><a href="#register" class="headerlink" title="register"></a>register</h2><p>寄存器变量，请求编译器将这个变量保存在CPU的寄存器中，从而加快程序的运行。系统的寄存器是有限制的,声明变量时如:<code>register int i</code>.这种存储类型可以用于频繁使用的变量。实际上现在一般的编译器都忽略auto和register申明，现在的编译器自己能够区分最好将那些变量放置在寄存器中，那些放置在堆栈中；甚至于将一些变量有时存放在堆栈，有时存放在寄存器中。</p>
 <p>使用register修饰符有几点限制</p>
 <p>（1）register变量必须是能被CPU所接受的类型。这通常意味着register变量必须是一个单个的值，并且长度应该小于或者等于整型的长度。不过，有些机器的寄存器也能存放浮点数。最好不要这样去用</p>
 <p>（2）因为register变量可能不存放在内存中，所以不能用“&amp;”来获取register变量的地址。</p>

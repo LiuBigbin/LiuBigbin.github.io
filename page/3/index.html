@@ -65,6 +65,175 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-Linux文件系统之df，du以及ln命令" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/02/29/Linux文件系统之df，du以及ln命令/" class="article-date">
+  <time datetime="2016-02-29T13:19:20.000Z" itemprop="datePublished">2016-02-29</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/02/29/Linux文件系统之df，du以及ln命令/">Linux文件系统之df，du以及ln命令</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="df-命令用来查看Linux文件系统的整体磁盘使用量（展示的单位为分区，即分区的磁盘使用量）"><a href="#df-命令用来查看Linux文件系统的整体磁盘使用量（展示的单位为分区，即分区的磁盘使用量）" class="headerlink" title="df 命令用来查看Linux文件系统的整体磁盘使用量（展示的单位为分区，即分区的磁盘使用量）"></a>df 命令用来查看Linux文件系统的整体磁盘使用量（展示的单位为分区，即分区的磁盘使用量）</h3><figure class="highlight haml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]# df [-ahikHTm] [目录或文件名]</span><br><span class="line">选项与参数：</span><br><span class="line">-<span class="ruby">a ：列出所有的文件系统，包括系统特有的 /proc 等文件系统；</span><br><span class="line"></span>-<span class="ruby">k ：以 <span class="constant">KBytes</span> 的容量显示各文件系统；</span><br><span class="line"></span>-<span class="ruby">m ：以 <span class="constant">MBytes</span> 的容量显示各文件系统；</span><br><span class="line"></span>-<span class="ruby">h ：以人们较易阅读的 <span class="constant">GBytes</span>, <span class="constant">MBytes</span>, <span class="constant">KBytes</span> 等格式自行显示；</span><br><span class="line"></span>-<span class="ruby"><span class="constant">H</span> ：以 <span class="constant">M</span>=<span class="number">1000</span>K 取代 <span class="constant">M</span>=<span class="number">1024</span>K 的进位方式；</span><br><span class="line"></span>-<span class="ruby"><span class="constant">T</span> ：连同该 partition 的 filesystem 名称 (例如 ext3) 也列出；</span><br><span class="line"></span>-<span class="ruby">i ：不用硬盘容量，而以 inode的数量来显示</span></span><br></pre></td></tr></table></figure>
+<p>以下列出几个例子：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line">范例一：将系统内所有的 filesystem 列出来！</span><br><span class="line">[root@www ~]<span class="preprocessor"># df</span></span><br><span class="line">Filesystem <span class="number">1</span>K-blocks Used Available Use% Mounted on</span><br><span class="line">/dev/hdc2 <span class="number">9920624</span> <span class="number">3823112</span> <span class="number">5585444</span> <span class="number">41</span>% /</span><br><span class="line">/dev/hdc3 <span class="number">4956316</span> <span class="number">141376</span> <span class="number">4559108</span> <span class="number">4</span>% /home</span><br><span class="line">/dev/hdc1 <span class="number">101086</span> <span class="number">11126</span> <span class="number">84741</span> <span class="number">12</span>% /boot</span><br><span class="line">tmpfs <span class="number">371332</span> <span class="number">0</span> <span class="number">371332</span> <span class="number">0</span>% /dev/shm</span><br><span class="line"><span class="preprocessor"># 在 Linux 底下如果 df 没有加任何选顷，那么默认会将系统内所有的</span></span><br><span class="line"><span class="preprocessor"># (不含特殊内存内的文件系统与 swap) 都以 <span class="number">1</span> Kbytes 癿容量来列出来！</span></span><br><span class="line"><span class="preprocessor"># 至于那个 /dev/shm 是与内存有关的挂载，先不要理他！</span></span><br><span class="line"></span><br><span class="line">范例二：将容量结果以易读的容量格式显示出来</span><br><span class="line">[root@www ~]<span class="preprocessor"># df -h</span></span><br><span class="line">Filesystem Size Used Avail Use% Mounted on</span><br><span class="line">/dev/hdc2 <span class="number">9.5</span>G <span class="number">3.7</span>G <span class="number">5.4</span>G <span class="number">41</span>% /</span><br><span class="line">/dev/hdc3 <span class="number">4.8</span>G <span class="number">139</span>M <span class="number">4.4</span>G <span class="number">4</span>% /home</span><br><span class="line">/dev/hdc1 <span class="number">99</span>M <span class="number">11</span>M <span class="number">83</span>M <span class="number">12</span>% /boot</span><br><span class="line">tmpfs <span class="number">363</span>M <span class="number">0</span> <span class="number">363</span>M <span class="number">0</span>% /dev/shm</span><br><span class="line"><span class="preprocessor"># 不同与范例一，这里会以 G/M 等容量格式显示出来，比较容易看啦！</span></span><br><span class="line"></span><br><span class="line">范例三：将系统内的所有特殊文件格式及名称都列出来</span><br><span class="line">[root@www ~]<span class="preprocessor"># df -aT</span></span><br><span class="line">Filesystem Type <span class="number">1</span>K-blocks Used Available Use% Mounted on</span><br><span class="line">/dev/hdc2 ext3 <span class="number">9920624</span> <span class="number">3823112</span> <span class="number">5585444</span> <span class="number">41</span>% /</span><br><span class="line">proc proc <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> - /proc</span><br><span class="line">sysfs sysfs <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> - /sys</span><br><span class="line">devpts devpts <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> - /dev/pts</span><br><span class="line">/dev/hdc3 ext3 <span class="number">4956316</span> <span class="number">141376</span> <span class="number">4559108</span> <span class="number">4</span>% /home</span><br><span class="line">/dev/hdc1 ext3 <span class="number">101086</span> <span class="number">11126</span> <span class="number">84741</span> <span class="number">12</span>% /boot</span><br><span class="line">tmpfs tmpfs <span class="number">371332</span> <span class="number">0</span> <span class="number">371332</span> <span class="number">0</span>% /dev/shm</span><br><span class="line">none binfmt_misc <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> - /proc/sys/fs/binfmt_misc</span><br><span class="line">sunrpc rpc_pipefs <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> - /var/lib/nfs/rpc_pipefs</span><br><span class="line"><span class="preprocessor"># 系统里面其实还有很多特殊的文件系统存在。那些比较特殊的文件系统几乎</span></span><br><span class="line"><span class="preprocessor"># 都是在内存当中，例如 /proc 这个挂载点。因此，这些特殊的文件系统</span></span><br><span class="line"><span class="preprocessor"># 都不会占据硬盘空间！</span></span><br><span class="line"></span><br><span class="line">范例四：将 /etc 底下的可用磁盘容量以易读容量格式显示</span><br><span class="line">[root@www ~]<span class="preprocessor"># df -h /etc</span></span><br><span class="line">Filesystem Size Used Avail Use% Mounted on</span><br><span class="line">/dev/hdc2 <span class="number">9.5</span>G <span class="number">3.7</span>G <span class="number">5.4</span>G <span class="number">41</span>% /</span><br><span class="line"><span class="preprocessor"># 在 df 后面加上目录或者是档案时， df 会自动的分析该目录或档案所在的 partition ，</span></span><br><span class="line"><span class="preprocessor"># 并将该 partition 容量显示出来， 所以，您就可以知道某个目录底下还有多少容量可以使用了！</span></span><br><span class="line"></span><br><span class="line">范例五：将目前各个 partition 当中可用的 inode 数量列出</span><br><span class="line">[root@www ~]<span class="preprocessor"># df -ih</span></span><br><span class="line">Filesystem Inodes IUsed IFree IUse% Mounted on</span><br><span class="line">/dev/hdc2 <span class="number">2.5</span>M <span class="number">147</span>K <span class="number">2.3</span>M <span class="number">6</span>% /</span><br><span class="line">/dev/hdc3 <span class="number">1.3</span>M <span class="number">46</span> <span class="number">1.3</span>M <span class="number">1</span>% /home</span><br><span class="line">/dev/hdc1 <span class="number">26</span>K <span class="number">34</span> <span class="number">26</span>K <span class="number">1</span>% /boot</span><br><span class="line">tmpfs <span class="number">91</span>K <span class="number">1</span> <span class="number">91</span>K <span class="number">1</span>% /dev/shm</span><br><span class="line"><span class="preprocessor"># 这个范例则主要列出可用的 inode 剩余量不总容量。分析一下与范例一的关系，</span></span><br><span class="line"><span class="preprocessor"># 你可以清楚的发现到，通常 inode 的数量剩余都比 block 还要多。</span></span><br></pre></td></tr></table></figure>
+<p>由于 df 主要读取的数据几乎都是针对一整个文件系统，因此读取的范围主要是在 Superblock 内的信息， 所以这个指令显示结果的速度非帯的快速。</p>
+<h3 id="du：评估文件系统癿磁盘使用量-帯用在推估目彔所占容量"><a href="#du：评估文件系统癿磁盘使用量-帯用在推估目彔所占容量" class="headerlink" title="du：评估文件系统癿磁盘使用量(帯用在推估目彔所占容量)"></a>du：评估文件系统癿磁盘使用量(帯用在推估目彔所占容量)</h3><figure class="highlight haml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]# du [-ahskm] 档案或目录名称</span><br><span class="line">选项与参数：</span><br><span class="line">-<span class="ruby">a ：列出所有的档案与目录容量，因为默认仅统计目录底下的子目录容量而已。</span><br><span class="line"></span>-<span class="ruby">h ：以人们较易读的容量格式 (<span class="constant">G</span>/<span class="constant">M</span>) 显示；</span><br><span class="line"></span>-<span class="ruby">s ：列出总量而已，而不列出每个各别的目录占用容量；（即目录占用量）</span><br><span class="line"></span>-<span class="ruby"><span class="constant">S</span> ：不包括子目录下的总计，与 -s 有点差别。</span><br><span class="line"></span>-<span class="ruby">k ：以 <span class="constant">KBytes</span> 列出容量显示；</span><br><span class="line"></span>-<span class="ruby">m ：以 <span class="constant">MBytes</span> 列出容量显示；</span></span><br></pre></td></tr></table></figure>
+<p>使用例子如下：</p>
+<figure class="highlight nimrod"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]<span class="comment"># du [-ahskm] 档案或目录名称</span></span><br><span class="line">选项与参数：</span><br><span class="line">-a ：列出所有的档案与目录容量，因为默认仅统计目录底下的子目录占用量而已。</span><br><span class="line">-h ：以人们较易读的容量格式 (G/M) 显示；</span><br><span class="line">-s ：列出总量而已，而不列出每个各别的目录占用容量；</span><br><span class="line">-S ：不包括子目录下的总计，与 -s 有点差别。</span><br><span class="line">-k ：以 <span class="type">KBytes</span> 列出容量显示；</span><br><span class="line">-m ：以 <span class="type">MBytes</span> 列出容量显示；</span><br><span class="line"></span><br><span class="line">范例一：列出目前目录下的所有档案容量</span><br><span class="line">[root@www ~]<span class="comment"># du</span></span><br><span class="line"><span class="number">8</span> ./test4 &lt;==每个目录都会列出来</span><br><span class="line"><span class="number">8</span> ./test2</span><br><span class="line">....中间省略....</span><br><span class="line"><span class="number">12</span> ./.gconfd &lt;==包括隐藏文件的目录</span><br><span class="line"><span class="number">220</span> . &lt;==这个目录(.)所占用的总量</span><br><span class="line"><span class="comment"># 直接输入 du 没有加任何选项时，则 du 会分析『目前所在目录』 的档案不目彔所占用癿硬盘空间。</span></span><br><span class="line"><span class="comment"># 但是，实际显示时，仅会显示目录容量(不显示档案)，</span></span><br><span class="line"><span class="comment"># 因此 . 目录有很多档案没有被列出来，所以全部的目录相加不会等于 .的容量！</span></span><br><span class="line"><span class="comment"># 此外，输出的数值数据为 1K 大小的容量单位。</span></span><br><span class="line"></span><br><span class="line">范例二：同范例一，但是将档案的容量也列出来</span><br><span class="line">[root@www ~]<span class="comment"># du -a</span></span><br><span class="line"><span class="number">12</span> ./install.log.syslog &lt;==有档案的列表了</span><br><span class="line"><span class="number">8</span> ./.bash_logout</span><br><span class="line"><span class="number">8</span> ./test4</span><br><span class="line"><span class="number">8</span> ./test2</span><br><span class="line">....中间省略....</span><br><span class="line"><span class="number">12</span> ./.gconfd</span><br><span class="line"><span class="number">220</span> .</span><br><span class="line"></span><br><span class="line">范例三：检查根目录底下每个目录所占用的容量</span><br><span class="line">[root@www ~]<span class="comment"># du -sm /*</span></span><br><span class="line"><span class="number">7</span> /bin <span class="number">6</span> /boot</span><br><span class="line">.....中间省略....</span><br><span class="line"><span class="number">0</span> /<span class="keyword">proc</span></span><br><span class="line">.....中间省略....</span><br><span class="line"><span class="number">1</span> /tmp <span class="number">3859</span> /usr &lt;==系统初期最大就是他了啦！</span><br><span class="line"><span class="number">77</span> /<span class="keyword">var</span></span><br><span class="line"><span class="comment"># 这是个很常被使用的功能～利用通配符 * 来代表每个目录，</span></span><br><span class="line"><span class="comment"># 如果想要检查某个目录下，那个次目录占用最大的容量，可以用这个方法找出来</span></span><br><span class="line"><span class="comment"># 值得注意的是，如果刚刚安装好 Linux 时，那么整个系统容量最大的应该是 /usr</span></span><br><span class="line"><span class="comment"># 而 /proc 虽然有列出容量，但是那个容量是在内存中，不占硬盘空间。</span></span><br></pre></td></tr></table></figure>
+<h3 id="实体链接与符号链接-ln"><a href="#实体链接与符号链接-ln" class="headerlink" title="实体链接与符号链接 ln"></a>实体链接与符号链接 ln</h3><h4 id="实体链接（硬式链接）"><a href="#实体链接（硬式链接）" class="headerlink" title="实体链接（硬式链接）"></a>实体链接（硬式链接）</h4><p>实体链接，只能链接文件，不能链接目录，不能跨 Filesystem，创建实体链接时，只是在某个目录下的block多写入一条关联数据而已，不会增加inode也不会耗用block的数量。任一个档案删除了，另外一个档案都可以将数据完整的读取出来。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]<span class="preprocessor"># ln /etc/crontab /root/crontab &lt;==建立实体链接的指令</span></span><br><span class="line">[root@www ~]<span class="preprocessor"># ll -i /etc/crontab /root/crontab</span></span><br><span class="line"><span class="number">1912701</span> -rw-r--r-- <span class="number">2</span> root root <span class="number">255</span> Jan <span class="number">6</span> <span class="number">2007</span> /etc/crontab</span><br><span class="line"><span class="number">1912701</span> -rw-r--r-- <span class="number">2</span> root root <span class="number">255</span> Jan <span class="number">6</span> <span class="number">2007</span> /root/crontab</span><br></pre></td></tr></table></figure>
+<h4 id="Symbolic-Link-符号链接，亦即是忚捷方式"><a href="#Symbolic-Link-符号链接，亦即是忚捷方式" class="headerlink" title="Symbolic Link (符号链接，亦即是忚捷方式)"></a>Symbolic Link (符号链接，亦即是忚捷方式)</h4><p>基本上， Symbolic link 就是在建立一个独立的档案，而这个档案会将数据的读取指向他 link 的那个档案的档名！由于只是利用档案来做为指向的动作，所以，当来源档被删除之后，symbolic link 的档案会『开不了』， 会一直说『无法开起某档案！』。实际上就是找不到原始『档名』而已。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]<span class="preprocessor"># ln -s /etc/crontab crontab2</span></span><br><span class="line">[root@www ~]<span class="preprocessor"># ll -i /etc/crontab /root/crontab2</span></span><br><span class="line"><span class="number">1912701</span> -rw-r--r-- <span class="number">2</span> root root <span class="number">255</span> Jan <span class="number">6</span> <span class="number">2007</span> /etc/crontab</span><br><span class="line"><span class="number">654687</span> lrwxrwxrwx <span class="number">1</span> root root <span class="number">12</span> Oct <span class="number">22</span> <span class="number">13</span>:<span class="number">58</span> /root/crontab2 -&gt; /etc/crontab</span><br><span class="line"><span class="preprocessor"># /etc/crontab 也就是/root/crontab2文件的内容，所以大小为<span class="number">12</span>bytes</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#创建目录链接</span></span><br><span class="line">[root@www ~]<span class="preprocessor"># ln -s /bin /root/bin</span></span><br><span class="line"><span class="preprocessor">#当进入/root/bin目录时，实际上进入的是/bin目录，对其所有的操作都会相当于直接在/bin目录下操作</span></span><br></pre></td></tr></table></figure>
+<p>看起来硬链接会比符号链接安全的多，因为不会因为被链接文件被删除了而导致链接文件打不开，但是由于硬链接的限制比较多，不能链接目录，不能跨文件系统，所以还是符号链接比较受欢迎！</p>
+<p>ln指令参数：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]<span class="comment"># ln [-sf] 来源文件 目标文件</span></span><br><span class="line">选项与参数：</span><br><span class="line"><span class="operator">-s</span> ：如果不加任何参数就进行连结，那就是hard link，至于 <span class="operator">-s</span> 就是symbolic link</span><br><span class="line"><span class="operator">-f</span> ：如果 目标文件 存在时，就主动将目标文件直接移除后再建立！</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/02/29/Linux文件系统之df，du以及ln命令/" data-id="cimpwq37l002qlwqymjadbhhq" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Linux磁盘概念" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/02/29/Linux磁盘概念/" class="article-date">
+  <time datetime="2016-02-29T11:57:39.000Z" itemprop="datePublished">2016-02-29</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/02/29/Linux磁盘概念/">Linux磁盘概念</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>个人计算机常见的磁盘接口有两种， 分别是IDE不SATA接口，目前(2009)的主流已经是SATA接口了。</p>
+<p>以IDE接口来说，由于一个IDE扁平电缆可以连接两个IDE装置，又通常主机都会提供两个IDE接口，因此最多可以接到四个IDE装置。 也就是说，如果你已经有一个光盘设备了，那么最多就只能再接三颗IDE接口的磁盘啰。 这两个IDE接口通常被称为IDE1(primary)及IDE2(secondary)， 而每条扁平电缆上面癿IDE装置可以被区分为Master不Slave。这四个IDE装置癿文件名为：</p>
+<p><font color="red">以下的名称以及顺序都是固定的</font></p>
+<table>
+<thead>
+<tr>
+<th>IDE\Jumper</th>
+<th style="text-align:center">Master</th>
+<th style="text-align:right">Slave</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>IED1（primary）</td>
+<td style="text-align:center">/dev/hda</td>
+<td style="text-align:right">/dev/hdb</td>
+</tr>
+<tr>
+<td>IED2（Secondary）</td>
+<td style="text-align:center">/dev/hdc</td>
+<td style="text-align:right">/dev/hdd</td>
+</tr>
+</tbody>
+</table>
+<p>再以SATA接口来说，由于SATA/USB/SCSI等磁盘接口都是使用SCSI模块来驱动的， 因此这些接口的磁盘装置文件名都是/dev/sd[a-p]的格式。 但是与IDE接口不同的是，SATA/USB接口的磁盘根本就没有一定的顺序，那如何决定他的装置文件名呢？ 这个时候就得要根据Linux核心侦测到磁盘的顺序了！这里以底下的例子来让你了解：</p>
+<p>例题：</p>
+<p>如果你的PC上面有两个SATA磁盘以及一个USB磁盘，而主板上面有六个SATA的插槽。这两个SATA磁盘分别安插在主板上的SATA1, SATA5插槽上， 请问这三个磁盘在<br>Linux中的装置文件名为何？</p>
+<p>答：由与是使用侦测到的顺序来决定装置文件名，<font color="red">并非与实际插槽代号有关</font>，因此装置癿文件名如下：</p>
+<ol>
+<li>SATA1插槽上的檔名：/dev/sda</li>
+<li>SATA5插槽上的檔名：/dev/sdb</li>
+<li>USB磁盘(开机完成后才被系统捉到)：/dev/sdc</li>
+</ol>
+<h3 id="磁盘"><a href="#磁盘" class="headerlink" title="磁盘"></a>磁盘</h3><p>一颗磁盘的数据主要存在其盘面上，磁盘面由磁柱构成，磁柱又可以分为很多的扇区。一颗磁盘最重要的扇区就是第一个扇区，这里记录着正科磁盘最重要的信息，主要有两个重要的信息：</p>
+<ol>
+<li>主要启动记录区MBR（Master Boot Record）：可以安装开机管理程序的地方，有466 Bytes</li>
+<li>分割表（partition table）: 记录整颗磁盘分割信息，有64bytes</li>
+</ol>
+<p>由于分割表只有64bytes，所以只能存储四笔的分割信息，也就是说，磁盘的主要分割区只有四个。如果想要分割跟多的区的话，就只能通过extend延伸分割的方式来处理了。延伸分割的目的是使用额外的扇区来记录分割信息，延伸分割本身并不能被拿来格式化。 然后我们可以透过延伸分割所指向的那个区块继续作分割的记录。如下图所示：</p>
+<p><img src="/pictures/Linux磁盘概念-磁盘延伸分割.png" alt=""></p>
+<p>上述的分割槽在Linux系统中的装置文件名分别如下：</p>
+<ol>
+<li>P1:/dev/hda1</li>
+<li>P2:/dev/hda2</li>
+<li>L1:/dev/hda5</li>
+<li>L2:/dev/hda6</li>
+<li>L3:/dev/hda7</li>
+<li>L4:/dev/hda8</li>
+<li>L5:/dev/hda9</li>
+</ol>
+<p>要注意的是：如果延伸分割被破坏，所有逻辑分割将会被删除。因为逻辑分割的信息都记录在延伸分割里面。</p>
+<p>磁盘需要分割的原因主要有两个：</p>
+<ol>
+<li>数据的安全性：由于各个分割区之间是互相独立的，一个区数据坏了并不影响其他数据区的数据</li>
+<li>系统性能的考虑：由于数据只能存在一个分割区上，因此当需要读取数据的时候，磁头只会搜索该区所在的磁柱的范围，是的磁臂的摆动幅度不会太大，从而加快了数据的读取。</li>
+</ol>
+<h3 id="开机流程与主要启动记录区-MBR"><a href="#开机流程与主要启动记录区-MBR" class="headerlink" title="开机流程与主要启动记录区(MBR)"></a>开机流程与主要启动记录区(MBR)</h3><p>计算机主板上面有两个东西，一个是CMOS，主要记录各项硬件参数且嵌入到主板上面的存储器，另外一个就是BIOS，写入到主板上面的一个韧体（也就是一个软件程序）。开机时，计算机会先运行BIOS，该程序会根据用户的设定来取得能够开机的硬盘，并且读取该硬盘的第一个扇区中的MBR区域，该位置存放的是最基本的开机管理程序（boot loader），此时BIOS运行结束，记下来就是开机管理程序的事情了。</p>
+<p>开机管理程序的任务就是加载核心档案，由于开机管理程序是操作系统在安装的时候所提供的，所以他可以识别硬盘内的文件系统格式，从而加载核心档案，然后接下来就是核心档案的工作了，开机管理程序到此结束。接下来就是操作系统的任务了！</p>
+<p>简答来说，这个开机的流程为：</p>
+<ol>
+<li>BIOS：开机主动执行的韧体，会识别可一个可开机的装置；</li>
+<li>MBR：第一个可开机装置的第一个扇区内的主要启动记录区，含有开机管理程序</li>
+<li>开机管理程序（boot loader）：一支可读取核心档案来执行的软件程序</li>
+<li>核心档案：开始操作系统的功能。</li>
+</ol>
+<p>至于多重引导开机的情况，可以参考下图：</p>
+<p><img src="/pictures/Linux磁盘概念-多重引导.png" alt=""></p>
+<p>在上图中我们可以发现，MBR的开机管理程序提供两个选单，选单一(M1)可以直接加载Windows癿核心档案来开机；选单事(M2)则是将开机管理工作交给第二个分割槽的启动扇区(boot sector)。当使用者在开机的时候选择选单二时，那么整个开机管理工作就会交给第二分割槽的开机管理程序了。当第二个开机管理程序启动后，该开机管理程序内(上图中)仅有一个开机选单，因此就能够使用Linu的核心档案来开机啰。 这就是多重引导的工作情况啦！我们将上图作个总结：</p>
+<ol>
+<li>每个分割槽都拥有自己的启动扇区(boot sector)</li>
+<li>图中的系统槽为第一及第二分割槽，</li>
+<li>实际可开机的核心档案是放置到各分割槽内的！</li>
+<li>loader只会识识自己的系统槽内的可开机核心档案，以及其他loader而已；</li>
+<li>loader可直接指向或者是间接将管理权转交给另一个管理程序。</li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/02/29/Linux磁盘概念/" data-id="cimpwq37h002klwqygty0m1tu" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-Linux-User、Group切换" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2016/02/29/Linux-User、Group切换/" class="article-date">
@@ -139,7 +308,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/29/Linux-User、Group切换/" data-id="cim50b8o20035ioqy097raf4c" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/29/Linux-User、Group切换/" data-id="cimpwq37x0037lwqy23rg53eo" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a></li></ul>
@@ -224,7 +393,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/29/Linux用户管理实例/" data-id="cim50b8no002mioqyjim6epbj" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/29/Linux用户管理实例/" data-id="cimpwq37k002mlwqyyoteqsd1" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a></li></ul>
@@ -280,7 +449,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/29/Linux-Group-管理/" data-id="cim50b8o6003fioqy64dbe9dh" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/29/Linux-Group-管理/" data-id="cimpwq396003hlwqy08aw2u9u" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a></li></ul>
@@ -353,7 +522,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/Linux-User-管理/" data-id="cim50b8o30038ioqyg34r6vfy" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/28/Linux-User-管理/" data-id="cimpwq392003alwqyk6xtb645" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a></li></ul>
@@ -410,7 +579,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/Linux-中SUID、SGID和SBIT的用途/" data-id="cim50b8o00031ioqybzp36zd6" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/28/Linux-中SUID、SGID和SBIT的用途/" data-id="cimpwq37v0033lwqyhef3esfp" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a></li></ul>
@@ -483,7 +652,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/基于用户的协同过滤算法/" data-id="cim50b8mn0010ioqyi2n5ujem" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/28/基于用户的协同过滤算法/" data-id="cimpwq36i0010lwqypfrbqch6" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/推荐算法/">推荐算法</a></li></ul>
@@ -555,7 +724,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/at命令详解/" data-id="cim50b8ng0028ioqysiwncdx5" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/28/at命令详解/" data-id="cimpwq3780028lwqyaogfv4hh" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux命令/">Linux命令</a></li></ul>
@@ -655,147 +824,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/awk命令详解/" data-id="cim50b8ne0025ioqydx4fcjpx" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux命令/">Linux命令</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-tee命令详解" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/02/28/tee命令详解/" class="article-date">
-  <time datetime="2016-02-28T12:29:32.000Z" itemprop="datePublished">2016-02-28</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Linux/">Linux</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/02/28/tee命令详解/">tee命令详解</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p><img src="/pictures/Linux命令面试问答-tee命令.png" alt="tee命令示意图">tee过滤器用来想多个目标发送输出的内容。如果用于管道的话，他可以将输出复制一份到文件，兵复制另外一份到屏幕上（或一些其他的程序）。</p>
-<figure class="highlight gherkin"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ll /etc |<span class="string"> nl </span>|<span class="string"> tee /temp//ll.out</span></span><br></pre></td></tr></table></figure>
-<p>在以上例子中，从ll输出可以捕获到/temp/ll.out文件中，并且同样在屏幕上显示出来。</p>
-<p>tee [ -a ] [ -i ] [檔案 … ]</p>
-<p>参数:</p>
-<p>檔案 一个或多个档案，能够接收 tee-d 的输出。</p>
-<p>Flags:</p>
-<p>-a 追加到目标文件而不是覆盖<br>-i 忽略中断。</p>
-<p>tee命令读取标准输入，把这些内容同时输出到标准输出和（多个）文件中（read from standard input and write to standard output and files. Copy standard input to each FILE, and also to standard output. If a FILE is -, copy again to standard output.）。在info tee中说道：tee命令可以重定向标准输出到多个文件（<code>tee&#39;: Redirect output to multiple files. The</code>tee’ command copies standard input to standard output and also to any files given as arguments.  This is useful when you want not only to send some data down a pipe, but also to save a copy.）。要注意的是：在使用管道线时，前一个命令的标准错误输出不会被tee读取。</p>
-<p>常用参数</p>
-<p>格式：tee</p>
-<p>只输出到标准输出，因为没有指定文件嘛。</p>
-<p>格式：tee file</p>
-<p>输出到标准输出的同时，保存到文件file中。如果文件不存在，则创建；如果已经存在，则覆盖之。（If a file being written to does not already exist, it is created. If a file being written to already exists, the data it previously<br>contained is overwritten unless the `-a’ option is used.）</p>
-<p>格式：tee -a file</p>
-<p>输出到标准输出的同时，追加到文件file中。如果文件不存在，则创建；如果已经存在，就在末尾追加内容，而不是覆盖。</p>
-<p>格式：tee -</p>
-<p>输出到标准输出两次。（A FILE of <code>-&#39; causes</code>tee’ to send another copy of input to standard output, but this is typically not that useful as the copies are interleaved.）</p>
-<p>格式：tee file1 file2 -</p>
-<p>输出到标准输出两次，同时保存到file1和file2中。</p>
-<h4 id="使用tee命令把标准错误输出也保存到文件"><a href="#使用tee命令把标准错误输出也保存到文件" class="headerlink" title="使用tee命令把标准错误输出也保存到文件"></a>使用tee命令把标准错误输出也保存到文件</h4><figure class="highlight mel"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[root<span class="variable">@web</span> ~]# <span class="keyword">ls</span> <span class="string">"*"</span></span><br><span class="line"><span class="keyword">ls</span>: <span class="variable">*:</span> 没有那个文件或目录</span><br><span class="line">[root<span class="variable">@web</span> ~]# <span class="keyword">ls</span> <span class="string">"*"</span> | tee -</span><br><span class="line"><span class="keyword">ls</span>: <span class="variable">*:</span> 没有那个文件或目录</span><br><span class="line">[root<span class="variable">@web</span> ~]# <span class="keyword">ls</span> <span class="string">"*"</span> | tee <span class="keyword">ls</span>.txt</span><br><span class="line"><span class="keyword">ls</span>: <span class="variable">*:</span> 没有那个文件或目录</span><br><span class="line">[root<span class="variable">@web</span> ~]# cat <span class="keyword">ls</span>.txt</span><br><span class="line">[root<span class="variable">@web</span> ~]# <span class="keyword">ls</span> <span class="string">"*"</span> <span class="number">2</span>&gt;&amp;<span class="number">1</span> | tee <span class="keyword">ls</span>.txt</span><br><span class="line"><span class="keyword">ls</span>: <span class="variable">*:</span> 没有那个文件或目录</span><br><span class="line">[root<span class="variable">@web</span> ~]# cat <span class="keyword">ls</span>.txt</span><br><span class="line"><span class="keyword">ls</span>: <span class="variable">*:</span> 没有那个文件或目录</span><br><span class="line">[root<span class="variable">@web</span> ~]#</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/tee命令详解/" data-id="cim50b8n6001uioqy3sdccl3u" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux命令/">Linux命令</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-cpio命令详解" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/02/28/cpio命令详解/" class="article-date">
-  <time datetime="2016-02-28T12:23:51.000Z" itemprop="datePublished">2016-02-28</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Linux/">Linux</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/02/28/cpio命令详解/">cpio命令详解</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>cpio命令是通过重定向的方式将文件进行打包备份，还原恢复的工具，它可以解压以“.cpio”或者“.tar”结尾的文件。</p>
-<p>选项 含义<br><figure class="highlight haml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">-<span class="ruby">o 将文件拷贝打包成文件或者将文件输出到设备上。</span><br><span class="line"></span>-<span class="ruby">i 将打包文件解压或者将设备上的备份还原到系统。</span><br><span class="line"></span>-<span class="ruby">t 查看cpio打包的文件内容或者输出到设备上的文件内容。</span><br><span class="line"></span>-<span class="ruby">v 显示打包过程中的文件名称。</span><br><span class="line"></span>-<span class="ruby">d 在cpio还原文件的过程中，自动的建立相应的目录。</span><br><span class="line"></span>-<span class="ruby">c 一种较新的存储方式。</span><br><span class="line"></span>-<span class="ruby"><span class="constant">B</span> 让默认的<span class="constant">Blocks</span>可以增大到<span class="number">5120</span> bytes，默认<span class="constant">Blocks</span>为<span class="number">512</span> bytes，这样做的好处是可以加快存取速度。</span></span><br></pre></td></tr></table></figure></p>
-<p>注意:</p>
-<p>1)cpio恢复的路径，如果cpio在打包备份的时候用的是绝对路径，那么在恢复的时候会自动恢复到这些绝对路径下，同理，如果在打包备份用的是相对路径，还原时也将恢复到相对路径下。</p>
-<p>2)cpio无法直接读取文件，它需要每个文件或者目录的完整路径名才能识别读取，而find命令的输出刚好做到了这点，因此，cpio命令一般和find命令配合使用。</p>
-<p>3)cpio恢复的时候不会自动覆盖同名文件。</p>
-<p>4)不会创建目录而是直接解压到当前文件夹。</p>
-<h4 id="举例"><a href="#举例" class="headerlink" title="[举例]"></a>[举例]</h4><p>*将etc目录备份：</p>
-<figure class="highlight dos"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">find</span> ./etc -<span class="built_in">print</span> |cpio -ov &gt;etc.cpio</span><br></pre></td></tr></table></figure>
-<p>*要恢复文件的时候</p>
-<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="id">#cpio</span> -idv &lt;/root/etc.cpio</span><br></pre></td></tr></table></figure>
-<p>*只是查看etc.cpio文件，可以使用</p>
-<figure class="highlight vala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor"># cpio -tv &lt;etc.cpio</span></span><br></pre></td></tr></table></figure>
-<p>输入之后，输出如下：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">drwxrwxr-x   <span class="number">4</span> quiethea quiethea        <span class="number">0</span> Nov  <span class="number">4</span> <span class="number">17</span>:<span class="number">14</span> etc</span><br><span class="line">-rw-rw-r--   <span class="number">1</span> quiethea quiethea        <span class="number">0</span> Nov  <span class="number">4</span> <span class="number">17</span>:<span class="number">07</span> etc/<span class="number">2</span></span><br><span class="line">drwxrwxr-x   <span class="number">2</span> quiethea quiethea        <span class="number">0</span> Nov  <span class="number">4</span> <span class="number">17</span>:<span class="number">07</span> etc/<span class="number">11</span></span><br><span class="line">-rw-rw-r--   <span class="number">1</span> quiethea quiethea        <span class="number">0</span> Nov  <span class="number">4</span> <span class="number">17</span>:<span class="number">07</span> etc/<span class="number">11</span>/<span class="number">11</span></span><br><span class="line">-rw-rw-r--   <span class="number">1</span> quiethea quiethea        <span class="number">0</span> Nov  <span class="number">4</span> <span class="number">17</span>:<span class="number">07</span> etc/<span class="number">4</span></span><br><span class="line">drwxrwxr-x   <span class="number">2</span> quiethea quiethea        <span class="number">0</span> Nov  <span class="number">4</span> <span class="number">17</span>:<span class="number">07</span> etc/<span class="number">22</span></span><br><span class="line">-rw-rw-r--   <span class="number">1</span> quiethea quiethea        <span class="number">0</span> Nov  <span class="number">4</span> <span class="number">17</span>:<span class="number">07</span> etc/<span class="number">3</span></span><br><span class="line">-rw-rw-r--   <span class="number">1</span> quiethea quiethea        <span class="number">0</span> Nov  <span class="number">4</span> <span class="number">17</span>:<span class="number">07</span> etc/<span class="number">1</span></span><br><span class="line">-rw-rw-r--   <span class="number">1</span> quiethea quiethea        <span class="number">0</span> Nov  <span class="number">4</span> <span class="number">17</span>:<span class="number">07</span> etc/<span class="number">5</span></span><br><span class="line">这样显示得是将要恢复得文件得名称。</span><br></pre></td></tr></table></figure>
-<h4 id="其它"><a href="#其它" class="headerlink" title="[其它]"></a>[其它]</h4><p>现在，内核刚刚启动的时候，会事先挂一个initrd内存文件系统，这个initrd文件系统镜像可以由cpio制作。参见内核源码文档initrd.txt.</p>
-<p>*例如我有一个非常简单的文件系统rootfs.制作镜像方法如下：</p>
-<figure class="highlight xquery"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$cd</span> rootfs</span><br><span class="line"><span class="variable">$find</span> . | cpio -c -o -v |gzip -<span class="number">9</span> -n &gt;../ramdisk.img</span><br></pre></td></tr></table></figure>
-<p>这样，父目录下会生成一个ramdisk.img压缩文件系统镜像。</p>
-<p>*将镜像解压恢复成文件系统的命令：</p>
-<figure class="highlight xquery"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$mkdir</span> rootfs</span><br><span class="line"><span class="variable">$cp</span> ramdisk.img rootfs</span><br><span class="line"><span class="variable">$cd</span> rootfs</span><br><span class="line"><span class="variable">$mv</span> ramdisk.img ramdisk.img.gz</span><br><span class="line"><span class="variable">$gunzip</span> ramdisk.img.gz</span><br><span class="line"><span class="variable">$cpio</span> -i &lt;ramdisk.img</span><br><span class="line"><span class="variable">$rm</span> ramdisk.img</span><br></pre></td></tr></table></figure>
-<p>这样，当前目录下就是原来rootfs中的内容了。</p>
-<p>cpio常与find 配合使用</p>
-<h3 id="实例2"><a href="#实例2" class="headerlink" title="实例2"></a>实例2</h3><h4 id="1-文件或目录打包。"><a href="#1-文件或目录打包。" class="headerlink" title="1.文件或目录打包。　"></a>1.文件或目录打包。　</h4><p>打包有如下多种情况：<br>　<br>A)含子目录打包：</p>
-<figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">find</span> <span class="regexp">/usr/</span>local<span class="regexp">/hbchen/</span> -<span class="keyword">print</span>|cpio -o &gt; <span class="regexp">/tmp/</span>hbchen1.cpio</span><br></pre></td></tr></table></figure>
-<p>将/usr/local/hbchen目录下的文件与子目录打包成一个文件库为/tmp/hbchen1.cpio。　<br>若通过－o选项来打包整个目录下的所有文件与子目录,常先利用find目录名－print来找出所有文件与子目录的名称,通过管道“ ”传给cpio打包。　</p>
-<p>B)不含子目录的打包：</p>
-<figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ls <span class="regexp">/usr/</span>local<span class="regexp">/hbchen |cpio -o &gt; /</span>tmp<span class="regexp">/hbchen3.cpio</span></span><br></pre></td></tr></table></figure>
-<p>将/usr/local/hbchen目录下的文件(不含子目录下的文件)打包成一个文件库为/tmp/hbchen3.cpio。　</p>
-<p>C)特定文件打包：</p>
-<p>可利用文本搜索命令grep与管道配合,可以排除或选择特定类型的文件传给cpio打包。</p>
-<figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">如: ls <span class="regexp">/usr/</span>local<span class="regexp">/hbchen/</span>*.txt |cpio -o &gt;<span class="regexp">/tmp/</span>hbchen0.cpio</span><br><span class="line">或  ls <span class="regexp">/usr/</span>local<span class="regexp">/hbchen |grep '\*.txt$' |cpio -o &gt;/</span>tmp/hbchen6.cpio</span><br><span class="line">find <span class="regexp">/usr/</span>local/hbchen目录下以.txt结尾的文件予以打包。</span><br></pre></td></tr></table></figure>
-<p>又如：<code>ls /usr/local/hbchen grep 1 cpio -o &gt;/tmp/hbchen9.cpio</code>,其意为找出/usr/local/hbchen目录下文件名中含有1字符的文件予以打包。　</p>
-<p><code>ls /usr/local/hbchen |grep -v 1 |cpio -o &gt; /tmp/hbchen11.cpio</code>,其意为找出/usr/local/hbchen目录下文件名中不含 1 字符的文件予以打包。－v选项在grep命令中的意思是排除含有字符串的行列。　</p>
-<p>如此,可充分利用Unix的管道和一些命令的强大功能来实现文件的打包。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/cpio命令详解/" data-id="cim50b8nc0022ioqyakb2afgv" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/28/awk命令详解/" data-id="cimpwq3770025lwqy8ec4v4uk" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux命令/">Linux命令</a></li></ul>
@@ -809,7 +838,7 @@
   
   
     <nav id="page-nav">
-      <a class="extend prev" rel="prev" href="/page/2/">&laquo; Prev</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="extend next" rel="next" href="/page/4/">Next &raquo;</a>
+      <a class="extend prev" rel="prev" href="/page/2/">&laquo; Prev</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/4/">Next &raquo;</a>
     </nav>
   
 </section>
@@ -820,7 +849,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">18</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">4</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">19</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">4</span></li></ul>
     </div>
   </div>
 
@@ -847,7 +876,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
     </div>
   </div>
 
@@ -859,6 +888,14 @@
       <ul>
         
           <li>
+            <a href="/2016/04/07/C-之auto、static、extern、register/">C++之auto、static、extern、register</a>
+          </li>
+        
+          <li>
+            <a href="/2016/04/06/LinuxIO读取函数/">LinuxIO读取函数</a>
+          </li>
+        
+          <li>
             <a href="/2016/03/23/Boost智能指针/">Boost智能指针</a>
           </li>
         
@@ -868,14 +905,6 @@
         
           <li>
             <a href="/2016/03/20/链接库以及编译过程/">链接库以及编译过程</a>
-          </li>
-        
-          <li>
-            <a href="/2016/03/19/malloc函数的实现原理/">malloc函数的实现原理</a>
-          </li>
-        
-          <li>
-            <a href="/2016/03/19/Linux-内存管理/">Linux 内存管理</a>
           </li>
         
       </ul>

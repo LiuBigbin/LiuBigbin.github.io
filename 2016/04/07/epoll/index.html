@@ -3,24 +3,18 @@
 <head>
   <meta charset="utf-8">
   
-  <title>Linux用户管理实例 | LiuYongbin</title>
+  <title>epoll | LiuYongbin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="账号管理不是随意建置几个账号就算了！有时候我们需要考虑到一部主机上面可能有多个账号在协同工作！举例来说，在大学任教时，我们学校的专题生是需要分组的，这些同一组的同学间必须要能够互相修改对方的数据文件，但是同时这些同学又需要保留自己的私密数据，因此直接公开家目录是不适宜的。那该如何是好？ 为此，我们底下提供几个例子来让大家思考看看啰：
-任务一：单纯的完成上头交代的任务，假设我们需要的账号数据如下，你">
+  <meta name="description">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Linux用户管理实例">
-<meta property="og:url" content="http://liubigbin.github.io/2016/02/29/Linux用户管理实例/index.html">
+<meta property="og:title" content="epoll">
+<meta property="og:url" content="http://liubigbin.github.io/2016/04/07/epoll/index.html">
 <meta property="og:site_name" content="LiuYongbin">
-<meta property="og:description" content="账号管理不是随意建置几个账号就算了！有时候我们需要考虑到一部主机上面可能有多个账号在协同工作！举例来说，在大学任教时，我们学校的专题生是需要分组的，这些同一组的同学间必须要能够互相修改对方的数据文件，但是同时这些同学又需要保留自己的私密数据，因此直接公开家目录是不适宜的。那该如何是好？ 为此，我们底下提供几个例子来让大家思考看看啰：
-任务一：单纯的完成上头交代的任务，假设我们需要的账号数据如下，你">
-<meta property="og:image" content="http://liubigbin.github.io/pictures/Linux用户管理实例-任务1a.png">
-<meta property="og:image" content="http://liubigbin.github.io/pictures/Linux用户管理实例-任务1b.png">
-<meta property="og:image" content="http://liubigbin.github.io/pictures/Linux用户管理实例-任务2.png">
-<meta property="og:updated_time" content="2016-02-29T04:04:13.000Z">
+<meta property="og:description">
+<meta property="og:updated_time" content="2016-04-07T07:44:00.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Linux用户管理实例">
-<meta name="twitter:description" content="账号管理不是随意建置几个账号就算了！有时候我们需要考虑到一部主机上面可能有多个账号在协同工作！举例来说，在大学任教时，我们学校的专题生是需要分组的，这些同一组的同学间必须要能够互相修改对方的数据文件，但是同时这些同学又需要保留自己的私密数据，因此直接公开家目录是不适宜的。那该如何是好？ 为此，我们底下提供几个例子来让大家思考看看啰：
-任务一：单纯的完成上头交代的任务，假设我们需要的账号数据如下，你">
+<meta name="twitter:title" content="epoll">
+<meta name="twitter:description">
   
     <link rel="alternative" href="/atom.xml" title="LiuYongbin" type="application/atom+xml">
   
@@ -70,16 +64,12 @@
   </div>
 </header>
       <div class="outer">
-        <section id="main"><article id="post-Linux用户管理实例" class="article article-type-post" itemscope itemprop="blogPost">
+        <section id="main"><article id="post-epoll" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/2016/02/29/Linux用户管理实例/" class="article-date">
-  <time datetime="2016-02-29T04:01:50.000Z" itemprop="datePublished">2016-02-29</time>
+    <a href="/2016/04/07/epoll/" class="article-date">
+  <time datetime="2016-04-07T07:44:00.000Z" itemprop="datePublished">2016-04-07</time>
 </a>
     
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Linux/">Linux</a>
-  </div>
-
   </div>
   <div class="article-inner">
     
@@ -88,7 +78,7 @@
         
   
     <h1 class="article-title" itemprop="name">
-      Linux用户管理实例
+      epoll
     </h1>
   
 
@@ -96,77 +86,32 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>账号管理不是随意建置几个账号就算了！有时候我们需要考虑到一部主机上面可能有多个账号在协同工作！举例来说，在大学任教时，我们学校的专题生是需要分组的，这些同一组的同学间必须要能够互相修改对方的数据文件，但是同时这些同学又需要保留自己的私密数据，因此直接公开家目录是不适宜的。那该如何是好？ 为此，我们底下提供几个例子来让大家思考看看啰：</p>
-<p>任务一：单纯的完成上头交代的任务，假设我们需要的账号数据如下，你该如何实作？</p>
-<table>
-<thead>
-<tr>
-<th>账号名称</th>
-<th style="text-align:center">账号全名</th>
-<th style="text-align:right">支援次要群组</th>
-<th style="text-align:right">是否可登入主机</th>
-<th style="text-align:right">密码</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>user1</td>
-<td style="text-align:center">1st user</td>
-<td style="text-align:right">mygroup1</td>
-<td style="text-align:right">可以</td>
-<td style="text-align:right">password</td>
-</tr>
-<tr>
-<td>user2</td>
-<td style="text-align:center">2nd user</td>
-<td style="text-align:right">mygroup1</td>
-<td style="text-align:right">可以</td>
-<td style="text-align:right">password</td>
-</tr>
-<tr>
-<td>user3</td>
-<td style="text-align:center">3rd user</td>
-<td style="text-align:right">无额外支持</td>
-<td style="text-align:right">不可以</td>
-<td style="text-align:right">password</td>
-</tr>
-</tbody>
-</table>
-<p>处理方法如下所示：</p>
-<p><img src="/pictures/Linux用户管理实例-任务1a.png" alt=""></p>
-<p><img src="/pictures/Linux用户管理实例-任务1b.png" alt=""></p>
-<p>要注意的地方主要有：myuser1 与 myuser2 都有支援次要群组，但该群组不见得会存在，因此需要先手动建立他！ 然后 myuser3 是『不可登入系统』的账号，因此需要使用 /sbin/nologin 这个 shell 来给予，这样该账号就无法登入啰！ 这样是否理解啊！接下来再来讨论比较难一些的环境！如果是专题环境该如何制作？</p>
-<p>任务二：我的使用者 pro1, pro2, pro3 是同一个项目计划的开发人员，我想要让这三个用户在同一个目录底下工作， 但这三个用户还是拥有自己的家目录与基本的私有群组。假设我要让这个项目计划在 /srv/projecta 目录下开发， 可以如何进行？</p>
-<p><img src="/pictures/Linux用户管理实例-任务2.png" alt=""></p>
-<p>由于此项目计划只能够给 pro1, pro2, pro3 三个人使用，所以 /srv/projecta 的权限设定一定要正确才行！ 所以该目录群组一定是 projecta ，但是权限怎么会是 2770 呢？还让得<a href="/2016/02/28/Linux-%E4%B8%ADSUID%E3%80%81SGID%E5%92%8CSBIT%E7%9A%84%E7%94%A8%E9%80%94/">SGID</a> 吧？为了让三个使用者能够互相修改对方的档案， 这个 SGID 是必须要存在的喔！</p>
-
+        
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/29/Linux用户管理实例/" data-id="cimpzg6pf002up8qy4bifg92x" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/04/07/epoll/" data-id="cimpzg6os0029p8qylvfj0yoz" class="article-share-link">Share</a>
       
       
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a></li></ul>
-
     </footer>
   </div>
   
     
 <nav id="article-nav">
   
-    <a href="/2016/02/29/Linux-User、Group切换/" id="article-nav-newer" class="article-nav-link-wrap">
+    <a href="/2016/04/07/epoll之ET和LT编程/" id="article-nav-newer" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Newer</strong>
       <div class="article-nav-title">
         
-          Linux User、Group切换
+          epoll之ET和LT编程
         
       </div>
     </a>
   
   
-    <a href="/2016/02/29/Linux-Group-管理/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/2016/04/07/socket非阻塞读写/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">Linux Group 管理</div>
+      <div class="article-nav-title">socket非阻塞读写</div>
     </a>
   
 </nav>

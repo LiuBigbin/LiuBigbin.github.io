@@ -3,24 +3,18 @@
 <head>
   <meta charset="utf-8">
   
-  <title>Linux用户管理实例 | LiuYongbin</title>
+  <title>socket非阻塞读写 | LiuYongbin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="账号管理不是随意建置几个账号就算了！有时候我们需要考虑到一部主机上面可能有多个账号在协同工作！举例来说，在大学任教时，我们学校的专题生是需要分组的，这些同一组的同学间必须要能够互相修改对方的数据文件，但是同时这些同学又需要保留自己的私密数据，因此直接公开家目录是不适宜的。那该如何是好？ 为此，我们底下提供几个例子来让大家思考看看啰：
-任务一：单纯的完成上头交代的任务，假设我们需要的账号数据如下，你">
+  <meta name="description" content="读操作对于阻塞的socket,当socket的接收缓冲区中没有数据时，read调用会一直阻塞住，直到有数据到来才返回。当socket缓冲区中的数据量小于期望读取的数据量时，返回实际读取的字节数。当sockt的接收缓冲区中的数据大于期望读取的字节数时，读取期望读取的字节数，返回实际读取的长度。对于非阻塞socket而言，socket的接收缓冲区中有没有数据，read调用都会立刻返回。接收缓冲区中有数">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Linux用户管理实例">
-<meta property="og:url" content="http://liubigbin.github.io/2016/02/29/Linux用户管理实例/index.html">
+<meta property="og:title" content="socket非阻塞读写">
+<meta property="og:url" content="http://liubigbin.github.io/2016/04/07/socket非阻塞读写/index.html">
 <meta property="og:site_name" content="LiuYongbin">
-<meta property="og:description" content="账号管理不是随意建置几个账号就算了！有时候我们需要考虑到一部主机上面可能有多个账号在协同工作！举例来说，在大学任教时，我们学校的专题生是需要分组的，这些同一组的同学间必须要能够互相修改对方的数据文件，但是同时这些同学又需要保留自己的私密数据，因此直接公开家目录是不适宜的。那该如何是好？ 为此，我们底下提供几个例子来让大家思考看看啰：
-任务一：单纯的完成上头交代的任务，假设我们需要的账号数据如下，你">
-<meta property="og:image" content="http://liubigbin.github.io/pictures/Linux用户管理实例-任务1a.png">
-<meta property="og:image" content="http://liubigbin.github.io/pictures/Linux用户管理实例-任务1b.png">
-<meta property="og:image" content="http://liubigbin.github.io/pictures/Linux用户管理实例-任务2.png">
-<meta property="og:updated_time" content="2016-02-29T04:04:13.000Z">
+<meta property="og:description" content="读操作对于阻塞的socket,当socket的接收缓冲区中没有数据时，read调用会一直阻塞住，直到有数据到来才返回。当socket缓冲区中的数据量小于期望读取的数据量时，返回实际读取的字节数。当sockt的接收缓冲区中的数据大于期望读取的字节数时，读取期望读取的字节数，返回实际读取的长度。对于非阻塞socket而言，socket的接收缓冲区中有没有数据，read调用都会立刻返回。接收缓冲区中有数">
+<meta property="og:updated_time" content="2016-04-07T07:49:05.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Linux用户管理实例">
-<meta name="twitter:description" content="账号管理不是随意建置几个账号就算了！有时候我们需要考虑到一部主机上面可能有多个账号在协同工作！举例来说，在大学任教时，我们学校的专题生是需要分组的，这些同一组的同学间必须要能够互相修改对方的数据文件，但是同时这些同学又需要保留自己的私密数据，因此直接公开家目录是不适宜的。那该如何是好？ 为此，我们底下提供几个例子来让大家思考看看啰：
-任务一：单纯的完成上头交代的任务，假设我们需要的账号数据如下，你">
+<meta name="twitter:title" content="socket非阻塞读写">
+<meta name="twitter:description" content="读操作对于阻塞的socket,当socket的接收缓冲区中没有数据时，read调用会一直阻塞住，直到有数据到来才返回。当socket缓冲区中的数据量小于期望读取的数据量时，返回实际读取的字节数。当sockt的接收缓冲区中的数据大于期望读取的字节数时，读取期望读取的字节数，返回实际读取的长度。对于非阻塞socket而言，socket的接收缓冲区中有没有数据，read调用都会立刻返回。接收缓冲区中有数">
   
     <link rel="alternative" href="/atom.xml" title="LiuYongbin" type="application/atom+xml">
   
@@ -70,10 +64,10 @@
   </div>
 </header>
       <div class="outer">
-        <section id="main"><article id="post-Linux用户管理实例" class="article article-type-post" itemscope itemprop="blogPost">
+        <section id="main"><article id="post-socket非阻塞读写" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
-    <a href="/2016/02/29/Linux用户管理实例/" class="article-date">
-  <time datetime="2016-02-29T04:01:50.000Z" itemprop="datePublished">2016-02-29</time>
+    <a href="/2016/04/07/socket非阻塞读写/" class="article-date">
+  <time datetime="2016-04-07T07:39:46.000Z" itemprop="datePublished">2016-04-07</time>
 </a>
     
   <div class="article-category">
@@ -88,7 +82,7 @@
         
   
     <h1 class="article-title" itemprop="name">
-      Linux用户管理实例
+      socket非阻塞读写
     </h1>
   
 
@@ -96,57 +90,17 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>账号管理不是随意建置几个账号就算了！有时候我们需要考虑到一部主机上面可能有多个账号在协同工作！举例来说，在大学任教时，我们学校的专题生是需要分组的，这些同一组的同学间必须要能够互相修改对方的数据文件，但是同时这些同学又需要保留自己的私密数据，因此直接公开家目录是不适宜的。那该如何是好？ 为此，我们底下提供几个例子来让大家思考看看啰：</p>
-<p>任务一：单纯的完成上头交代的任务，假设我们需要的账号数据如下，你该如何实作？</p>
-<table>
-<thead>
-<tr>
-<th>账号名称</th>
-<th style="text-align:center">账号全名</th>
-<th style="text-align:right">支援次要群组</th>
-<th style="text-align:right">是否可登入主机</th>
-<th style="text-align:right">密码</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>user1</td>
-<td style="text-align:center">1st user</td>
-<td style="text-align:right">mygroup1</td>
-<td style="text-align:right">可以</td>
-<td style="text-align:right">password</td>
-</tr>
-<tr>
-<td>user2</td>
-<td style="text-align:center">2nd user</td>
-<td style="text-align:right">mygroup1</td>
-<td style="text-align:right">可以</td>
-<td style="text-align:right">password</td>
-</tr>
-<tr>
-<td>user3</td>
-<td style="text-align:center">3rd user</td>
-<td style="text-align:right">无额外支持</td>
-<td style="text-align:right">不可以</td>
-<td style="text-align:right">password</td>
-</tr>
-</tbody>
-</table>
-<p>处理方法如下所示：</p>
-<p><img src="/pictures/Linux用户管理实例-任务1a.png" alt=""></p>
-<p><img src="/pictures/Linux用户管理实例-任务1b.png" alt=""></p>
-<p>要注意的地方主要有：myuser1 与 myuser2 都有支援次要群组，但该群组不见得会存在，因此需要先手动建立他！ 然后 myuser3 是『不可登入系统』的账号，因此需要使用 /sbin/nologin 这个 shell 来给予，这样该账号就无法登入啰！ 这样是否理解啊！接下来再来讨论比较难一些的环境！如果是专题环境该如何制作？</p>
-<p>任务二：我的使用者 pro1, pro2, pro3 是同一个项目计划的开发人员，我想要让这三个用户在同一个目录底下工作， 但这三个用户还是拥有自己的家目录与基本的私有群组。假设我要让这个项目计划在 /srv/projecta 目录下开发， 可以如何进行？</p>
-<p><img src="/pictures/Linux用户管理实例-任务2.png" alt=""></p>
-<p>由于此项目计划只能够给 pro1, pro2, pro3 三个人使用，所以 /srv/projecta 的权限设定一定要正确才行！ 所以该目录群组一定是 projecta ，但是权限怎么会是 2770 呢？还让得<a href="/2016/02/28/Linux-%E4%B8%ADSUID%E3%80%81SGID%E5%92%8CSBIT%E7%9A%84%E7%94%A8%E9%80%94/">SGID</a> 吧？为了让三个使用者能够互相修改对方的档案， 这个 SGID 是必须要存在的喔！</p>
+        <h2 id="读操作"><a href="#读操作" class="headerlink" title="读操作"></a>读操作</h2><p>对于阻塞的socket,当socket的接收缓冲区中没有数据时，read调用会一直阻塞住，直到有数据到来才返回。当socket缓冲区中的数据量小于期望读取的数据量时，返回实际读取的字节数。当sockt的接收缓冲区中的数据大于期望读取的字节数时，读取期望读取的字节数，返回实际读取的长度。对于非阻塞socket而言，socket的接收缓冲区中有没有数据，read调用都会立刻返回。接收缓冲区中有数据时，与阻塞socket有数据的情况是一样的，如果接收缓冲区中没有数据，则返回-1，错误号为EWOULDBLOCK或EAGAIN,表示该操作本来应该阻塞的，但是由于本socket为非阻塞的socket，因此立刻返回，遇到这样的情况，可以在下次接着去尝试读取。如果返回值是其它负值，则表明读取错误。因此，非阻塞的read调用一般这样写:<br><figure class="highlight livecodeserver"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>(<span class="built_in">read</span>(sock_fd, buffer, <span class="built_in">len</span>) &lt; <span class="number">0</span>)</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">if</span>(errno == EWOULDBLOCK || errno == EAGAIN)</span><br><span class="line">&#123;<span class="comment"></span><br><span class="line">//没有读到数据</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">&#123;<span class="comment"></span><br><span class="line">//读取失败</span></span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">&#123;<span class="comment"></span><br><span class="line">//读到数据</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h2 id="写操作"><a href="#写操作" class="headerlink" title="写操作"></a>写操作</h2><p>对于写操作write,原理是类似的，非阻塞socket在发送缓冲区没有空间时会直接返回-1，错误号EWOULDBLOCK或EAGA,表示没有空间可写数据，如果错误号是别的值，则表明发送失败。如果发送缓冲区中有足够空间或者是不足以拷贝所有待发送数据的空间的话，则拷贝前面N个能够容纳的数据，返回实际拷贝的字节数。而对于阻塞Socket而言，如果发送缓冲区没有空间或者空间不足的话，write操作会直接阻塞住，如果有足够空间，则拷贝所有数据到发送缓冲区，然后返回.非阻塞的write操作一般写法是:<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> write_pos = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">int</span> nLeft = nLen;</span><br><span class="line"><span class="keyword">while</span>(nLeft &gt; <span class="number">0</span>)</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">int</span> nWrite = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">if</span>( (nWrite = write(sock_fd, data+write_pos, nLeft)) &lt;= <span class="number">0</span>)</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">if</span>(errno == EWOULDBLOCK || errno == EAGAIN)</span><br><span class="line">&#123;</span><br><span class="line">nWrite = <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">&#123;</span><br><span class="line"><span class="comment">//写失败</span></span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">&#123;</span><br><span class="line">nLeft -= nWrite;</span><br><span class="line">wirte_pos += nWrite;</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>以上内容转自<a href="http://blog.163.com/hbu_lijian/blog/static/126129153201311742750909/" target="_blank" rel="external">这里</a></p>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/29/Linux用户管理实例/" data-id="cimpzg6pf002up8qy4bifg92x" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/04/07/socket非阻塞读写/" data-id="cimpzg6og001yp8qyb8oekfpr" class="article-share-link">Share</a>
       
       
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a></li></ul>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a></li></ul>
 
     </footer>
   </div>
@@ -154,19 +108,19 @@
     
 <nav id="article-nav">
   
-    <a href="/2016/02/29/Linux-User、Group切换/" id="article-nav-newer" class="article-nav-link-wrap">
+    <a href="/2016/04/07/epoll/" id="article-nav-newer" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Newer</strong>
       <div class="article-nav-title">
         
-          Linux User、Group切换
+          epoll
         
       </div>
     </a>
   
   
-    <a href="/2016/02/29/Linux-Group-管理/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/2016/04/07/C-之auto、static、extern、register/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">Linux Group 管理</div>
+      <div class="article-nav-title">C++之auto、static、extern、register</div>
     </a>
   
 </nav>

@@ -65,70 +65,6 @@
       <div class="outer">
         <section id="main">
   
-    <article id="post-通过git提交或更新代码到github" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/02/25/通过git提交或更新代码到github/" class="article-date">
-  <time datetime="2016-02-25T07:48:06.000Z" itemprop="datePublished">2016-02-25</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/日志/">日志</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/02/25/通过git提交或更新代码到github/">通过git提交或更新代码到github</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>&#160; &#160; &#160; &#160; Git是用C语言开发的分布版本控制系统。版本控制系统可以保留一个文件集合的历史记录，并能回滚文件集合到另一个状态（历史记录状态）。另一个状态可以是不同的文件，也可以是不同的文件内容。举个例子，你可以将文件集合转换到两天之前的状态，或者你可以在生产代码和实验性质的代码之间进行切换。文件集合往往被称作是“源代码”。在一个分布版本控制系统中，每个人都有一份完整的源代码（包括源代码所有的历史记录信息），而且可以对这个本地的数据进行操作。分布版本控制系统不需要一个集中式的代码仓库。</p>
-<p>&#160; &#160; &#160; &#160; 如果想要将本地的代码提交到github上，先在github中创建新的仓库，在安装了<a href="http://git-scm.com/" target="_blank" rel="external">Git</a>的情况下，先进入到代码所在的目录下，然后右键选择git bash here，打开git命令行窗口，接下来执行一下命令：</p>
-<pre><code># git 仓库初始化
-$ git init
-# 添加索引文件, 也可以在add后面添加文件名，这里会直接的将目录下的文件以及文件夹添加到索引
-$ git add .
-# 提交到本地仓库
-$ git commit -m &quot;这里是本次提交的说明&quot;
-# 添加远程仓库, 这一步会在当前目录下的.git/config文件中记录远程仓库地址
-# 该命令将对应的远程仓库命名为 origin
-$ git remote add origin https://github.com/yourname/repositoryname.git
-# 提交到远程仓库中(也可以直接使用git push，origin 和 master都是默认的参数)
-# origin 为上一条命令命名的远程仓库，master 为仓库的分支
-$ git push origin master
-</code></pre><p>&#160; &#160; &#160; &#160; 这样代码就顺利的提交到了github对应的仓库中。如果本地跟新了代码（增加、删除或是修改文件），需要同步更新到github仓库中，那么需要执行以下的命令：</p>
-<pre><code>$ git add .
-$ git commit -m &quot;提交说明&quot;
-$ git push origin master
-</code></pre><p>&#160; &#160; &#160; &#160; 如果想要更正最后提交的信息，可以使用<code>git amend</code>：</p>
-<pre><code>git commit --amend -m &quot;新的提交信息&quot;
-</code></pre><p>&#160; &#160; &#160; &#160; 每个Git仓库都是放置在.git文件夹下.这个目录包含了仓库的所有历史记录，.git/config文件包含了仓库的本地配置。命令<code>git init</code>用来建立本地git仓库，并初始化所有必要文件。改命令会生成.git文件夹和.gitignore文件，.gitignore文件用来存放git忽略特定的文件或是文件夹的配置，这个文件可以存在于不同的文件夹中，可以包含不同的文件匹配模式。为了让Git忽略bin文件夹，在主目录下放置.gitignore文件，其中内容为bin。同时Git也提供了全局的配置，core.excludesfile</p>
-<p>&#160; &#160; &#160; &#160; Git会忽略空的文件夹。如果你想版本控制包括空文件夹，根据惯例会在空文件夹下放置.gitkeep文件。其实对文件名没有特定的要求。一旦一个空文件夹下有文件后，这个文件夹就会在版本控制范围内。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/25/通过git提交或更新代码到github/" data-id="cimpzg6mx000ap8qynib7qbf4" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/随记/">随记</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
     <article id="post-爬取leetcode所有accepted算法题的代码" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2016/02/24/爬取leetcode所有accepted算法题的代码/" class="article-date">
@@ -384,7 +320,7 @@ branch: master
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
     </div>
   </div>
 
@@ -393,7 +329,7 @@ branch: master
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/Linux-网络编程/" style="font-size: 17.5px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 20px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 17.5px;">Linux用户管理</a> <a href="/tags/TCP-IP/" style="font-size: 17.5px;">TCP/IP</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/动态规划/" style="font-size: 15px;">动态规划</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/数组/" style="font-size: 10px;">数组</a> <a href="/tags/树结构/" style="font-size: 15px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 12.5px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 12.5px;">爬虫</a> <a href="/tags/随记/" style="font-size: 12.5px;">随记</a>
+      <a href="/tags/Linux-网络编程/" style="font-size: 20px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 20px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 17.5px;">Linux用户管理</a> <a href="/tags/TCP-IP/" style="font-size: 17.5px;">TCP/IP</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/动态规划/" style="font-size: 15px;">动态规划</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/数组/" style="font-size: 10px;">数组</a> <a href="/tags/树结构/" style="font-size: 15px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 12.5px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 12.5px;">爬虫</a> <a href="/tags/随记/" style="font-size: 12.5px;">随记</a>
     </div>
   </div>
 
@@ -402,7 +338,7 @@ branch: master
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
     </div>
   </div>
 
@@ -418,10 +354,6 @@ branch: master
           </li>
         
           <li>
-            <a href="/2016/04/07/epoll/">epoll</a>
-          </li>
-        
-          <li>
             <a href="/2016/04/07/socket非阻塞读写/">socket非阻塞读写</a>
           </li>
         
@@ -430,7 +362,11 @@ branch: master
           </li>
         
           <li>
-            <a href="/2016/04/06/LinuxIO读取函数/">LinuxIO读取函数</a>
+            <a href="/2016/04/06/LinuxIO读取函数/">Linux IO 读写函数</a>
+          </li>
+        
+          <li>
+            <a href="/2016/03/23/Boost智能指针/">Boost智能指针</a>
           </li>
         
       </ul>

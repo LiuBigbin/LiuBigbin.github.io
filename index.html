@@ -65,6 +65,59 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-内网穿透简介" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/04/26/内网穿透简介/" class="article-date">
+  <time datetime="2016-04-26T06:13:50.000Z" itemprop="datePublished">2016-04-26</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/计算机网络/">计算机网络</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/04/26/内网穿透简介/">内网穿透简介</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="NAT的类型"><a href="#NAT的类型" class="headerlink" title="NAT的类型"></a>NAT的类型</h2><p>NAT一般有两种大的类型：cone（漏斗）类型和symmetric（对称）类型</p>
+<h3 id="cone"><a href="#cone" class="headerlink" title="cone"></a>cone</h3><p>cone类型又分为三种小的类型，分别为：full cone、restricted cone和port restricted cone</p>
+<p>在cone类型中，内网ip-port对在NAT中的映射是不变的，即使所访问的外网ip-port端口不一样，这也是其命名为cone的原因。</p>
+<h4 id="full-cone"><a href="#full-cone" class="headerlink" title="full cone"></a>full cone</h4><p>full cone是限制最少的类型，在NAT服务器上，一个内网的ip-port对只映射到一个公网的ip-port对，而不管内网主机访问的外网ip-port对的不同。</p>
+<h4 id="restricted-cone"><a href="#restricted-cone" class="headerlink" title="restricted cone"></a>restricted cone</h4><p>restricted cone相对于full cone类型增加了外网ip的限制，只有内网的机器访问了某个外网的机器，该外网机器的数据包才可以通过NAT的限制。在NAT的映射中，NAT维持一个映射关系：<br>{对端外网ip：内网ip：内网port}—-&gt;{公网ip：公网port}，同一个外网ip的机器不同的port都可以通过该映射，从而实现与内网的通讯。</p>
+<h4 id="port-restricted-cone"><a href="#port-restricted-cone" class="headerlink" title="port restricted cone"></a>port restricted cone</h4><p> port restricted cone类型在restricted cone类型的基础上增加了port的限制，必须又内网的机器访问外网机器的某个端口，该外网机器的对应端口发出的数据包才可以通过NAT。NAT维持的映射关系如下：<br> {对端外网ip：对端外网port：内网ip：内网port}—-&gt;{公网ip：公网port}，同一个机器的特定端口才可以通过该映射。</p>
+ <font color="red">注意，在以上的三种类型中，只要内网ip-port对不变，其在NAT的映射所对应的公网ip-port对就不会改变，也就是说，同一个内网ip-port在通讯过程中，其所对外的公网ip-port是不变的</font>
+
+<h3 id="symmetric"><a href="#symmetric" class="headerlink" title="symmetric"></a>symmetric</h3><p>该类型的限制最严格，端口对端口的通讯都会有一个特定的映射，就拿port restricted cone来说，对于映射：{对端外网ip：对端外网port：内网ip：内网port}—-&gt;{公网ip：公网port}， 只要是四元组中的内网ip：内网port不变，那么所有的四元组都会被映射到同一个{公网ip：公网port}，而在symmetric类型下，只要四元组中有一个是变化的，都会被映射到不同的而且唯一的{公网ip：公网port}。</p>
+<p>cone 的映射是多对一的映射，类似于一个漏斗，而symmetric的映射是一个一对一的映射，也就是对称的映射。</p>
+<h2 id="NAT穿透"><a href="#NAT穿透" class="headerlink" title="NAT穿透"></a>NAT穿透</h2><p>根据NAT的类型不同，具体的实现细节也是不同的。但是不管是NAT类型不同，还是所采用的打洞技术不同，都需要使用到第三方服务器作为彼此信息的转发者。采用UDP来实现打洞，成功率会比较高，实现起来也比较容易。而采用TCP来打洞的话，成功率较低，而且实现起来会比较的麻烦，主要的原因就是对于TCP来说，既要打洞又要建立监听，而两者所使用的端口都是一样的，而且如果两端同时收到对端的SYN，那么两端都会处于SYN-Received状态，具体进一步的处理就要看不同的系统的TCP栈处理程序了，这个也就会导致TCP在打洞方面的成功率低于UDP。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/04/26/内网穿透简介/" data-id="cinh6dvoi001qugqyoz1vius9" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TCP-IP/">TCP/IP</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-typedef与define的区别" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2016/04/12/typedef与define的区别/" class="article-date">
@@ -121,7 +174,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/04/12/typedef与define的区别/" data-id="cimwunjuv001u6kqyfo57ek4q" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/04/12/typedef与define的区别/" data-id="cinh6dvom001xugqyxtkrx2gr" class="article-share-link">Share</a>
       
       
     </footer>
@@ -177,7 +230,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/04/07/epoll之ET和LT编程/" data-id="cimwunjv500286kqy8hjcl19k" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/04/07/epoll之ET和LT编程/" data-id="cinh6dvov002bugqyjil0kyhs" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a></li></ul>
@@ -222,7 +275,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/04/07/socket非阻塞读写/" data-id="cimwunjuz00206kqyit1vb076" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/04/07/socket非阻塞读写/" data-id="cinh6dvor0023ugqyb4tr0g9g" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a></li></ul>
@@ -278,7 +331,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/04/07/C-之auto、static、extern、register/" data-id="cimwunjwc003y6kqy4rbrym1y" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/04/07/C-之auto、static、extern、register/" data-id="cinh6dvq60041ugqy9jcelf6f" class="article-share-link">Share</a>
       
       
     </footer>
@@ -364,7 +417,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/04/06/LinuxIO读取函数/" data-id="cimwunjvt00366kqyt7x27mgm" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/04/06/LinuxIO读取函数/" data-id="cinh6dvpk0039ugqylyaj1ovx" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a></li></ul>
@@ -458,7 +511,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/23/Boost智能指针/" data-id="cimwunjtc00006kqyj42tg9ym" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/23/Boost智能指针/" data-id="cinh6dvm40000ugqy2q3dtjd4" class="article-share-link">Share</a>
       
       
     </footer>
@@ -574,7 +627,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/21/Linux任务调度机制/" data-id="cimwunjvs00346kqyr5v7fr68" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/21/Linux任务调度机制/" data-id="cinh6dvpj0037ugqyt0d4x1oy" class="article-share-link">Share</a>
       
       
     </footer>
@@ -660,7 +713,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/20/链接库以及编译过程/" data-id="cimwunjtp00036kqy902vysbp" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/20/链接库以及编译过程/" data-id="cinh6dvms0003ugqy4sjjxvf6" class="article-share-link">Share</a>
       
       
     </footer>
@@ -774,59 +827,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/19/malloc函数的实现原理/" data-id="cimwunjv200246kqydb9lllx2" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Linux-内存管理" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/03/19/Linux-内存管理/" class="article-date">
-  <time datetime="2016-03-19T08:20:42.000Z" itemprop="datePublished">2016-03-19</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Linux/">Linux</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/03/19/Linux-内存管理/">Linux 内存管理</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>在Linux中，对于内存地址的处理，采用的是虚拟内存地址技术。之所以要使用虚拟内存，是因为对于每一个进程来说，都有自己的地址空间，而计算机的物理内存只有一份，每一个程序在编写的时候，都不会考虑到其他程序所需要的内存地址，也无法考虑，由于不同的进程的地址空间都是独立的（除了共享的之外），这样的话，程序编写就不知道怎样获得自己的所需内存，而采用虚拟内存的话，就解决了很多的问题，每一个进程的虚拟内存地址都是一样的，而实际运行时所对应的真实物理地址就直接的交给系统来处理，程序不需要考虑，同时也解决了内存空间独立的问题。<br>对于32为的机器，其所能访问的物理内存大小为4GB，所以每一个进程所能得到的虚拟内存大小为4GB，由于系统运行需要使用内存，也就是所谓的内核空间，一般大小为1GB，所以一般的进程所能使用的用户空间为3GB，地址从0开始。对于64位的机器，内存地址可用空间为0x0000000000000000 ~ 0xFFFFFFFFFFFFFFFF，这是个相当庞大的空间，Linux实际上只用了其中一小部分（256T）。Linux64位操作系统仅使用低47位，高17位做扩展（只能是全0或全1）。所以，实际用到的地址为空间为0x0000000000000000 ~ 0x00007FFFFFFFFFFF和0xFFFF800000000000 ~ 0xFFFFFFFFFFFFFFFF，其中前面为用户空间（User Space），后者为内核空间（Kernel Space），如下图所示：<br><img src="/pictures/Linux/虚拟内存空间.png" alt="64位Linux虚拟内存空间"></p>
-<p>对于内存的管理，一般有两种方式：分段机制和分页机制，下面就只简单的介绍一下分页机制。</p>
-<p>以32位的系统来说，对于4GB的虚拟内存，系统要怎样来管理该内存呢？一般就是采用所谓的分页机制，就是把这么大的内存按照每一页的大小分成很多页，内存的管理也就以页作为单位，而不是以字节作为单位。对也4GB的地址，如果按照每一页4K大小计算的话，那么总共需要的页数为2^20，这个时候就需要一个页目录来存储这些页的信息，以方便查找，每一个页表项存储的就是对应页的内存起始地址，每一项的大小为4Byte，这样的话，页目录所需要的内存大小为2^20*4Byte，也就是4MB的大小。</p>
-<p>而对于进程来说，一般不会使用这么大的内存空间，加上程序对内存的访问具有局部性，这样的话，就会出现很多的页表项不会被用到，也就是程序所需要的页数很少。如果一直将所有的页目录存在内存的话，或造成很到的内存浪费，此时就出现了多级页表了。</p>
-<p>以二级页表来说，将总的页目录按照页的大小（4KB）划分，所得到的二级页数为：4MB/4KB=1K,此时引入一级页表，用来存储二级页表的信息，那么每一个一级页表项的大小为4B，所需要的一级页表大小为4KB，恰好也是一个页的大小，这样，进程在运行的时候，只需要先读取一级页表，接着在根据需要对二级页表以及内存页进行配置，这样就可以大大减少页的索引信息了（因为大部分都是不会被索引的到的，只需要记录目前需要索引的页信息）。</p>
-<p>上面说道二级页表，那么对于一个线性地址（虚拟地址），内存怎样把他映射为对应的物理地址呢？我们知道在二级页表下，一级页的大小为4KB，也就是对应着1K的二级页表，所以要索引二级页表，需要将虚拟地址的高10位用来作为一级页表的表内便偏移索引，在找到二级页表后，二级页表也有1K的页数，所以需要虚拟地址的中10位作为二级页表的表内偏移索引，在得到对应的物理页地址的时候，由于每一页有4K大小，想要找到具体的字节地址，那么需要12位的索引，也就是32位地址所剩下的底12位。这样就完成了一个虚拟地址到实际的物理地址的映射。</p>
-<p>对于一级页表，其起始地址要怎样存储呢？一般的话，由于起始地址是一个4B的指针，可以存储在寄存器上，所以每次进程运行的时候，每一个进程都有自己的一级页表起始地址，当进程被加载运行的时候，操作系统为其分配的一级页表地址就直接的存在CR3寄存器中，这样开始了进程的虚拟地址访问。</p>
-<p>完成虚拟地址到物理地址的转换一般是MMU（Memory Management Unit）硬件来实现的。为了实现跟快的转换，就有了TLB（TranslationLook-aside Buffer），用来根据程序访问内存的局部性机制来缓存已经转换过的虚拟页与实际页的对应关系！TLB 中包含了最近使用过的页面的内存映射信息，处理器提供了专门的电路来并发地读取并比较TLB中的页面映射项。因此，对于频繁使用的虚拟地址，它们很可能在TLB中有对应的映射项，因而处理器可以绝对快速地将虚拟地址转译成物理地址；反之，如果一个虚拟地址没有出现在TLB中，那么处理器必须采用以上介绍的两次查表过程（意味着要两次访问内存）才能完成地址转译。在这种情况下，这一次内存访问会慢一些，但是，经过这次访问以后，此虚拟页面与对应物理页面之间的映射关系将被记录到TLB中，所以，下次再访问此虚拟页面时，处理器就可以从TLB 中实现快速转译，除非此映射项已经被 TLB 移除了。研究表明，由于计算机程序的内存访问有一定的局部性，因此，即使处理器只维护一个相对较小的TLB，程序的运行也能获得较显著的性能提升。</p>
-<h3 id="进程的建立和执行"><a href="#进程的建立和执行" class="headerlink" title="进程的建立和执行"></a>进程的建立和执行</h3><p>执行程序时，操作系统会创建一个执行该程序的进程，然后装载程序或程序片段等，然后开始顺序执行代码段。在这个过程中，操作系统总的来说做三件事情：</p>
-<h4 id="（1）-为进程创建一个独立的虚拟地址空间（范围）"><a href="#（1）-为进程创建一个独立的虚拟地址空间（范围）" class="headerlink" title="（1） 为进程创建一个独立的虚拟地址空间（范围）"></a>（1） 为进程创建一个独立的虚拟地址空间（范围）</h4><p>例如在32位系统常规分页状态下，操作系统发现待执行程序的指令和数据总和为32KB，那么操作系统会为进程分配8个页的虚拟内存空间，并分配页目录和页表，把页目录装入CR3，把进程用到的页表加载到内存。但并不把指令和数据加载到内存。</p>
-<h4 id="（2）-读取程序可执行文件文件头，并且建立虚拟空间与可执行文件中的代码段、数据段的逻辑地址的映射关系"><a href="#（2）-读取程序可执行文件文件头，并且建立虚拟空间与可执行文件中的代码段、数据段的逻辑地址的映射关系" class="headerlink" title="（2） 读取程序可执行文件文件头，并且建立虚拟空间与可执行文件中的代码段、数据段的逻辑地址的映射关系"></a>（2） 读取程序可执行文件文件头，并且建立虚拟空间与可执行文件中的代码段、数据段的逻辑地址的映射关系</h4><p>这一步将程序指令和数据映射到虚拟内存空间中。</p>
-<h4 id="（3）-将-CPU-的指令寄存器设置成可执行文件的入口地址，启动运行"><a href="#（3）-将-CPU-的指令寄存器设置成可执行文件的入口地址，启动运行" class="headerlink" title="（3） 将 CPU 的指令寄存器设置成可执行文件的入口地址，启动运行"></a>（3） 将 CPU 的指令寄存器设置成可执行文件的入口地址，启动运行</h4><p>执行程序过程时，如果当前指令或数据之在虚拟地址空间中，而实际上并不在物理内存中（前两步都没有将指令或数据加载到物理内存），将发生页错误，这时操作系统再从物理内存分配一个空闲的物理页帧，并将虚拟地址页对应的数据从磁盘拷贝加载到物理页帧中，并建立页表项和页帧的映射关系。随着进程的执行，页错误也会不断产生，操作系统也会响应每个页错误并为进程分配物理内存页帧。但物理内存是有限的，为一个进程可分配的物理内存也有限。全部可用物理内存都分配给进程后，如果进程继续抛出页错误请求更多物理内存，这时候操作系统根据自身的页置换操作算法，在保证进程正常运行的前提下，将先前为进程分配的物理内存页帧收回，重新分给该进程。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/19/Linux-内存管理/" data-id="cimwunjvv00396kqy5lz9uoao" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/19/malloc函数的实现原理/" data-id="cinh6dvot0027ugqyj130gyrk" class="article-share-link">Share</a>
       
       
     </footer>
@@ -849,7 +850,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">21</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">4</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">21</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">5</span></li></ul>
     </div>
   </div>
 
@@ -858,7 +859,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
     </div>
   </div>
 
@@ -867,7 +868,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/Linux-网络编程/" style="font-size: 20px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 20px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 17.5px;">Linux用户管理</a> <a href="/tags/TCP-IP/" style="font-size: 17.5px;">TCP/IP</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/动态规划/" style="font-size: 15px;">动态规划</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/数组/" style="font-size: 10px;">数组</a> <a href="/tags/树结构/" style="font-size: 15px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 12.5px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 12.5px;">爬虫</a> <a href="/tags/随记/" style="font-size: 12.5px;">随记</a>
+      <a href="/tags/Linux-网络编程/" style="font-size: 20px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 20px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 17.5px;">Linux用户管理</a> <a href="/tags/TCP-IP/" style="font-size: 20px;">TCP/IP</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/动态规划/" style="font-size: 15px;">动态规划</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/数组/" style="font-size: 10px;">数组</a> <a href="/tags/树结构/" style="font-size: 15px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 12.5px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 12.5px;">爬虫</a> <a href="/tags/随记/" style="font-size: 12.5px;">随记</a>
     </div>
   </div>
 
@@ -876,7 +877,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
     </div>
   </div>
 
@@ -886,6 +887,10 @@
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2016/04/26/内网穿透简介/">内网穿透简介</a>
+          </li>
         
           <li>
             <a href="/2016/04/12/typedef与define的区别/">typedef与define的区别</a>
@@ -901,10 +906,6 @@
         
           <li>
             <a href="/2016/04/07/C-之auto、static、extern、register/">C++之auto、static、extern、register</a>
-          </li>
-        
-          <li>
-            <a href="/2016/04/06/LinuxIO读取函数/">Linux IO 读写函数</a>
           </li>
         
       </ul>

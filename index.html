@@ -174,11 +174,11 @@
 <p>3）或者出现了乱序的包</p>
 <p>4）或者接收窗口的数据足够多</p>
 <p>如果接收方有数据回写，则ACK也会搭车一起发送。当以上条件都不满足时，接收方会延迟40ms再回应ACK。</p>
-<p>1.为什么TCP_NODELAY失效<br>UNIX网络编程这本书介绍说，TCP_NODELAY同时禁止了nagle算法和delayed ACK算法，因此小块数据可以直接发送。然而Linux实现中，TCP_NODELAY只禁止了nagle算法。另一方面，协议栈在发送包的时候，不仅受到TCP_NODELAY的影响，还受到协议栈里面拥塞窗口的影响。由于server端delayed ack，client迟迟无法收到ack应答，拥塞窗口堵满，从而无法继续发送更多数据；一直到40ms后ack达到，才能继续发送（题外话： TCP_NODELAY在FREEBSD上性能优于Linux上，因为FREEBSD并不像Linux一样需要第一个包到达后就响应ACK）。</p>
+<h4 id="1-为什么TCP-NODELAY失效"><a href="#1-为什么TCP-NODELAY失效" class="headerlink" title="1.为什么TCP_NODELAY失效"></a>1.为什么TCP_NODELAY失效</h4><p>UNIX网络编程这本书介绍说，TCP_NODELAY同时禁止了nagle算法和delayed ACK算法，因此小块数据可以直接发送。然而Linux实现中，TCP_NODELAY只禁止了nagle算法。另一方面，协议栈在发送包的时候，不仅受到TCP_NODELAY的影响，还受到协议栈里面拥塞窗口的影响。由于server端delayed ack，client迟迟无法收到ack应答，拥塞窗口堵满，从而无法继续发送更多数据；一直到40ms后ack达到，才能继续发送（题外话： TCP_NODELAY在FREEBSD上性能优于Linux上，因为FREEBSD并不像Linux一样需要第一个包到达后就响应ACK）。</p>
 <p>这也解释了为什么延时现象在重用过的TCP连接上特别容易出现：目前使用的52bs内核中，连接刚建立时拥塞窗口默认是3，因此可以发送3个数据包，而后拥塞窗口变为2，就会导致第3个292字节的包发不出去。</p>
-<p>2.为什么TCP_CORK失效<br>TCP_CORK会将发送端多份数据打成一个包，待到TCP_CORK关闭后一起发送。Linux Man手册上也描述了TCP_CORK选项和TCP_NODELAY一起使用的情形。然而根据之前tcpdump的结果，client端设置TCP_CORK后并没有发挥效果。继续测试发现，只要设置过TCP_NODELAY选项，即使随后关闭也会导致TCP_CORK无效；如果从未设置过TCP_NODELAY，则TCP_CORK可以产生效果。</p>
+<h4 id="2-为什么TCP-CORK失效"><a href="#2-为什么TCP-CORK失效" class="headerlink" title="2.为什么TCP_CORK失效"></a>2.为什么TCP_CORK失效</h4><p>TCP_CORK会将发送端多份数据打成一个包，待到TCP_CORK关闭后一起发送。Linux Man手册上也描述了TCP_CORK选项和TCP_NODELAY一起使用的情形。然而根据之前tcpdump的结果，client端设置TCP_CORK后并没有发挥效果。继续测试发现，只要设置过TCP_NODELAY选项，即使随后关闭也会导致TCP_CORK无效；如果从未设置过TCP_NODELAY，则TCP_CORK可以产生效果。</p>
 <p>根据STL同学对协议栈代码的调研，发现这个是Linux实现上的问题。在内核中，设置启动TCP_NODELAY选项后，内核会为socket增加两个标志位TCP_NAGLE_OFF和TCP_NAGLE_PUSH，关闭TCP_NODELAY的时候，内核只去掉了TCP_NAGLE_OFF标志位。而在发包的时候判断的却恰恰是TCP_NAGLE_PUSH标志位，如果该位置位设置，就直接把包发出去，从而导致TCP_CORK发挥不了作用。这很可能是这一版本Linux内核实现上的bug。</p>
-<p>3.TCP_QUICKACK的作用和限制<br>前面介绍delayed ack算法时，讲到协议栈迅速回复ack的情形之一就是进入到快速回复模式。而TCP_QUICKACK选项就是向内核建议进入快速回复模式。快速回复ack模式的判断条件如下：(tp-&gt;ack.quick &amp;&amp; tp-&gt;ack.pingpong)，其中设置QUICKACK选项会置pingpong=0。</p>
+<h4 id="3-TCP-QUICKACK的作用和限制"><a href="#3-TCP-QUICKACK的作用和限制" class="headerlink" title="3.TCP_QUICKACK的作用和限制"></a>3.TCP_QUICKACK的作用和限制</h4><p>前面介绍delayed ack算法时，讲到协议栈迅速回复ack的情形之一就是进入到快速回复模式。而TCP_QUICKACK选项就是向内核建议进入快速回复模式。快速回复ack模式的判断条件如下：(tp-&gt;ack.quick &amp;&amp; tp-&gt;ack.pingpong)，其中设置QUICKACK选项会置pingpong=0。</p>
 <p>然而，随着TCP连接的重用和数据的不断收发，快速回复模式有可能失效。例如在后续的交互过程当中，pingpong变为1的条件就有：1.收到fin后；2. 发送方发送数据时，发现当前时间与上次接收数据的时间小于40ms。此外，发送方发现数据包带有ack标志位时，也会减小ack.quick值。这些都会导致快速回复模式的退出。因此，即使每次接受数据前都设置TCP_QUICKACK选项，也不能完全解决delayed ack问题。</p>
 <h4 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h4><p>经过上述的测试与分析，可以认识到当连续发送多个小数据时，TCP_NODELAY作用并不明显，TCP_CORK无法像宣传的那样和TCP_NODELAY混合使用，而TCP_QUICKACK也不能完全解决问题。因此，我们最终的解决方案如下：</p>
 <p>（1）在client端多次发送数据时，先打开TCP_CORK选项，发送完后再关闭TCP_CORK，将多份小数据打成一个包发送；此外，client端不能设置TCP_NODELAY选项，以避免TCP_CORK失效。</p>

@@ -65,6 +65,148 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-TCP-Nagel算法" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/05/10/TCP-Nagel算法/" class="article-date">
+  <time datetime="2016-05-10T06:24:13.000Z" itemprop="datePublished">2016-05-10</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/计算机网络/">计算机网络</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/05/10/TCP-Nagel算法/"> TCP Nagel算法</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <ol>
+<li>Nagel算法</li>
+</ol>
+<p>TCP/IP协议中，无论发送多少数据，总是要在数据前面加上协议头，同时，对方接收到数据，也需要发送ACK表示确认。为了尽可能的利用网络带宽，TCP总是希望尽可能的发送足够大的数据。（一个连接会设置MSS参数，因此，TCP/IP希望每次都能够以MSS尺寸的数据块来发送数据）。Nagle算法就是为了尽可能发送大块数据，避免网络中充斥着许多小数据块。</p>
+  <font color="blue">Nagle算法的基本定义是任意时刻，最多只能有一个未被确认的小段。 所谓“小段”，指的是小于MSS尺寸的数据块，所谓“未被确认”，是指一个数据块发送出去后，没有收到对方发送的ACK确认该数据已收到。</font>
+
+<p>Nagle算法的规则（可参考tcp_output.c文件里tcp_nagle_check函数注释）：</p>
+<pre><code>（1）如果包长度达到MSS，则允许发送；
+
+（2）如果该包含有FIN，则允许发送；
+
+（3）设置了TCP_NODELAY选项，则允许发送；
+
+（4）未设置TCP_CORK选项时，若所有发出去的小数据包（包长度小于MSS）均被确认，则允许发送；
+（5）上述条件都未满足，但发生了超时（一般为200ms），则立即发送。
+</code></pre><p>Nagle算法只允许一个未被ACK的包存在于网络，它并不管包的大小，因此它事实上就是一个扩展的停-等协议，只不过它是基于包停-等的，而不是基于字节停-等的。Nagle算法完全由TCP协议的ACK机制决定，这会带来一些问题，比如如果对端ACK回复很快的话，Nagle事实上不会拼接太多的数据包，虽然避免了网络拥塞，网络总体的利用率依然很低。</p>
+<p>Nagle算法是silly window syndrome(SWS)预防算法的一个半集。SWS算法预防发送少量的数据，Nagle算法是其在发送方的实现，而接收方要做的时不要通告缓冲空间的很小增长，不通知小窗口，除非缓冲区空间有显著的增长。这里显著的增长定义为完全大小的段（MSS）或增长到大于最大窗口的一半。</p>
+<font color="red">注意：BSD的实现是允许在空闲链接上发送大的写操作剩下的最后的小段，也就是说，当超过1个MSS数据发送时，内核先依次发送完n个MSS的数据包，然后再发送尾部的小数据包，其间不再延时等待。（假设网络不阻塞且接收窗口足够大）</font>
+
+
+<p>举个例子，比如之前的blog中的实验，一开始client端调用socket的write操作将一个int型数据（称为A块）写入到网络中，由于此时连接是空闲的（也就是说还没有未被确认的小段），因此这个int型数据会被马上发送到server端，接着，client端又调用write操作写入‘\r\n’（简称B块），这个时候，A块的ACK没有返回，所以可以认为已经存在了一个未被确认的小段，所以B块没有立即被发送，一直等待A块的ACK收到（大概40ms之后），B块才被发送。</p>
+<p>这里还隐藏了一个问题，就是A块数据的ACK为什么40ms之后才收到？这是因为TCP/IP中不仅仅有nagle算法，还有一个TCP确认延迟机制 。当Server端收到数据之后，它并不会马上向client端发送ACK，而是会将ACK的发送延迟一段时间（假设为t），它希望在t时间内server端会向client端发送应答数据，这样ACK就能够和应答数据一起发送，就像是应答数据捎带着ACK过去。在我之前的时间中，t大概就是40ms。这就解释了为什么’\r\n’（B块）总是在A块之后40ms才发出。<br>当然，TCP确认延迟40ms并不是一直不变的，TCP连接的延迟确认时间一般初始化为最小值40ms，随后根据连接的重传超时时间（RTO）、上次收到数据包与本次接收数据包的时间间隔等参数进行不断调整。另外可以通过设置TCP_QUICKACK选项来取消确认延迟。</p>
+<h4 id="TCP-NODELAY-选项"><a href="#TCP-NODELAY-选项" class="headerlink" title="TCP_NODELAY 选项"></a>TCP_NODELAY 选项</h4><p>默认情况下，发送数据采用Negale 算法。这样虽然提高了网络吞吐量，但是实时性却降低了，在一些交互性很强的应用程序来说是不允许的，使用TCP_NODELAY选项可以禁止Negale 算法。</p>
+<p>此时，应用程序向内核递交的每个数据包都会立即发送出去。需要注意的是，虽然禁止了Negale 算法，但网络的传输仍然受到TCP确认延迟机制的影响。</p>
+<h4 id="TCP-CORK-选项"><a href="#TCP-CORK-选项" class="headerlink" title="TCP_CORK 选项"></a>TCP_CORK 选项</h4><p>所谓的CORK就是塞子的意思，形象地理解就是用CORK将连接塞住，使得数据先不发出去，等到拔去塞子后再发出去。设置该选项后，内核会尽力把小数据包拼接成一个大的数据包（一个MTU）再发送出去，当然若一定时间后（一般为200ms，该值尚待确认），内核仍然没有组合成一个MTU时也必须发送现有的数据（不可能让数据一直等待吧）。</p>
+<p>然而，TCP_CORK的实现可能并不像你想象的那么完美，CORK并不会将连接完全塞住。内核其实并不知道应用层到底什么时候会发送第二批数据用于和第一批数据拼接以达到MTU的大小，因此内核会给出一个时间限制，在该时间内没有拼接成一个大包（努力接近MTU）的话，内核就会无条件发送。也就是说若应用层程序发送小包数据的间隔不够短时，TCP_CORK就没有一点作用，反而失去了数据的实时性（每个小包数据都会延时一定时间再发送）。</p>
+<h4 id="Nagle算法与CORK算法区别"><a href="#Nagle算法与CORK算法区别" class="headerlink" title="Nagle算法与CORK算法区别"></a>Nagle算法与CORK算法区别</h4><p>Nagle算法和CORK算法非常类似，但是它们的着眼点不一样，Nagle算法主要避免网络因为太多的小包（协议头的比例非常之大）而拥塞，而CORK算法则是为了提高网络的利用率，使得总体上协议头占用的比例尽可能的小。如此看来这二者在避免发送小包上是一致的，在用户控制的层面上，Nagle算法完全不受用户socket的控制，你只能简单的设置TCP_NODELAY而禁用它，CORK算法同样也是通过设置或者清除TCP_CORK使能或者禁用之，然而Nagle算法关心的是网络拥塞问题，只要所有的ACK回来则发包，而CORK算法却可以关心内容，在前后数据包发送间隔很短的前提下（很重要，否则内核会帮你将分散的包发出），即使你是分散发送多个小数据包，你也可以通过使能CORK算法将这些内容拼接在一个包内，如果此时用Nagle算法的话，则可能做不到这一点。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/05/10/TCP-Nagel算法/" data-id="cio1264pk002th0qy0ac4ac7e" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TCP-IP/">TCP/IP</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-连续发送多份小数据时40ms延迟问题" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/05/10/连续发送多份小数据时40ms延迟问题/" class="article-date">
+  <time datetime="2016-05-10T06:15:32.000Z" itemprop="datePublished">2016-05-10</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/计算机网络/">计算机网络</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/05/10/连续发送多份小数据时40ms延迟问题/">连续发送多份小数据时40ms延迟问题</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="连续发送多份小数据时40ms延迟问题"><a href="#连续发送多份小数据时40ms延迟问题" class="headerlink" title="连续发送多份小数据时40ms延迟问题"></a>连续发送多份小数据时40ms延迟问题</h2><h3 id="以及TCP-NODELAY、TCP-CORK失效问题的定位与解决"><a href="#以及TCP-NODELAY、TCP-CORK失效问题的定位与解决" class="headerlink" title="以及TCP_NODELAY、TCP_CORK失效问题的定位与解决"></a>以及TCP_NODELAY、TCP_CORK失效问题的定位与解决</h3><p>提到TCP_NODELAY和TCP_CORK，相信很多人都很熟悉。然而由于Linux实现上的问题，这两个参数在实际使用中，并不像书里介绍的那么简单。最近DTS在解决一个TCP超时问题时，对这两个参数和它们背后所隐藏的问题有了比较深刻的认识，在此与同学们分享一下我们的经验和教训。</p>
+<h4 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h4><p>和许多经典的分布式程序类似，DTS使用TCP长连接用于client和server的数据交互：client发送请求给server，然后等待server回应。有时候出于数据结构上的考虑，client需要先连续发送多份数据，再等待server的回应。测试发现这种情况下，server端有时会出现接收数据延迟。比如说某个case里，client会先发送275个字节，接着发送24个字节，然后再发送292字节数据等等；此时如果该TCP连接被复用过，则server端在收取24字节这批数据时会很容易出现40ms延迟。</p>
+<p>由于client每次发送的数据都很小，很自然想到是nagle算法延迟了client端的数据发送，于是在client端和server端都设置了TCP_NODELAY。然而测试发现，此时server虽然顺利接受了24字节数据，却在接受随后292字节数据时依然出现了40ms延迟。难道是数据太多导致TCP_NODELAY失效？因此又在client端添加了TCP_CORK选项：即如果client需要连续发送多次数据，则先关闭TCP_NODELAY，打开TCP_CORK；所有数据write完后，再关闭TCP_CORK，打开TCP_NODELAY。按照设想，client应该会把所有数据打包在一起发送，但测试结果依然和以前一样，server还是在收取第三份数据时出现了40ms的延迟。</p>
+<h4 id="不得已使用tcpdump进行分析，结果如下："><a href="#不得已使用tcpdump进行分析，结果如下：" class="headerlink" title="不得已使用tcpdump进行分析，结果如下："></a>不得已使用tcpdump进行分析，结果如下：</h4><figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">18<span class="pseudo">:18</span><span class="pseudo">:01</span><span class="class">.640134</span> <span class="tag">IP</span> <span class="tag">jx-dp-wk11</span><span class="class">.jx</span><span class="class">.baidu</span><span class="class">.com</span><span class="class">.36989</span> &gt; <span class="tag">tc-dpf-rd-in</span><span class="class">.tc</span><span class="class">.baidu</span><span class="class">.com</span><span class="class">.licensedaemon</span>: <span class="tag">P</span> 551<span class="pseudo">:826(275)</span> <span class="tag">ack</span> 141 <span class="tag">win</span> 1460 &lt;<span class="tag">nop</span>,<span class="tag">nop</span>,<span class="tag">timestamp</span> 2551499424 1712127318&gt;</span><br><span class="line">18<span class="pseudo">:18</span><span class="pseudo">:01</span><span class="class">.640151</span> <span class="tag">IP</span> <span class="tag">jx-dp-wk11</span><span class="class">.jx</span><span class="class">.baidu</span><span class="class">.com</span><span class="class">.36989</span> &gt; <span class="tag">tc-dpf-rd-in</span><span class="class">.tc</span><span class="class">.baidu</span><span class="class">.com</span><span class="class">.licensedaemon</span>: <span class="tag">P</span> 826<span class="pseudo">:850(24)</span> <span class="tag">ack</span> 141 <span class="tag">win</span> 1460 &lt;<span class="tag">nop</span>,<span class="tag">nop</span>,<span class="tag">timestamp</span> 2551499424 1712127318&gt;</span><br><span class="line">18<span class="pseudo">:18</span><span class="pseudo">:01</span><span class="class">.680812</span> <span class="tag">IP</span> <span class="tag">tc-dpf-rd-in</span><span class="class">.tc</span><span class="class">.baidu</span><span class="class">.com</span><span class="class">.licensedaemon</span> &gt; <span class="tag">jx-dp-wk11</span><span class="class">.jx</span><span class="class">.baidu</span><span class="class">.com</span><span class="class">.36989</span>: . <span class="tag">ack</span> 850 <span class="tag">win</span> 2252 &lt;<span class="tag">nop</span>,<span class="tag">nop</span>,<span class="tag">timestamp</span> 1712127359 2551499424&gt;</span><br><span class="line">18<span class="pseudo">:18</span><span class="pseudo">:01</span><span class="class">.680818</span> <span class="tag">IP</span> <span class="tag">jx-dp-wk11</span><span class="class">.jx</span><span class="class">.baidu</span><span class="class">.com</span><span class="class">.36989</span> &gt; <span class="tag">tc-dpf-rd-in</span><span class="class">.tc</span><span class="class">.baidu</span><span class="class">.com</span><span class="class">.licensedaemon</span>: <span class="tag">P</span> 850<span class="pseudo">:1142(292)</span> <span class="tag">ack</span> 141 <span class="tag">win</span> 1460 &lt;<span class="tag">nop</span>,<span class="tag">nop</span>,<span class="tag">timestamp</span> 2551499465 1712127359&gt;</span><br></pre></td></tr></table></figure>
+<p>注意红色的部分，可见client并没有将所有数据打成一个包，每次write的数据还是作为单独的包发送；此外，client在发送完24字节的数据后，一直等到server告知ack才接着发送剩下的292字节。由于server延迟了40ms才告知ack，因此导致了其接收292字节数据时也出现了40ms延迟。</p>
+<p>既然查出了延迟是server端delayed ack的原因，通过设置server端TCP_QUICKACK，40ms延迟的问题得到了解决。</p>
+<h4 id="原因定位"><a href="#原因定位" class="headerlink" title="原因定位"></a>原因定位</h4><p>虽然DTS的延时问题暂时得到了解决，但其内在原因却使人百思不得其解：为什么TCP_NODELAY会失效？为什么TCP_CORK无作为？…… 在STL同学的帮助下，我们逐渐对这些困惑有了答案。</p>
+<p>首先介绍下delayed ack算法：当协议栈接受到TCP数据时，并不一定会立刻发送ACK响应，而是倾向于等待一个超时或者满足特殊条件时再发送。对于Linux实现，这些特殊条件如下：</p>
+<p>1）收到的数据已经超过了full frame size</p>
+<p>2）或者处于快速回复模式</p>
+<p>3）或者出现了乱序的包</p>
+<p>4）或者接收窗口的数据足够多</p>
+<p>如果接收方有数据回写，则ACK也会搭车一起发送。当以上条件都不满足时，接收方会延迟40ms再回应ACK。</p>
+<ol>
+<li>为什么TCP_NODELAY失效<br>UNIX网络编程这本书介绍说，TCP_NODELAY同时禁止了nagle算法和delayed ACK算法，因此小块数据可以直接发送。然而Linux实现中，TCP_NODELAY只禁止了nagle算法。另一方面，协议栈在发送包的时候，不仅受到TCP_NODELAY的影响，还受到协议栈里面拥塞窗口的影响。由于server端delayed ack，client迟迟无法收到ack应答，拥塞窗口堵满，从而无法继续发送更多数据；一直到40ms后ack达到，才能继续发送（题外话： TCP_NODELAY在FREEBSD上性能优于Linux上，因为FREEBSD并不像Linux一样需要第一个包到达后就响应ACK）。</li>
+</ol>
+<p>这也解释了为什么延时现象在重用过的TCP连接上特别容易出现：目前使用的52bs内核中，连接刚建立时拥塞窗口默认是3，因此可以发送3个数据包，而后拥塞窗口变为2，就会导致第3个292字节的包发不出去。</p>
+<ol>
+<li>为什么TCP_CORK失效<br>TCP_CORK会将发送端多份数据打成一个包，待到TCP_CORK关闭后一起发送。Linux Man手册上也描述了TCP_CORK选项和TCP_NODELAY一起使用的情形。然而根据之前tcpdump的结果，client端设置TCP_CORK后并没有发挥效果。继续测试发现，只要设置过TCP_NODELAY选项，即使随后关闭也会导致TCP_CORK无效；如果从未设置过TCP_NODELAY，则TCP_CORK可以产生效果。</li>
+</ol>
+<p>根据STL同学对协议栈代码的调研，发现这个是Linux实现上的问题。在内核中，设置启动TCP_NODELAY选项后，内核会为socket增加两个标志位TCP_NAGLE_OFF和TCP_NAGLE_PUSH，关闭TCP_NODELAY的时候，内核只去掉了TCP_NAGLE_OFF标志位。而在发包的时候判断的却恰恰是TCP_NAGLE_PUSH标志位，如果该位置位设置，就直接把包发出去，从而导致TCP_CORK发挥不了作用。这很可能是这一版本Linux内核实现上的bug。</p>
+<ol>
+<li>TCP_QUICKACK的作用和限制<br>前面介绍delayed ack算法时，讲到协议栈迅速回复ack的情形之一就是进入到快速回复模式。而TCP_QUICKACK选项就是向内核建议进入快速回复模式。快速回复ack模式的判断条件如下：(tp-&gt;ack.quick &amp;&amp; tp-&gt;ack.pingpong)，其中设置QUICKACK选项会置pingpong=0。</li>
+</ol>
+<p>然而，随着TCP连接的重用和数据的不断收发，快速回复模式有可能失效。例如在后续的交互过程当中，pingpong变为1的条件就有：1.收到fin后；2. 发送方发送数据时，发现当前时间与上次接收数据的时间小于40ms。此外，发送方发现数据包带有ack标志位时，也会减小ack.quick值。这些都会导致快速回复模式的退出。因此，即使每次接受数据前都设置TCP_QUICKACK选项，也不能完全解决delayed ack问题。</p>
+<h4 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h4><p>经过上述的测试与分析，可以认识到当连续发送多个小数据时，TCP_NODELAY作用并不明显，TCP_CORK无法像宣传的那样和TCP_NODELAY混合使用，而TCP_QUICKACK也不能完全解决问题。因此，我们最终的解决方案如下：</p>
+<p>（1）在client端多次发送数据时，先打开TCP_CORK选项，发送完后再关闭TCP_CORK，将多份小数据打成一个包发送；此外，client端不能设置TCP_NODELAY选项，以避免TCP_CORK失效。</p>
+<p>（2）server端开启TCP_QUICKACK选项，尽量快速回复ack。</p>
+<p>通过这个延时问题的解决，可以看到由于Linux实现策略上的问题，TCP_NODELAY和TCP_CORK还是暗藏了不少陷阱。实际应用中，其实也可以绕过这些参数，在应用层将多份数据序列化到一个buffer中，或者使用writev系列函数。然而，这些方法需要额外的内存拷贝，或者让传输对象对外暴露过多的数据结构信息，并不一定容易实现，也会添加代码重构的代价。</p>
+<p>另一方面，考虑到那些使用TCP进行异步请求的应用，由于多个请求需要同时复用一个TCP连接，也很容易出现延时问题；而无论是通过TCP_CORK还是writev哪种方法，都不太适合这种异步场景。最近STL推出的新内核添加了一个禁止delayed ack的系统参数，使用该参数理论上讲可以彻底根除40ms的延迟问题。</p>
+<p>以上内容转自<a href="http://www.cnblogs.com/tangr206/articles/3284203.html" target="_blank" rel="external">这里</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/05/10/连续发送多份小数据时40ms延迟问题/" data-id="cio1264o1000fh0qyz6ffm216" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TCP-IP/">TCP/IP</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-ICMP-协议" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2016/04/26/ICMP-协议/" class="article-date">
@@ -112,7 +254,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/04/26/ICMP-协议/" data-id="cinhea1ov003zp0qy0wtntwiu" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/04/26/ICMP-协议/" data-id="cio1264qg0045h0qysmi7o1mm" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TCP-IP/">TCP/IP</a></li></ul>
@@ -166,7 +308,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/04/26/DDOS攻击简介/" data-id="cinhea1ox0042p0qyz973n9vk" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/04/26/DDOS攻击简介/" data-id="cio1264qh0048h0qym7av8i3v" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TCP-IP/">TCP/IP</a></li></ul>
@@ -219,7 +361,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/04/26/内网穿透简介/" data-id="cinhea1nd001qp0qys6hodva1" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/04/26/内网穿透简介/" data-id="cio1264ov001th0qypq83ip8n" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TCP-IP/">TCP/IP</a></li></ul>
@@ -287,7 +429,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/04/12/typedef与define的区别/" data-id="cinhea1ni001xp0qyaq0oxfr7" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/04/12/typedef与define的区别/" data-id="cio1264p00020h0qyb0wmz8im" class="article-share-link">Share</a>
       
       
     </footer>
@@ -343,7 +485,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/04/07/epoll之ET和LT编程/" data-id="cinhea1nr002bp0qyf1x8cvip" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/04/07/epoll之ET和LT编程/" data-id="cio1264p9002eh0qy78prm5pi" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a></li></ul>
@@ -388,7 +530,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/04/07/socket非阻塞读写/" data-id="cinhea1nm0023p0qyagm4wzgf" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/04/07/socket非阻塞读写/" data-id="cio1264p30026h0qy8lf0moq0" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a></li></ul>
@@ -444,7 +586,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/04/07/C-之auto、static、extern、register/" data-id="cinhea1p00047p0qyrbj0uj7k" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/04/07/C-之auto、static、extern、register/" data-id="cio1264qk004dh0qyxg4rw41e" class="article-share-link">Share</a>
       
       
     </footer>
@@ -530,219 +672,11 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/04/06/LinuxIO读取函数/" data-id="cinhea1of0039p0qygpn15gf8" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/04/06/LinuxIO读取函数/" data-id="cio1264py003fh0qylggou3hm" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a></li></ul>
 
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Boost智能指针" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/03/23/Boost智能指针/" class="article-date">
-  <time datetime="2016-03-23T14:28:35.000Z" itemprop="datePublished">2016-03-23</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/C与C/">C与C++</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/03/23/Boost智能指针/">Boost智能指针</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>Boost 只能指针常用的有四种，分别为：shared_ptr、weak_ptr、auto_ptr以及scoped_ptr指针。</p>
-<h2 id="shared-ptr指针"><a href="#shared-ptr指针" class="headerlink" title="shared_ptr指针"></a>shared_ptr指针</h2><p>shared_ptr指针就是所谓的只能计数指针，用来管理非栈上的内存指针。它可以从一个裸指针、另一个shared_ptr、一个auto_ptr、或者一个weak_ptr构造。还可以传递第二个参数给shared_ptr的构造函数，它被称为删除器（deleter）。删除器用于处理共享资源的释放，这对于管理那些不是用new分配也不是用delete释放的资源时非常有用。shared_ptr被创建后，就可以像普通指针一样使用了，除了一点，它不能被显式地删除。</p>
-<p>shared_ptr指针的使用如下：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line"><span class="built_in">shared_ptr</span>&lt;<span class="keyword">int</span>&gt; pInt1;</span><br><span class="line">assert(pInt1.use_count() == <span class="number">0</span>);         <span class="comment">// 还没有引用指针</span></span><br><span class="line">&#123;</span><br><span class="line">      <span class="built_in">shared_ptr</span>&lt;<span class="keyword">int</span>&gt; pInt2(<span class="keyword">new</span> <span class="keyword">int</span>(<span class="number">5</span>));</span><br><span class="line">      assert(pInt2.use_count() == <span class="number">1</span>);        <span class="comment">// new int(5)这个指针被引用1次</span></span><br><span class="line"></span><br><span class="line">    pInt1 = pInt2;</span><br><span class="line">      assert(pInt2.use_count() == <span class="number">2</span>);       <span class="comment">// new int(5)这个指针被引用2次</span></span><br><span class="line">    assert(pInt1.use_count() == <span class="number">2</span>);</span><br><span class="line">&#125;                                                   <span class="comment">//pInt2离开作用域, 所以new int(5)被引用次数-1</span></span><br><span class="line"></span><br><span class="line">assert(pInt1.use_count() == <span class="number">1</span>);</span><br><span class="line">&#125;         <span class="comment">// pInt1离开作用域，引用次数-1,现在new int(5)被引用0次，所以销毁它</span></span><br></pre></td></tr></table></figure></p>
-<p>如果资源的创建销毁不是以new和delete的方式进行的，该怎么办呢？通过前面的接口可以看到，shared_ptr的构造函数中可以指定删除器。示例代码如下：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> FileCloser</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">operator</span><span class="params">()</span><span class="params">(FILE \*pf)</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">         <span class="keyword">if</span> (pf != <span class="literal">NULL</span>)</span><br><span class="line">         &#123;</span><br><span class="line">               fclose(pf);</span><br><span class="line">               pf = <span class="literal">NULL</span>;</span><br><span class="line">         &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="built_in">shared_ptr</span>&lt;FILE&gt; fp(fopen(pszConfigFile, <span class="string">"r"</span>), FileCloser());</span><br></pre></td></tr></table></figure></p>
-<p>在使用shared_ptr时，需要避免同一个对象指针被两次当成shard_ptr构造函数里的参数的情况。考虑如下代码：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">     <span class="keyword">int</span> *pInt = <span class="keyword">new</span> <span class="keyword">int</span>(<span class="number">5</span>);</span><br><span class="line">     <span class="built_in">shared_ptr</span>&lt;<span class="keyword">int</span>&gt; temp1(pInt);</span><br><span class="line">     assert(temp1.use_count() == <span class="number">1</span>);</span><br><span class="line">     <span class="built_in">shared_ptr</span>&lt;<span class="keyword">int</span>&gt; temp2(pInt);</span><br><span class="line">     assert(temp2.use_count() == <span class="number">1</span>);</span><br><span class="line">&#125;      <span class="comment">// temp1和temp2都离开作用域，它们都销毁pInt，会导致两次释放同一块内存</span></span><br></pre></td></tr></table></figure>
-<p>正确的做法是将原始指针赋给智能指针后，以后的操作都要针对智能指针了。参考代码如下：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="built_in">shared_ptr</span>&lt;<span class="keyword">int</span>&gt; temp1(<span class="keyword">new</span> <span class="keyword">int</span>(<span class="number">5</span>));</span><br><span class="line">  assert(temp1.use_count() == <span class="number">1</span>);</span><br><span class="line">  <span class="built_in">shared_ptr</span>&lt;<span class="keyword">int</span>&gt; temp2(temp1);</span><br><span class="line">  assert(temp2.use_count() == <span class="number">2</span>);</span><br><span class="line">  &#125; <span class="comment">// temp1和temp2都离开作用域，引用次数变为0，指针被销毁。</span></span><br></pre></td></tr></table></figure></p>
-<p>另外，使用shared_ptr来包装this时，也会产生与上面类似的问题。考虑如下代码：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> A</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">        <span class="built_in">shared_ptr</span>&lt;A&gt; Get()</span><br><span class="line">        &#123;</span><br><span class="line">             <span class="keyword">return</span> <span class="built_in">shared_ptr</span>&lt;A&gt;(<span class="keyword">this</span>);</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">shared_ptr</span>&lt;A&gt; pA(<span class="keyword">new</span> A());</span><br><span class="line"><span class="built_in">shared_ptr</span>&lt;A&gt; pB = pA-&gt;Get();</span><br></pre></td></tr></table></figure></p>
-<p>当pA和pB离开作用域时，会将堆上的对象释放两次。如何解决上述问题呢？C++ 11提供了如下机制：将类从enable_shared_from_this类派生，获取shared_ptr时使用shared_from_this接口。参考代码如下：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> A ：<span class="keyword">public</span> enable_shared_from_this&lt;A&gt;</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">        <span class="built_in">shared_ptr</span>&lt;A&gt; Get()</span><br><span class="line">        &#123;</span><br><span class="line">             <span class="keyword">return</span> shared_from_this();</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>在多线程中使用shared_ptr时，如果存在拷贝或赋值操作，可能会由于同时访问引用计数而导致计数无效。解决方法是向每个线程中传递公共的week_ptr，线程中需要使用shared_ptr时，将week_ptr转换成shared_ptr即可。<br>以上例子来自<a href="http://www.cnblogs.com/hujian/archive/2012/12/10/2810754.html" target="_blank" rel="external">这里</a></p>
-<h2 id="weak-ptr指针"><a href="#weak-ptr指针" class="headerlink" title="weak_ptr指针"></a>weak_ptr指针</h2><p>weak_ptr是为配合shared_ptr而引入的一种智能指针，它更像是shared_ptr的一个助手，而不是智能指针，因为它不具有普通指针的行为，没有重载operator*和operator-&gt;，它的最大作用在于协助shared_ptr，像旁观者那样观测资源的使用情况。</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt; <span class="keyword">class</span> weak_ptr&#123;  </span><br><span class="line">     <span class="keyword">public</span>:  </span><br><span class="line">     weak_ptr();  </span><br><span class="line">     <span class="keyword">template</span>&lt;<span class="keyword">class</span> Y&gt; weak_ptr(<span class="built_in">shared_ptr</span>&lt;Y&gt; <span class="keyword">const</span> &amp; r);  </span><br><span class="line">     weak_ptr(weak_ptr <span class="keyword">const</span> &amp; r);  </span><br><span class="line"></span><br><span class="line">     ~weak_ptr();  </span><br><span class="line">     weak_ptr &amp; <span class="keyword">operator</span>=(weak_ptr <span class="keyword">const</span> &amp;r);  </span><br><span class="line"></span><br><span class="line">     <span class="function"><span class="keyword">long</span> <span class="title">use_count</span><span class="params">()</span> <span class="keyword">const</span></span>;  </span><br><span class="line">     <span class="function"><span class="keyword">bool</span> <span class="title">expired</span><span class="params">()</span> <span class="keyword">const</span></span>;  </span><br><span class="line">     <span class="built_in">shared_ptr</span>&lt;T&gt; lock() <span class="keyword">const</span>;  </span><br><span class="line"></span><br><span class="line">     <span class="function"><span class="keyword">void</span> <span class="title">reset</span><span class="params">()</span></span>;  </span><br><span class="line">     <span class="function"><span class="keyword">void</span> <span class="title">swap</span><span class="params">(weak_ptr&lt;T&gt; &amp;b)</span></span>;     </span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>weak_ptr是一个“弱”指针，但它能够完成一些特殊的工作，足以证明它的存在价值。</p>
-<p>weak_ptr被设计为与shared_ptr共同工作，可以从一个shared_ptr或者另一个weak_ptr对象构造，获得资源的观测权。但weak_ptr没有共享资源，它的构造不会引起指针引用计数的增加。同样，在weak_ptr析构时也不会导致引用计数的减少，它只是一个静静地观察者。</p>
-<p>使用weak_ptr的成员函数use_count()可以观测资源的引用计数，另一个成员函数expired()的功能等价于use_count() == 0，但更快，表示观测的资源（也就是shared_ptr管理的资源）已经不复存在了。</p>
-<p>weak_ptr 没有重载operator*和-&gt;，这是特意的，因为它不共享指针，不能操作资源，这是它弱的原因。但它可以使用一个非常重要的成员函数lock()从被观测的shared_ptr获得一个可用的shared_ptr对象，从而操作资源。当expired() == true的时候，lock()函数将返回一个存储空指针的shared_ptr。</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;  </span><br><span class="line">   <span class="built_in">shared_ptr</span>&lt;<span class="keyword">int</span>&gt; sp(<span class="keyword">new</span> <span class="keyword">int</span>(<span class="number">10</span>));  </span><br><span class="line">   assert(sp.use_count() == <span class="number">1</span>);  </span><br><span class="line">   <span class="comment">//create a weak_ptr from shared_ptr  </span></span><br><span class="line">   weak_ptr&lt;<span class="keyword">int</span>&gt; wp(sp);  </span><br><span class="line">   <span class="comment">//not increase the use count  </span></span><br><span class="line">   assert(sp.use_count() == <span class="number">1</span>);  </span><br><span class="line">   <span class="comment">//judge wp is invalid  </span></span><br><span class="line">   <span class="comment">//expired() is equivalent with use_count() == 0  </span></span><br><span class="line">   <span class="keyword">if</span>(!wp.expired())&#123;  </span><br><span class="line">      <span class="built_in">shared_ptr</span>&lt;<span class="keyword">int</span>&gt; sp2 = wp.lock();<span class="comment">//get a shared_ptr  </span></span><br><span class="line">      \*sp2 = <span class="number">100</span>;  </span><br><span class="line">      assert(wp.use_count() == <span class="number">2</span>);  </span><br><span class="line">      <span class="built_in">cout</span> &lt;&lt; \*sp2 &lt;&lt; endl;  </span><br><span class="line">   &#125;<span class="comment">//out of scope,sp2 destruct automatically,use_count()--;  </span></span><br><span class="line">   assert(wp.use_count() == <span class="number">1</span>);  </span><br><span class="line">   sp.reset();<span class="comment">//shared_ptr is invalid  </span></span><br><span class="line">   assert(wp.expired());  </span><br><span class="line">   assert(!wp.lock());  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>获得this的shared_ptr</p>
-<p>weak_ptr的一个重要用途是获得this指针的shared_ptr,使对象自己能够生产shared_ptr管理自己：对象使用weak_ptr观测this指，这并不影响引用计数，在需要的时候就调用lock()函数，返回一个符合要求的shared_ptr使外界使用。</p>
-<p>这个解决方案被实现为一个惯用法，在头文件<booost enable_shared_from_this.hpp="">定义了一个助手类enable_shared_from_this<t>，其声明如下：<br><figure class="highlight ceylon"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">template&lt;<span class="keyword">class</span> T&gt;  </span><br><span class="line"><span class="keyword">class</span> enable<span class="number">_</span><span class="annotation">shared</span><span class="number">_f</span>rom<span class="number">_</span><span class="keyword">this</span>  </span><br><span class="line">&#123;  </span><br><span class="line">public:  </span><br><span class="line">   <span class="annotation">shared</span><span class="number">_p</span>tr&lt;T&gt; <span class="annotation">shared</span><span class="number">_f</span>rom<span class="number">_</span><span class="keyword">this</span>();  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></t></booost></p>
-<p>使用的时候只需要让想被shared_ptr管理的类从它继承即可，成员函数shared_from_this()会返回this的shared_ptr</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span>  </span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;boost/smart_ptr.hpp&gt;</span>  </span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;boost/enable_shared_from_this.hpp&gt;</span>  </span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;boost/make_shared.hpp&gt;</span>  </span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> boost;  </span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;  </span><br><span class="line"><span class="keyword">class</span> self_shared:  </span><br><span class="line"><span class="keyword">public</span> enable_shared_from_this&lt;self_shared&gt;&#123;  </span><br><span class="line">    <span class="keyword">public</span>:  </span><br><span class="line">    self_shared(<span class="keyword">int</span> n):x(n)&#123;&#125;</span><br><span class="line">    <span class="keyword">int</span> x;  </span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">print</span><span class="params">()</span></span>&#123;  </span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"self_shared:"</span> &lt;&lt; x &lt;&lt; endl;  </span><br><span class="line">    &#125;  </span><br><span class="line">&#125;;  </span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;  </span><br><span class="line">    <span class="built_in">shared_ptr</span>&lt;self_shared&gt; sp =   </span><br><span class="line">                           make_shared&lt;self_shared&gt;(<span class="number">315</span>);  </span><br><span class="line">    sp-&gt;print();  </span><br><span class="line">    <span class="built_in">shared_ptr</span>&lt;self_shared&gt; p = sp-&gt;shared_from_this();  </span><br><span class="line">    p-&gt;x = <span class="number">100</span>;  </span><br><span class="line">    p-&gt;print();    </span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>运行结果：<br><figure class="highlight avrasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="label">self_shared:</span><span class="number">315</span></span><br><span class="line"><span class="label">self_shared:</span><span class="number">100</span></span><br></pre></td></tr></table></figure></p>
-<p>需要注意的是千万不能从一个普通对象（非shared_ptr）使用shared_from_this ()获取shared_ptr，如<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">self_shared ss;</span><br><span class="line"></span><br><span class="line">shaerd_ptr&lt;self_shared&gt; p = ss.shared_from_this();<span class="comment">//error</span></span><br></pre></td></tr></table></figure></p>
-<p>这样虽然语法上能通过，编译也无问题，但在运行时会导致shared_ptr析构时企图删除一个栈上分配的对象，发生未定义行为。</p>
-<p>以上内容来自<a href="http://blog.csdn.net/ajioy/article/details/7377099" target="_blank" rel="external">这里</a></p>
-<h2 id="auto-ptr指针"><a href="#auto-ptr指针" class="headerlink" title="auto_ptr指针"></a>auto_ptr指针</h2><p>auto_ptr通过在栈上构建一个对象a，对象a中wrap了动态分配内存的指针p，所有对指针p的操作都转为对对象a的操作。而在a的析构函数中会自动释放p的空间，而该析构函数是编译器自动调用的，无需程序员操心。</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">用法一：  </span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">auto_ptr</span>&lt;MyClass&gt;m_example(<span class="keyword">new</span> MyClass());  </span><br><span class="line"></span><br><span class="line">用法二：  </span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">auto_ptr</span>&lt;MyClass&gt;m_example;  </span><br><span class="line">m_example.reset(<span class="keyword">new</span> MyClass());  </span><br><span class="line"></span><br><span class="line">用法三（指针的赋值操作）：  </span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">auto_ptr</span>&lt;MyClass&gt;m_example1(<span class="keyword">new</span> MyClass());  </span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">auto_ptr</span>&lt;MyClass&gt;m_example2(<span class="keyword">new</span> MyClass());  </span><br><span class="line">m_example2=m_example1;  </span><br><span class="line">```</span><br></pre></td></tr></table></figure>
-<p>对于上面的代码：m_example2=m_example1;  则C++会把m_example所指向的内存回收，使m_example1 的值为NULL，所以在C++中，应绝对避免把auto_ptr放到容器中。即应避免下列代码：<br>vector<auto_ptr<myclass>&gt;m_example;<br>当用算法对容器操作的时候，你很难避免STL内部对容器中的元素实现赋值传递，这样便会使容器中多个元素被置位NULL，而这不是我们想看到的。</auto_ptr<myclass></p>
-<p>示例：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 示例1(a)：原始代码    </span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">()</span>  </span><br><span class="line"></span>&#123;  </span><br><span class="line"><span class="function">T* <span class="title">pt</span><span class="params">( new T )</span></span>;  </span><br><span class="line">      <span class="comment">/*...更多的代码...*/</span>  </span><br><span class="line">      <span class="keyword">delete</span> pt;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>以上代码需要手动的delete掉堆上的内存，如果使用auto_ptr指针的话，就不需要：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 示例1(b)：安全代码，使用了auto_ptr  </span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">()</span>  </span><br><span class="line"></span>&#123;  </span><br><span class="line"><span class="built_in">auto_ptr</span>&lt;T&gt; pt( <span class="keyword">new</span> T );  </span><br><span class="line">      <span class="comment">/*...更多的代码...*/</span>  </span><br><span class="line">&#125; <span class="comment">// 酷：当pt出了作用域时析构函数被调用，从而对象被自动删除</span></span><br></pre></td></tr></table></figure></p>
-<p>使用一个auto_ptr就像使用一个内建的指针一样容易，而且如果想要“撤销”资源，重新采用手动的所有权，我们只要调用release()。<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 示例2：使用一个auto_ptr  </span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">g</span><span class="params">()</span>  </span><br><span class="line"></span>&#123;  </span><br><span class="line"><span class="comment">// 现在，我们有了一个分配好的对象  </span></span><br><span class="line">T* pt1 = <span class="keyword">new</span> T;  </span><br><span class="line">      <span class="comment">// 将所有权传给了一个auto_ptr对象  </span></span><br><span class="line"><span class="built_in">auto_ptr</span>&lt;T&gt; pt2(pt1);  </span><br><span class="line">      <span class="comment">// 使用auto_ptr就像我们以前使用简单指针一样，  </span></span><br><span class="line">*pt2 = <span class="number">12</span>;          <span class="comment">// 就像*pt1 = 12  </span></span><br><span class="line">pt2-&gt;SomeFunc(); <span class="comment">// 就像pt1-&gt;SomeFunc();  </span></span><br><span class="line">      <span class="comment">// 用get()来获得指针的值  </span></span><br><span class="line">assert( pt1 == pt2.get() );  </span><br><span class="line">      <span class="comment">// 用release()来撤销所有权  </span></span><br><span class="line">T* pt3 = pt2.release();  </span><br><span class="line">      <span class="comment">// 自己删除这个对象，因为现在没有任何auto_ptr拥有这个对象  </span></span><br><span class="line"><span class="keyword">delete</span> pt3;  </span><br><span class="line">&#125; <span class="comment">// pt2不再拥有任何指针，所以不要试图删除它...OK，不要重复删除  </span></span><br><span class="line"></span><br><span class="line">```</span><br></pre></td></tr></table></figure></p>
-<p>我们可以使用auto_ptr的reset()函数来重置auto_ptr使之拥有另一个对象。如果这个auto_ptr已经拥有了一个对象，那么，它会先删除已经拥有的对象，因此调用reset()就如同销毁这个auto_ptr，然后新建一个并拥有一个新对象：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 示例 3：使用reset()  </span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">h</span><span class="params">()</span>  </span><br><span class="line"></span>&#123;  </span><br><span class="line"><span class="built_in">auto_ptr</span>&lt;T&gt; pt( <span class="keyword">new</span> T(<span class="number">1</span>) );  </span><br><span class="line">pt.reset( <span class="keyword">new</span> T(<span class="number">2</span>) );         <span class="comment">// 删除由"new T(1)"分配出来的第一个T  </span></span><br><span class="line">&#125; <span class="comment">// 最后pt出了作用域，第二个T也被删除了</span></span><br></pre></td></tr></table></figure></p>
-<p>以上原文来自<a href="http://blog.csdn.net/monkey_d_meng/article/details/5901392" target="_blank" rel="external">这里</a></p>
-<h2 id="scoped-ptr指针"><a href="#scoped-ptr指针" class="headerlink" title="scoped_ptr指针"></a>scoped_ptr指针</h2><p>scoped_ptr和std::auto_ptr非常类似，是一个简单的智能指针，它能够保证在离开作用域后对象被自动释放。下列代码演示了该指针的基本应用：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;string&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;boost/scoped_ptr.hpp&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> implementation</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    ~implementation() &#123; <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt;<span class="string">"destroying implementation\n"</span>; &#125;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">do_something</span><span class="params">()</span> </span>&#123; <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"did something\n"</span>; &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">test</span><span class="params">()</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    boost::scoped_ptr&lt;implementation&gt; impl(<span class="keyword">new</span> implementation());</span><br><span class="line">    impl-&gt;do_something();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">main</span><span class="params">()</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span>&lt;&lt;<span class="string">"Test Begin ... \n"</span>;</span><br><span class="line">    test();</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span>&lt;&lt;<span class="string">"Test End.\n"</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>该代码的输出结果是：</p>
-<figure class="highlight delphi"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Test <span class="keyword">Begin</span> ...</span><br><span class="line">did something</span><br><span class="line">destroying <span class="keyword">implementation</span></span><br><span class="line">Test <span class="keyword">End</span>.</span><br></pre></td></tr></table></figure>
-<p>可以看到：当implementation类离其开impl作用域的时候，会被自动删除，这样就会避免由于忘记手动调用delete而造成内存泄漏了。</p>
-<p>scoped_ptr的实现和std::auto_ptr非常类似，都是利用了一个栈上的对象去管理一个堆上的对象，从而使得堆上的对象随着栈上的对象销毁时自动删除。不同的是，boost::scoped_ptr有着更严格的使用限制——不能拷贝。这就意味着：boost::scoped_ptr指针是不能转换其所有权的。</p>
-<ol>
-<li><p>不能转换所有权<br>boost::scoped_ptr所管理的对象生命周期仅仅局限于一个区间（该指针所在的”{}”之间），无法传到区间之外，这就意味着boost::scoped_ptr对象是不能作为函数的返回值的（std::auto_ptr可以）。</p>
-</li>
-<li><p>不能共享所有权<br>这点和std::auto_ptr类似。这个特点一方面使得该指针简单易用。另一方面也造成了功能的薄弱——不能用于stl的容器中。</p>
-</li>
-<li><p>不能用于管理数组对象<br>由于boost::scoped_ptr是通过delete来删除所管理对象的，而数组对象必须通过deletep[]来删除，因此boost::scoped_ptr是不能管理数组对象的，如果要管理数组对象需要使用boost::scoped_array类。</p>
-</li>
-</ol>
-<p>scoped_ptr的定义：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">namespace</span> boost &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt; <span class="keyword">class</span> scoped_ptr : noncopyable &#123;</span><br><span class="line">    <span class="keyword">public</span>:</span><br><span class="line">        <span class="function"><span class="keyword">explicit</span> <span class="title">scoped_ptr</span><span class="params">(T* p = <span class="number">0</span>)</span></span>;</span><br><span class="line">        ~scoped_ptr();</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">void</span> <span class="title">reset</span><span class="params">(T* p = <span class="number">0</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">        T&amp; <span class="keyword">operator</span>*() <span class="keyword">const</span>;</span><br><span class="line">        T* <span class="keyword">operator</span>-&gt;() <span class="keyword">const</span>;</span><br><span class="line">        <span class="function">T* <span class="title">get</span><span class="params">()</span> <span class="keyword">const</span></span>;</span><br><span class="line"></span><br><span class="line">        <span class="function"><span class="keyword">void</span> <span class="title">swap</span><span class="params">(scoped_ptr&amp; b)</span></span>;</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">swap</span><span class="params">(scoped_ptr&lt;T&gt; &amp; a, scoped_ptr&lt;T&gt; &amp; b)</span></span>;</span><br><span class="line">&#125;</span><br><span class="line">```</span><br></pre></td></tr></table></figure></p>
-<p>示例：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;string&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;boost/scoped_ptr.hpp&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;boost/scoped_array.hpp&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;boost/config.hpp&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;boost/detail/lightweight_test.hpp&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">test</span><span class="params">()</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="comment">// test scoped_ptr with a built-in type</span></span><br><span class="line">    <span class="keyword">long</span> * lp = <span class="keyword">new</span> <span class="keyword">long</span>;</span><br><span class="line">    boost::scoped_ptr&lt;<span class="keyword">long</span>&gt; sp ( lp );</span><br><span class="line">    BOOST_TEST( sp.get() == lp );</span><br><span class="line">    BOOST_TEST( lp == sp.get() );</span><br><span class="line">    BOOST_TEST( &amp;\*sp == lp );</span><br><span class="line"></span><br><span class="line">    \*sp = <span class="number">1234568901L</span>;</span><br><span class="line">    BOOST_TEST( \*sp == <span class="number">1234568901L</span> );</span><br><span class="line">    BOOST_TEST( \*lp == <span class="number">1234568901L</span> );</span><br><span class="line"></span><br><span class="line">    <span class="keyword">long</span> * lp2 = <span class="keyword">new</span> <span class="keyword">long</span>;</span><br><span class="line">    boost::scoped_ptr&lt;<span class="keyword">long</span>&gt; sp2 ( lp2 );</span><br><span class="line"></span><br><span class="line">    sp.swap(sp2);</span><br><span class="line">    BOOST_TEST( sp.get() == lp2 );</span><br><span class="line">    BOOST_TEST( sp2.get() == lp );</span><br><span class="line"></span><br><span class="line">    sp.reset(<span class="literal">NULL</span>);</span><br><span class="line">    BOOST_TEST( sp.get() == <span class="literal">NULL</span> );</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">main</span><span class="params">()</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    test();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h4 id="boost-scoped-ptr和std-auto-ptr的选取："><a href="#boost-scoped-ptr和std-auto-ptr的选取：" class="headerlink" title="boost::scoped_ptr和std::auto_ptr的选取："></a>boost::scoped_ptr和std::auto_ptr的选取：</h4><p>boost::scoped_ptr和std::auto_ptr的功能和操作都非常类似，如何在他们之间选取取决于是否需要转移所管理的对象的所有权（如是否需要作为函数的返回值）。如果没有这个需要的话，大可以使用boost::scoped_ptr，让编译器来进行更严格的检查，来发现一些不正确的赋值操作。</p>
-<p>以上原文来自<a href="http://www.cnblogs.com/TianFang/archive/2008/09/15/1291050.html" target="_blank" rel="external">这里</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/23/Boost智能指针/" data-id="cinhea1m20000p0qyvi8yny6j" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Linux任务调度机制" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/03/21/Linux任务调度机制/" class="article-date">
-  <time datetime="2016-03-21T14:16:33.000Z" itemprop="datePublished">2016-03-21</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Linux/">Linux</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/03/21/Linux任务调度机制/">Linux任务调度机制</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>在Linux中，每一个CPU都会有一个队列来存储处于TASK_RUNNING状态的任务，任务调度就是从这些队列中取出优先级最高的任务作为下一个放入CPU执行的任务。</p>
-<p>任务的调度需要进过两个过程：上下文切换和选择算法</p>
-<h3 id="上下文切换"><a href="#上下文切换" class="headerlink" title="上下文切换"></a>上下文切换</h3><p>从一个进程的上下文切换到另一个进程的上下文，因为其发生频率很高，所以通常都是调度器效率高低的关键。schedule()函数中调用了switch_to宏，这个宏实现了进程之间的真正切换，其代码存放于include/i386/system.h。switch_to宏是用嵌入式汇编写成的，较难理解。由switch_to()实现，而它的代码段在schedule()过程中调用，以一个宏实现。switch_to()函数正常返回，栈上的返回地址是新进程的task_struct::thread::eip，即新进程上一次被挂起时设置的继续运行的位置（上一次执行switch_to()时的标号”1:”位置）。至此转入新进程的上下文中运行。这其中涉及到wakeup，sleepon等函数来对进程进行睡眠与唤醒操作。</p>
-<h3 id="选择算法"><a href="#选择算法" class="headerlink" title="选择算法"></a>选择算法</h3><p>Linux schedule()函数将遍历就绪队列中的所有进程，调用goodness()函数计算每一个进程的权值weight，从中选择权值最大的进程投入运行。Linux的调度器主要实现在schedule()函数中。</p>
-<p>调度步骤：</p>
-<p>Schedule函数工作流程如下：</p>
-<p>（1）清理当前运行中的进程<br>（2）选择下一个要运行的进程（pick_next_task）<br>（3）设置新进程的运行环境<br>（4） 进程上下文切换</p>
-<h3 id="Linux-调度器将进程分为三类"><a href="#Linux-调度器将进程分为三类" class="headerlink" title="Linux 调度器将进程分为三类"></a>Linux 调度器将进程分为三类</h3><p>进程调度是操作系统的核心功能。调度器只是调度过程中的一部分，进程调度是非常复杂的过程，需要多个系统协同工作完成。本文所关注的仅为调度器，它的主要工作是在所有RUNNING 进程中选择最合适的一个。作为一个通用操作系统，Linux 调度器将进程分为三类：</p>
-<ol>
-<li><p>交互式进程<br>此类进程有大量的人机交互，因此进程不断地处于睡眠状态，等待用户输入。典型的应用比如编辑器 vi。此类进程对系统响应时间要求比较高，否则用户会感觉系统反应迟缓。</p>
-</li>
-<li><p>批处理进程<br>此类进程不需要人机交互，在后台运行，需要占用大量的系统资源。但是能够忍受响应延迟。比如编译器。</p>
-</li>
-<li><p>实时进程<br>实时对调度延迟的要求最高，这些进程往往执行非常重要的操作，要求立即响应并执行。比如视频播放软件或飞机飞行控制系统，很明显这类程序不能容忍长时间的调度延迟，轻则影响电影放映效果，重则机毁人亡。</p>
-</li>
-</ol>
-<h3 id="调度时机：调度什么时候发生？即：schedule-函数什么时候被调用？"><a href="#调度时机：调度什么时候发生？即：schedule-函数什么时候被调用？" class="headerlink" title="调度时机：调度什么时候发生？即：schedule()函数什么时候被调用？"></a>调度时机：调度什么时候发生？即：schedule()函数什么时候被调用？</h3><p>调度的发生主要有两种方式：</p>
-<p>1：主动式调度(自愿调度)</p>
-<p>在内核中主动直接调用进程调度函数schedule()，当进程需要等待资源而暂时停止运行时，会把状态置于挂起（睡眠），并主动请求调度，让出cpu。</p>
-<p>2：被动式调度（抢占式调度、强制调度）</p>
-<p>用户抢占（2.4  2.6）<br>内核抢占（2.6）</p>
-<h4 id="1-用户抢占发生在：从系统调用返回用户空间；从中断处理程序返回用户空间。"><a href="#1-用户抢占发生在：从系统调用返回用户空间；从中断处理程序返回用户空间。" class="headerlink" title="(1)用户抢占发生在：从系统调用返回用户空间；从中断处理程序返回用户空间。"></a>(1)用户抢占发生在：从系统调用返回用户空间；从中断处理程序返回用户空间。</h4><p>内核即将返回用户空间的时候，如果need_resched标志被设置，会导致schedule()被调用，此时就会发生用户抢占。主动式调度是用户程序自己调度schedule，也许有人会觉得自己的代码中能引用schedule吗？也许不行吧，但大家知道wait4我们是可以调用的，前面我们没有给出wait4的代码，但我们知道在执行了wait4效果是父进程被挂起，所谓的挂起就是不运行了，放弃了CPU，这里发生了进程调度是显而易见的，其实在代码中有如下几行：<br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">current­&gt;state = TASK_INTERRUPIBLE;<span class="function"><span class="title">schedule</span><span class="params">()</span></span>;</span><br></pre></td></tr></table></figure></p>
-<p>还有exit也有<br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">current­&gt;state = TASK_ZOMBIE; <span class="function"><span class="title">schedule</span><span class="params">()</span></span>;</span><br></pre></td></tr></table></figure></p>
-<p>这2种发生了进程调度，从代码上也可以看出（状态被改成了睡眠和僵死，然后去调度可运行进程，当前进程自然不会再占有CPU运行了），从效果中也能看出。这说明用户程序自己可以执行进程调度。</p>
-<h4 id="2-内核抢占"><a href="#2-内核抢占" class="headerlink" title="(2)内核抢占"></a>(2)内核抢占</h4><p>在不支持内核抢占的系统中，进程/线程一旦运行于内核空间，就可以一直执行，直到它主动放弃或时间片耗尽为止。这样一些非常紧急的进程或线程将长时间得不到运行。在支持内核抢占的系统中，更高优先级的进程/线程可以抢占正在内核空间运行的低优先级的进程/线程。关于抢占式调度(强制调度），需要知道的是，CPU在执行了当前指令之后，在执行下一条指令之前，CPU要判断在当前指令执行之后是否发生了中断或异常，如果发生了，CPU将比较到来的中断优先级和当前进程的优先级（有硬件参与实现，如中断控制器8259A芯片；通过比较寄存器的值来判断优先级；中断服务程序的入口地址形成有硬件参与实现，等等，具体实现请见相关资料和书籍），如果新来任务的优先级更高，则执行中断服务程序，在返回中断时，将执行进程调度函数schedule。</p>
-<p>在支持内核抢占的系统中,某些特例下是不允许内核被抢占的：<br>（a）内核正在运行中断处理程序，进程调度函数schedule（）会对此作出判断，如果是在中断中调用，会打印出错误信息。</p>
-<p>（b） 内核正在进行中断上下文的bottom half（中断的底半部）处理，硬件中断返回前会执行软中断，此时仍然处于中断上下文。</p>
-<p>（c） 进程正持有spinlock自旋锁，writelock/readlock读写锁等，当持有这些锁时，不应该被抢占，否则由于抢占将导致其他cpu长时间不能获得锁而死锁。</p>
-<p>（d） 内核正在执行调度程序scheduler</p>
-<p>为了保证linux内核在以上情况下不会被抢占，抢占式内核使用了一个变量preempt_count,称为内核抢占计数。这一变量被设置在进程的thread_info结构体中，每当内核要进入以上几种状态时，变量preempt_count就加1，指示内核不允许抢占，反之减1。</p>
-<h3 id="Linux任务调度策略"><a href="#Linux任务调度策略" class="headerlink" title="Linux任务调度策略"></a>Linux任务调度策略</h3><h4 id="Linux支持SCHED-FIFO、SCHED-RR和SCHED-OTHER的调度策略。"><a href="#Linux支持SCHED-FIFO、SCHED-RR和SCHED-OTHER的调度策略。" class="headerlink" title="Linux支持SCHED_FIFO、SCHED_RR和SCHED_OTHER的调度策略。"></a>Linux支持SCHED_FIFO、SCHED_RR和SCHED_OTHER的调度策略。</h4><p>linux用函数goodness（）统一计算进程（包括普通进程和实时进程）的优先级权值，该权值衡量一个处于可运行状态的进程值得运行的程度，权值越大，进程优先级越高。 每个进程的task_struct结构中，与goodness（）计算权值相关的域有以下四项：policy、nice(2.2版内核该项为priority)、counter、rt_priority。其中，policy是进程的调度策略，其可用来区分实时进程和普通进程，实时进程优先于普通进程运行。nice从最初的UNIX沿用而来，表示进程的静态负向优先级，其取值范围为19~-20，以-20优先级最高。counter表示进程剩余的时间片计数值，由于counter在计算goodness（）时起重要作用，因此，counter也可以看作是进程的动态优先级。rt_priority是实时进程特有的，表示实时优先级。</p>
-<p>首先，linux根据调度策略policy从整体上区分实时进程和普通进程。对于policy为SCHED_OTHER的普通进程，linux采用动态优先级调，其优先级权值取决于(20-nice)和进程当前的剩余时间片计数counter之和。进程创建时，子进程继承父进程的nice值，而父进程的counter值则被分为二半，子进程和父进程各得一半。时间片计数器每次清零后由(20-nice)经过换算重新赋值。字面上看，nice是“优先级”、counter是“计数器”的意思，然而实际上，它们表达的是同个意思：nice决定了分配给该进程的时间片计数，nice优先级越高的进程分到的时间片越长，用户通过系统调用nice（）或setpriority（）改变进程静态优先级nice值的同时，也改变了该进程的时间片长度；counter表示该进程剩余的时间片计数值，而nice和counter综合起来又决定进程可运行的优先级权值。在进程运行过程中，counter不断减少，而nice保持相对不变；当一个普通进程的时间片用完以后，并不马上根据nice对counter进行重新赋值，只有所有处于可运行状态的普通进程的时间片都用完了以后（counter等于0），才根据nice对counter重新赋值，这个普通进程才有了再次被调度的机会。这说明，普通进程运行过程中，counter的减小给了其它进程得以运行的机会，直至counter减为0时才完全放弃对CPU的使用，这就相当于优先级在动态变化，所以称之为动态优先调度。</p>
-<p>对于实时进程，linux采用了两种调度策略，即SCHED_FIFO(先来先服务调度)和SCHED_RR（时间片轮转调度）。因为实时进程具有一定程度的紧迫性，所以衡量一个实时进程是否应该运行，采用了一个比较固定的标准，即参考rt_priority的值。用函数goodness（）计算进程的优先级权值时，对实时进程是在1000的基础上加上rt_priority的值，而非实时进程的动态优先级综合起来的调度权值始终在以下，所以goodness（）的优先级权值计算方法确保实时进程的调度权值始终比所有的非实时进程都要大，这就保证了实时进程的优先运行。实时进程的counter与nice都与其优先级权值无关，这和普通进程是有区别的，实时进程task_struct中的counter和nice只与SCHED_RR调度策略进程的时间片计数相关；而对于SCHED_FIFO调度策略的实时进程没有调度的参考意义。</p>
-<h2 id="进程状态说明"><a href="#进程状态说明" class="headerlink" title="进程状态说明"></a>进程状态说明</h2><h4 id="R-task-running-可执行状态"><a href="#R-task-running-可执行状态" class="headerlink" title="R (task_running) : 可执行状态"></a>R (task_running) : 可执行状态</h4><p>只有在该状态的进程才可能在CPU上运行。而同一时刻可能有多个进程处于可执行状态，这些进程的task_struct结构（进程控制块）被放入对应CPU的可执行队列中（一个进程最多只能出现在一个CPU的可执行队列中）。进程调度器的任务就是从各个CPU的可执行队列中分别选择一个进程在该CPU上运行。</p>
-<p>很多操作系统教科书将正在CPU上执行的进程定义为RUNNING状态、而将可执行但是尚未被调度执行的进程定义为READY状态，这两种状态在linux下统一为 TASK_RUNNING状态。</p>
-<h4 id="S-task-interruptible-可中断的睡眠状态"><a href="#S-task-interruptible-可中断的睡眠状态" class="headerlink" title="S (task_interruptible): 可中断的睡眠状态"></a>S (task_interruptible): 可中断的睡眠状态</h4><p>处于这个状态的进程因为等待某某事件的发生（比如等待socket连接、等待信号量），而被挂起。这些进程的task_struct结构被放入对应事件的等待队列中。当这些事件发生时（由外部中断触发、或由其他进程触发），对应的等待队列中的一个或多个进程将被唤醒。</p>
-<p>通过ps命令我们会看到，一般情况下，进程列表中的绝大多数进程都处于task_interruptible状态（除非机器的负载很高）。毕竟CPU就这么一两个，进程动辄几十上百个，如果不是绝大多数进程都在睡眠，CPU又怎么响应得过来。</p>
-<h4 id="D-task-uninterruptible-不可中断的睡眠状态"><a href="#D-task-uninterruptible-不可中断的睡眠状态" class="headerlink" title="D (task_uninterruptible): 不可中断的睡眠状态"></a>D (task_uninterruptible): 不可中断的睡眠状态</h4><p>与task_interruptible状态类似，进程处于睡眠状态，但是此刻进程是不可中断的。不可中断，指的并不是CPU不响应外部硬件的中断，而是指进程不响应异步信号。</p>
-<p>绝大多数情况下，进程处在睡眠状态时，总是应该能够响应异步信号的。但是uninterruptible sleep 状态的进程不接受外来的任何信号，因此无法用kill杀掉这些处于D状态的进程，无论是”kill”, “kill -9″还是”kill -15″，这种情况下，一个可选的方法就是reboot。</p>
-<p>处于uninterruptible sleep状态的进程通常是在等待IO，比如磁盘IO，网络IO，其他外设IO，如果进程正在等待的IO在较长的时间内都没有响应，那么就被ps看到了，同时也就意味着很有可能有IO出了问题，可能是外设本身出了故障，也可能是比如挂载的远程文件系统已经不可访问了.</p>
-<p>而task_uninterruptible状态存在的意义就在于，内核的某些处理流程是不能被打断的。如果响应异步信号，程序的执行流程中就会被插入一段用于处理异步信号的流程（这个插入的流程可能只存在于内核态，也可能延伸到用户态），于是原有的流程就被中断了。</p>
-<p>在进程对某些硬件进行操作时（比如进程调用read系统调用对某个设备文件进行读操作，而read系统调用最终执行到对应设备驱动的代码，并与对应的物理设备进行交互），可能需要使用task_uninterruptible状态对进程进行保护，以避免进程与设备交互的过程被打断，造成设备陷入不可控的状态。这种情况下的task_uninterruptible状态总是非常短暂的，通过ps命令基本上不可能捕捉到。</p>
-<p>我们通过vmstat 命令中procs下的b 可以来查看是否有处于uninterruptible 状态的进程。 该命令只能显示数量。</p>
-<p>In computer operating systems terminology, a sleeping process can either be interruptible (woken via signals) or uninterruptible (woken explicitly). An uninterruptible sleep state is a sleep state that cannot handle a signal (such as waiting for disk or network IO (input/output)).</p>
-<p>When the process is sleeping uninterruptibly, the signal will be noticed when the process returns from the system call or trap.<br> – 这句是关键。 当处于uninterruptibly sleep 状态时，只有当进程从system 调用返回时，才通知signal。</p>
-<p>A process which ends up in “D” state for any measurable length of time is trapped in the midst of a system call (usually an I/O operation on a device — thus the initial in the ps output).</p>
-<p>Such a process cannot be killed — it would risk leaving the kernel in an inconsistent state, leading to a panic. In general you can consider this to be a bug in the device driver that the process is accessing.</p>
-<h4 id="T-task-stopped-or-task-traced-：暂停状态或跟踪状态"><a href="#T-task-stopped-or-task-traced-：暂停状态或跟踪状态" class="headerlink" title="T(task_stopped or task_traced)：暂停状态或跟踪状态"></a>T(task_stopped or task_traced)：暂停状态或跟踪状态</h4><p>向进程发送一个sigstop信号，它就会因响应该信号而进入task_stopped状态（除非该进程本身处于task_uninterruptible状态而不响应信号）。（sigstop与sigkill信号一样，是非常强制的。不允许用户进程通过signal系列的系统调用重新设置对应的信号处理函数。）</p>
-<p>向进程发送一个sigcont信号，可以让其从task_stopped状态恢复到task_running状态。</p>
-<p>当进程正在被跟踪时，它处于task_traced这个特殊的状态。“正在被跟踪”指的是进程暂停下来，等待跟踪它的进程对它进行操作。比如在gdb中对被跟踪的进程下一个断点，进程在断点处停下来的时候就处于task_traced状态。而在其他时候，被跟踪的进程还是处于前面提到的那些状态。</p>
-<p>对于进程本身来说，task_stopped和task_traced状态很类似，都是表示进程暂停下来。</p>
-<p>而task_traced状态相当于在task_stopped之上多了一层保护，处于task_traced状态的进程不能响应sigcont信号而被唤醒。只能等到调试进程通过ptrace系统调用执行ptrace_cont、ptrace_detach等操作（通过ptrace系统调用的参数指定操作），或调试进程退出，被调试的进程才能恢复task_running状态。</p>
-<h4 id="Z-task-dead-exit-zombie-：退出状态，进程成为僵尸进程"><a href="#Z-task-dead-exit-zombie-：退出状态，进程成为僵尸进程" class="headerlink" title="Z (task_dead - exit_zombie)：退出状态，进程成为僵尸进程"></a>Z (task_dead - exit_zombie)：退出状态，进程成为僵尸进程</h4><p>在Linux进程的状态中，僵尸进程是非常特殊的一种，它是已经结束了的进程，但是没有从进程表中删除。太多了会导致进程表里面条目满了，进而导致系统崩溃，倒是不占用其他系统资源。    </p>
-<p>它已经放弃了几乎所有内存空间，没有任何可执行代码，也不能被调度，仅仅在进程列表中保留一个位置，记载该进程的退出状态等信息供其他进程收集，除此之外，僵尸进程不再占有任何内存空间。</p>
-<p>进程在退出的过程中，处于TASK_DEAD状态。在这个退出过程中，进程占有的所有资源将被回收，除了task_struct结构（以及少数资源）以外。于是进程就只剩下task_struct这么个空壳，故称为僵尸。</p>
-<p>之所以保留task_struct，是因为task_struct里面保存了进程的退出码、以及一些统计信息。而其父进程很可能会关心这些信息。比如在shell中，$?变量就保存了最后一个退出的前台进程的退出码，而这个退出码往往被作为if语句的判断条件。</p>
-<p>当然，内核也可以将这些信息保存在别的地方，而将task_struct结构释放掉，以节省一些空间。但是使用task_struct结构更为方便，因为在内核中已经建立了从pid到task_struct查找关系，还有进程间的父子关系。释放掉task_struct，则需要建立一些新的数据结构，以便让父进程找到它的子进程的退出信息。</p>
-<p>子进程在退出的过程中，内核会给其父进程发送一个信号，通知父进程来“收尸”。 父进程可以通过wait系列的系统调用（如wait4、waitid）来等待某个或某些子进程的退出，并获取它的退出信息。然后wait系列的系统调用会顺便将子进程的尸体（task_struct）也释放掉。</p>
-<p>这个信号默认是SIGCHLD，但是在通过clone系统调用创建子进程时，可以设置这个信号。</p>
-<p>如果他的父进程没安装SIGCHLD信号处理函数调用wait或waitpid()等待子进程结束，又没有显式忽略该信号，那么它就一直保持僵尸状态，子进程的尸体（task_struct）也就无法释放掉。</p>
-<p>如果这时父进程结束了，那么init进程自动会接手这个子进程，为它收尸，它还是能被清除的。但是如果如果父进程是一个循环，不会结束，那么子进程就会一直保持僵尸状态，这就是为什么系统中有时会有很多的僵尸进程。</p>
-<p>当进程退出的时候，会将它的所有子进程都托管给别的进程（使之成为别的进程的子进程）。托管的进程可能是退出进程所在进程组的下一个进程（如果存在的话），或者是1号进程。所以每个进程、每时每刻都有父进程存在。除非它是1号进程。1号进程，pid为1的进程，又称init进程。</p>
-<p>linux系统启动后，第一个被创建的用户态进程就是init进程。它有两项使命：</p>
-<p>1、执行系统初始化脚本，创建一系列的进程（它们都是init进程的子孙）；<br>2、在一个死循环中等待其子进程的退出事件，并调用waitid系统调用来完成“收尸”工作；</p>
-<p>init进程不会被暂停、也不会被杀死（这是由内核来保证的）。它在等待子进程退出的过程中处于task_interruptible状态，“收尸”过程中则处于task_running状态。</p>
-<h4 id="X-task-dead-exit-dead-：退出状态，进程即将被销毁"><a href="#X-task-dead-exit-dead-：退出状态，进程即将被销毁" class="headerlink" title="X (task_dead - exit_dead)：退出状态，进程即将被销毁"></a>X (task_dead - exit_dead)：退出状态，进程即将被销毁</h4><p>进程在退出过程中也可能不会保留它的task_struct。比如这个进程是多线程程序中被detach过的进程。或者父进程通过设置sigchld信号的handler为sig_ign，显式的忽略了sigchld信号。（这是posix的规定，尽管子进程的退出信号可以被设置为sigchld以外的其他信号。）</p>
-<p>此时，进程将被置于exit_dead退出状态，这意味着接下来的代码立即就会将该进程彻底释放。所以exit_dead状态是非常短暂的，几乎不可能通过ps命令捕捉到。</p>
-<h2 id="进程状态变化说明"><a href="#进程状态变化说明" class="headerlink" title="进程状态变化说明"></a>进程状态变化说明</h2><h4 id="进程的初始状态"><a href="#进程的初始状态" class="headerlink" title="进程的初始状态"></a>进程的初始状态</h4><p>进程是通过fork系列的系统调用（fork、clone、vfork）来创建的，内核（或内核模块）也可以通过kernel_thread函数创建内核进程。这些创建子进程的函数本质上都完成了相同的功能——将调用进程复制一份，得到子进程。（可以通过选项参数来决定各种资源是共享、还是私有。）</p>
-<p>那么既然调用进程处于task_running状态（否则，它若不是正在运行，又怎么进行调用？），则子进程默认也处于task_running状态。<br>另外，在系统调用调用clone和内核函数kernel_thread也接受clone_stopped选项，从而将子进程的初始状态置为 task_stopped。</p>
-<h4 id="进程状态变迁"><a href="#进程状态变迁" class="headerlink" title="进程状态变迁"></a>进程状态变迁</h4><p>进程自创建以后，状态可能发生一系列的变化，直到进程退出。而尽管进程状态有好几种，但是进程状态的变迁却只有两个方向——从task_running状态变为非task_running状态、或者从非task_running状态变为task_running状态。</p>
-<p>也就是说，如果给一个task_interruptible状态的进程发送sigkill信号，这个进程将先被唤醒（进入task_running状态），然后再响应sigkill信号而退出（变为task_dead状态）。并不会从task_interruptible状态直接退出。</p>
-<p>进程从非task_running状态变为task_running状态，是由别的进程（也可能是中断处理程序）执行唤醒操作来实现的。执行唤醒的进程设置被唤醒进程的状态为task_running，然后将其task_struct结构加入到某个cpu的可执行队列中。于是被唤醒的进程将有机会被调度执行。</p>
-<p>而进程从task_running状态变为非task_running状态，则有两种途径：</p>
-<p>1、响应信号而进入task_stoped状态、或task_dead状态；</p>
-<p>2、执行系统调用主动进入task_interruptible状态（如nanosleep系统调用）、或task_dead状态（如exit系统调用）；或由于执行系统调用需要的资源得不到满足，而进入task_interruptible状态或task_uninterruptible状态（如select系统调用）。</p>
-<p>显然，这两种情况都只能发生在进程正在cpu上执行的情况下。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/21/Linux任务调度机制/" data-id="cinhea1oe0037p0qyn16ehgfi" class="article-share-link">Share</a>
-      
-      
     </footer>
   </div>
   
@@ -763,7 +697,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">21</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">7</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">21</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">9</span></li></ul>
     </div>
   </div>
 
@@ -772,7 +706,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
     </div>
   </div>
 
@@ -790,7 +724,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
     </div>
   </div>
 
@@ -802,6 +736,14 @@
       <ul>
         
           <li>
+            <a href="/2016/05/10/TCP-Nagel算法/"> TCP Nagel算法</a>
+          </li>
+        
+          <li>
+            <a href="/2016/05/10/连续发送多份小数据时40ms延迟问题/">连续发送多份小数据时40ms延迟问题</a>
+          </li>
+        
+          <li>
             <a href="/2016/04/26/ICMP-协议/">ICMP 协议</a>
           </li>
         
@@ -811,14 +753,6 @@
         
           <li>
             <a href="/2016/04/26/内网穿透简介/">内网穿透简介</a>
-          </li>
-        
-          <li>
-            <a href="/2016/04/12/typedef与define的区别/">typedef与define的区别</a>
-          </li>
-        
-          <li>
-            <a href="/2016/04/07/epoll之ET和LT编程/">epoll之ET和LT编程</a>
           </li>
         
       </ul>

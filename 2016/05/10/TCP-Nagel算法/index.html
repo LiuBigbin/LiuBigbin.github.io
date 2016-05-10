@@ -17,7 +17,7 @@ TCP/IP协议中，无论发送多少数据，总是要在数据前面加上协�
 
 TCP/IP协议中，无论发送多少数据，总是要在数据前面加上协议头，同时，对方接收到数据，也需要发送ACK表示确认。为了尽可能的利用网络带宽，TCP总是希望尽可能的发送足够大的数据。（一个连接会设置MSS参数，因此，TCP/IP希望每次都能够以MSS尺寸的数据块来发送数据）。Nagle算法就是为了尽可能发送大块数据，避免网络中充斥着许多小数据块。
   Nagle算法的基本定义是任意">
-<meta property="og:updated_time" content="2016-05-10T06:30:30.000Z">
+<meta property="og:updated_time" content="2016-05-10T06:34:19.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content=" TCP Nagel算法">
 <meta name="twitter:description" content="Nagel算法
@@ -126,6 +126,7 @@ TCP/IP协议中，无论发送多少数据，总是要在数据前面加上协�
 <h4 id="TCP-CORK-选项"><a href="#TCP-CORK-选项" class="headerlink" title="TCP_CORK 选项"></a>TCP_CORK 选项</h4><p>所谓的CORK就是塞子的意思，形象地理解就是用CORK将连接塞住，使得数据先不发出去，等到拔去塞子后再发出去。设置该选项后，内核会尽力把小数据包拼接成一个大的数据包（一个MTU）再发送出去，当然若一定时间后（一般为200ms，该值尚待确认），内核仍然没有组合成一个MTU时也必须发送现有的数据（不可能让数据一直等待吧）。</p>
 <p>然而，TCP_CORK的实现可能并不像你想象的那么完美，CORK并不会将连接完全塞住。内核其实并不知道应用层到底什么时候会发送第二批数据用于和第一批数据拼接以达到MTU的大小，因此内核会给出一个时间限制，在该时间内没有拼接成一个大包（努力接近MTU）的话，内核就会无条件发送。也就是说若应用层程序发送小包数据的间隔不够短时，TCP_CORK就没有一点作用，反而失去了数据的实时性（每个小包数据都会延时一定时间再发送）。</p>
 <h4 id="Nagle算法与CORK算法区别"><a href="#Nagle算法与CORK算法区别" class="headerlink" title="Nagle算法与CORK算法区别"></a>Nagle算法与CORK算法区别</h4><p>Nagle算法和CORK算法非常类似，但是它们的着眼点不一样，Nagle算法主要避免网络因为太多的小包（协议头的比例非常之大）而拥塞，而CORK算法则是为了提高网络的利用率，使得总体上协议头占用的比例尽可能的小。如此看来这二者在避免发送小包上是一致的，在用户控制的层面上，Nagle算法完全不受用户socket的控制，你只能简单的设置TCP_NODELAY而禁用它，CORK算法同样也是通过设置或者清除TCP_CORK使能或者禁用之，然而Nagle算法关心的是网络拥塞问题，只要所有的ACK回来则发包，而CORK算法却可以关心内容，在前后数据包发送间隔很短的前提下（很重要，否则内核会帮你将分散的包发出），即使你是分散发送多个小数据包，你也可以通过使能CORK算法将这些内容拼接在一个包内，如果此时用Nagle算法的话，则可能做不到这一点。</p>
+<p>以上内容转自<a href="http://blog.163.com/li_xiang1102/blog/static/607140762011111103213616/" target="_blank" rel="external">这里</a></p>
 
       
     </div>

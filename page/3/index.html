@@ -65,6 +65,58 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-从整数的补码到用位运算实现任何两个数的加减法" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/03/16/从整数的补码到用位运算实现任何两个数的加减法/" class="article-date">
+  <time datetime="2016-03-16T06:46:15.000Z" itemprop="datePublished">2016-03-16</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C与C/">C与C++</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/03/16/从整数的补码到用位运算实现任何两个数的加减法/">从整数的补码到用位运算实现任何两个数的加减法</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>在计算机中，数值是以补码的形式存储的，正整数的补码就是其原码，负整数的补码就是其绝对值的原码所有位取反再加1。</p>
+<p>例如：-7的补码：因为是负数，则符号位为“1”,整个为10000111；其余7位为-7的绝对值+7的原码<br>  0000111按位取反为1111000；再加1，所以-7的补码是11111001。简单点就是10000000（ 128）-0000111（7）=11111001（121）</p>
+<p>由上面的例子也可以知道，要求一个负整数的补码，在一个字节大小的情况下，只需要求128减去该负数的绝对值所得到的差的原码就行。</p>
+<p>计算机之所以要把负数存储为其补码，是因为想把减法变成加法，这样减去一个负数，就相当于加上该负数的补码。</p>
+<p>想要将一个正整数取反的话，那么只需要对该正整数按位取反再加1就可以了，相反的，如果是负整数转正整数的话，就是先减一在按位取反，下面的c语言的整数取反代码：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span>  </span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">change</span><span class="params">(<span class="keyword">int</span> num)</span>  </span><br><span class="line"></span>&#123;  </span><br><span class="line">    <span class="keyword">if</span> (num &lt; <span class="number">0</span>)  </span><br><span class="line">    &#123;  </span><br><span class="line">        num = ~(num - <span class="number">1</span>);  </span><br><span class="line">    &#125;  </span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (num &gt;<span class="number">0</span>)  </span><br><span class="line">    &#123;  </span><br><span class="line">        num = ~num + <span class="number">1</span>;  </span><br><span class="line">    &#125;  </span><br><span class="line">    <span class="keyword">return</span> num;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>现在来看看怎样通过位运算来实现连个整数的加法。</p>
+<p>我们知道，在位的角度来看加法，一个位加后，要么需要进位，要么不需要，需要进位的是因为两个加数相同的位的值都是1，不需要进位是因为相同位的值不都是1，不需要进位的情况下，只需要两个数进行异或运算就可以了，进位的情况下，需要两个加数先进行&amp;运算，得到进位的值，在左移一位，这样再递归的进行两个数的相加，知道没有进位为止，也就是两个加数&amp;运算后的值为0。代码如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"> <span class="function"><span class="keyword">int</span> <span class="title">add</span> <span class="params">(<span class="keyword">int</span> a , <span class="keyword">int</span>  b)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">     <span class="keyword">return</span>  b ? add ((a  ^  b) , (a &amp; b)&lt;&lt;<span class="number">1</span>) : a ;</span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line"> <span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> *argv[])</span></span><br><span class="line"> </span>&#123;</span><br><span class="line">     <span class="keyword">int</span> a  ,  c ;</span><br><span class="line"></span><br><span class="line">     <span class="built_in">scanf</span> (<span class="string">"%d%d"</span>,&amp;a , &amp;c) ;</span><br><span class="line"></span><br><span class="line">     <span class="built_in">printf</span> (<span class="string">"val = %d\n"</span> , add (a , c) );</span><br><span class="line"></span><br><span class="line">     <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<p>如果想要实现两个整数相减的话，那么可以利用补码的思想，先将减数取反，得到其补码，在利用上面的加法进行求和。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/03/16/从整数的补码到用位运算实现任何两个数的加减法/" data-id="ciq4lsqi90020tsqyiexp7hc8" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/位运算/">位运算</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-域名污染" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2016/03/15/域名污染/" class="article-date">
@@ -102,7 +154,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/15/域名污染/" data-id="cio1264oi001ah0qyk5o8rlt2" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/15/域名污染/" data-id="ciq4lsqhw001etsqyoo58mq4j" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TCP-IP/">TCP/IP</a></li></ul>
@@ -170,7 +222,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/15/NAT以及内网穿透/" data-id="cio1264pm002wh0qyocwoy9iw" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/15/NAT以及内网穿透/" data-id="ciq4lsqiv0030tsqy4g5sa8xn" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TCP-IP/">TCP/IP</a></li></ul>
@@ -232,7 +284,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/14/TCP_IP模型常用协议/" data-id="cio1264pi002qh0qy7nsze3h7" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/14/TCP_IP模型常用协议/" data-id="ciq4lsqit002utsqylknyfhx0" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TCP-IP/">TCP/IP</a></li></ul>
@@ -306,7 +358,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/12/平衡二叉查找树-AVL树/" data-id="cio1264od0012h0qymk1b3oqe" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/12/平衡二叉查找树-AVL树/" data-id="ciq4lsqhq0016tsqycp99tfbw" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/树结构/">树结构</a></li></ul>
@@ -400,7 +452,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/11/Linux-之守护进程、僵死进程与孤儿进程/" data-id="cio1264q1003kh0qydj31yx06" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/11/Linux-之守护进程、僵死进程与孤儿进程/" data-id="ciq4lsqja003otsqyze9orzoq" class="article-share-link">Share</a>
       
       
     </footer>
@@ -481,7 +533,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/11/IO-多路复用之select、poll、epoll详解/" data-id="cio1264qe0042h0qyjifr9l82" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/11/IO-多路复用之select、poll、epoll详解/" data-id="ciq4lsqjk0046tsqyf340tyij" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a></li></ul>
@@ -541,7 +593,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/11/Linux-I-O-模型/" data-id="cio1264qa003wh0qy4xmwhq0i" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/11/Linux-I-O-模型/" data-id="ciq4lsqjh0040tsqyejia2z02" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a></li></ul>
@@ -606,7 +658,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/29/磁盘的分割、格式化、检验与挂载/" data-id="cio1264o6000ph0qydya83g5q" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/29/磁盘的分割、格式化、检验与挂载/" data-id="ciq4lsqhi000utsqy0k51jfqk" class="article-share-link">Share</a>
       
       
     </footer>
@@ -660,122 +712,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/29/Linux文件系统之df，du以及ln命令/" data-id="cio1264pu0038h0qyluf68xzf" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Linux磁盘概念" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/02/29/Linux磁盘概念/" class="article-date">
-  <time datetime="2016-02-29T11:57:39.000Z" itemprop="datePublished">2016-02-29</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Linux/">Linux</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/02/29/Linux磁盘概念/">Linux磁盘概念</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>个人计算机常见的磁盘接口有两种， 分别是IDE不SATA接口，目前(2009)的主流已经是SATA接口了。</p>
-<p>以IDE接口来说，由于一个IDE扁平电缆可以连接两个IDE装置，又通常主机都会提供两个IDE接口，因此最多可以接到四个IDE装置。 也就是说，如果你已经有一个光盘设备了，那么最多就只能再接三颗IDE接口的磁盘啰。 这两个IDE接口通常被称为IDE1(primary)及IDE2(secondary)， 而每条扁平电缆上面癿IDE装置可以被区分为Master不Slave。这四个IDE装置癿文件名为：</p>
-<p><font color="red">以下的名称以及顺序都是固定的</font></p>
-<table>
-<thead>
-<tr>
-<th>IDE\Jumper</th>
-<th style="text-align:center">Master</th>
-<th style="text-align:right">Slave</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>IED1（primary）</td>
-<td style="text-align:center">/dev/hda</td>
-<td style="text-align:right">/dev/hdb</td>
-</tr>
-<tr>
-<td>IED2（Secondary）</td>
-<td style="text-align:center">/dev/hdc</td>
-<td style="text-align:right">/dev/hdd</td>
-</tr>
-</tbody>
-</table>
-<p>再以SATA接口来说，由于SATA/USB/SCSI等磁盘接口都是使用SCSI模块来驱动的， 因此这些接口的磁盘装置文件名都是/dev/sd[a-p]的格式。 但是与IDE接口不同的是，SATA/USB接口的磁盘根本就没有一定的顺序，那如何决定他的装置文件名呢？ 这个时候就得要根据Linux核心侦测到磁盘的顺序了！这里以底下的例子来让你了解：</p>
-<p>例题：</p>
-<p>如果你的PC上面有两个SATA磁盘以及一个USB磁盘，而主板上面有六个SATA的插槽。这两个SATA磁盘分别安插在主板上的SATA1, SATA5插槽上， 请问这三个磁盘在<br>Linux中的装置文件名为何？</p>
-<p>答：由与是使用侦测到的顺序来决定装置文件名，<font color="red">并非与实际插槽代号有关</font>，因此装置癿文件名如下：</p>
-<ol>
-<li>SATA1插槽上的檔名：/dev/sda</li>
-<li>SATA5插槽上的檔名：/dev/sdb</li>
-<li>USB磁盘(开机完成后才被系统捉到)：/dev/sdc</li>
-</ol>
-<h3 id="磁盘"><a href="#磁盘" class="headerlink" title="磁盘"></a>磁盘</h3><p>一颗磁盘的数据主要存在其盘面上，磁盘面由磁柱构成，磁柱又可以分为很多的扇区。一颗磁盘最重要的扇区就是第一个扇区，这里记录着正科磁盘最重要的信息，主要有两个重要的信息：</p>
-<ol>
-<li>主要启动记录区MBR（Master Boot Record）：可以安装开机管理程序的地方，有466 Bytes</li>
-<li>分割表（partition table）: 记录整颗磁盘分割信息，有64bytes</li>
-</ol>
-<p>由于分割表只有64bytes，所以只能存储四笔的分割信息，也就是说，磁盘的主要分割区只有四个。如果想要分割跟多的区的话，就只能通过extend延伸分割的方式来处理了。延伸分割的目的是使用额外的扇区来记录分割信息，延伸分割本身并不能被拿来格式化。 然后我们可以透过延伸分割所指向的那个区块继续作分割的记录。如下图所示：</p>
-<p><img src="/pictures/Linux磁盘概念-磁盘延伸分割.png" alt=""></p>
-<p>上述的分割槽在Linux系统中的装置文件名分别如下：</p>
-<ol>
-<li>P1:/dev/hda1</li>
-<li>P2:/dev/hda2</li>
-<li>L1:/dev/hda5</li>
-<li>L2:/dev/hda6</li>
-<li>L3:/dev/hda7</li>
-<li>L4:/dev/hda8</li>
-<li>L5:/dev/hda9</li>
-</ol>
-<p>要注意的是：如果延伸分割被破坏，所有逻辑分割将会被删除。因为逻辑分割的信息都记录在延伸分割里面。</p>
-<p>磁盘需要分割的原因主要有两个：</p>
-<ol>
-<li>数据的安全性：由于各个分割区之间是互相独立的，一个区数据坏了并不影响其他数据区的数据</li>
-<li>系统性能的考虑：由于数据只能存在一个分割区上，因此当需要读取数据的时候，磁头只会搜索该区所在的磁柱的范围，是的磁臂的摆动幅度不会太大，从而加快了数据的读取。</li>
-</ol>
-<h3 id="开机流程与主要启动记录区-MBR"><a href="#开机流程与主要启动记录区-MBR" class="headerlink" title="开机流程与主要启动记录区(MBR)"></a>开机流程与主要启动记录区(MBR)</h3><p>计算机主板上面有两个东西，一个是CMOS，主要记录各项硬件参数且嵌入到主板上面的存储器，另外一个就是BIOS，写入到主板上面的一个韧体（也就是一个软件程序）。开机时，计算机会先运行BIOS，该程序会根据用户的设定来取得能够开机的硬盘，并且读取该硬盘的第一个扇区中的MBR区域，该位置存放的是最基本的开机管理程序（boot loader），此时BIOS运行结束，记下来就是开机管理程序的事情了。</p>
-<p>开机管理程序的任务就是加载核心档案，由于开机管理程序是操作系统在安装的时候所提供的，所以他可以识别硬盘内的文件系统格式，从而加载核心档案，然后接下来就是核心档案的工作了，开机管理程序到此结束。接下来就是操作系统的任务了！</p>
-<p>简答来说，这个开机的流程为：</p>
-<ol>
-<li>BIOS：开机主动执行的韧体，会识别可一个可开机的装置；</li>
-<li>MBR：第一个可开机装置的第一个扇区内的主要启动记录区，含有开机管理程序</li>
-<li>开机管理程序（boot loader）：一支可读取核心档案来执行的软件程序</li>
-<li>核心档案：开始操作系统的功能。</li>
-</ol>
-<p>至于多重引导开机的情况，可以参考下图：</p>
-<p><img src="/pictures/Linux磁盘概念-多重引导.png" alt=""></p>
-<p>在上图中我们可以发现，MBR的开机管理程序提供两个选单，选单一(M1)可以直接加载Windows癿核心档案来开机；选单事(M2)则是将开机管理工作交给第二个分割槽的启动扇区(boot sector)。当使用者在开机的时候选择选单二时，那么整个开机管理工作就会交给第二分割槽的开机管理程序了。当第二个开机管理程序启动后，该开机管理程序内(上图中)仅有一个开机选单，因此就能够使用Linu的核心档案来开机啰。 这就是多重引导的工作情况啦！我们将上图作个总结：</p>
-<ol>
-<li>每个分割槽都拥有自己的启动扇区(boot sector)</li>
-<li>图中的系统槽为第一及第二分割槽，</li>
-<li>实际可开机的核心档案是放置到各分割槽内的！</li>
-<li>loader只会识识自己的系统槽内的可开机核心档案，以及其他loader而已；</li>
-<li>loader可直接指向或者是间接将管理权转交给另一个管理程序。</li>
-</ol>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/29/Linux磁盘概念/" data-id="cio1264pq0032h0qys6a5027d" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/29/Linux文件系统之df，du以及ln命令/" data-id="ciq4lsqj3003ctsqy56ccgrvn" class="article-share-link">Share</a>
       
       
     </footer>
@@ -787,7 +724,7 @@
   
   
     <nav id="page-nav">
-      <a class="extend prev" rel="prev" href="/page/2/">&laquo; Prev</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/4/">Next &raquo;</a>
+      <a class="extend prev" rel="prev" href="/page/2/">&laquo; Prev</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/4/">Next &raquo;</a>
     </nav>
   
 </section>
@@ -798,7 +735,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">21</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">9</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">22</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">9</span></li></ul>
     </div>
   </div>
 
@@ -807,7 +744,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
     </div>
   </div>
 
@@ -816,7 +753,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/Linux-网络编程/" style="font-size: 18px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 18px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 16px;">Linux用户管理</a> <a href="/tags/TCP-IP/" style="font-size: 20px;">TCP/IP</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/动态规划/" style="font-size: 14px;">动态规划</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/数组/" style="font-size: 10px;">数组</a> <a href="/tags/树结构/" style="font-size: 14px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 12px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 12px;">爬虫</a> <a href="/tags/随记/" style="font-size: 12px;">随记</a>
+      <a href="/tags/Linux-网络编程/" style="font-size: 18px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 18px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 16px;">Linux用户管理</a> <a href="/tags/Linux进程间通信/" style="font-size: 10px;">Linux进程间通信</a> <a href="/tags/TCP-IP/" style="font-size: 20px;">TCP/IP</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/动态规划/" style="font-size: 14px;">动态规划</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/数组/" style="font-size: 10px;">数组</a> <a href="/tags/树结构/" style="font-size: 14px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 12px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 12px;">爬虫</a> <a href="/tags/随记/" style="font-size: 12px;">随记</a>
     </div>
   </div>
 
@@ -825,7 +762,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
     </div>
   </div>
 
@@ -835,6 +772,10 @@
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2016/07/02/管道/">管道</a>
+          </li>
         
           <li>
             <a href="/2016/05/10/TCP-Nagel算法/"> TCP Nagel算法</a>
@@ -850,10 +791,6 @@
         
           <li>
             <a href="/2016/04/26/DDOS攻击简介/">DDOS攻击简介</a>
-          </li>
-        
-          <li>
-            <a href="/2016/04/26/内网穿透简介/">内网穿透简介</a>
           </li>
         
       </ul>

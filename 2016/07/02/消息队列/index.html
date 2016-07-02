@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>消息队列 | LiuYongbin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="消息队列（也叫做报文队列）能够克服早期unix通信机制的一些缺点。作为早期unix通信机制之一的信号能够传送的信息量有限，后来虽然POSIX 1003.1b在信号的实时性方面作了拓广，使得信号在传递信息量方面有了相当程度的改进，但是信号这种通信方式更像”即时”的通信方式，它要求接受信号的进程在某个时间范围内对信号做出反应，因此该信号最多在接受信号进程的生命周期内才有意义，信号所传递的信息是接近于随">
+<meta property="og:type" content="article">
+<meta property="og:title" content="消息队列">
+<meta property="og:url" content="http://liubigbin.github.io/2016/07/02/消息队列/index.html">
+<meta property="og:site_name" content="LiuYongbin">
+<meta property="og:description" content="消息队列（也叫做报文队列）能够克服早期unix通信机制的一些缺点。作为早期unix通信机制之一的信号能够传送的信息量有限，后来虽然POSIX 1003.1b在信号的实时性方面作了拓广，使得信号在传递信息量方面有了相当程度的改进，但是信号这种通信方式更像”即时”的通信方式，它要求接受信号的进程在某个时间范围内对信号做出反应，因此该信号最多在接受信号进程的生命周期内才有意义，信号所传递的信息是接近于随">
+<meta property="og:image" content="http://liubigbin.github.io/pictures/Linux/进程间通信/共享内存-消息队列全局数据结构.png">
+<meta property="og:image" content="http://liubigbin.github.io/pictures/Linux/进程间通信/共享内存-消息队列数据结构.png">
+<meta property="og:updated_time" content="2016-07-02T04:56:49.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="消息队列">
+<meta name="twitter:description" content="消息队列（也叫做报文队列）能够克服早期unix通信机制的一些缺点。作为早期unix通信机制之一的信号能够传送的信息量有限，后来虽然POSIX 1003.1b在信号的实时性方面作了拓广，使得信号在传递信息量方面有了相当程度的改进，但是信号这种通信方式更像”即时”的通信方式，它要求接受信号的进程在某个时间范围内对信号做出反应，因此该信号最多在接受信号进程的生命周期内才有意义，信号所传递的信息是接近于随">
+  
+    <link rel="alternative" href="/atom.xml" title="LiuYongbin" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" type="text/css">
+  
+
+</head>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">LiuYongbin</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">Hey boy just do it!</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://liubigbin.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-消息队列" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/07/02/消息队列/" class="article-date">
+  <time datetime="2016-07-02T04:38:11.000Z" itemprop="datePublished">2016-07-02</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      消息队列
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>消息队列（也叫做报文队列）能够克服早期unix通信机制的一些缺点。作为早期unix通信机制之一的信号能够传送的信息量有限，后来虽然POSIX 1003.1b在信号的实时性方面作了拓广，使得信号在传递信息量方面有了相当程度的改进，但是信号这种通信方式更像”即时”的通信方式，它要求接受信号的进程在某个时间范围内对信号做出反应，因此该信号最多在接受信号进程的生命周期内才有意义，信号所传递的信息是接近于随进程持续的概念（process-persistent），见 附录 1；管道及有名管道及有名管道则是典型的随进程持续IPC，并且，只能传送无格式的字节流无疑会给应用程序开发带来不便，另外，它的缓冲区大小也受到限制。</p>
+<p>消息队列就是一个消息的链表。可以把消息看作一个记录，具有特定的格式以及特定的优先级。对消息队列有写权限的进程可以向中按照一定的规则添加新消息；对消息队列有读权限的进程则可以从消息队列中读走消息。消息队列是随内核持续的（参见 附录 1）。</p>
+<p>目前主要有两种类型的消息队列：POSIX消息队列以及系统V消息队列，系统V消息队列目前被大量使用。考虑到程序的可移植性，新开发的应用程序应尽量使用POSIX消息队列。</p>
+<p>在本系列专题的序（深刻理解Linux进程间通信（IPC））中，提到对于消息队列、信号灯、以及共享内存区来说，有两个实现版本：POSIX的以及系统V的。Linux内核（内核2.4.18）支持POSIX信号灯、POSIX共享内存区以及POSIX消息队列，但对于主流Linux发行版本之一redhad8.0（内核2.4.18），还没有提供对POSIX进程间通信API的支持，不过应该只是时间上的事。</p>
+<p>因此，本文将主要介绍系统V消息队列及其相应API。 在没有声明的情况下，以下讨论中指的都是系统V消息队列。</p>
+<h3 id="消息队列基本概念"><a href="#消息队列基本概念" class="headerlink" title="消息队列基本概念"></a>消息队列基本概念</h3><p>1、系统V消息队列是随内核持续的，只有在内核重起或者显示删除一个消息队列时，该消息队列才会真正被删除。因此系统中记录消息队列的数据结构（struct ipc_ids msg_ids）位于内核中，系统中的所有消息队列都可以在结构msg_ids中找到访问入口。<br>2、消息队列就是一个消息的链表。每个消息队列都有一个队列头，用结构struct msg_queue来描述（参见 附录 2）。队列头中包含了该消息队列的大量信息，包括消息队列键值、用户ID、组ID、消息队列中消息数目等等，甚至记录了最近对消息队列读写进程的ID。读者可以访问这些信息，也可以设置其中的某些信息。<br>3、下图说明了内核与消息队列是怎样建立起联系的：<br> 其中：struct ipc_ids msg_ids是内核中记录消息队列的全局数据结构；struct msg_queue是每个消息队列的队列头。</p>
+<p><img src="/pictures/Linux/进程间通信/共享内存-消息队列全局数据结构.png" alt=""></p>
+<p>从上图可以看出，全局数据结构 struct ipc_ids msg_ids 可以访问到每个消息队列头的第一个成员：struct kern_ipc_perm；而每个struct kern_ipc_perm能够与具体的消息队列对应起来是因为在该结构中，有一个key_t类型成员key，而key则唯一确定一个消息队列。kern_ipc_perm结构如下：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> kern_ipc_perm&#123;   <span class="comment">//内核中记录消息队列的全局数据结构msg_ids能够访问到该结构；</span></span><br><span class="line">            <span class="keyword">key_t</span>   key;    <span class="comment">//该键值则唯一对应一个消息队列</span></span><br><span class="line">            <span class="keyword">uid_t</span>   uid;</span><br><span class="line">            <span class="keyword">gid_t</span>   gid;</span><br><span class="line"><span class="keyword">uid_t</span>   cuid;</span><br><span class="line"><span class="keyword">gid_t</span>   cgid;</span><br><span class="line"><span class="keyword">mode_t</span>  mode;</span><br><span class="line"><span class="keyword">unsigned</span> <span class="keyword">long</span> seq;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="操作消息队列"><a href="#操作消息队列" class="headerlink" title="操作消息队列"></a>操作消息队列</h3><h5 id="对消息队列的操作无非有下面三种类型："><a href="#对消息队列的操作无非有下面三种类型：" class="headerlink" title="对消息队列的操作无非有下面三种类型："></a>对消息队列的操作无非有下面三种类型：</h5><p>1、 打开或创建消息队列<br> 消息队列的内核持续性要求每个消息队列都在系统范围内对应唯一的键值，所以，要获得一个消息队列的描述字，只需提供该消息队列的键值即可；</p>
+<p>注：消息队列描述字是由在系统范围内唯一的键值生成的，而键值可以看作对应系统内的一条路经。</p>
+<p>2、 读写操作<br>消息读写操作非常简单，对开发人员来说，每个消息都类似如下的数据结构：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> msgbuf&#123;</span><br><span class="line"><span class="keyword">long</span> mtype;</span><br><span class="line"><span class="keyword">char</span> mtext[<span class="number">1</span>];</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>mtype成员代表消息类型，从消息队列中读取消息的一个重要依据就是消息的类型；mtext是消息内容，当然长度不一定为1。因此，对于发送消息来说，首先预置一个msgbuf缓冲区并写入消息类型和内容，调用相应的发送函数即可；对读取消息来说，首先分配这样一个msgbuf缓冲区，然后把消息读入该缓冲区即可。</p>
+<p>3、 获得或设置消息队列属性：<br>消息队列的信息基本上都保存在消息队列头中，因此，可以分配一个类似于消息队列头的结构(struct msqid_ds，见 附录 2)，来返回消息队列的属性；同样可以设置该数据结构。 <img src="/pictures/Linux/进程间通信/共享内存-消息队列数据结构.png" alt=""></p>
+<h3 id="消息队列API"><a href="#消息队列API" class="headerlink" title="消息队列API"></a>消息队列API</h3><h4 id="1、文件名到键值"><a href="#1、文件名到键值" class="headerlink" title="1、文件名到键值"></a>1、文件名到键值</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;sys/ipc.h&gt;</span></span></span><br><span class="line"><span class="keyword">key_t</span> ftok (<span class="keyword">char</span>*pathname, <span class="keyword">char</span> proj)；</span><br></pre></td></tr></table></figure>
+<p>它返回与路径pathname相对应的一个键值。该函数不直接对消息队列操作，但在调用ipc(MSGGET,…)或msgget()来获得消息队列描述字前，往往要调用该函数。典型的调用代码是：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">key=ftok(path_ptr, <span class="string">'a'</span>);</span><br><span class="line">    ipc_id=ipc(MSGGET, (<span class="keyword">int</span>)key, flags,<span class="number">0</span>,<span class="literal">NULL</span>,<span class="number">0</span>);</span><br><span class="line">    …</span><br></pre></td></tr></table></figure></p>
+<p>####　2、linux为操作系统V进程间通信的三种方式（消息队列、信号灯、共享内存区）提供了一个统一的用户界面：<br><figure class="highlight vim"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> ipc(unsigned <span class="keyword">int</span> <span class="built_in">call</span>, <span class="keyword">int</span> <span class="keyword">first</span>, <span class="keyword">int</span> second, <span class="keyword">int</span> third, void * <span class="keyword">ptr</span>, long fifth);</span><br><span class="line">第一个参数指明对IPC对象的操作方式，对消息队列而言共有四种操作：MSGSND、MSGRCV、MSGGET以及MSGCTL，分别代表向消息队列发送消息、从消息队列读取消息、打开或创建消息队列、控制消息队列；<span class="keyword">first</span>参数代表唯一的IPC对象；下面将介绍四种操作.</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> ipc( MSGGET, intfirst, intsecond, intthird, void*<span class="keyword">ptr</span>, longfifth);</span><br><span class="line"> 与该操作对应的系统V调用为：<span class="keyword">int</span> msgget( (key_t)<span class="keyword">first</span>，second)。</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> ipc( MSGCTL, intfirst, intsecond, intthird, void*<span class="keyword">ptr</span>, longfifth)</span><br><span class="line"> 与该操作对应的系统V调用为：<span class="keyword">int</span> msgctl( <span class="keyword">first</span>，second, (struct msqid_ds*) <span class="keyword">ptr</span>)。</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> ipc( MSGSND, intfirst, intsecond, intthird, void*<span class="keyword">ptr</span>, longfifth);</span><br><span class="line"> 与该操作对应的系统V调用为：<span class="keyword">int</span> msgsnd( <span class="keyword">first</span>, (struct msgbuf*)<span class="keyword">ptr</span>, second, third)。</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> ipc( MSGRCV, intfirst, intsecond, intthird, void*<span class="keyword">ptr</span>, longfifth);</span><br><span class="line"> 与该操作对应的系统V调用为：<span class="keyword">int</span> msgrcv( <span class="keyword">first</span>，(struct msgbuf*)<span class="keyword">ptr</span>, second, fifth,third)，</span><br></pre></td></tr></table></figure></p>
+<p>注：本人不主张采用系统调用ipc()，而更倾向于采用系统V或者POSIX进程间通信API。原因如下：</p>
+<li>虽然该系统调用提供了统一的用户界面，但正是由于这个特性，它的参数几乎不能给出特定的实际意义（如以first、second来命名参数），在一定程度上造成开发不便。</li><br><li>正如ipc手册所说的：ipc()是linux所特有的，编写程序时应注意程序的移植性问题；</li><br><li>该系统调用的实现不过是把系统V IPC函数进行了封装，没有任何效率上的优势；</li><br><li>系统V在IPC方面的API数量不多，形式也较简洁。</li>
+
+<p>###系统V消息队列API<br>系统V消息队列API共有四个，使用时需要包括几个头文件：<br><figure class="highlight autoit"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;sys/ipc.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;sys/msg.h&gt;</span></span></span><br></pre></td></tr></table></figure></p>
+<h5 id="int-msgget-key-t-key-int-msgflg"><a href="#int-msgget-key-t-key-int-msgflg" class="headerlink" title="int msgget(key_t key, int msgflg)"></a>int msgget(key_t key, int msgflg)</h5><p>参数key是一个键值，由ftok获得；msgflg参数是一些标志位。该调用返回与健值key相对应的消息队列描述字。</p>
+<p>在以下两种情况下，该调用将创建一个新的消息队列：</p>
+<li>如果没有消息队列与健值key相对应，并且msgflg中包含了IPC_CREAT标志位；</li><br><li>key参数为IPC_PRIVATE；</li>
+
+<p>参数msgflg可以为以下：IPC_CREAT、IPC_EXCL、IPC_NOWAIT或三者的或结果。</p>
+<p>调用返回：成功返回消息队列描述字，否则返回-1。</p>
+<p>注：参数key设置成常数IPC_PRIVATE并不意味着其他进程不能访问该消息队列，只意味着即将创建新的消息队列。</p>
+<h5 id="int-msgrcv-int-msqid-struct-msgbuf-msgp-int-msgsz-long-msgtyp-int-msgflg"><a href="#int-msgrcv-int-msqid-struct-msgbuf-msgp-int-msgsz-long-msgtyp-int-msgflg" class="headerlink" title="int msgrcv(int msqid, struct msgbuf *msgp, int msgsz, long msgtyp, int msgflg);"></a>int msgrcv(int msqid, struct msgbuf *msgp, int msgsz, long msgtyp, int msgflg);</h5><p>该系统调用从msgid代表的消息队列中读取一个消息，并把消息存储在msgp指向的msgbuf结构中。</p>
+<p>msqid为消息队列描述字；消息返回后存储在msgp指向的地址，msgsz指定msgbuf的mtext成员的长度（即消息内容的长度），msgtyp为请求读取的消息类型；读消息标志msgflg可以为以下几个常值的或：</p>
+<li>IPC_NOWAIT 如果没有满足条件的消息，调用立即返回，此时，errno=ENOMSG</li><br><li>IPC_EXCEPT 与msgtyp&gt;0配合使用，返回队列中第一个类型不为msgtyp的消息</li><br><li>IPC_NOERROR 如果队列中满足条件的消息内容大于所请求的msgsz字节，则把该消息截断，截断部分将丢失。</li>
+
+<p>msgrcv手册中详细给出了消息类型取不同值时(&gt;0; &lt;0; =0)，调用将返回消息队列中的哪个消息。</p>
+<p>msgrcv()解除阻塞的条件有三个：</p>
+<p>1.消息队列中有了满足条件的消息；<br>2.msqid代表的消息队列被删除；<br>3.调用msgrcv（）的进程被信号中断；</p>
+<p>调用返回：成功返回读出消息的实际字节数，否则返回-1。</p>
+<h5 id="int-msgsnd-int-msqid-struct-msgbuf-msgp-int-msgsz-int-msgflg"><a href="#int-msgsnd-int-msqid-struct-msgbuf-msgp-int-msgsz-int-msgflg" class="headerlink" title="int msgsnd(int msqid, struct msgbuf *msgp, int msgsz, int msgflg);"></a>int msgsnd(int msqid, struct msgbuf *msgp, int msgsz, int msgflg);</h5><p>向msgid代表的消息队列发送一个消息，即将发送的消息存储在msgp指向的msgbuf结构中，消息的大小由msgze指定。</p>
+<p>对发送消息来说，有意义的msgflg标志为IPC_NOWAIT，指明在消息队列没有足够空间容纳要发送的消息时，msgsnd是否等待。造成msgsnd()等待的条件有两种：</p>
+<p>  当前消息的大小与当前消息队列中的字节数之和超过了消息队列的总容量；<br>  当前消息队列的消息数（单位”个”）不小于消息队列的总容量（单位”字节数”），此时，虽然消息队列中的消息数目很多，但基本上都只有一个字节。</p>
+<p>msgsnd()解除阻塞的条件有三个：<br>1.不满足上述两个条件，即消息队列中有容纳该消息的空间；<br>2.msqid代表的消息队列被删除；<br>3.调用msgsnd（）的进程被信号中断；</p>
+<p>调用返回：成功返回0，否则返回-1。</p>
+<h5 id="int-msgctl-int-msqid-int-cmd-struct-msqid-ds-buf"><a href="#int-msgctl-int-msqid-int-cmd-struct-msqid-ds-buf" class="headerlink" title="int msgctl(int msqid, int cmd, struct msqid_ds *buf);"></a>int msgctl(int msqid, int cmd, struct msqid_ds *buf);</h5><p>该系统调用对由msqid标识的消息队列执行cmd操作，共有三种cmd操作：IPC_STAT、IPC_SET 、IPC_RMID。</p>
+<ol>
+<li>IPC_STAT：该命令用来获取消息队列信息，返回的信息存贮在buf指向的msqid结构中；</li>
+<li>IPC_SET：该命令用来设置消息队列的属性，要设置的属性存储在buf指向的msqid结构中；可设置属性包括：msg_perm.uid、msg_perm.gid、msg_perm.mode以及msg_qbytes，同时，也影响msg_ctime成员。</li>
+<li>IPC_RMID：删除msqid标识的消息队列；</li>
+</ol>
+<p>调用返回：成功返回0，否则返回-1。</p>
+<h3 id="消息队列的限制"><a href="#消息队列的限制" class="headerlink" title="消息队列的限制"></a>消息队列的限制</h3><p>每个消息队列的容量（所能容纳的字节数）都有限制，该值因系统不同而不同。在后面的应用实例中，输出了redhat 8.0的限制，结果参见 附录 3。</p>
+<p>另一个限制是每个消息队列所能容纳的最大消息数：在redhad 8.0中，该限制是受消息队列容量制约的：消息个数要小于消息队列的容量（字节数）。</p>
+<p>注：上述两个限制是针对每个消息队列而言的，系统对消息队列的限制还有系统范围内的最大消息队列个数，以及整个系统范围内的最大消息数。一般来说，实际开发过程中不会超过这个限制。</p>
+<h3 id="消息队列应用实例"><a href="#消息队列应用实例" class="headerlink" title="消息队列应用实例"></a>消息队列应用实例</h3><p>消息队列应用相对较简单，下面实例基本上覆盖了对消息队列的所有操作，同时，程序输出结果有助于加深对前面所讲的某些规则及消息队列限制的理解。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;sys/msg.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">msg_stat</span><span class="params">(<span class="keyword">int</span>,<span class="keyword">struct</span> msqid_ds )</span></span>;</span><br><span class="line">main()</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">int</span> gflags,sflags,rflags;</span><br><span class="line"><span class="keyword">key_t</span> key;</span><br><span class="line"><span class="keyword">int</span> msgid;</span><br><span class="line"><span class="keyword">int</span> reval;</span><br><span class="line"><span class="keyword">struct</span> msgsbuf&#123;</span><br><span class="line">        <span class="keyword">int</span> mtype;</span><br><span class="line">        <span class="keyword">char</span> mtext[<span class="number">1</span>];</span><br><span class="line">    &#125;msg_sbuf;</span><br><span class="line"><span class="keyword">struct</span> msgmbuf</span><br><span class="line">    &#123;</span><br><span class="line">    <span class="keyword">int</span> mtype;</span><br><span class="line">    <span class="keyword">char</span> mtext[<span class="number">10</span>];</span><br><span class="line">    &#125;msg_rbuf;</span><br><span class="line"><span class="keyword">struct</span> msqid_ds msg_ginfo,msg_sinfo;</span><br><span class="line"><span class="keyword">char</span>* msgpath=<span class="string">"/unix/msgqueue"</span>;</span><br><span class="line">key=ftok(msgpath,<span class="string">'a'</span>);</span><br><span class="line">gflags=IPC_CREAT|IPC_EXCL;</span><br><span class="line">msgid=msgget(key,gflags|<span class="number">00666</span>);</span><br><span class="line"><span class="keyword">if</span>(msgid==-<span class="number">1</span>)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"msg create error\n"</span>);</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//创建一个消息队列后，输出消息队列缺省属性</span></span><br><span class="line">msg_stat(msgid,msg_ginfo);</span><br><span class="line">sflags=IPC_NOWAIT;</span><br><span class="line">msg_sbuf.mtype=<span class="number">10</span>;</span><br><span class="line">msg_sbuf.mtext[<span class="number">0</span>]=<span class="string">'a'</span>;</span><br><span class="line">reval=msgsnd(msgid,&amp;msg_sbuf,<span class="keyword">sizeof</span>(msg_sbuf.mtext),sflags);</span><br><span class="line"><span class="keyword">if</span>(reval==-<span class="number">1</span>)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"message send error\n"</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//发送一个消息后，输出消息队列属性</span></span><br><span class="line">msg_stat(msgid,msg_ginfo);</span><br><span class="line">rflags=IPC_NOWAIT|MSG_NOERROR;</span><br><span class="line">reval=msgrcv(msgid,&amp;msg_rbuf,<span class="number">4</span>,<span class="number">10</span>,rflags);</span><br><span class="line"><span class="keyword">if</span>(reval==-<span class="number">1</span>)</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"read msg error\n"</span>);</span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"read from msg queue %d bytes\n"</span>,reval);</span><br><span class="line"><span class="comment">//从消息队列中读出消息后，输出消息队列属性</span></span><br><span class="line">msg_stat(msgid,msg_ginfo);</span><br><span class="line">msg_sinfo.msg_perm.uid=<span class="number">8</span>;<span class="comment">//just a try</span></span><br><span class="line">msg_sinfo.msg_perm.gid=<span class="number">8</span>;<span class="comment">//</span></span><br><span class="line">msg_sinfo.msg_qbytes=<span class="number">16388</span>;</span><br><span class="line"><span class="comment">//此处验证超级用户可以更改消息队列的缺省msg_qbytes</span></span><br><span class="line"><span class="comment">//注意这里设置的值大于缺省值</span></span><br><span class="line">reval=msgctl(msgid,IPC_SET,&amp;msg_sinfo);</span><br><span class="line"><span class="keyword">if</span>(reval==-<span class="number">1</span>)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"msg set info error\n"</span>);</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br><span class="line">msg_stat(msgid,msg_ginfo);</span><br><span class="line"><span class="comment">//验证设置消息队列属性</span></span><br><span class="line">reval=msgctl(msgid,IPC_RMID,<span class="literal">NULL</span>);<span class="comment">//删除消息队列</span></span><br><span class="line"><span class="keyword">if</span>(reval==-<span class="number">1</span>)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"unlink msg queue error\n"</span>);</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">msg_stat</span><span class="params">(<span class="keyword">int</span> msgid,<span class="keyword">struct</span> msqid_ds msg_info)</span></span><br><span class="line"></span>&#123;</span><br><span class="line"><span class="keyword">int</span> reval;</span><br><span class="line">sleep(<span class="number">1</span>);<span class="comment">//只是为了后面输出时间的方便</span></span><br><span class="line">reval=msgctl(msgid,IPC_STAT,&amp;msg_info);</span><br><span class="line"><span class="keyword">if</span>(reval==-<span class="number">1</span>)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"get msg info error\n"</span>);</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">printf</span>(<span class="string">"\n"</span>);</span><br><span class="line"><span class="built_in">printf</span>(<span class="string">"current number of bytes on queue is %d\n"</span>,msg_info.msg_cbytes);</span><br><span class="line"><span class="built_in">printf</span>(<span class="string">"number of messages in queue is %d\n"</span>,msg_info.msg_qnum);</span><br><span class="line"><span class="built_in">printf</span>(<span class="string">"max number of bytes on queue is %d\n"</span>,msg_info.msg_qbytes);</span><br><span class="line"><span class="comment">//每个消息队列的容量（字节数）都有限制MSGMNB，值的大小因系统而异。在创建新的消息队列时，//msg_qbytes的缺省值就是MSGMNB</span></span><br><span class="line"><span class="built_in">printf</span>(<span class="string">"pid of last msgsnd is %d\n"</span>,msg_info.msg_lspid);</span><br><span class="line"><span class="built_in">printf</span>(<span class="string">"pid of last msgrcv is %d\n"</span>,msg_info.msg_lrpid);</span><br><span class="line"><span class="built_in">printf</span>(<span class="string">"last msgsnd time is %s"</span>, ctime(&amp;(msg_info.msg_stime)));</span><br><span class="line"><span class="built_in">printf</span>(<span class="string">"last msgrcv time is %s"</span>, ctime(&amp;(msg_info.msg_rtime)));</span><br><span class="line"><span class="built_in">printf</span>(<span class="string">"last change time is %s"</span>, ctime(&amp;(msg_info.msg_ctime)));</span><br><span class="line"><span class="built_in">printf</span>(<span class="string">"msg uid is %d\n"</span>,msg_info.msg_perm.uid);</span><br><span class="line"><span class="built_in">printf</span>(<span class="string">"msg gid is %d\n"</span>,msg_info.msg_perm.gid);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>程序输出结果见 附录 3。</p>
+<h3 id="小结："><a href="#小结：" class="headerlink" title="小结："></a>小结：</h3><p>消息队列与管道以及有名管道相比，具有更大的灵活性，首先，它提供有格式字节流，有利于减少开发人员的工作量；其次，消息具有类型，在实际应用中，可作为优先级使用。这两点是管道以及有名管道所不能比的。同样，消息队列可以在几个进程间复用，而不管这几个进程是否具有亲缘关系，这一点与有名管道很相似；但消息队列是随内核持续的，与有名管道（随进程持续）相比，生命力更强，应用空间更大。</p>
+<h4 id="附录-1：-在参考文献-1-中，给出了IPC随进程持续、随内核持续以及随文件系统持续的定义："><a href="#附录-1：-在参考文献-1-中，给出了IPC随进程持续、随内核持续以及随文件系统持续的定义：" class="headerlink" title="附录 1： 在参考文献[1]中，给出了IPC随进程持续、随内核持续以及随文件系统持续的定义："></a>附录 1： 在参考文献[1]中，给出了IPC随进程持续、随内核持续以及随文件系统持续的定义：</h4><ol>
+<li>随进程持续：IPC一直存在到打开IPC对象的最后一个进程关闭该对象为止。如管道和有名管道；</li>
+<li>随内核持续：IPC一直持续到内核重新自举或者显示删除该对象为止。如消息队列、信号灯以及共享内存等；</li>
+<li>随文件系统持续：IPC一直持续到显示删除该对象为止。</li>
+</ol>
+<h4 id="附录-2："><a href="#附录-2：" class="headerlink" title="附录 2："></a>附录 2：</h4><p>结构msg_queue用来描述消息队列头，存在于系统空间：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> msg_queue &#123;</span><br><span class="line">    <span class="keyword">struct</span> kern_ipc_perm q_perm;</span><br><span class="line">    <span class="keyword">time_t</span> q_stime;         <span class="comment">/* last msgsnd time */</span></span><br><span class="line">    <span class="keyword">time_t</span> q_rtime;         <span class="comment">/* last msgrcv time */</span></span><br><span class="line">    <span class="keyword">time_t</span> q_ctime;         <span class="comment">/* last change time */</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> q_cbytes;     <span class="comment">/* current number of bytes on queue */</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> q_qnum;       <span class="comment">/* number of messages in queue */</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> q_qbytes;     <span class="comment">/* max number of bytes on queue */</span></span><br><span class="line">    <span class="keyword">pid_t</span> q_lspid;          <span class="comment">/* pid of last msgsnd */</span></span><br><span class="line">    <span class="keyword">pid_t</span> q_lrpid;          <span class="comment">/* last receive pid */</span></span><br><span class="line">    <span class="keyword">struct</span> list_head q_messages;</span><br><span class="line">    <span class="keyword">struct</span> list_head q_receivers;</span><br><span class="line">    <span class="keyword">struct</span> list_head q_senders;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>结构msqid_ds用来设置或返回消息队列的信息，存在于用户空间；<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> msqid_ds &#123;</span><br><span class="line">    <span class="keyword">struct</span> ipc_perm msg_perm;</span><br><span class="line">    <span class="keyword">struct</span> msg *msg_first;      <span class="comment">/* first message on queue,unused  */</span></span><br><span class="line">    <span class="keyword">struct</span> msg *msg_last;       <span class="comment">/* last message in queue,unused */</span></span><br><span class="line">    <span class="keyword">__kernel_time_t</span> msg_stime;  <span class="comment">/* last msgsnd time */</span></span><br><span class="line">    <span class="keyword">__kernel_time_t</span> msg_rtime;  <span class="comment">/* last msgrcv time */</span></span><br><span class="line">    <span class="keyword">__kernel_time_t</span> msg_ctime;  <span class="comment">/* last change time */</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span>  msg_lcbytes; <span class="comment">/* Reuse junk fields for 32 bit */</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span>  msg_lqbytes; <span class="comment">/* ditto */</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">short</span> msg_cbytes;  <span class="comment">/* current number of bytes on queue */</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">short</span> msg_qnum;    <span class="comment">/* number of messages in queue */</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">short</span> msg_qbytes;  <span class="comment">/* max number of bytes on queue */</span></span><br><span class="line">    <span class="keyword">__kernel_ipc_pid_t</span> msg_lspid;   <span class="comment">/* pid of last msgsnd */</span></span><br><span class="line">    <span class="keyword">__kernel_ipc_pid_t</span> msg_lrpid;   <span class="comment">/* last receive pid */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>可以看出上述两个结构很相似。</p>
+<h4 id="附录-3：-消息队列实例输出结果："><a href="#附录-3：-消息队列实例输出结果：" class="headerlink" title="附录 3： 消息队列实例输出结果："></a>附录 3： 消息队列实例输出结果：</h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line">current number of bytes on queue is 0</span><br><span class="line">number of messages in queue is 0</span><br><span class="line">max number of bytes on queue is 16384</span><br><span class="line">pid of last msgsnd is 0</span><br><span class="line">pid of last msgrcv is 0</span><br><span class="line">last msgsnd time is Thu Jan  1 08:00:00 1970</span><br><span class="line">last msgrcv time is Thu Jan  1 08:00:00 1970</span><br><span class="line">last <span class="operator"><span class="keyword">change</span> <span class="keyword">time</span> <span class="keyword">is</span> Sun <span class="built_in">Dec</span> <span class="number">29</span> <span class="number">18</span>:<span class="number">28</span>:<span class="number">20</span> <span class="number">2002</span></span><br><span class="line">msg uid <span class="keyword">is</span> <span class="number">0</span></span><br><span class="line">msg gid <span class="keyword">is</span> <span class="number">0</span></span><br><span class="line">//上面刚刚创建一个新消息队列时的输出</span><br><span class="line"><span class="keyword">current</span> <span class="built_in">number</span> <span class="keyword">of</span> <span class="keyword">bytes</span> <span class="keyword">on</span> queue <span class="keyword">is</span> <span class="number">1</span></span><br><span class="line"><span class="built_in">number</span> <span class="keyword">of</span> messages <span class="keyword">in</span> queue <span class="keyword">is</span> <span class="number">1</span></span><br><span class="line"><span class="keyword">max</span> <span class="built_in">number</span> <span class="keyword">of</span> <span class="keyword">bytes</span> <span class="keyword">on</span> queue <span class="keyword">is</span> <span class="number">16384</span></span><br><span class="line">pid <span class="keyword">of</span> <span class="keyword">last</span> msgsnd <span class="keyword">is</span> <span class="number">2510</span></span><br><span class="line">pid <span class="keyword">of</span> <span class="keyword">last</span> msgrcv <span class="keyword">is</span> <span class="number">0</span></span><br><span class="line"><span class="keyword">last</span> msgsnd <span class="keyword">time</span> <span class="keyword">is</span> Sun <span class="built_in">Dec</span> <span class="number">29</span> <span class="number">18</span>:<span class="number">28</span>:<span class="number">21</span> <span class="number">2002</span></span><br><span class="line"><span class="keyword">last</span> msgrcv <span class="keyword">time</span> <span class="keyword">is</span> Thu Jan  <span class="number">1</span> <span class="number">08</span>:<span class="number">00</span>:<span class="number">00</span> <span class="number">1970</span></span><br><span class="line"><span class="keyword">last</span> <span class="keyword">change</span> <span class="keyword">time</span> <span class="keyword">is</span> Sun <span class="built_in">Dec</span> <span class="number">29</span> <span class="number">18</span>:<span class="number">28</span>:<span class="number">20</span> <span class="number">2002</span></span><br><span class="line">msg uid <span class="keyword">is</span> <span class="number">0</span></span><br><span class="line">msg gid <span class="keyword">is</span> <span class="number">0</span></span><br><span class="line"><span class="keyword">read</span> <span class="keyword">from</span> msg queue <span class="number">1</span> <span class="keyword">bytes</span></span><br><span class="line">//实际读出的字节数</span><br><span class="line"><span class="keyword">current</span> <span class="built_in">number</span> <span class="keyword">of</span> <span class="keyword">bytes</span> <span class="keyword">on</span> queue <span class="keyword">is</span> <span class="number">0</span></span><br><span class="line"><span class="built_in">number</span> <span class="keyword">of</span> messages <span class="keyword">in</span> queue <span class="keyword">is</span> <span class="number">0</span></span><br><span class="line"><span class="keyword">max</span> <span class="built_in">number</span> <span class="keyword">of</span> <span class="keyword">bytes</span> <span class="keyword">on</span> queue <span class="keyword">is</span> <span class="number">16384</span>   //每个消息队列最大容量（字节数）</span><br><span class="line">pid <span class="keyword">of</span> <span class="keyword">last</span> msgsnd <span class="keyword">is</span> <span class="number">2510</span></span><br><span class="line">pid <span class="keyword">of</span> <span class="keyword">last</span> msgrcv <span class="keyword">is</span> <span class="number">2510</span></span><br><span class="line"><span class="keyword">last</span> msgsnd <span class="keyword">time</span> <span class="keyword">is</span> Sun <span class="built_in">Dec</span> <span class="number">29</span> <span class="number">18</span>:<span class="number">28</span>:<span class="number">21</span> <span class="number">2002</span></span><br><span class="line"><span class="keyword">last</span> msgrcv <span class="keyword">time</span> <span class="keyword">is</span> Sun <span class="built_in">Dec</span> <span class="number">29</span> <span class="number">18</span>:<span class="number">28</span>:<span class="number">22</span> <span class="number">2002</span></span><br><span class="line"><span class="keyword">last</span> <span class="keyword">change</span> <span class="keyword">time</span> <span class="keyword">is</span> Sun <span class="built_in">Dec</span> <span class="number">29</span> <span class="number">18</span>:<span class="number">28</span>:<span class="number">20</span> <span class="number">2002</span></span><br><span class="line">msg uid <span class="keyword">is</span> <span class="number">0</span></span><br><span class="line">msg gid <span class="keyword">is</span> <span class="number">0</span></span><br><span class="line"><span class="keyword">current</span> <span class="built_in">number</span> <span class="keyword">of</span> <span class="keyword">bytes</span> <span class="keyword">on</span> queue <span class="keyword">is</span> <span class="number">0</span></span><br><span class="line"><span class="built_in">number</span> <span class="keyword">of</span> messages <span class="keyword">in</span> queue <span class="keyword">is</span> <span class="number">0</span></span><br><span class="line"><span class="keyword">max</span> <span class="built_in">number</span> <span class="keyword">of</span> <span class="keyword">bytes</span> <span class="keyword">on</span> queue <span class="keyword">is</span> <span class="number">16388</span>   //可看出超级用户可修改消息队列最大容量</span><br><span class="line">pid <span class="keyword">of</span> <span class="keyword">last</span> msgsnd <span class="keyword">is</span> <span class="number">2510</span></span><br><span class="line">pid <span class="keyword">of</span> <span class="keyword">last</span> msgrcv <span class="keyword">is</span> <span class="number">2510</span>  //对操作消息队列进程的跟踪</span><br><span class="line"><span class="keyword">last</span> msgsnd <span class="keyword">time</span> <span class="keyword">is</span> Sun <span class="built_in">Dec</span> <span class="number">29</span> <span class="number">18</span>:<span class="number">28</span>:<span class="number">21</span> <span class="number">2002</span></span><br><span class="line"><span class="keyword">last</span> msgrcv <span class="keyword">time</span> <span class="keyword">is</span> Sun <span class="built_in">Dec</span> <span class="number">29</span> <span class="number">18</span>:<span class="number">28</span>:<span class="number">22</span> <span class="number">2002</span></span><br><span class="line"><span class="keyword">last</span> <span class="keyword">change</span> <span class="keyword">time</span> <span class="keyword">is</span> Sun <span class="built_in">Dec</span> <span class="number">29</span> <span class="number">18</span>:<span class="number">28</span>:<span class="number">23</span> <span class="number">2002</span>    //msgctl()调用对msg_ctime有影响</span><br><span class="line">msg uid <span class="keyword">is</span> <span class="number">8</span></span><br><span class="line">msg gid <span class="keyword">is</span> <span class="number">8</span></span></span><br></pre></td></tr></table></figure>
+<h3 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h3><ol>
+<li>UNIX网络编程第二卷：进程间通信，作者：W.Richard Stevens，译者：杨继张，清华大学出版社。对POSIX以及系统V消息队列都有阐述，对Linux环境下的程序开发有极大的启发意义</li>
+</ol>
+<p>本文转载自<a href="http://www.ibm.com/developerworks/cn/linux/l-ipc/part3/index.html" target="_blank" rel="external">这里</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/07/02/消息队列/" data-id="ciq4t54qe0013mgqy5x4c6ohh" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2016/07/02/信号灯/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          信号灯
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2016/07/02/共享内存/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">共享内存</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">9</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/Linux-网络编程/" style="font-size: 18px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 18px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 16px;">Linux用户管理</a> <a href="/tags/Linux进程间通信/" style="font-size: 18px;">Linux进程间通信</a> <a href="/tags/TCP-IP/" style="font-size: 20px;">TCP/IP</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/动态规划/" style="font-size: 14px;">动态规划</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/数组/" style="font-size: 10px;">数组</a> <a href="/tags/树结构/" style="font-size: 14px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 12px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 12px;">爬虫</a> <a href="/tags/随记/" style="font-size: 12px;">随记</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/07/02/套接字/">套接字</a>
+          </li>
+        
+          <li>
+            <a href="/2016/07/02/信号灯/">信号灯</a>
+          </li>
+        
+          <li>
+            <a href="/2016/07/02/消息队列/">消息队列</a>
+          </li>
+        
+          <li>
+            <a href="/2016/07/02/共享内存/">共享内存</a>
+          </li>
+        
+          <li>
+            <a href="/2016/07/02/管道/">管道</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 LiuYongbin<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js" type="text/javascript"></script>
+
+
+<script src="/js/script.js" type="text/javascript"></script>
+
+  </div>
+</body>
+</html>

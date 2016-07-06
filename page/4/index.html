@@ -65,6 +65,403 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-从整数的补码到用位运算实现任何两个数的加减法" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/03/16/从整数的补码到用位运算实现任何两个数的加减法/" class="article-date">
+  <time datetime="2016-03-16T06:46:15.000Z" itemprop="datePublished">2016-03-16</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C与C/">C与C++</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/03/16/从整数的补码到用位运算实现任何两个数的加减法/">从整数的补码到用位运算实现任何两个数的加减法</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>在计算机中，数值是以补码的形式存储的，正整数的补码就是其原码，负整数的补码就是其绝对值的原码所有位取反再加1。</p>
+<p>例如：-7的补码：因为是负数，则符号位为“1”,整个为10000111；其余7位为-7的绝对值+7的原码<br>  0000111按位取反为1111000；再加1，所以-7的补码是11111001。简单点就是10000000（ 128）-0000111（7）=11111001（121）</p>
+<p>由上面的例子也可以知道，要求一个负整数的补码，在一个字节大小的情况下，只需要求128减去该负数的绝对值所得到的差的原码就行。</p>
+<p>计算机之所以要把负数存储为其补码，是因为想把减法变成加法，这样减去一个负数，就相当于加上该负数的补码。</p>
+<p>想要将一个正整数取反的话，那么只需要对该正整数按位取反再加1就可以了，相反的，如果是负整数转正整数的话，就是先减一在按位取反，下面的c语言的整数取反代码：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span>  </span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">change</span><span class="params">(<span class="keyword">int</span> num)</span>  </span><br><span class="line"></span>&#123;  </span><br><span class="line">    <span class="keyword">if</span> (num &lt; <span class="number">0</span>)  </span><br><span class="line">    &#123;  </span><br><span class="line">        num = ~(num - <span class="number">1</span>);  </span><br><span class="line">    &#125;  </span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span> (num &gt;<span class="number">0</span>)  </span><br><span class="line">    &#123;  </span><br><span class="line">        num = ~num + <span class="number">1</span>;  </span><br><span class="line">    &#125;  </span><br><span class="line">    <span class="keyword">return</span> num;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>现在来看看怎样通过位运算来实现连个整数的加法。</p>
+<p>我们知道，在位的角度来看加法，一个位加后，要么需要进位，要么不需要，需要进位的是因为两个加数相同的位的值都是1，不需要进位是因为相同位的值不都是1，不需要进位的情况下，只需要两个数进行异或运算就可以了，进位的情况下，需要两个加数先进行&amp;运算，得到进位的值，在左移一位，这样再递归的进行两个数的相加，知道没有进位为止，也就是两个加数&amp;运算后的值为0。代码如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"> <span class="function"><span class="keyword">int</span> <span class="title">add</span> <span class="params">(<span class="keyword">int</span> a , <span class="keyword">int</span>  b)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">     <span class="keyword">return</span>  b ? add ((a  ^  b) , (a &amp; b)&lt;&lt;<span class="number">1</span>) : a ;</span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line"> <span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> *argv[])</span></span><br><span class="line"> </span>&#123;</span><br><span class="line">     <span class="keyword">int</span> a  ,  c ;</span><br><span class="line"></span><br><span class="line">     <span class="built_in">scanf</span> (<span class="string">"%d%d"</span>,&amp;a , &amp;c) ;</span><br><span class="line"></span><br><span class="line">     <span class="built_in">printf</span> (<span class="string">"val = %d\n"</span> , add (a , c) );</span><br><span class="line"></span><br><span class="line">     <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+<p>如果想要实现两个整数相减的话，那么可以利用补码的思想，先将减数取反，得到其补码，在利用上面的加法进行求和。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/03/16/从整数的补码到用位运算实现任何两个数的加减法/" data-id="ciqarm468002ch8qya88vbfkm" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/位运算/">位运算</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-域名污染" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/03/15/域名污染/" class="article-date">
+  <time datetime="2016-03-15T09:17:09.000Z" itemprop="datePublished">2016-03-15</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/计算机网络/">计算机网络</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/03/15/域名污染/">域名污染</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>域名服务器缓存污染（DNS cache pollution），又称域名服务器缓存投毒（DNS cache poisoning），是指一些刻意制造或无意中制造出来的域名服务器封包，把域名指往不正确的IP地址。一般来说，在互联网上都有可信赖的域名服务器，但为减低网络上的流量压力，一般的域名服务器都会把从上游的域名服务器获得的解析记录暂存起来，待下次有其他机器要求解析域名时，可以立即提供服务。一旦有关域名的局域域名服务器的缓存受到污染，就会把域名内的电脑导引往错误的服务器或服务器的网址。</p>
+<p>域名服务器缓存污染可能是因为域名服务器软件的设计错误而产生，但亦可能由别有用心者透过研究开放架构的域名服务器系统来利用当中的漏洞。为防止局域的域名服务器缓存污染除了要定时更新服务器的软件以外，可能还需要人手变更某些设定，以控制服务器对可疑的域名封包作出筛选。</p>
+<p>一般来说，一部连上了互联网的电脑都会使用互联网服务供应商提供的域名服务器。这个服务器一般只会服务供应商的客户，通常都会将部分客户曾经请求过的域名暂存起来，这种服务器被称为非权威服务器，其应答称非权威应答。缓存污染攻击就是针对这一种服务器，以影响服务器的使用者或下游服务。</p>
+<p>在中国大陆，对所有经过防火长城的在UDP的53端口上的域名查询进行IDS入侵检测，一经发现与黑名单关键词相匹配的域名查询请求，会马上伪装成目标域名的解析服务器返回虚假的查询结果。由于通常的域名查询没有任何认证机制，而且域名查询通常基于无连接不可靠的UDP协议，查询者只能接受最先到达的格式正确结果，并丢弃之后的结果。</p>
+<p>对于不了解相关知识的网民来说，由于系统默认使用的ISP提供的域名查询服务器查询国外的权威服务器时即被防火长城污染，进而使其缓存受到污染，因此默认情况下查询ISP的服务器就会获得虚假IP地址；而用户直接查询境外域名查询服务器（比如 Google Public DNS）时有可能会直接被防火长城污染，从而在没有任何防范机制的情况下仍然不能获得目标网站正确的IP地址。<br>因为TCP连接的机制可靠，防火长城理论上未对TCP协议下的域名查询进行污染，故现在能透过强制使用TCP协议查询真实的IP地址。而现实的情况是，防火长城对于真实的IP地址也可能会采取其它的手段进行封锁，或者对查询行为使用连接重置的方法进行拦截，故能否真正访问可能还需要其它翻墙的手段。</p>
+<h3 id="ISP域名劫持"><a href="#ISP域名劫持" class="headerlink" title="ISP域名劫持"></a>ISP域名劫持</h3><p>中国的互联网服务提供商经常劫持部分域名，转到自己指定的网站，以提供自己的广告。</p>
+<p>以上内容来自于<a href="https://zh.wikipedia.org/zh-cn/%E5%9F%9F%E5%90%8D%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%BC%93%E5%AD%98%E6%B1%A1%E6%9F%93#ISP.E5.9F.9F.E5.90.8D.E5.8A.AB.E6.8C.81" target="_blank" rel="external">维基百科</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/03/15/域名污染/" data-id="ciqarm45g001kh8qypgyoz80r" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TCP-IP/">TCP/IP</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-NAT以及内网穿透" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/03/15/NAT以及内网穿透/" class="article-date">
+  <time datetime="2016-03-15T07:21:42.000Z" itemprop="datePublished">2016-03-15</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/计算机网络/">计算机网络</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/03/15/NAT以及内网穿透/">NAT以及内网穿透</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="NAT"><a href="#NAT" class="headerlink" title="NAT"></a>NAT</h2><p>NAT分两种类型：NAT和NAPT。</p>
+<h3 id="NAT-Network-Address-Translation-网络地址转换"><a href="#NAT-Network-Address-Translation-网络地址转换" class="headerlink" title="NAT(Network Address Translation)网络地址转换"></a>NAT(Network Address Translation)网络地址转换</h3><p>NAT属接入广域网(WAN)技术，是一种将私有（保留）地址转化为合法IP地址的转换技术，它被广泛应用于各种类型Internet接入方式和各种类型的网络中。原因很简单，NAT不仅完美地解决了lP地址不足的问题，而且还能够有效地避免来自网络外部的攻击，隐藏并保护网络内部的计算机。NAT（Network Address Translation，网络地址转换）是将IP数据包头中的IP地址转换为另一个IP 地址的过程。在实际应用中，NAT 主要用于实现私有网络访问公共网络的功能。这种通过使用少量的公有IP 地址代表较多的私有IP地址的方式，将有助于减缓可用IP 地址空间的枯竭。</p>
+<h3 id="NAPT-Network-Address-Port-Translation-网络地址端口转换"><a href="#NAPT-Network-Address-Port-Translation-网络地址端口转换" class="headerlink" title="NAPT(Network Address Port Translation)网络地址端口转换"></a>NAPT(Network Address Port Translation)网络地址端口转换</h3><p>NAPT是人们比较熟悉的一种转换方式。NAPT普遍应用于接入设备中，它可以将中小型的网络隐藏在一个合法的IP地址后面。NAPT与动态地址NAT不同，它将内部连接映射到外部网络中的一个单独的IP地址上，同时在该地址上加上一个由NAT设备选定的TCP端口号。NAPT是一种较流行的NAT的变体通过转换TCP或UDP协议端口号以及地址来提供并发性。除了一对源和目的IP地址以外，这个表还包括一对源和目的协议端口号，以及NAT盒使用的一个协议端口号。NAPT的主要优势在于，能够使用一个全球有效IP地址获得通用性。主要缺点在于其通信仅限于TCP或UDP。只要所有通信都采用TCP或UDP，NAPT就允许一台内部计算机访问多台外部计算机，并允许多台内部主机访问同一台外部计算机，相互之间不会发生冲突。</p>
+<h4 id="NAPT的四种类型"><a href="#NAPT的四种类型" class="headerlink" title="NAPT的四种类型"></a>NAPT的四种类型</h4><ol>
+<li><p>Full Cone NAT：所有来自同一个内部Tuple X的请求均被NAT转换至同一个外部Tuple Y，而不管这些请求是不是属于同一个应用或者是多个应用的。除此之外，当X-Y的转换关系建立之后，任意外部主机均可随时将Y中的地址和端口作为目标地址和目标端口，向内部主机发送UDP报文，由于对外部请求的来源无任何限制，因此这种方式虽然足够简单，但却不那么安全</p>
+</li>
+<li><p>Restricted Cone NAT：它是Full Cone的受限版本：所有来自同一个内部Tuple X的请求均被NAT转换至同一个外部Tuple Y，这与Full Cone相同，但不同的是，只有当内部主机曾经发送过报文给外部主机（假设其IP地址为Z）后，外部主机才能以Y中的信息作为目标地址和目标端口，向内部主机发送UDP请求报文，这意味着，NAT设备只向内转发（目标地址/端口转换）那些来自于当前已知的外部主机的UDP报文，从而保障了外部请求来源的安全性</p>
+</li>
+<li><p>Port Restricted Cone NAT：它是Restricted Cone NAT的进一步受限版。只有当内部主机曾经发送过报文给外部主机（假设其IP地址为Z且端口为P）之后，外部主机才能以Y中的信息作为目标地址和目标端口，向内部主机发送UDP报文，同时，其请求报文的源端口必须为P，这一要求进一步强化了对外部报文请求来源的限制，从而较Restrictd Cone更具安全性</p>
+</li>
+<li><p>Symmetric NAT：这是一种比所有Cone NAT都要更为灵活的转换方式：在Cone NAT中，内部主机的内部Tuple与外部Tuple的转换映射关系是独立于内部主机所发出的UDP报文中的目标地址及端口的，即与目标Tuple无关；在Symmetric NAT中，目标Tuple则成为了NAT设备建立转换关系的一个重要考量：只有来自于同一个内部Tuple 、且针对同一目标Tuple的请求才被NAT转换至同一个外部Tuple，否则的话，NAT将为之分配一个新的外部Tuple；打个比方，当内部主机以相同的内部Tuple对2个不同的目标Tuple发送UDP报文时，此时NAT将会为内部主机分配两个不同的外部Tuple，并且建立起两个不同的内、外部Tuple转换关系。与此同时，只有接收到了内部主机所发送的数据包的外部主机才能向内部主机返回UDP报文，这里对外部返回报文来源的限制是与Port Restricted Cone一致的。不难看出，如果说Full Cone是要求最宽松NAT UDP转换方式，那么，Symmetric NAT则是要求最严格的NAT方式，其不仅体现在转换关系的建立上，而且还体现在对外部报文来源的限制方面。</p>
+</li>
+</ol>
+<h2 id="内网穿透"><a href="#内网穿透" class="headerlink" title="内网穿透"></a>内网穿透</h2><p>内网穿透是一个比较大的研究问题，这里只是根据自己的理解对其进行简答的原理描述而已。</p>
+<p>内网穿透的实现方法根据不同A、B双方不同的NAPT类型而不同，一般如果两侧的NAT类型都是Cone NAT类型，那么就可以实现双向的通讯。如果两侧都是Symmetric NAT，或是一侧是Symmetric NAT另一侧是Port Restricted Cone，那么将不能实现双向通讯。</p>
+<p>由于内网机器可以访问外网的机器，而外网的机器不能访问内网的机器，之所以不能访问，那是因为在内网端的NAT上没有对应的内网机器IP端口转换记录，所以NAT找不到对应的内部机器，所以直接的把数据包给丢掉。所以，如果想要实现内网穿透，那么就必须要先知道内网机器在NAT上的所对应的公网IP：Port信息，而且必须让NAT产生这条信息。那么怎么才可以使得内网的NAT产生该信息，而且另一端能获得这条转换后的公网IP：Port信息呢？此时需要第三方公网服务器S的支持。</p>
+<p>内网机器A发送一条信息给公网服务器S，公网服务器得到了A经过NAT转换后的公网IP：port信息，并记录下来，另一侧的内网机器B同样发送信息给公网服务器S，S得到了B的转换后的公网IP：Port信息，此时在A的NAT和B的NAT都分别产生了A和B的内网IP：Port转换为公网IP：Port的映射信息，在S把对方的转换后的公网IP：Port信息分别告诉给A、B后，就可以根据不同的NAT类型来实现内网的穿透了。</p>
+<ol>
+<li><p>Full Cone NAT类型的最容易，因为不会对外网的请求来源进行限制，所以可以直接进行双向通讯了。</p>
+</li>
+<li><p>Restricted Cone NAT类型和Port Restricted Cone NAT类型需要有一侧发起第一次注定失败的请求，例如：B发起对A的请求，此时在B的NAT上就会有B对A的请求记录，但是在A的NAT上面并没有对应的A请求B的记录，所以B发起的请求会被A的NAT给丢弃，但是此时的B已经对A打好洞了，所以如果此时A发起请求，或是数据给B（A侧打洞），那么由于B的NAT有对应的B请求过A的记录，所以数据包能以顺利的到达B。那么在数据顺利到达B后，由于A给B发送了数据（不管成功或失败），才是在A的NAT上也有对应的A请求过B的记录，所以此时如果有新的B的数据包发给A，那么A的NAT就会直接的根据映射将数据包转给A，实现了B与A的通信。</p>
+</li>
+<li><p>Symmetric NAT，由于该类型的NAT的映射对象不是内网的IP：Port，而是外网的IP：Port信息，所以对不同的外网IP：Port请求会得到不同的IP：port转换，请求服务器S会得到一条IP：Port转换，请求对侧也会得到一条不同的IP：Port转换，又由于ymmetric NAT对外部返回报文来源的限制是与Port Restricted Cone一致的，所以这种类型不能实现双方的通讯。</p>
+</li>
+</ol>
+<p>对于内网穿透，网上一般都是UDP实现的，而且该技术已经很成熟了，对于TCP的实现，有说可以实现的，有说不可以实现的，由于自己没有具体的写代码实现过，不过感觉根据UDP的实现思路，TCP应该也是可以实现内网穿透的！</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/03/15/NAT以及内网穿透/" data-id="ciqarm470003ch8qyr0su9gko" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TCP-IP/">TCP/IP</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-TCP_IP模型常用协议" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/03/14/TCP_IP模型常用协议/" class="article-date">
+  <time datetime="2016-03-14T10:01:27.000Z" itemprop="datePublished">2016-03-14</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/计算机网络/">计算机网络</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/03/14/TCP_IP模型常用协议/">TCP/IP模型常用协议</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>本文主要讲解一下TCP/IP模型中用到的几个比较主要的协议：ICMP、ARP、RARP、RIP以及BGP协议<br><img src="pictures/网络层协议/TCP_IP模型与OSI模型.jpg" alt=""><br>在OSI模型中，arp和rarp是归属于数据链路层的协议，但是在TCP/IP模型中，两者都归类为网络层协议。</p>
+<h2 id="ICMP协议"><a href="#ICMP协议" class="headerlink" title="ICMP协议"></a>ICMP协议</h2><p>ICMP(Internet Control Message Protocol)是介于网络层和传输层的协议。它的主要功能是传输网络诊断信息。</p>
+<p>ICMP传输的信息可以分为两类，一类是错误(error)信息，这一类信息可用来诊断网络故障。我们已经知道，IP协议的工作方式是“Best Effort”，如果IP包没有被传送到目的地，或者IP包发生错误，IP协议本身不会做进一步的努力。但上游发送IP包的主机和接力的路由器并不知道下游发生了错误和故障，它们可能继续发送IP包。通过ICMP包，下游的路由器和主机可以将错误信息汇报给上游，从而让上游的路由器和主机进行调整。需要注意的是，ICMP只提供特定类型的错误汇报，它不能帮助IP协议成为“可靠”(reliable)的协议。另一类信息是咨询(Informational)性质的，比如某台计算机询问路径上的每个路由器都是谁，然后各个路由器同样用ICMP包回答。</p>
+<p>(ICMP基于IP协议。也就是说，一个ICMP包需要封装在IP包中，然后在互联网传送。ICMP是IP套装的必须部分，也就是说，任何一个支持IP协议的计算机，都要同时实现ICMP。)</p>
+<p>ICMP协议是实现ping命令和traceroute命令的基础。这两个工具常用于网络排错。</p>
+<h3 id="常见的ICMP包类型"><a href="#常见的ICMP包类型" class="headerlink" title="常见的ICMP包类型"></a>常见的ICMP包类型</h3><h4 id="回音"><a href="#回音" class="headerlink" title="回音"></a>回音</h4><p>回音(Echo)属于咨询信息。ping命令就是利用了该类型的ICMP包。当使用ping命令的时候，将向目标主机发送Echo-询问类型的ICMP包，而目标主机在接收到该ICMP包之后，会回复Echo-回答类型的ICMP包，并将询问ICMP包包含在数据部分。ping命令是我们进行网络排查的一个重要工具。如果一个IP地址可以通过ping命令收到回复，那么其他的网络协议通信方式也很有可能成功。</p>
+<h4 id="源头冷却"><a href="#源头冷却" class="headerlink" title="源头冷却"></a>源头冷却</h4><p>源头冷却(source quench)属于错误信息。如果某个主机快速的向目的地传送数据，而目的地主机没有匹配的处理能力，目的地主机可以向出发主机发出该类型的ICMP包，提醒出发主机放慢发送速度(请温柔一点吧)。</p>
+<h4 id="目的地无法到达"><a href="#目的地无法到达" class="headerlink" title="目的地无法到达"></a>目的地无法到达</h4><p>目的地无法到达(Destination Unreachable)属于错误信息。如果一个路由器接收到一个没办法进一步接力的IP包，它会向出发主机发送该类型的ICMP包。比如当IP包到达最后一个路由器，路由器发现目的地主机down机，就会向出发主机发送目的地无法到达(Destination Unreachable)类型的ICMP包。目的地无法到达还可能有其他的原因，比如不存在接力路径，比如不被接收的端口号等等。</p>
+<h4 id="超时"><a href="#超时" class="headerlink" title="超时"></a>超时</h4><p>超时(Time Exceeded)属于错误信息。IPv4中的Time to Live(TTL)和IPv6中的Hop Limit会随着经过的路由器而递减，当这个区域值减为0时，就认为该IP包超时(Time Exceeded)。Time Exceeded就是TTL减为0时的路由器发给出发主机的ICMP包，通知它发生了超时错误。</p>
+<p>traceroute就利用了这种类型的ICMP包。traceroute命令用来发现IP接力路径(route)上的各个路由器。它向目的地发送IP包，第一次的时候，将TTL设置为1，引发第一个路由器的Time Exceeded错误。这样，第一个路由器回复ICMP包，从而让出发主机知道途径的第一个路由器的信息。随后TTL被设置为2、3、4，…，直到到达目的主机。这样，沿途的每个路由器都会向出发主机发送ICMP包来汇报错误。traceroute将ICMP包的信息打印在屏幕上，就是接力路径的信息了。</p>
+<h4 id="重新定向"><a href="#重新定向" class="headerlink" title="重新定向"></a>重新定向</h4><p>重新定向(redirect)属于错误信息。当一个路由器收到一个IP包，对照其routing table，发现自己不应该收到该IP包，它会向出发主机发送重新定向类型的ICMP，提醒出发主机修改自己的routing table。</p>
+<h4 id="IPv6的Neighbor-Discovery"><a href="#IPv6的Neighbor-Discovery" class="headerlink" title="IPv6的Neighbor Discovery"></a>IPv6的Neighbor Discovery</h4><p>ARP协议用于发现周边的IP地址和MAC地址的对应。然而，ARP协议只用于IPv4，IPv6并不使用ARP协议。IPv6包通过邻居探索(ND, Neighbor Discovery)来实现ARP的功能。ND的工作方式与ARP类似，但它基于ICMP协议。ICMP包有Neighbor Solicitation和Neighbor Advertisement类型。这两个类型分别对应ARP协议的询问和回复信息。</p>
+<p>ICMP协议是IP协议的排错帮手，它可以帮助人们及时发现IP通信中出现的故障。基于ICMP的ping和traceroute也构成了重要的网络诊断工具。然而，需要注意的是，尽管ICMP的设计是出于好的意图，但ICMP却经常被黑客借用进行网络攻击，比如利用伪造的IP包引发大量的ICMP回复，并将这些ICMP包导向受害主机，从而形成DoS攻击。而redirect类型的ICMP包可以引起某个主机更改自己的routing table，所以也被用作攻击工具。许多站点选择忽视某些类型的ICMP包来提高自身的安全性。</p>
+<h2 id="ARP协议、RARP协议"><a href="#ARP协议、RARP协议" class="headerlink" title="ARP协议、RARP协议"></a>ARP协议、RARP协议</h2><p>在上面的过程中，我们实际上假设了，每一台主机和路由都能了解局域网内的IP地址和MAC地址的对应关系，这是实现IP包封装(encapsulation)到帧的基本条件。IP地址与MAC地址的对应是通过ARP协议传播到局域网的每个主机和路由。每一台主机或路由中都有一个ARP cache，用以存储局域网内IP地址和MAC地址如何对应。</p>
+<p>ARP协议(ARP介于连接层和网络层之间，ARP包需要包裹在一个帧中)的工作方式如下：主机会发出一个ARP包，该ARP包中包含有自己的IP地址和MAC地址。通过ARP包，主机以广播的形式询问局域网上所有的主机和路由：我是IP地址xxxx，我的MAC地址是xxxx，有人知道199.165.146.4的MAC地址吗？拥有该IP地址的主机会回复发出请求的主机：哦，我知道，这个IP地址属于我的一个NIC，它的MAC地址是xxxxxx。由于发送ARP请求的主机采取的是广播形式，并附带有自己的IP地址和MAC地址，其他的主机和路由会同时检查自己的ARP cache，如果不符合，则更新自己的ARP cache。</p>
+<p>这样，经过几次ARP请求之后，ARP cache会达到稳定。如果局域网上设备发生变动，ARP重复上面过程。</p>
+<p>(在Linux下，可以使用$arp命令来查看ARP的过程。ARP协议只用于IPv4。IPv6使用Neighbor Discovery Protocol来替代ARP的功能。)</p>
+<p>RARP协议则刚好相反，它将MAC地址解析成为对应的IP地址，现在已很少单独使用。</p>
+<h2 id="RIP协议"><a href="#RIP协议" class="headerlink" title="RIP协议"></a>RIP协议</h2><p>RIP协议是基于UDP协议来实现的，所以属于应用层协议。<br>RIP协议被用来生成路由表信息，它通过距离来决定routing table，所以属于distance-vector protocol。对于RIP来说，所谓的距离是从出发地到目的地途径的路由器数目(hop number)</p>
+<h2 id="BGP协议"><a href="#BGP协议" class="headerlink" title="BGP协议"></a>BGP协议</h2><p>BGP协议基于TCP协议来实现，所以属于应用层协议。<br>RIP出于技术上的原因(looping hops)，认为距离超过15的IP不可到达。所以RIP更多用于互联网的一部分(比如整个中国电信的网络)。这样一个互联网的部分往往属于同一个ISP或者有同一个管理机构，所以叫做自治系统(AS,autonomous system)。自治系统内部的主机和路由根据通向外部的边界路由器来和其它的自治系统通信。各个边界路由器之间通过BGP(Border Gateway Protocol)来生成自己前往其它AS的routing table，而自治系统内部则参照边界路由器，使用RIP来决定routing table。BGP的基本工作过程与RIP类似，但在考虑距离的同时，也权衡比如政策、连接性能等其他因素，再决定交通的走向(routing table)。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/03/14/TCP_IP模型常用协议/" data-id="ciqarm46w0036h8qyqzynncqg" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TCP-IP/">TCP/IP</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-平衡二叉查找树-AVL树" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/03/12/平衡二叉查找树-AVL树/" class="article-date">
+  <time datetime="2016-03-12T05:24:02.000Z" itemprop="datePublished">2016-03-12</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/数据结构/">数据结构</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/03/12/平衡二叉查找树-AVL树/">平衡二叉查找树(AVL树)</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>本文转载自：<a href="http://www.cppblog.com/cxiaojia/archive/2012/08/20/187776.html" target="_blank" rel="external">一步一步写平衡二叉树（AVL树）</a>，个人感觉原文思路写的很好，也表达的很清楚，所以就转载一下，不过文中的代码感觉还有点小问题，但是结构写得很不错。</p>
+<p>平衡二叉树（Balanced Binary Tree）是二叉查找树的一个进化体，也是第一个引入平衡概念的二叉树。1962年，G.M. Adelson-Velsky 和 E.M. Landis发明了这棵树，所以它又叫AVL树。平衡二叉树要求对于每一个节点来说，它的左右子树的高度之差不能超过1，如果插入或者删除一个节点使得高度之差大于1，就要进行节点之间的旋转，将二叉树重新维持在一个平衡状态。这个方案很好的解决了二叉查找树退化成链表的问题，把插入，查找，删除的时间复杂度最好情况和最坏情况都维持在O(logN)。但是频繁旋转会使插入和删除牺牲掉O(logN)左右的时间，不过相对二叉查找树来说，时间上稳定了很多。<br><img src="/pictures/数据结构/树结构/AVL1.png" alt="两颗二叉查找树，只有右边的是AVL树"></p>
+<h2 id="下面对于AVL树的构建进行描述："><a href="#下面对于AVL树的构建进行描述：" class="headerlink" title="下面对于AVL树的构建进行描述："></a>下面对于AVL树的构建进行描述：</h2><h4 id="第一步：节点信息"><a href="#第一步：节点信息" class="headerlink" title="第一步：节点信息"></a>第一步：节点信息</h4><p>相对于二叉查找树的节点来说，我们需要用一个属性二叉树的高度，目的是维护插入和删除过程中的旋转算法。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//AVL树节点信息</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;</span><br><span class="line"><span class="keyword">class</span> TreeNode</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">public</span>:</span><br><span class="line">        TreeNode():lson(<span class="literal">NULL</span>),rson(<span class="literal">NULL</span>),freq(<span class="number">1</span>),hgt(<span class="number">0</span>)&#123;&#125;</span><br><span class="line">        T data;<span class="comment">//值</span></span><br><span class="line">        <span class="keyword">int</span> hgt;<span class="comment">//以此节点为根的树的高度</span></span><br><span class="line">        <span class="keyword">unsigned</span> <span class="keyword">int</span> freq;<span class="comment">//频率</span></span><br><span class="line">        TreeNode* lson;<span class="comment">//指向左儿子的地址</span></span><br><span class="line">        TreeNode* rson;<span class="comment">//指向右儿子的地址</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h4 id="第二步：平衡二叉树类的声明"><a href="#第二步：平衡二叉树类的声明" class="headerlink" title="第二步：平衡二叉树类的声明"></a>第二步：平衡二叉树类的声明</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//AVL树类的属性和方法声明</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;</span><br><span class="line"><span class="keyword">class</span> AVLTree</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">private</span>:</span><br><span class="line">        TreeNode&lt;T&gt;* root;<span class="comment">//根节点</span></span><br><span class="line">        <span class="function"><span class="keyword">void</span> <span class="title">insertpri</span><span class="params">(TreeNode&lt;T&gt;* &amp;node,T x)</span></span>;<span class="comment">//插入</span></span><br><span class="line">        TreeNode&lt;T&gt;* findpri(TreeNode&lt;T&gt;* node,T x);<span class="comment">//查找</span></span><br><span class="line">        <span class="function"><span class="keyword">void</span> <span class="title">insubtree</span><span class="params">(TreeNode&lt;T&gt;* node)</span></span>;<span class="comment">//中序遍历</span></span><br><span class="line">        <span class="function"><span class="keyword">void</span> <span class="title">Deletepri</span><span class="params">(TreeNode&lt;T&gt;* &amp;node,T x)</span></span>;<span class="comment">//删除</span></span><br><span class="line">        <span class="function"><span class="keyword">int</span> <span class="title">height</span><span class="params">(TreeNode&lt;T&gt;* node)</span></span>;<span class="comment">//求树的高度</span></span><br><span class="line">        <span class="function"><span class="keyword">void</span> <span class="title">SingRotateLeft</span><span class="params">(TreeNode&lt;T&gt;* &amp;k2)</span></span>;<span class="comment">//左左情况下的旋转</span></span><br><span class="line">        <span class="function"><span class="keyword">void</span> <span class="title">SingRotateRight</span><span class="params">(TreeNode&lt;T&gt;* &amp;k2)</span></span>;<span class="comment">//右右情况下的旋转</span></span><br><span class="line">        <span class="function"><span class="keyword">void</span> <span class="title">DoubleRotateLR</span><span class="params">(TreeNode&lt;T&gt;* &amp;k3)</span></span>;<span class="comment">//左右情况下的旋转</span></span><br><span class="line">        <span class="function"><span class="keyword">void</span> <span class="title">DoubleRotateRL</span><span class="params">(TreeNode&lt;T&gt;* &amp;k3)</span></span>;<span class="comment">//右左情况下的旋转</span></span><br><span class="line">        <span class="function"><span class="keyword">int</span> <span class="title">Max</span><span class="params">(<span class="keyword">int</span> cmpa,<span class="keyword">int</span> cmpb)</span></span>;<span class="comment">//求最大值</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span>:</span><br><span class="line">        AVLTree():root(<span class="literal">NULL</span>)&#123;&#125;</span><br><span class="line">        <span class="function"><span class="keyword">void</span> <span class="title">insert</span><span class="params">(T x)</span></span>;<span class="comment">//插入接口</span></span><br><span class="line">        TreeNode&lt;T&gt;* find(T x);<span class="comment">//查找接口</span></span><br><span class="line">        <span class="function"><span class="keyword">void</span> <span class="title">Delete</span><span class="params">(T x)</span></span>;<span class="comment">//删除接口</span></span><br><span class="line">        <span class="function"><span class="keyword">void</span> <span class="title">traversal</span><span class="params">()</span></span>;<span class="comment">//遍历接口</span></span><br><span class="line"></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h4 id="第三步：两个辅助方法"><a href="#第三步：两个辅助方法" class="headerlink" title="第三步：两个辅助方法"></a>第三步：两个辅助方法</h4><p>　　旋转算法需要借助于两个功能的辅助，一个是求树的高度，一个是求两个高度的最大值。这里规定，一棵空树的高度为-1，只有一个根节点的树的高度为0，以后每多一层高度加1。为了解决指针NULL这种情况，写了一个求高度的函数，这个函数还是很有必要的。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//计算以节点为根的树的高度</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;</span><br><span class="line"><span class="keyword">int</span> AVLTree&lt;T&gt;::height(TreeNode&lt;T&gt;* node)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span>(node!=<span class="literal">NULL</span>)</span><br><span class="line">        <span class="keyword">return</span> node-&gt;hgt;</span><br><span class="line">    <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//求最大值</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;</span><br><span class="line"><span class="keyword">int</span> AVLTree&lt;T&gt;::Max(<span class="keyword">int</span> cmpa,<span class="keyword">int</span> cmpb)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">return</span> cmpa&gt;cmpb?cmpa:cmpb;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="第四步：旋转"><a href="#第四步：旋转" class="headerlink" title="第四步：旋转"></a>第四步：旋转</h4><p>对于一个平衡的节点，由于任意节点最多有两个儿子，因此高度不平衡时，此节点的两颗子树的高度差2.容易看出，这种不平衡出现在下面四种情况：<br><img src="/pictures/数据结构/树结构/AVL2.png" alt="四种不平衡树的情况"></p>
+<p>1、6节点的左子树3节点高度比右子树7节点大2，左子树3节点的左子树1节点高度大于右子树4节点，这种情况成为<font color="red">左左</font>。</p>
+<p>2、6节点的左子树2节点高度比右子树7节点大2，左子树2节点的左子树1节点高度小于右子树4节点，这种情况成为<font color="red">左右</font>。</p>
+<p>3、2节点的左子树1节点高度比右子树5节点小2，右子树5节点的左子树3节点高度大于右子树6节点，这种情况成为<font color="red">右左</font>。</p>
+<p>4、2节点的左子树1节点高度比右子树4节点小2，右子树4节点的左子树3节点高度小于右子树6节点，这种情况成为<font color="red">右右</font>。</p>
+<p>从图中可以可以看出，1和4两种情况是对称的，这两种情况的旋转算法是一致的，只需要经过<font color="red">一次旋转</font>就可以达到目标，我们称之为<font color="red">单旋转</font>。2和3两种情况也是对称的，这两种情况的旋转算法也是一致的，需要进行<font color="red">两次旋转</font>，我们称之为<font color="red">双旋转</font>。</p>
+<h4 id="第五步：单旋转"><a href="#第五步：单旋转" class="headerlink" title="第五步：单旋转"></a>第五步：单旋转</h4><p>单旋转是针对于左左和右右这两种情况的解决方案，这两种情况是对称的，只要解决了左左这种情况，右右就很好办了。图3是左左情况的解决方案，节点k2不满足平衡特性，因为它的左子树k1比右子树Z深2层，而且k1子树中，更深的一层的是k1的左子树X子树，所以属于左左情况。</p>
+<p><img src="/pictures/数据结构/树结构/AVL3.png" alt="左左情况下的单旋转过程"></p>
+<p>为使树恢复平衡，我们把k2变成这棵树的根节点，因为k2大于k1，把k2置于k1的右子树上，而原本在k1右子树的Y大于k1，小于k2，就把Y置于k2的左子树上，这样既满足了二叉查找树的性质，又满足了平衡二叉树的性质。</p>
+<p>这样的操作只需要一部分指针改变，结果我们得到另外一颗二叉查找树，它是一棵AVL树，因为X向上一移动了一层，Y还停留在原来的层面上，Z向下移动了一层。整棵树的新高度和之前没有在左子树上插入的高度相同，插入操作使得X高度长高了。因此，由于这颗子树高度没有变化，所以通往根节点的路径就不需要继续旋转了。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//左左情况下的旋转</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;</span><br><span class="line"><span class="keyword">void</span> AVLTree&lt;T&gt;::SingRotateLeft(TreeNode&lt;T&gt;* &amp;k2)</span><br><span class="line">&#123;</span><br><span class="line">    TreeNode&lt;T&gt;* k1;</span><br><span class="line">    k1=k2-&gt;lson;</span><br><span class="line">    k2-&gt;lson=k1-&gt;rson;</span><br><span class="line">    k1-&gt;rson=k2;</span><br><span class="line"></span><br><span class="line">    k2-&gt;hgt=Max(height(k2-&gt;lson),height(k2-&gt;rson))+<span class="number">1</span>;</span><br><span class="line">    k1-&gt;hgt=Max(height(k1-&gt;lson),k2-&gt;hgt)+<span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//右右情况下的旋转</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;</span><br><span class="line"><span class="keyword">void</span> AVLTree&lt;T&gt;::SingRotateRight(TreeNode&lt;T&gt;* &amp;k2)</span><br><span class="line">&#123;</span><br><span class="line">    TreeNode&lt;T&gt;* k1;</span><br><span class="line">    k1=k2-&gt;rson;</span><br><span class="line">    k2-&gt;rson=k1-&gt;lson;</span><br><span class="line">    k1-&gt;lson=k2;</span><br><span class="line"></span><br><span class="line">    k2-&gt;hgt=Max(height(k2-&gt;lson),height(k2-&gt;rson))+<span class="number">1</span>;</span><br><span class="line">    k1-&gt;hgt=Max(height(k1-&gt;rson),k2-&gt;hgt)+<span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="第六步：双旋转"><a href="#第六步：双旋转" class="headerlink" title="第六步：双旋转"></a>第六步：双旋转</h4><p>对于左右和右左这两种情况，单旋转不能使它达到一个平衡状态，要经过两次旋转。双旋转是针对于这两种情况的解决方案，同样的，这样两种情况也是对称的，只要解决了左右这种情况，右左就很好办了。图4是左右情况的解决方案，节点k3不满足平衡特性，因为它的左子树k1比右子树Z深2层，而且k1子树中，更深的一层的是k1的右子树k2子树，所以属于左右情况。</p>
+<p><img src="/pictures/数据结构/树结构/AVL4.png" alt="左右情况下的双旋转过程"></p>
+<p>为使树恢复平衡，我们需要进行两步，第一步，把k1作为根，进行一次<font color="red">右右旋转</font>，旋转之后就变成了<font color="red">左左</font>情况，所以第二步再进行一次<font color="red">左左旋转</font>，最后得到了一棵以k2为根的平衡二叉树树。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//左右情况的旋转</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;</span><br><span class="line"><span class="keyword">void</span> AVLTree&lt;T&gt;::DoubleRotateLR(TreeNode&lt;T&gt;* &amp;k3)</span><br><span class="line">&#123;</span><br><span class="line">    SingRotateRight(k3-&gt;lson);</span><br><span class="line">    SingRotateLeft(k3);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//右左情况的旋转</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;</span><br><span class="line"><span class="keyword">void</span> AVLTree&lt;T&gt;::DoubleRotateRL(TreeNode&lt;T&gt;* &amp;k3)</span><br><span class="line">&#123;</span><br><span class="line">    SingRotateLeft(k3-&gt;rson);</span><br><span class="line">    SingRotateRight(k3);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="第七步：插入"><a href="#第七步：插入" class="headerlink" title="第七步：插入"></a>第七步：插入</h4><p>插入的方法和二叉查找树基本一样，区别是，插入完成后需要从插入的节点开始维护一个到根节点的路径，每经过一个节点都要维持树的平衡。维持树的平衡要根据高度差的特点选择不同的旋转算法。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//插入</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;</span><br><span class="line"><span class="keyword">void</span> AVLTree&lt;T&gt;::insertpri(TreeNode&lt;T&gt;* &amp;node,T x)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span>(node==<span class="literal">NULL</span>)<span class="comment">//如果节点为空,就在此节点处加入x信息</span></span><br><span class="line">    &#123;</span><br><span class="line">        node=<span class="keyword">new</span> TreeNode&lt;T&gt;();</span><br><span class="line">        node-&gt;data=x;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>(node-&gt;data&gt;x)<span class="comment">//如果x小于节点的值,就继续在节点的左子树中插入x</span></span><br><span class="line">    &#123;</span><br><span class="line">        insertpri(node-&gt;lson,x);</span><br><span class="line">        <span class="keyword">if</span>(<span class="number">2</span>==height(node-&gt;lson)-height(node-&gt;rson))</span><br><span class="line">            <span class="keyword">if</span>(x&lt;node-&gt;lson-&gt;data)</span><br><span class="line">                SingRotateLeft(node);</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">                DoubleRotateLR(node);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>(node-&gt;data&lt;x)<span class="comment">//如果x大于节点的值,就继续在节点的右子树中插入x</span></span><br><span class="line">    &#123;</span><br><span class="line">        insertpri(node-&gt;rson,x);</span><br><span class="line">        <span class="keyword">if</span>(<span class="number">2</span>==height(node-&gt;rson)-height(node-&gt;lson))<span class="comment">//如果高度之差为2的话就失去了平衡,需要旋转</span></span><br><span class="line">            <span class="keyword">if</span>(x&gt;node-&gt;rson-&gt;data)</span><br><span class="line">                SingRotateRight(node);</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">                DoubleRotateRL(node);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> ++(node-&gt;freq);<span class="comment">//如果相等,就把频率加1</span></span><br><span class="line">    node-&gt;hgt=Max(height(node-&gt;lson),height(node-&gt;rson));</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//插入接口</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;</span><br><span class="line"><span class="keyword">void</span> AVLTree&lt;T&gt;::insert(T x)</span><br><span class="line">&#123;</span><br><span class="line">    insertpri(root,x);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="第八步：查找"><a href="#第八步：查找" class="headerlink" title="第八步：查找"></a>第八步：查找</h4><p>和二叉查找树相比，查找方法没有变法，不过根据存储的特性，AVL树能维持在一个O(logN)的稳定的时间，而二叉查找树则相当不稳定。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//查找</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;</span><br><span class="line">TreeNode&lt;T&gt;* AVLTree&lt;T&gt;::findpri(TreeNode&lt;T&gt;* node,T x)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span>(node==<span class="literal">NULL</span>)<span class="comment">//如果节点为空说明没找到,返回NULL</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>(node-&gt;data&gt;x)<span class="comment">//如果x小于节点的值,就继续在节点的左子树中查找x</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> findpri(node-&gt;lson,x);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>(node-&gt;data&lt;x)<span class="comment">//如果x大于节点的值,就继续在节点的左子树中查找x</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">return</span> findpri(node-&gt;rson,x);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">return</span> node;<span class="comment">//如果相等,就找到了此节点</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//查找接口</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;</span><br><span class="line">TreeNode&lt;T&gt;* AVLTree&lt;T&gt;::find(T x)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">return</span> findpri(root,x);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="第九步：删除"><a href="#第九步：删除" class="headerlink" title="第九步：删除"></a>第九步：删除</h4><p>删除的方法也和二叉查找树的一致，区别是，删除完成后，需要从删除节点的父亲开始向上维护树的平衡一直到根节点。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//删除</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;</span><br><span class="line"><span class="keyword">void</span> AVLTree&lt;T&gt;::Deletepri(TreeNode&lt;T&gt;* &amp;node,T x)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span>(node==<span class="literal">NULL</span>) <span class="keyword">return</span> ;<span class="comment">//没有找到值是x的节点</span></span><br><span class="line">    <span class="keyword">if</span>(x &lt; node-&gt;data)</span><br><span class="line">    &#123;</span><br><span class="line">         Deletepri(node-&gt;lson,x);<span class="comment">//如果x小于节点的值,就继续在节点的左子树中删除x</span></span><br><span class="line">         <span class="keyword">if</span>(<span class="number">2</span>==height(node-&gt;rson)-height(node-&gt;lson))</span><br><span class="line">            <span class="keyword">if</span>(node-&gt;rson-&gt;lson!=<span class="literal">NULL</span>&amp;&amp;(height(node-&gt;rson-&gt;lson)&gt;height(node-&gt;rson-&gt;rson)) )</span><br><span class="line">                DoubleRotateRL(node);</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">                SingRotateRight(node);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">else</span> <span class="keyword">if</span>(x &gt; node-&gt;data)</span><br><span class="line">    &#123;</span><br><span class="line">         Deletepri(node-&gt;rson,x);<span class="comment">//如果x大于节点的值,就继续在节点的右子树中删除x</span></span><br><span class="line">         <span class="keyword">if</span>(<span class="number">2</span>==height(node-&gt;lson)-height(node-&gt;rson))</span><br><span class="line">            <span class="keyword">if</span>(node-&gt;lson-&gt;rson!=<span class="literal">NULL</span>&amp;&amp; (height(node-&gt;lson-&gt;rson)&gt;height(node-&gt;lson-&gt;lson) ))</span><br><span class="line">                DoubleRotateLR(node);</span><br><span class="line">            <span class="keyword">else</span></span><br><span class="line">                SingRotateLeft(node);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">else</span><span class="comment">//如果相等,此节点就是要删除的节点</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span>(node-&gt;lson&amp;&amp;node-&gt;rson)<span class="comment">//此节点有两个儿子</span></span><br><span class="line">        &#123;</span><br><span class="line">            TreeNode&lt;T&gt;* temp=node-&gt;rson;<span class="comment">//temp指向节点的右儿子</span></span><br><span class="line">            <span class="keyword">while</span>(temp-&gt;lson!=<span class="literal">NULL</span>) temp=temp-&gt;lson;<span class="comment">//找到右子树中值最小的节点</span></span><br><span class="line">            <span class="comment">//把右子树中最小节点的值赋值给本节点</span></span><br><span class="line">            node-&gt;data=temp-&gt;data;</span><br><span class="line">            node-&gt;freq=temp-&gt;freq;</span><br><span class="line">            Deletepri(node-&gt;rson,temp-&gt;data);<span class="comment">//删除右子树中最小值的节点</span></span><br><span class="line">            <span class="keyword">if</span>(<span class="number">2</span>==height(node-&gt;lson)-height(node-&gt;rson))</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">if</span>(node-&gt;lson-&gt;rson!=<span class="literal">NULL</span>&amp;&amp; (height(node-&gt;lson-&gt;rson)&gt;height(node-&gt;lson-&gt;lson) ))</span><br><span class="line">                    DoubleRotateLR(node);</span><br><span class="line">                <span class="keyword">else</span></span><br><span class="line">                    SingRotateLeft(node);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">else</span><span class="comment">//此节点有1个或0个儿子</span></span><br><span class="line">        &#123;</span><br><span class="line">            TreeNode&lt;T&gt;* temp=node;</span><br><span class="line">            <span class="keyword">if</span>(node-&gt;lson==<span class="literal">NULL</span>)<span class="comment">//有右儿子或者没有儿子</span></span><br><span class="line">            node=node-&gt;rson;</span><br><span class="line">            <span class="keyword">else</span> <span class="keyword">if</span>(node-&gt;rson==<span class="literal">NULL</span>)<span class="comment">//有左儿子</span></span><br><span class="line">            node=node-&gt;lson;</span><br><span class="line">            <span class="keyword">delete</span>(temp);</span><br><span class="line">            temp=<span class="literal">NULL</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>(node==<span class="literal">NULL</span>) <span class="keyword">return</span>;</span><br><span class="line">    node-&gt;hgt=Max(height(node-&gt;lson),height(node-&gt;rson))+<span class="number">1</span>;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//删除接口</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;</span><br><span class="line"><span class="keyword">void</span> AVLTree&lt;T&gt;::Delete(T x)</span><br><span class="line">&#123;</span><br><span class="line">    Deletepri(root,x);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="第十步：中序遍历"><a href="#第十步：中序遍历" class="headerlink" title="第十步：中序遍历"></a>第十步：中序遍历</h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//中序遍历函数</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;</span><br><span class="line"><span class="keyword">void</span> AVLTree&lt;T&gt;::insubtree(TreeNode&lt;T&gt;* node)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">if</span>(node==<span class="literal">NULL</span>) <span class="keyword">return</span>;</span><br><span class="line">    insubtree(node-&gt;lson);<span class="comment">//先遍历左子树</span></span><br><span class="line">    <span class="built_in">cout</span>&lt;&lt;node-&gt;data&lt;&lt;<span class="string">" "</span>;<span class="comment">//输出根节点</span></span><br><span class="line">    insubtree(node-&gt;rson);<span class="comment">//再遍历右子树</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//中序遍历接口</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt;</span><br><span class="line"><span class="keyword">void</span> AVLTree&lt;T&gt;::traversal()</span><br><span class="line">&#123;</span><br><span class="line">    insubtree(root);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="第十一步：关于效率"><a href="#第十一步：关于效率" class="headerlink" title="第十一步：关于效率"></a>第十一步：关于效率</h4><p>此数据结构插入、查找和删除的时间复杂度均为O(logN)，但是插入和删除需要额外的旋转算法需要的时间，有时旋转过多也会影响效率。</p>
+<p>关于递归和非递归。我用的是递归的方法进行插入，查找和删除，而非递归的方法一般来说要比递归的方法快很多，但是我感觉非递归的方法写出来会比较困难，所以我还是选择了递归的方法。</p>
+<p>还有一种效率的问题是关于高度信息的存储，由于我们需要的仅仅是高度的差，不需要知道这棵树的高度，所以只需要使用两个二进制位就可以表示这个差。这样可以避免平衡因子的重复计算，可以稍微的加快一些速度，不过代码也丧失了相对简明性和清晰度。如果采用递归写法的话，这种微加速就更显得微乎其微了。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/03/12/平衡二叉查找树-AVL树/" data-id="ciqarm4550019h8qydtea2eq3" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/树结构/">树结构</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Linux-之守护进程、僵死进程与孤儿进程" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/03/11/Linux-之守护进程、僵死进程与孤儿进程/" class="article-date">
+  <time datetime="2016-03-11T14:19:57.000Z" itemprop="datePublished">2016-03-11</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/03/11/Linux-之守护进程、僵死进程与孤儿进程/">Linux 之守护进程、僵死进程与孤儿进程</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>我们知道在unix/linux中，正常情况下，子进程是通过父进程创建的，子进程在创建新的进程。子进程的结束和父进程的运行是一个异步过程,即父进程永远无法预测子进程 到底什么时候结束。 当一个 进程完成它的工作终止之后，它的父进程需要调用wait()或者waitpid()系统调用取得子进程的终止状态。</p>
+<h3 id="孤儿进程"><a href="#孤儿进程" class="headerlink" title="孤儿进程"></a>孤儿进程</h3><p>一个父进程退出，而它的一个或多个子进程还在运行，那么那些子进程将成为孤儿进程。孤儿进程将被init进程(进程号为1)所收养，并由init进程对它们完成状态收集工作。<br>由于孤儿进程会被init进程给收养，所以孤儿进程不会对系统造成危害</p>
+<h3 id="僵尸进程"><a href="#僵尸进程" class="headerlink" title="僵尸进程"></a>僵尸进程</h3><p>一个进程使用fork创建子进程，如果子进程退出，而父进程并没有调用wait或waitpid获取子进程的状态信息，那么子进程的进程描述符仍然保存在系统中。这种进程称之为僵死进程。</p>
+<h4 id="僵死进程的危害："><a href="#僵死进程的危害：" class="headerlink" title="僵死进程的危害："></a>僵死进程的危害：</h4><p>unix提供了一种机制可以保证只要父进程想知道子进程结束时的状态信息， 就可以得到。这种机制就是: 在每个进程退出的时候,内核释放该进程所有的资源,包括打开的文件,占用的内存等。 但是仍然为其保留一定的信息(包括进程号the process ID,退出状态the termination status of the process,运行时间the amount of CPU time taken by the process等)。直到父进程通过wait / waitpid来取时才释放。 但这样就导致了问题，如果进程不调用wait / waitpid的话， 那么保留的那段信息就不会释放，其进程号就会一直被占用，但是系统所能使用的进程号是有限的，如果大量的产生僵死进程，将因为没有可用的进程号而导致系统不能产生新的进程. 此即为僵尸进程的危害，应当避免。</p>
+<p>任何一个子进程(init除外)在exit()之后，并非马上就消失掉，而是留下一个称为僵尸进程(Zombie)的数据结构，等待父进程处理。这是每个 子进程在结束时都要经过的阶段。如果子进程在exit()之后，父进程没有来得及处理，这时用ps命令就能看到子进程的状态是“Z”。如果父进程能及时 处理，可能用ps命令就来不及看到子进程的僵尸状态，但这并不等于子进程不经过僵尸状态。  如果父进程在子进程结束之前退出，则子进程将由init接管。init将会以父进程的身份对僵尸状态的子进程进行处理。</p>
+<p>一个进程如果只复制fork子进程而不负责对子进程进行wait()或是waitpid()调用来释放其所占有资源的话，那么就会产生很多的僵死进程，如果要消灭系统中大量的僵死进程，只需要将其父进程杀死，此时所有的僵死进程就会编程孤儿进程，从而被init所收养，这样init就会释放所有的僵死进程所占有的资源，从而结束僵死进程。</p>
+<h3 id="守护进程"><a href="#守护进程" class="headerlink" title="守护进程"></a>守护进程</h3><p>Linux Daemon（守护进程）是运行在后台的一种特殊进程。它独立于控制终端并且周期性地执行某种任务或等待处理某些发生的事件。它不需要用户输入就能运行而且提供某种服务，不是对整个系统就是对某个用户程序提供服务。Linux系统的大多数服务器就是通过守护进程实现的。常见的守护进程包括系统日志进程syslogd、 web服务器httpd、邮件服务器sendmail和数据库服务器mysqld等。</p>
+<p>守护进程一般在系统启动时开始运行，除非强行终止，否则直到系统关机都保持运行。守护进程经常以超级用户（root）权限运行，因为它们要使用特殊的端口（1-1024）或访问某些特殊的资源。</p>
+<p>一个守护进程的父进程是init进程，因为它真正的父进程在fork出子进程后就先于子进程exit退出了，所以它是一个由init继承的孤儿进程。守护进程是非交互式程序，没有控制终端，所以任何输出，无论是向标准输出设备stdout还是标准出错设备stderr的输出都需要特殊处理。</p>
+<p>守护进程的名称通常以d结尾，比如sshd、xinetd、crond等</p>
+<h3 id="创建守护进程步骤"><a href="#创建守护进程步骤" class="headerlink" title="创建守护进程步骤"></a>创建守护进程步骤</h3><p>首先我们要了解一些基本概念：</p>
+<h5 id="进程组-："><a href="#进程组-：" class="headerlink" title="进程组 ："></a>进程组 ：</h5><ol>
+<li>每个进程也属于一个进程组</li>
+<li>每个进程主都有一个进程组号，该号等于该进程组组长的PID号 .</li>
+<li>一个进程只能为它自己或子进程设置进程组ID号</li>
+</ol>
+<h4 id="会话期："><a href="#会话期：" class="headerlink" title="会话期："></a>会话期：</h4><p>会话期(session)是一个或多个进程组的集合。</p>
+<p>setsid()函数可以建立一个对话期：</p>
+<p>如果，调用setsid的进程不是一个进程组的组长，此函数创建一个新的会话期。</p>
+<p>(1).此进程变成该对话期的首进程</p>
+<p>(2)此进程变成一个新进程组的组长进程。</p>
+<p>(3)此进程没有控制终端，如果在调用setsid前，该进程有控制终端，那么与该终端的联系被解除。 如果该进程是一个进程组的组长，此函数返回错误。</p>
+<p>(4)为了保证这一点，我们先调用fork()然后exit()，此时只有子进程在运行</p>
+<p>现在我们来给出创建守护进程所需步骤：</p>
+<p>编写守护进程的一般步骤步骤：</p>
+<p>（1）在父进程中执行fork并exit推出；</p>
+<p>（2）在子进程中调用setsid函数创建新的会话；</p>
+<p>（3）在子进程中调用chdir函数，让根目录 ”/” 成为子进程的工作目录；</p>
+<p>（4）在子进程中调用umask函数，设置进程的umask为0；</p>
+<p>（5）在子进程中关闭任何不需要的文件描述符</p>
+<p>说明：</p>
+<p>1: 在后台运行。</p>
+<p>为避免挂起控制终端将Daemon放入后台执行。方法是在进程中调用fork使父进程终止，让Daemon在子进程中后台执行。<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>(pid=fork())</span><br><span class="line"><span class="built_in">exit</span>(<span class="number">0</span>);<span class="comment">//是父进程，结束父进程，子进程继续</span></span><br></pre></td></tr></table></figure></p>
+<p>2: 脱离控制终端，登录会话和进程组</p>
+<p>有必要先介绍一下Linux中的进程与控制终端，登录会话和进程组之间的关系：进程属于一个进程组，进程组号（GID）就是进程组长的进程号（PID）。登录会话可以包含多个进程组。这些进程组共享一个控制终端。这个控制终端通常是创建进程的登录终端。<br>控制终端，登录会话和进程组通常是从父进程继承下来的。我们的目的就是要摆脱它们，使之不受它们的影响。方法是在第1点的基础上，调用setsid()使进程成为会话组长：<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">setsid();</span><br></pre></td></tr></table></figure></p>
+<p>说明：当进程是会话组长时setsid()调用失败。但第一点已经保证进程不是会话组长。setsid()调用成功后，进程成为新的会话组长和新的进程组长，并与原来的登录会话和进程组脱离。由于会话过程对控制终端的独占性，进程同时与控制终端脱离。</p>
+<p>3: 禁止进程重新打开控制终端</p>
+<p>现在，进程已经成为无终端的会话组长。但它可以重新申请打开一个控制终端。可以通过使进程不再成为会话组长来禁止进程重新打开控制终端：<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>(pid=fork())</span><br><span class="line"><span class="built_in">exit</span>(<span class="number">0</span>);<span class="comment">//结束第一子进程，第二子进程继续（第二子进程不再是会话组长）</span></span><br></pre></td></tr></table></figure></p>
+<p>4: 关闭打开的文件描述符</p>
+<p>进程从创建它的父进程那里继承了打开的文件描述符。如不关闭，将会浪费系统资源，造成进程所在的文件系统无法卸下以及引起无法预料的错误。按如下方法关闭它们：<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (i=<span class="number">0</span>; i &lt; MAXFILE; i++)</span><br><span class="line">    close(i);</span><br></pre></td></tr></table></figure></p>
+<p>5: 改变当前工作目录</p>
+<p>进程活动时，其工作目录所在的文件系统不能卸下。一般需要将工作目录改变到根目录。对于需要转储核心，写运行日志的进程将工作目录改变到特定目录如/tmpchdir(“/“)</p>
+<p>6: 重设文件创建掩模</p>
+<p>进程从创建它的父进程那里继承了文件创建掩模。它可能修改守护进程所创建的文件的存取位。为防止这一点，将文件创建掩模清除：umask(0);</p>
+<p>7: 处理SIGCHLD信号</p>
+<p>处理SIGCHLD信号并不是必须的。但对于某些进程，特别是服务器进程往往在请求到来时生成子进程处理请求。如果父进程不等待子进程结束，子进程将成为僵尸进程（zombie）从而占用系统资源。如果父进程等待子进程结束，将增加父进程的负担，影响服务器进程的并发性能。在Linux下可以简单地将SIGCHLD信号的操作设为SIG_IGN。<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">signal(SIGCHLD,SIG_IGN);</span><br></pre></td></tr></table></figure></p>
+<p>这样，内核在子进程结束时不会产生僵尸进程。这一点与BSD4不同，BSD4下必须显式等待子进程结束才能释放僵尸进程。</p>
+<h4 id="守护进程实例"><a href="#守护进程实例" class="headerlink" title="守护进程实例"></a>守护进程实例</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;time.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;sys/param.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;sys/stat.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;fcntl.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 守护进程初始化函数</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">init_daemon</span><span class="params">()</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">pid_t</span> pid;</span><br><span class="line">    <span class="keyword">int</span> i = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> ((pid = fork()) == -<span class="number">1</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"Fork error !\n"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (pid != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">0</span>);        <span class="comment">// 父进程退出</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    setsid();           <span class="comment">// 子进程开启新会话，并成为会话首进程和组长进程</span></span><br><span class="line">    <span class="keyword">if</span> ((pid = fork()) == -<span class="number">1</span>) &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"Fork error !\n"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(-<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (pid != <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">0</span>);        <span class="comment">// 结束第一子进程，第二子进程不再是会话首进程</span></span><br><span class="line">    &#125;</span><br><span class="line">    chdir(<span class="string">"/tmp"</span>);      <span class="comment">// 改变工作目录</span></span><br><span class="line">    umask(<span class="number">0</span>);           <span class="comment">// 重设文件掩码</span></span><br><span class="line">    <span class="keyword">for</span> (; i &lt; getdtablesize(); ++i) &#123;</span><br><span class="line">       close(i);        <span class="comment">// 关闭打开的文件描述符</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> *argv[])</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> fp;</span><br><span class="line">    <span class="keyword">time_t</span> t;</span><br><span class="line">    <span class="keyword">char</span> buf[] = &#123;<span class="string">"This is a daemon:  "</span>&#125;;</span><br><span class="line">    <span class="keyword">char</span> *datetime;</span><br><span class="line">    <span class="keyword">int</span> len = <span class="number">0</span>;</span><br><span class="line">    <span class="comment">//printf("The NOFILE is: %d\n", NOFILE);</span></span><br><span class="line">    <span class="comment">//printf("The tablesize is: %d\n", getdtablesize());</span></span><br><span class="line">    <span class="comment">//printf("The pid is: %d\n", getpid());</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 初始化 Daemon 进程</span></span><br><span class="line">    init_daemon();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 每隔一分钟记录运行状态</span></span><br><span class="line">    <span class="keyword">while</span> (<span class="number">1</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (-<span class="number">1</span> == (fp = open(<span class="string">"/tmp/daemon.log"</span>, O_CREAT|O_WRONLY|O_APPEND, <span class="number">0600</span>))) &#123;</span><br><span class="line">          <span class="built_in">printf</span>(<span class="string">"Open file error !\n"</span>);</span><br><span class="line">          <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        len = <span class="built_in">strlen</span>(buf);</span><br><span class="line">        write(fp, buf, len);</span><br><span class="line">        t = time(<span class="number">0</span>);</span><br><span class="line">        datetime = asctime(localtime(&amp;t));</span><br><span class="line">        len = <span class="built_in">strlen</span>(datetime);</span><br><span class="line">        write(fp, datetime, len);</span><br><span class="line">        close(fp);</span><br><span class="line">        sleep(<span class="number">60</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="利用库函数daemon-创建守护进程"><a href="#利用库函数daemon-创建守护进程" class="headerlink" title="利用库函数daemon()创建守护进程"></a>利用库函数daemon()创建守护进程</h4><p>其实我们完全可以利用daemon()函数创建守护进程，其函数原型：</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;unistd.h&gt;</span><br><span class="line"></span><br><span class="line">int daemon(int nochdir, int noclose);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">DESCRIPTION</span><br><span class="line">       The daemon() function is for programs wishing to detach themselves from</span><br><span class="line">       the controlling terminal and run in the background as system daemons.</span><br><span class="line"></span><br><span class="line">       If nochdir is zero, daemon()  changes  the  process’s  current  working</span><br><span class="line">       directory to the root directory ("/"); otherwise,</span><br><span class="line"></span><br><span class="line">       If  noclose is zero, daemon() redirects standard input, standard output</span><br><span class="line">       and standard error to /dev/null; otherwise,  no  changes  are  made  to</span><br><span class="line">       these file descriptors.</span><br><span class="line"></span><br><span class="line">功能：创建一个守护进程</span><br><span class="line"></span><br><span class="line">参数：</span><br><span class="line"></span><br><span class="line">nochdir：=0将当前目录更改至“/”</span><br><span class="line"></span><br><span class="line">noclose：=0将标准输入、标准输出、标准错误重定向至“/dev/null”</span><br><span class="line"></span><br><span class="line">返回值：</span><br><span class="line"></span><br><span class="line">成功：0</span><br><span class="line"></span><br><span class="line">失败：-1</span><br></pre></td></tr></table></figure>
+<p>现在我们利用daemon()改写刚才那个程序：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;time.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;fcntl.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;sys/stat.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#<span class="keyword">define</span> ERR_EXIT(m) \</span><br><span class="line">do\</span><br><span class="line">&#123;\</span><br><span class="line">    perror(m);\</span><br><span class="line">    exit(EXIT_FAILURE);\</span><br><span class="line">&#125;\</span><br><span class="line">while (<span class="number">0</span>);\</span><br><span class="line"></span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">creat_daemon</span><span class="params">(<span class="keyword">void</span>)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">void</span>)</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">time_t</span> t;</span><br><span class="line">    <span class="keyword">int</span> fd;</span><br><span class="line">    <span class="keyword">if</span>(daemon(<span class="number">0</span>,<span class="number">0</span>) == -<span class="number">1</span>)</span><br><span class="line">        ERR_EXIT(<span class="string">"daemon error"</span>);</span><br><span class="line">    <span class="keyword">while</span>(<span class="number">1</span>)&#123;</span><br><span class="line">        fd = open(<span class="string">"daemon.log"</span>,O_WRONLY|O_CREAT|O_APPEND,<span class="number">0644</span>);</span><br><span class="line">        <span class="keyword">if</span>(fd == -<span class="number">1</span>)</span><br><span class="line">            ERR_EXIT(<span class="string">"open error"</span>);</span><br><span class="line">        t = time(<span class="number">0</span>);</span><br><span class="line">        <span class="keyword">char</span> *buf = asctime(localtime(&amp;t));</span><br><span class="line">        write(fd,buf,<span class="built_in">strlen</span>(buf));</span><br><span class="line">        close(fd);</span><br><span class="line">        sleep(<span class="number">60</span>);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/03/11/Linux-之守护进程、僵死进程与孤儿进程/" data-id="ciqarm47k0040h8qymcs5to31" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-IO-多路复用之select、poll、epoll详解" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2016/03/11/IO-多路复用之select、poll、epoll详解/" class="article-date">
@@ -136,7 +533,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/11/IO-多路复用之select、poll、epoll详解/" data-id="ciq4t54sd004imgqyqd4col7x" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/11/IO-多路复用之select、poll、epoll详解/" data-id="ciqarm47v004ih8qyctx08xez" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a></li></ul>
@@ -196,7 +593,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/11/Linux-I-O-模型/" data-id="ciq4t54sa004cmgqydgu3j0jr" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/11/Linux-I-O-模型/" data-id="ciqarm47r004ch8qyey51b99a" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a></li></ul>
@@ -261,7 +658,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/29/磁盘的分割、格式化、检验与挂载/" data-id="ciq4t54q8000umgqylg6w2m08" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/29/磁盘的分割、格式化、检验与挂载/" data-id="ciqarm44s000uh8qyb5p70qv1" class="article-share-link">Share</a>
       
       
     </footer>
@@ -315,481 +712,9 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/29/Linux文件系统之df，du以及ln命令/" data-id="ciq4t54rx003omgqyl8lw4gy1" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/29/Linux文件系统之df，du以及ln命令/" data-id="ciqarm47a003oh8qykj84pjlv" class="article-share-link">Share</a>
       
       
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Linux磁盘概念" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/02/29/Linux磁盘概念/" class="article-date">
-  <time datetime="2016-02-29T11:57:39.000Z" itemprop="datePublished">2016-02-29</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Linux/">Linux</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/02/29/Linux磁盘概念/">Linux磁盘概念</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>个人计算机常见的磁盘接口有两种， 分别是IDE不SATA接口，目前(2009)的主流已经是SATA接口了。</p>
-<p>以IDE接口来说，由于一个IDE扁平电缆可以连接两个IDE装置，又通常主机都会提供两个IDE接口，因此最多可以接到四个IDE装置。 也就是说，如果你已经有一个光盘设备了，那么最多就只能再接三颗IDE接口的磁盘啰。 这两个IDE接口通常被称为IDE1(primary)及IDE2(secondary)， 而每条扁平电缆上面癿IDE装置可以被区分为Master不Slave。这四个IDE装置癿文件名为：</p>
-<p><font color="red">以下的名称以及顺序都是固定的</font></p>
-<table>
-<thead>
-<tr>
-<th>IDE\Jumper</th>
-<th style="text-align:center">Master</th>
-<th style="text-align:right">Slave</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>IED1（primary）</td>
-<td style="text-align:center">/dev/hda</td>
-<td style="text-align:right">/dev/hdb</td>
-</tr>
-<tr>
-<td>IED2（Secondary）</td>
-<td style="text-align:center">/dev/hdc</td>
-<td style="text-align:right">/dev/hdd</td>
-</tr>
-</tbody>
-</table>
-<p>再以SATA接口来说，由于SATA/USB/SCSI等磁盘接口都是使用SCSI模块来驱动的， 因此这些接口的磁盘装置文件名都是/dev/sd[a-p]的格式。 但是与IDE接口不同的是，SATA/USB接口的磁盘根本就没有一定的顺序，那如何决定他的装置文件名呢？ 这个时候就得要根据Linux核心侦测到磁盘的顺序了！这里以底下的例子来让你了解：</p>
-<p>例题：</p>
-<p>如果你的PC上面有两个SATA磁盘以及一个USB磁盘，而主板上面有六个SATA的插槽。这两个SATA磁盘分别安插在主板上的SATA1, SATA5插槽上， 请问这三个磁盘在<br>Linux中的装置文件名为何？</p>
-<p>答：由与是使用侦测到的顺序来决定装置文件名，<font color="red">并非与实际插槽代号有关</font>，因此装置癿文件名如下：</p>
-<ol>
-<li>SATA1插槽上的檔名：/dev/sda</li>
-<li>SATA5插槽上的檔名：/dev/sdb</li>
-<li>USB磁盘(开机完成后才被系统捉到)：/dev/sdc</li>
-</ol>
-<h3 id="磁盘"><a href="#磁盘" class="headerlink" title="磁盘"></a>磁盘</h3><p>一颗磁盘的数据主要存在其盘面上，磁盘面由磁柱构成，磁柱又可以分为很多的扇区。一颗磁盘最重要的扇区就是第一个扇区，这里记录着正科磁盘最重要的信息，主要有两个重要的信息：</p>
-<ol>
-<li>主要启动记录区MBR（Master Boot Record）：可以安装开机管理程序的地方，有466 Bytes</li>
-<li>分割表（partition table）: 记录整颗磁盘分割信息，有64bytes</li>
-</ol>
-<p>由于分割表只有64bytes，所以只能存储四笔的分割信息，也就是说，磁盘的主要分割区只有四个。如果想要分割跟多的区的话，就只能通过extend延伸分割的方式来处理了。延伸分割的目的是使用额外的扇区来记录分割信息，延伸分割本身并不能被拿来格式化。 然后我们可以透过延伸分割所指向的那个区块继续作分割的记录。如下图所示：</p>
-<p><img src="/pictures/Linux磁盘概念-磁盘延伸分割.png" alt=""></p>
-<p>上述的分割槽在Linux系统中的装置文件名分别如下：</p>
-<ol>
-<li>P1:/dev/hda1</li>
-<li>P2:/dev/hda2</li>
-<li>L1:/dev/hda5</li>
-<li>L2:/dev/hda6</li>
-<li>L3:/dev/hda7</li>
-<li>L4:/dev/hda8</li>
-<li>L5:/dev/hda9</li>
-</ol>
-<p>要注意的是：如果延伸分割被破坏，所有逻辑分割将会被删除。因为逻辑分割的信息都记录在延伸分割里面。</p>
-<p>磁盘需要分割的原因主要有两个：</p>
-<ol>
-<li>数据的安全性：由于各个分割区之间是互相独立的，一个区数据坏了并不影响其他数据区的数据</li>
-<li>系统性能的考虑：由于数据只能存在一个分割区上，因此当需要读取数据的时候，磁头只会搜索该区所在的磁柱的范围，是的磁臂的摆动幅度不会太大，从而加快了数据的读取。</li>
-</ol>
-<h3 id="开机流程与主要启动记录区-MBR"><a href="#开机流程与主要启动记录区-MBR" class="headerlink" title="开机流程与主要启动记录区(MBR)"></a>开机流程与主要启动记录区(MBR)</h3><p>计算机主板上面有两个东西，一个是CMOS，主要记录各项硬件参数且嵌入到主板上面的存储器，另外一个就是BIOS，写入到主板上面的一个韧体（也就是一个软件程序）。开机时，计算机会先运行BIOS，该程序会根据用户的设定来取得能够开机的硬盘，并且读取该硬盘的第一个扇区中的MBR区域，该位置存放的是最基本的开机管理程序（boot loader），此时BIOS运行结束，记下来就是开机管理程序的事情了。</p>
-<p>开机管理程序的任务就是加载核心档案，由于开机管理程序是操作系统在安装的时候所提供的，所以他可以识别硬盘内的文件系统格式，从而加载核心档案，然后接下来就是核心档案的工作了，开机管理程序到此结束。接下来就是操作系统的任务了！</p>
-<p>简答来说，这个开机的流程为：</p>
-<ol>
-<li>BIOS：开机主动执行的韧体，会识别可一个可开机的装置；</li>
-<li>MBR：第一个可开机装置的第一个扇区内的主要启动记录区，含有开机管理程序</li>
-<li>开机管理程序（boot loader）：一支可读取核心档案来执行的软件程序</li>
-<li>核心档案：开始操作系统的功能。</li>
-</ol>
-<p>至于多重引导开机的情况，可以参考下图：</p>
-<p><img src="/pictures/Linux磁盘概念-多重引导.png" alt=""></p>
-<p>在上图中我们可以发现，MBR的开机管理程序提供两个选单，选单一(M1)可以直接加载Windows癿核心档案来开机；选单事(M2)则是将开机管理工作交给第二个分割槽的启动扇区(boot sector)。当使用者在开机的时候选择选单二时，那么整个开机管理工作就会交给第二分割槽的开机管理程序了。当第二个开机管理程序启动后，该开机管理程序内(上图中)仅有一个开机选单，因此就能够使用Linu的核心档案来开机啰。 这就是多重引导的工作情况啦！我们将上图作个总结：</p>
-<ol>
-<li>每个分割槽都拥有自己的启动扇区(boot sector)</li>
-<li>图中的系统槽为第一及第二分割槽，</li>
-<li>实际可开机的核心档案是放置到各分割槽内的！</li>
-<li>loader只会识识自己的系统槽内的可开机核心档案，以及其他loader而已；</li>
-<li>loader可直接指向或者是间接将管理权转交给另一个管理程序。</li>
-</ol>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/29/Linux磁盘概念/" data-id="ciq4t54ru003imgqy0d4tysn9" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Linux-User、Group切换" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/02/29/Linux-User、Group切换/" class="article-date">
-  <time datetime="2016-02-29T04:11:54.000Z" itemprop="datePublished">2016-02-29</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Linux/">Linux</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/02/29/Linux-User、Group切换/">Linux User、Group切换</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h3 id="Linux用户切换涉及到两个指令：su-和-sudo"><a href="#Linux用户切换涉及到两个指令：su-和-sudo" class="headerlink" title="Linux用户切换涉及到两个指令：su 和 sudo"></a>Linux用户切换涉及到两个指令：su 和 sudo</h3><h4 id="su"><a href="#su" class="headerlink" title="su"></a>su</h4><p>su有两种切换的方式：</p>
-<li>su - username, 以login-shell的方式切换到新的用户，更改了环境变量</li><br><li>su username, 以no-login-shell的方式切换到新的用户，环境变量不变</li>
-
-<p>如果想要离开当期的shell，回到切换前的shell，只需要执行<code>exit</code>命令就好。如果只是需要拥有新的用户的权限来执行某条命令，然后就自动回到当前的shell的话，那么可以使用-c参数如<br><code>su - -c &quot;command&quot;</code>,就会在执行完命令后回到当前的用户shell。</p>
-<p>root执行此命令时，不需要输入任何的密码！！！</p>
-<p>由于su在切换新用户的时候，需要知道新用户的密码才可以执行，这样的话比较麻烦，所以出现了sudo。</p>
-<h4 id="sudo"><a href="#sudo" class="headerlink" title="sudo"></a>sudo</h4><p>sudo可以获取新用户的权限来执行后面的命令（以no-login-shell方式实现），在执行后回到当前的用户状态，需要输入的只是当前用户的密码，不需要新用户的密码！</p>
-<p><img src="/pictures/Linux-User、Group切换-sudo命令1.png" alt=""><br><img src="/pictures/Linux-User、Group切换-sudo命令2.png" alt=""></p>
-<p>sudo默认只是root可以执行，如果需要加入新的用户，那么需要知道/etc/sudoers文件。该文件存放的是那些用户可以执行sudo，以及可以利用sudo来执行的具体指令。编辑该文件可以直接vim，也可以使用visudo命令，由于该文件是具有语法的，所以还是建议使用visudo来修改，因为该命令在执行的时候会检查文件的新增内容的语法是否正确。</p>
-<p><img src="/pictures/Linux-User、Group切换-visudo命令1.png" alt=""><br><img src="/pictures/Linux-User、Group切换-visudo命令2.png" alt=""></p>
-<p>上面这一行的四个组件意义是：</p>
-<ol>
-<li>系统的哪个账号可以使用 sudo 这个指令的意思，默认为 root 这个账号；</li>
-<li>当这个账号由哪部主机联机到本 Linux 主机，意思是这个账号可能是由哪一部网络主机联机过来的， 这个设定值可以指定客户端计算机(信任用户的意思)。默认值 root 可来自任何一部网络主机</li>
-<li>这个账号可以切换成什么身份来下达后续的指令，默认 root 可以切换成任何人；</li>
-<li>可用该身份下达什么指令？这个指令请务必使用绝对路径撰写。 预设 root 可以切换任何身份与进行任何指令之意。</li>
-</ol>
-<h4 id="利用群组以及免密码功能处理visudo"><a href="#利用群组以及免密码功能处理visudo" class="headerlink" title="利用群组以及免密码功能处理visudo"></a>利用群组以及免密码功能处理visudo</h4><p><img src="/pictures/Linux-User、Group切换-visudo群组1.png" alt=""></p>
-<p>上面的设定值会造成『任何加入 wheel 这个群组的使用者，就能够使用 sudo 切换任何身份来操作任何指令』的意思。 你当然可以将 wheel 换成你自己想要的群组名。接下来，请分别切换身份成为 pro1 及 pro2 试看看 sudo 的运作。</p>
-<p><img src="/pictures/Linux-User、Group切换-visudo群组2.png" alt=""></p>
-<p>如果你想要让 pro3 也支持这个 sudo 的话，不需要重新使用 visudo ，只要利用 usermod 去修改 pro3 的群组支持，让 wheel 也支持 pro3 的话，那他就能够进行 sudo 啰！ 简单吧！不过，既然我们都信任这些 sudo 的用户了，能否提供『不需要密码即可使用 sudo 』呢？ 就透过如下的方式：</p>
-<p><img src="/pictures/Linux-User、Group切换-visudo不需要密码.png" alt=""></p>
-<h4 id="有限制的指令操作"><a href="#有限制的指令操作" class="headerlink" title="有限制的指令操作"></a>有限制的指令操作</h4><p>上面两点都会让使用者能够利用 root 的身份进行任何事情！这样总是不太好～如果我想要让用户仅能够进行部分系统任务， 比方说，系统上面的 myuser1 仅能够帮 root 修改其他用户的密码时，亦即『让使用者仅能使用 passwd 这个指令帮忙 root 修改其他用户的密码』时，你该如何撰写呢？可以这样做：</p>
-<figure class="highlight scheme"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="list">[<span class="keyword">root@www</span> ~]# visudo &lt;==注意是 root 身份 myuser1 ALL=<span class="list">(<span class="keyword">root</span>)</span> /usr/bin/passwd &lt;==最后指令务必用绝对路径</span></span><br></pre></td></tr></table></figure>
-<p>但是上面有一个很不好的就是，当用户使用如下指令时，会直接的修改root密码：</p>
-<figure class="highlight crmsh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[myuser1@www ~]$ sudo passwd</span><br><span class="line">Changing password for <span class="keyword">user</span> <span class="title">root</span>. <span class="tag">&lt;==见鬼！怎么会去改 root 的密码？</span></span><br></pre></td></tr></table></figure>
-<p>所以我们要限制用户的指令参数，修改的方法为将上述的那一行修改为</p>
-<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root<span class="variable">@www</span> ~]<span class="comment"># visudo &lt;==注意是 root 身份</span></span><br><span class="line">myuser1 <span class="constant">ALL=</span>(root) !<span class="regexp">/usr/bin</span><span class="regexp">/passwd, /usr</span><span class="regexp">/bin/passwd</span> [<span class="constant">A-Za-</span>z]*, !<span class="regexp">/usr/bin</span><span class="regexp">/passwd root</span></span><br></pre></td></tr></table></figure>
-<h4 id="透过别名设置visuo"><a href="#透过别名设置visuo" class="headerlink" title="透过别名设置visuo"></a>透过别名设置visuo</h4><p>假设我的 pro1, pro2, pro3 和 myuser1, myuser2 要加入上述的密码管理员的 sudo 列表中， 那我可以创立一个帐户删名称为 ADMPW 的名称，然后将这个名称处理一下即可。处理的方式如下：</p>
-<figure class="highlight crystal"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root<span class="variable">@www</span> ~]<span class="comment"># visudo &lt;==注意是 root 身份</span></span><br><span class="line"><span class="constant">User_Alias</span> <span class="constant">ADMPW</span> = pro1, pro2, pro3, myuser1, myuser2</span><br><span class="line"><span class="constant">Cmnd_Alias</span> <span class="constant">ADMPWCOM</span> = !/usr/bin/passwd, <span class="regexp">/usr/bin</span><span class="regexp">/passwd [A-Za-z]*, !/usr</span><span class="regexp">/bin/passwd</span> root</span><br><span class="line"><span class="constant">ADMPW</span> <span class="constant">ALL</span>=(root) <span class="constant">ADMPWCOM</span></span><br></pre></td></tr></table></figure>
-<p>我透过 User_Alias 建立出一个新账号，这个账号名称一定要使用大写字符来处理，包括 Cmnd_Alias(命令别名)、Host_Alias(来源主机名别名) 都需要使用大写字符的！</p>
-<h4 id="sudo的时间间隔"><a href="#sudo的时间间隔" class="headerlink" title="sudo的时间间隔"></a>sudo的时间间隔</h4><p>sudo的默认时间间隔为5分钟，在这5分钟里面，多次执行sudo可以不需要输入当前用户的密码。</p>
-<p>另外需要注意的是，因为使用一般用户是不会用到/sbin, /usr/sbin等目录内的指令，所以$PATH变量不会含有这些目录，因此很多管理指令需要使用绝对路径来下达比较妥当！</p>
-<h4 id="sudo搭配su的使用方式"><a href="#sudo搭配su的使用方式" class="headerlink" title="sudo搭配su的使用方式"></a>sudo搭配su的使用方式</h4><p>利用sudo和su可以在不需要root密码的情况下直接把身份变为root。只需要输入<code>sudo su -</code>,此时只需要输入自己的密码，就可以成功的切换到root身份了。</p>
-<h3 id="Linux中群组的切换"><a href="#Linux中群组的切换" class="headerlink" title="Linux中群组的切换"></a>Linux中群组的切换</h3><h4 id="groups-有效与支持群组的观察"><a href="#groups-有效与支持群组的观察" class="headerlink" title="groups 有效与支持群组的观察"></a>groups 有效与支持群组的观察</h4><p>如果想要查看当前用户所能支持的群组，那么可以使用该命令：</p>
-<figure class="highlight crystal"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[dmtsai<span class="variable">@www</span> ~]<span class="variable">$ </span>groups</span><br><span class="line">dmtsai users</span><br></pre></td></tr></table></figure>
-<p>在这个输出的信息中，可知道 dmtsai 这个用户同时属于 dmtsai 及 users 这个两个群组，而且， 第一个输出的群组即为有效群组 (effective group) 了。 也就是说，我的有效群组为 dmtsai 啦～此时，如果我以 touch 去建立一个新档，例如： 『 touch test 』，那么这个档案的拥有者为 dmtsai ，而且群组也是 dmtsai 的啦。</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[dmtsai@www ~]$ touch test</span><br><span class="line">[dmtsai@www ~]$ ll -rw-rw-r-- <span class="number">1</span> dmtsai dmtsai <span class="number">0</span> Feb <span class="number">24</span> <span class="number">17</span>:<span class="number">26</span> test</span><br></pre></td></tr></table></figure>
-<p>这样是否可以了解什么是有效群组了？通常有效群组的作用是在新建档案啦！那么有效群组是否能够变换？当然可以，这个时候需要用到<code>newgrp</code>命令。</p>
-<h3 id="newgrp-有效群组的切换"><a href="#newgrp-有效群组的切换" class="headerlink" title="newgrp: 有效群组的切换"></a>newgrp: 有效群组的切换</h3><p>使用 newgrp 是有限制的，那就是你想要切换的群组必须是你已经有支持的群组。举例来说， dmtsai 可以在 dmtsai/users 这两个群组间切换有效群组，但是 dmtsai 无法切换有效群组成为 sshd 啦！使用的方式如下：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[dmtsai@www ~]$ newgrp users</span><br><span class="line">[dmtsai@www ~]$ groups users dmtsai</span><br><span class="line">[dmtsai@www ~]$ touch test2</span><br><span class="line">[dmtsai@www ~]$ ll</span><br><span class="line">-rw-rw-r-- <span class="number">1</span> dmtsai dmtsai <span class="number">0</span> Feb <span class="number">24</span> <span class="number">17</span>:<span class="number">26</span> test</span><br><span class="line">-rw-r--r-- <span class="number">1</span> dmtsai users <span class="number">0</span> Feb <span class="number">24</span> <span class="number">17</span>:<span class="number">33</span> test2</span><br></pre></td></tr></table></figure>
-<p>newgrp这个指令可以变更目前用户的有效群组， 而且是另外以一个 shell 来提供这个功能的，所以，以上面的例子来说， dmtsai 这个使用者目前是以另一个 shell 登入的，而且新的 shell 给予 dmtsai 有效 GID 为 users 就是了。如果以图示来看就是如下所示：</p>
-<p><img src="/pictures/Linux-User、Group切换-newgrp运行示意图.png" alt="newgrp运作示意图"></p>
-<p>虽然用户的环境设定(例如环境变量等等其他数据)不会有影响，但是使用者的『群组权限』将会重新被计算。 但是需要注意，由于是新取得一个 shell ，因此如果你想要回到原本的环境中，请输入 exit 回到原本的 shell ！</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/29/Linux-User、Group切换/" data-id="ciq4t54s80046mgqyx3b5sizx" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Linux用户管理实例" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/02/29/Linux用户管理实例/" class="article-date">
-  <time datetime="2016-02-29T04:01:50.000Z" itemprop="datePublished">2016-02-29</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Linux/">Linux</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/02/29/Linux用户管理实例/">Linux用户管理实例</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>账号管理不是随意建置几个账号就算了！有时候我们需要考虑到一部主机上面可能有多个账号在协同工作！举例来说，在大学任教时，我们学校的专题生是需要分组的，这些同一组的同学间必须要能够互相修改对方的数据文件，但是同时这些同学又需要保留自己的私密数据，因此直接公开家目录是不适宜的。那该如何是好？ 为此，我们底下提供几个例子来让大家思考看看啰：</p>
-<p>任务一：单纯的完成上头交代的任务，假设我们需要的账号数据如下，你该如何实作？</p>
-<table>
-<thead>
-<tr>
-<th>账号名称</th>
-<th style="text-align:center">账号全名</th>
-<th style="text-align:right">支援次要群组</th>
-<th style="text-align:right">是否可登入主机</th>
-<th style="text-align:right">密码</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>user1</td>
-<td style="text-align:center">1st user</td>
-<td style="text-align:right">mygroup1</td>
-<td style="text-align:right">可以</td>
-<td style="text-align:right">password</td>
-</tr>
-<tr>
-<td>user2</td>
-<td style="text-align:center">2nd user</td>
-<td style="text-align:right">mygroup1</td>
-<td style="text-align:right">可以</td>
-<td style="text-align:right">password</td>
-</tr>
-<tr>
-<td>user3</td>
-<td style="text-align:center">3rd user</td>
-<td style="text-align:right">无额外支持</td>
-<td style="text-align:right">不可以</td>
-<td style="text-align:right">password</td>
-</tr>
-</tbody>
-</table>
-<p>处理方法如下所示：</p>
-<p><img src="/pictures/Linux用户管理实例-任务1a.png" alt=""></p>
-<p><img src="/pictures/Linux用户管理实例-任务1b.png" alt=""></p>
-<p>要注意的地方主要有：myuser1 与 myuser2 都有支援次要群组，但该群组不见得会存在，因此需要先手动建立他！ 然后 myuser3 是『不可登入系统』的账号，因此需要使用 /sbin/nologin 这个 shell 来给予，这样该账号就无法登入啰！ 这样是否理解啊！接下来再来讨论比较难一些的环境！如果是专题环境该如何制作？</p>
-<p>任务二：我的使用者 pro1, pro2, pro3 是同一个项目计划的开发人员，我想要让这三个用户在同一个目录底下工作， 但这三个用户还是拥有自己的家目录与基本的私有群组。假设我要让这个项目计划在 /srv/projecta 目录下开发， 可以如何进行？</p>
-<p><img src="/pictures/Linux用户管理实例-任务2.png" alt=""></p>
-<p>由于此项目计划只能够给 pro1, pro2, pro3 三个人使用，所以 /srv/projecta 的权限设定一定要正确才行！ 所以该目录群组一定是 projecta ，但是权限怎么会是 2770 呢？还让得<a href="/2016/02/28/Linux-%E4%B8%ADSUID%E3%80%81SGID%E5%92%8CSBIT%E7%9A%84%E7%94%A8%E9%80%94/">SGID</a> 吧？为了让三个使用者能够互相修改对方的档案， 这个 SGID 是必须要存在的喔！</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/29/Linux用户管理实例/" data-id="ciq4t54rv003kmgqy9fklmd11" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Linux-Group-管理" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/02/29/Linux-Group-管理/" class="article-date">
-  <time datetime="2016-02-29T03:43:56.000Z" itemprop="datePublished">2016-02-29</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Linux/">Linux</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/02/29/Linux-Group-管理/">Linux Group 管理</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>关于群组的文件也有两个:/etc/group和/etc/gshadow, /etc/group文件每一行的结构为：组名、群组密码、GID、此群组支持的账号id。/etc/gshadow文件的结构为：组名、密码、群组管理员账号、该群组的所有用户账号（与/etc/group文件里面的最后一栏一样）。</p>
-<h4 id="有效群组和初始群组"><a href="#有效群组和初始群组" class="headerlink" title="有效群组和初始群组"></a>有效群组和初始群组</h4><p>当用户登录时，系统会读取/etc/passwd文件里面用户的信息，里面的gid此时就是用户的初始群组，也是用户的有效群组，如果用户想要切换群组以及查看当前自己所能支持的群组的话，那么可以使用下面的命令：</p>
-<figure class="highlight crystal"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">查看用户当前所能支持的群组</span><br><span class="line"><span class="variable">$ </span>groups</span><br><span class="line">为用户添加支持群组</span><br><span class="line"><span class="variable">$ </span>usermod -<span class="constant">G</span> 群组名称  用户名称</span><br><span class="line">设置用户的初始化群组</span><br><span class="line"><span class="variable">$ </span>usermod -g 群组名称  用户名称</span><br><span class="line">有效群组的切换</span><br><span class="line"><span class="variable">$ </span>newgrp 群组名称</span><br></pre></td></tr></table></figure>
-<p>注意，执行newgrp命令后，用户是以另外一个shell登录的，而且新的shell赋予了用户新的有效gid，虽然用户的环境设定不会有影响，但是使用者的群组权限将会被重新计算，需要注意的是，由于取得的是一个新的shell，所以如果想要回到原来的shell，可以执行<code>exit</code>回到原来的shell！</p>
-<p>与群组管理相关的指令有groupadd、gropumod、groupdel</p>
-<h4 id="groupadd"><a href="#groupadd" class="headerlink" title="groupadd"></a>groupadd</h4><p><img src="/pictures/Linux-Group-管理-groupadd命令参数.png" alt=""></p>
-<h4 id="groupmod"><a href="#groupmod" class="headerlink" title="groupmod"></a>groupmod</h4><p><img src="/pictures/Linux-Group-管理-groupmod命令参数.png" alt=""></p>
-<h4 id="groupdel"><a href="#groupdel" class="headerlink" title="groupdel"></a>groupdel</h4><p><img src="/pictures/Linux-Group-管理-groupdel命令参数.png" alt=""></p>
-<p>为什么 mygroup 可以删除，但是 vbird1 就不能删除呢？原因很简单，『有某个账号 (/etc/passwd) 的 initial group 使用该群组！』 如果查阅一下，你会发现在 /etc/passwd 内的 vbird1 第四栏的 GID 就是 /etc/group 内的 vbird1 那个群组的 GID ，所以啰，当然无法删除～否则 vbird1 这个用户登入系统后， 就会找不到 GID ，那可是会造成很大的困扰的！那么如果硬是要删除 vbird1 这个群组呢？ 你『必须要确认 /etc/passwd 内的账号没有任何人使用该群组作为 initial group 』才行喔！所以，你可以：</p>
-<p>1：修改 vbird1 癿的 GID ，或者是：</p>
-<p>2： 初除 vbird1 这个使用者。</p>
-<h3 id="gpasswd：群组管理员功能"><a href="#gpasswd：群组管理员功能" class="headerlink" title="gpasswd：群组管理员功能"></a>gpasswd：群组管理员功能</h3><p>群组管理员可以对群增加或删除人员（只能执行这个功能）。群组管理员可以不是该群组的成员，具体执行指令如下</p>
-<p><img src="/pictures/Linux-Group-管理-gpasswd命令参数1.png" alt=""></p>
-<p><img src="/pictures/Linux-Group-管理-gpasswd命令参数2.png" alt=""></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/29/Linux-Group-管理/" data-id="ciq4t54sc004fmgqy7jq0mt50" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Linux-User-管理" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/02/28/Linux-User-管理/" class="article-date">
-  <time datetime="2016-02-28T15:23:51.000Z" itemprop="datePublished">2016-02-28</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Linux/">Linux</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/02/28/Linux-User-管理/">Linux User 管理</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h3 id="关于用户"><a href="#关于用户" class="headerlink" title="关于用户"></a>关于用户</h3><p>Linux账号管理需要涉及到两个文件/etc/passwd和/etc/shadow,早期的Unix系统的密码是放在/etc/passwd这个文件上面的，但由于该文件的特性是所有程序都能够读取，这样一来很容易造成密码数据被窃取，所以才把密码放在/etc/shadow这个文件上，所以在/etc/passwd文件里面的密码字段就只有一个X。</p>
-<p>与用户管理相关的指令有：useradd、passwd、usermod、userdel</p>
-<h4 id="useradd"><a href="#useradd" class="headerlink" title="useradd"></a>useradd</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]<span class="preprocessor"># useradd [-u UID] [-g 初始群组] [-G 次要群组] [-mM]\</span><br><span class="line">&gt; [-c 说明栏] [-d 家目录的绝对路径] [-s shell] 使用者账号名</span></span><br><span class="line"> 选项不参数：</span><br><span class="line">  -u ：后面接的是 UID ，是一组数字。直接指定一个特定的UID 给这个账号；</span><br><span class="line">  -g ：后面接的那个组名就是我们上面提到的 initial group 啦～ 该群组的 GID 会被放置到 /etc/passwd 的第四个字段内。</span><br><span class="line">  -G ：后面接的组名则是这个账号还可以加入的群组。 这个选项与参数会修改 /etc/group 内的相关资料喔！</span><br><span class="line">  -M ：强制！不要建立用户家目录！(系统账号默认值)</span><br><span class="line">  -m ：强制！要建立用户家目录！(一般账号默认值)</span><br><span class="line">  -c ：这个就是 /etc/passwd 的第五栏的说明内容啦～可以随便我们设定啦～</span><br><span class="line">  -d ：指定某个目录成为家目录，而不要使用默认值。务必使用绝对路径！</span><br><span class="line">  -r ：建立一个系统的账号，这个账号的 UID 会有限制 (参考 /etc/login.defs) -s ：后面接一个 shell ，若没有指定则预设是 /bin/bash的啦～</span><br><span class="line">  -e ：后面接一个日期，格式为『YYYY-MM-DD』此项目可写入 shadow 第八字段， 亦即账号失效日的设定项目啰；</span><br><span class="line">  -f ：后面接 shadow 的第七字段项目，指定密码是否会失效。<span class="number">0</span>为立刻失效， -<span class="number">1</span> 为永远不失效(密码只会过期而强制登入时重新设定而已。)</span><br><span class="line"></span><br><span class="line">范例一：完全参考默认值建立一个用户，名称为 vbird1</span><br><span class="line">  [root@www ~]<span class="preprocessor"># useradd vbird1</span></span><br><span class="line">  [root@www ~]<span class="preprocessor"># ll -d /home/vbird1</span></span><br><span class="line">  drwx------ <span class="number">4</span> vbird1 vbird1 <span class="number">4096</span> Feb <span class="number">25</span> <span class="number">09</span>:<span class="number">38</span> /home/vbird1</span><br><span class="line">  <span class="preprocessor"># 默认会建立用户家目录，且权限为 <span class="number">700</span> ！这是重点！</span></span><br><span class="line">  [root@www ~]<span class="preprocessor"># grep vbird1 /etc/passwd /etc/shadow /etc/group</span></span><br><span class="line">  /etc/passwd:vbird1:x:<span class="number">504</span>:<span class="number">505</span>::/home/vbird1:/bin/bash</span><br><span class="line">  /etc/shadow:vbird1:!!:<span class="number">14300</span>:<span class="number">0</span>:<span class="number">99999</span>:<span class="number">7</span>:::</span><br><span class="line">  /etc/group:vbird1:x:<span class="number">505</span>: &lt;==预设会建立一个与账号一模一样的群组名</span><br></pre></td></tr></table></figure>
-<p>执行该命令后，系统会帮我们处理几个动作：</p>
-<li>在/etc/passwd中建立一行与账号相关的数据</li><br><li>在/etc/shadow文件里面将此账号的密码相关数据写进去，但是此时的密码字段为空</li><br><li>在/etc/group文件里面新建一行与账号名称一样的群组信息</li><br><li>在/home底下建立一个与账号一样的目录为用户的家目录(该动作不一定会执行，如果建立的是系统用户或是参数中限制不创建用户目录的话将不执行)，且权限为700。</li>
-
-<p>执行useradd后，一般都会接着执行passwd命令来设置刚创建的用户的密码。</p>
-<p>passwd命令参数：</p>
-<p><img src="/pictures/Linux-User-管理-passwd命令参数1.png" alt=""><br><img src="/pictures/Linux-User-管理-passwd命令参数2.png" alt=""></p>
-<font color="red">在执行passwd的时候，一般用户会要求输入旧的密码，而对于root用户来说，在修改其他用户或是自己用户的密码时，不需要输入旧密码，只需要直接输入新密码就可以了！</font>
-
-<h4 id="usermod"><a href="#usermod" class="headerlink" title="usermod"></a>usermod</h4><p>我们可以通过usermod来修改用户的相关数据，当然也可以直接修改/etc/passwd、/etc/shadow、/etc/group三个文件。</p>
-<p><img src="/pictures/Linux-User-管理-usermod命令参数.png" alt=""></p>
-<h4 id="userdel"><a href="#userdel" class="headerlink" title="userdel"></a>userdel</h4><p>userdel用来删除用户，与用户相关的数据有：</p>
-<li>用户账号密码相关参数：/etc/passwd, /etc/shadow</li><br><li>使用者相关群组数据：/etc/group, /etc/gshadow</li><br><li>用户个人数据：/home/username, /var/spool/mail/username …</li>
-
-<p>整个指令的用法很简单：</p>
-<p><img src="/pictures/Linux-User-管理-userdel命令参数.png" alt=""></p>
-<p>其实用户在系统上用过一阵时间后，会在系统的其他地方留下用户的其他文件，所以，如果想要完整的删除用户的所有数据，在执行<code>userdel -r username</code>之前，最好先执行<code>find / -user username</code>查出系统的属于username的档案，然后再加以删除！</p>
-<p>useradd、usermod、userdel这三个命令只有root才可以执行，那么一般用户要怎样修改自己的个人账号信息呢，可以有以下的命令来执行：</p>
-<h4 id="finger"><a href="#finger" class="headerlink" title="finger"></a>finger</h4><p>finger 的中文字面意义是：『手指』或者是『指纹』的意思。这个 finger 可以查阅很多用户相的信息喔！ 大部分都是在 /etc/passwd 这个档案里面的信息啦！我们就先来检查检查用户信息吧！</p>
-<p><img src="/pictures/Linux-User-管理-finger命令参数.png" alt=""></p>
-<p>由于finger类似于指纹功能，他会将用户的相关属性列出来！如上表所示，其实他列出来的几乎都是 /etc/passwd 档案里面的东西。列出的信息说明如下：</p>
-<li>Login：为使用者账号，亦即 /etc/passwd 内的第一字段;</li><br><li>Name：为全名，亦即 /etc/passwd 内的第五字段(也称为批注)；</li><br><li>Directory：就是家目录了；</li><br><li>Shell：就是使用的 Shell 档案所在；</li><br><li>Never logged in.：figner 还会调查用户登入主机的情况喔！</li><br><li>No mail.：调查 /var/spool/mail 当中的信箱资料；</li><br><li>No Plan.：调查 ~vbird1/.plan 档案，并将该档案取出来说明！</li>
-
-<h4 id="chfn"><a href="#chfn" class="headerlink" title="chfn"></a>chfn</h4><p>chfn 有点像是： change finger 的意思！这玩意的使用方法如下：</p>
-<p><img src="/pictures/Linux-User-管理-chfn命令参数.png" alt=""></p>
-<p>这个指令说实在的，除非是你的主机有很多的用户，否则倒真是用不着这个程序！这就有点像是 bbs里头更改你『个人属性』的那一个资料啦！不过还是可以自己玩一玩！尤其是用来提醒自己相关资料啦！</p>
-<h4 id="chsh"><a href="#chsh" class="headerlink" title="chsh"></a>chsh</h4><p>这就是 change shell 的简写！使用方法就更简单了！</p>
-<p><img src="/pictures/Linux-User-管理-chsh命令参数.png" alt=""></p>
-<p>不论是 chfn 与 chsh ，都是能够让一般用户修改 /etc/passwd 这个系统文件的！所以你猜猜，这两个档案的权限是什么？ 一定是 <a href="/2016/02/28/Linux-%E4%B8%ADSUID%E3%80%81SGID%E5%92%8CSBIT%E7%9A%84%E7%94%A8%E9%80%94/">SUID</a> 的功能啦！</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/Linux-User-管理/" data-id="ciq4t54s90049mgqyauafr3rn" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Linux-中SUID、SGID和SBIT的用途" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/02/28/Linux-中SUID、SGID和SBIT的用途/" class="article-date">
-  <time datetime="2016-02-28T13:58:12.000Z" itemprop="datePublished">2016-02-28</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Linux/">Linux</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/02/28/Linux-中SUID、SGID和SBIT的用途/">Linux 中SUID、SGID和SBIT的用途</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>Linux中，用户的权限一般会根据用户的uid和gid来确定，但是在运行的时候，系统根据的是用户的有效uid和有效gid，本来的话，在执行文件前，用户的uid和gid是也就是用户的有效uid和有效gid，这也就决定了用户的权限，但是，当文档设置了suid和sgid后，用户的有效uid和gid将会改变，这也就是suid和sgid的功能。</p>
-<p>其实在UNIX的实现中，文件权限用12个二进制位表示，如果该位置上的值是1，表示有相应的权限：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">11</span> <span class="number">10</span> <span class="number">9</span> <span class="number">8</span> <span class="number">7</span> <span class="number">6</span> <span class="number">5</span> <span class="number">4</span> <span class="number">3</span> <span class="number">2</span> <span class="number">1</span> <span class="number">0</span></span><br><span class="line"></span><br><span class="line">S G T r w x r w x r w x</span><br></pre></td></tr></table></figure></p>
-<p>第11位为SUID位，第10位为SGID位，第9位为sticky位，第8-0位对应于上面的三组rwx位。</p>
-<p>给文件加SUID和SUID的命令如下：<br><figure class="highlight perl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">chmod</span> u+<span class="keyword">s</span> filename 设置SUID位</span><br><span class="line"></span><br><span class="line"><span class="keyword">chmod</span> u-<span class="keyword">s</span> filename 去掉SUID设置</span><br><span class="line"></span><br><span class="line"><span class="keyword">chmod</span> g+<span class="keyword">s</span> filename 设置SGID位</span><br><span class="line"></span><br><span class="line"><span class="keyword">chmod</span> g-<span class="keyword">s</span> filename 去掉SGID设置</span><br></pre></td></tr></table></figure></p>
-<p>另外一种方法是chmod命令用八进制表示方法的设置。如果明白了前面的12位权限表示法也很简单。如 <code>chmod 2770 filename</code>，将filename文件设置权限为<code>rwxrws---</code>,此时的sgid位有效，如果为<code>chmod  2760 filename</code>, 将filename文件设置权限为<code>rwxrwS---</code>,此时sgid无效。</p>
-<p>suid只对可执行文件有意义，sgid只对目录和可执行文件有意义。suid和sgid起作用的前提是，调用者对文件有执行权限，对目录有写以及执行权限，否则的话，即使设置了suid和sgid位，都会无效。</p>
-<p>由于SUID和SGID是在执行程序（程序的可执行位被设置）时起作用，而可执行位只对普通文件和目录文件有意义，所以设置其他种类文件的SUID和SGID位是没有多大意义的。</p>
-<p>当可执行文件设置了suid后，调用者在运行该文件的时候（前提是调用者有运行该文件的权限），将会暂时获得该文件拥有者的权限,此时调用者的有效uid就是文件拥有者的uid，例如，使用如下命令：<br><figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ls</span> -<span class="keyword">l</span> /usr/bin/passwd</span><br></pre></td></tr></table></figure></p>
-<p>我们会得到如下的结果：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-rwsr-xr-x <span class="number">1</span> root root <span class="number">42824</span> Sep <span class="number">13</span>  <span class="number">2012</span> /usr/bin/passwd</span><br></pre></td></tr></table></figure></p>
-<p>可以看到，在文件拥有者的执行位上出现为s而不是x,所以说passwd这个程序是具有SUID权限的。我们知道在修改用户密码的时候，用的就是passwd这个命令，而我们又知道在linux下面，用户密码是存储在/etc/shadow这个文件里面的。首先查看一下/etc/shadow这个文件的权限：<br><figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ls</span> -<span class="keyword">l</span> /etc/shadow</span><br></pre></td></tr></table></figure></p>
-<p>返回的结果如下：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-rw-r----- <span class="number">1</span> root shadow <span class="number">1138</span> Dec <span class="number">13</span> <span class="number">20</span>:<span class="number">00</span> /etc/shadow</span><br></pre></td></tr></table></figure></p>
-<p>由上面的结果，我们知道只有root可以往shadow文件中写入数据，其他用户连查看的权限都没有。那我们平时是怎么修改密码呢？没错，就是和SUID有关。当我们使用passwd命令时，就获得了passwd的所有者即root的权限，进而可以对shadow文件进行写入操作。</p>
-<p>SGID即Set GID的缩写，它出现在文件所属组权限的执行位上面，它对普通二进制文件和目录都有效。当它作用于普通文件时，和SUID类似，在执行该文件时，用户将获得该文件所属组的权限。当SGID作用于目录时，意义就非常重大了。当用户对某一目录有写和执行权限时，该用户就可以在该目录下建立文件，如果该目录用SGID修饰，则该用户在这个目录下建立的文件都是属于这个目录所属的组。</p>
-<p>SBIT即Sticky Bit，它出现在其他用户权限的执行位上，它只能用来修饰一个目录。当某一个目录拥有SBIT权限时，则任何一个能够在这个目录下建立文件的用户，该用户在这个目录下所建立的文件，只有该用户自己和root可以删除，其他用户均不可以。例如：<br><figure class="highlight avrasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ls -<span class="keyword">ld</span> /tmp</span><br></pre></td></tr></table></figure></p>
-<p>可以得到以下结果：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">drwxrwxrwt <span class="number">12</span> root root <span class="number">12288</span> Dec <span class="number">17</span> <span class="number">16</span>:<span class="number">33</span> /tmp</span><br></pre></td></tr></table></figure></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/Linux-中SUID、SGID和SBIT的用途/" data-id="ciq4t54s60042mgqykd2r5ped" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a></li></ul>
-
     </footer>
   </div>
   
@@ -799,7 +724,7 @@
   
   
     <nav id="page-nav">
-      <a class="extend prev" rel="prev" href="/page/3/">&laquo; Prev</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/page/5/">5</a><a class="page-number" href="/page/6/">6</a><a class="extend next" rel="next" href="/page/5/">Next &raquo;</a>
+      <a class="extend prev" rel="prev" href="/page/3/">&laquo; Prev</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/page/5/">5</a><a class="page-number" href="/page/6/">6</a><a class="page-number" href="/page/7/">7</a><a class="extend next" rel="next" href="/page/5/">Next &raquo;</a>
     </nav>
   
 </section>
@@ -810,7 +735,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">9</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">9</span></li></ul>
     </div>
   </div>
 
@@ -819,7 +744,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
     </div>
   </div>
 
@@ -828,7 +753,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/Linux-网络编程/" style="font-size: 18px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 18px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 16px;">Linux用户管理</a> <a href="/tags/Linux进程间通信/" style="font-size: 18px;">Linux进程间通信</a> <a href="/tags/TCP-IP/" style="font-size: 20px;">TCP/IP</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/动态规划/" style="font-size: 14px;">动态规划</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/数组/" style="font-size: 10px;">数组</a> <a href="/tags/树结构/" style="font-size: 14px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 12px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 12px;">爬虫</a> <a href="/tags/随记/" style="font-size: 12px;">随记</a>
+      <a href="/tags/C-11-常规新特性/" style="font-size: 18.33px;">C++11 常规新特性</a> <a href="/tags/Linux-网络编程/" style="font-size: 16.67px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 16.67px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 15px;">Linux用户管理</a> <a href="/tags/Linux进程间通信/" style="font-size: 16.67px;">Linux进程间通信</a> <a href="/tags/TCP-IP/" style="font-size: 20px;">TCP/IP</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/动态规划/" style="font-size: 13.33px;">动态规划</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/数组/" style="font-size: 10px;">数组</a> <a href="/tags/树结构/" style="font-size: 13.33px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 11.67px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 11.67px;">爬虫</a> <a href="/tags/随记/" style="font-size: 11.67px;">随记</a>
     </div>
   </div>
 
@@ -837,7 +762,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
     </div>
   </div>
 
@@ -849,23 +774,23 @@
       <ul>
         
           <li>
-            <a href="/2016/07/02/套接字/">套接字</a>
+            <a href="/2016/07/06/C-11常规特性之auto和decltype/">C++11常规特性之auto和decltype</a>
           </li>
         
           <li>
-            <a href="/2016/07/02/信号灯/">信号灯</a>
+            <a href="/2016/07/06/C-11常规特性之统一初始化和初始化器列表/">C++11常规特性之统一初始化和初始化器列表</a>
           </li>
         
           <li>
-            <a href="/2016/07/02/消息队列/">消息队列</a>
+            <a href="/2016/07/06/C-11常规特性之右值引用和move语义/">C++11常规特性之右值引用和move语义</a>
           </li>
         
           <li>
-            <a href="/2016/07/02/共享内存/">共享内存</a>
+            <a href="/2016/07/06/C-11常规特性之lambda/">C++11常规特性之lambda</a>
           </li>
         
           <li>
-            <a href="/2016/07/02/管道/">管道</a>
+            <a href="/2016/07/06/C-11常规特性之noexcept/">C++11常规特性之noexcept</a>
           </li>
         
       </ul>

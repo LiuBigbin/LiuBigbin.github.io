@@ -83,7 +83,7 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2016/07/07/Java之垃圾回收/">Java之垃圾回收</a>
+      <a class="article-title" href="/2016/07/07/Java之垃圾回收/">垃圾回收</a>
     </h1>
   
 
@@ -161,7 +161,7 @@
 <h4 id="简单的概念："><a href="#简单的概念：" class="headerlink" title="简单的概念："></a>简单的概念：</h4><h5 id="堆-Heap-和非堆-Non-heap-内存"><a href="#堆-Heap-和非堆-Non-heap-内存" class="headerlink" title="堆(Heap)和非堆(Non-heap)内存"></a>堆(Heap)和非堆(Non-heap)内存</h5><p>按照官方的说法：“Java 虚拟机具有一个堆，堆是运行时数据区域，所有类实例和数组的内存均从此处分配。堆是在 Java 虚拟机启动时创建的。”“在JVM中堆之外的内存称为非堆内存(Non-heap memory)”。可以看出JVM主要管理两种类型的内存：堆和非堆。简单来说堆就是Java代码可及的内存，是留给开发人员使用的；非堆就是JVM留给 自己用的，所以方法区、JVM内部处理或优化所需的内存(如JIT编译后的代码缓存)、每个类结构(如运行时常数池、字段和方法数据)以及方法和构造方法 的代码都在非堆内存中。</p>
 <h5 id="堆内存分配"><a href="#堆内存分配" class="headerlink" title="堆内存分配"></a>堆内存分配</h5><p>JVM初始分配的内存由-Xms指定，默认是物理内存的1/64；JVM最大分配的内存由 -Xmx指定，默认是物理内存的1/4。默认空余堆内存小于40%时，JVM就会增大堆直到-Xmx的最大限制；空余堆内存大于70%时，JVM会减少堆 直到-Xms的最小限制。因此服务器一般设置-Xms、-Xmx相等以避免在每次GC 后调整堆的大小。</p>
 <h5 id="非堆内存分配"><a href="#非堆内存分配" class="headerlink" title="非堆内存分配"></a>非堆内存分配</h5><p>JVM使用-XX:PermSize设置非堆内存初始值，默认是物理内存的1/64；由XX:MaxPermSize设置最大非堆内存的大小，默认是物理内存的1/4。</p>
-<h6 id="JVM内存限制-最大值"><a href="#JVM内存限制-最大值" class="headerlink" title="JVM内存限制(最大值)"></a>JVM内存限制(最大值)</h6><p>首先JVM内存限制于实际的最大物理内存(废话！呵呵)，假设物理内存无限 大的话，JVM内存的最大值跟操作系统有很大的关系。简单的说就32位处理器虽然可控内存空间有4GB,但是具体的操作系统会给一个限制，这个限制一般是 2GB-3GB（一般来说Windows系统下为1.5G-2G，Linux系统下为2G-3G），而64bit以上的处理器就不会有限制了</p>
+<h5 id="JVM内存限制-最大值"><a href="#JVM内存限制-最大值" class="headerlink" title="JVM内存限制(最大值)"></a>JVM内存限制(最大值)</h5><p>首先JVM内存限制于实际的最大物理内存(废话！呵呵)，假设物理内存无限 大的话，JVM内存的最大值跟操作系统有很大的关系。简单的说就32位处理器虽然可控内存空间有4GB,但是具体的操作系统会给一个限制，这个限制一般是 2GB-3GB（一般来说Windows系统下为1.5G-2G，Linux系统下为2G-3G），而64bit以上的处理器就不会有限制了</p>
 <p>以上内容来自<a href="http://blog.csdn.net/lengyuhong/article/details/5953544" target="_blank" rel="external">这里</a></p>
 
       
@@ -197,7 +197,7 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2016/07/07/Java之类的反射机制/">Java之类的反射机制</a>
+      <a class="article-title" href="/2016/07/07/Java之类的反射机制/">类的反射机制</a>
     </h1>
   
 
@@ -252,7 +252,7 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2016/07/07/Java之类的加载到执行/">Java之类的加载到执行</a>
+      <a class="article-title" href="/2016/07/07/Java之类的加载到执行/">类的加载到执行</a>
     </h1>
   
 
@@ -628,7 +628,7 @@
       <ul>
         
           <li>
-            <a href="/2016/07/07/Java之垃圾回收/">Java之垃圾回收</a>
+            <a href="/2016/07/07/Java之垃圾回收/">垃圾回收</a>
           </li>
         
           <li>
@@ -636,11 +636,11 @@
           </li>
         
           <li>
-            <a href="/2016/07/07/Java之类的反射机制/">Java之类的反射机制</a>
+            <a href="/2016/07/07/Java之类的反射机制/">类的反射机制</a>
           </li>
         
           <li>
-            <a href="/2016/07/07/Java之类的加载到执行/">Java之类的加载到执行</a>
+            <a href="/2016/07/07/Java之类的加载到执行/">类的加载到执行</a>
           </li>
         
           <li>

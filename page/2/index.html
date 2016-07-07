@@ -65,6 +65,286 @@
       <div class="outer">
         <section id="main">
   
+    <article id="new-C-11常规特性之lambda" class="article article-type-new" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/07/06/C-11常规特性之lambda/" class="article-date">
+  <time datetime="2016-07-06T10:42:44.000Z" itemprop="datePublished">2016-07-06</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C与C/">C与C++</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/07/06/C-11常规特性之lambda/">C++11常规特性之lambda</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>很多语言都提供了 lambda 表达式，如 Python，Java 8。lambda 表达式可以方便地构造匿名函数，如果你的代码里面存在大量的小函数，而这些函数一般只被调用一次，那么不妨将他们重构成 lambda 表达式。举一个例子。标准 C++ 库中有一个常用算法的库，其中提供了很多算法函数，比如 sort() 和 find()。这些函数通常需要提供一个“谓词函数 predicate function”。所谓谓词函数，就是进行一个操作用的临时函数。比如 find() 需要一个谓词，用于查找元素满足的条件；能够满足谓词函数的元素才会被查找出来。这样的谓词函数，使用临时的匿名函数，既可以减少函数数量，又会让代码变得清晰易读。<br><figure class="highlight ocaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">/*</span><br><span class="line"><span class="keyword">mutable</span>:当capture为传值的时候，函数不能修改外部的局部变量，如果需要修改，可以使用该关键字，</span><br><span class="line">        但是由于是传值，即使修改，也不会影响到capture的变量；传引用的时候，是可以修改变量的</span><br><span class="line">        而且会影响到所capture的变量</span><br><span class="line"><span class="keyword">exception</span>：说明 lambda 表达式是否抛出异常(noexcept)，以及抛出何种异常，类似于void f<span class="literal">()</span> throw(<span class="type">X</span>, <span class="type">Y</span>)。</span><br><span class="line">attribute: 用来声明属性</span><br><span class="line">returnType: lambda函数的返回类型，可以不需要，lambda可以根据返回表达式自己推导</span><br><span class="line"><span class="keyword">mutable</span> <span class="keyword">exception</span> attribute三个属性可以省略</span><br><span class="line"></span><br><span class="line">capture 指定了在可见域范围内 lambda 表达式的代码内可见得外部变量的列表，具体解释如下：</span><br><span class="line">[a,&amp;b] a变量以值的方式呗捕获，b以引用的方式被捕获。</span><br><span class="line">[this] 以值的方式捕获 this 指针。</span><br><span class="line">[&amp;] 以引用的方式捕获所有的外部自动变量。</span><br><span class="line">[=] 以值的方式捕获所有的外部自动变量。</span><br><span class="line"><span class="literal">[]</span> 不捕获外部的任何变量。</span><br><span class="line">*/</span><br><span class="line">[ capture ] ( params ) <span class="keyword">mutable</span> <span class="keyword">exception</span> attribute -&gt; returnType &#123; body &#125;</span><br></pre></td></tr></table></figure></p>
+<p>使用例子：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; [](<span class="keyword">float</span> f) &#123; <span class="keyword">return</span> <span class="built_in">std</span>::<span class="built_in">abs</span>(f); &#125; (-<span class="number">3.5</span>);</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; [](<span class="keyword">float</span> f) -&gt; <span class="keyword">int</span> &#123; <span class="keyword">return</span> <span class="built_in">std</span>::<span class="built_in">abs</span>(f); &#125; (-<span class="number">3.5</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">//当我们想引用一个 lambda 表达式时，我们可以使用auto关键字</span></span><br><span class="line"><span class="keyword">auto</span> lambda = [] () -&gt; <span class="keyword">int</span> &#123; <span class="keyword">return</span> val * <span class="number">100</span>; &#125;;</span><br><span class="line"><span class="comment">//auto关键字实际会将 lambda表达式转换成一种类似于std::function的内部类型</span></span><br><span class="line"><span class="comment">//（但并不是std::function类型，虽然与std::function“兼容”）。所以，我们也可以这么写：</span></span><br><span class="line"><span class="built_in">std</span>::function&lt;<span class="keyword">int</span>()&gt; lambda = [] () -&gt; <span class="keyword">int</span> &#123; <span class="keyword">return</span> val * <span class="number">100</span>; &#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">//传值方式，改变capture变量</span></span><br><span class="line"><span class="keyword">float</span> f0 = <span class="number">1.0</span>;</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; [=](<span class="keyword">float</span> f) <span class="keyword">mutable</span> &#123; <span class="keyword">return</span> f0 += <span class="built_in">std</span>::<span class="built_in">abs</span>(f); &#125; (-<span class="number">3.5</span>); <span class="comment">//f0仍然是1.0</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//对于[=]或[&amp;]的形式，lambda 表达式可以直接使用 this 指针。</span></span><br><span class="line"><span class="comment">//但是，对于[]的形式，如果要使用 this 指针，必须显式传入：</span></span><br><span class="line">[<span class="keyword">this</span>]() &#123; <span class="keyword">this</span>-&gt;someFunc(); &#125;();</span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/07/06/C-11常规特性之lambda/" data-id="ciqcg7fw3005tvkqysc4jda5a" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="new-C-11常规特性之noexcept" class="article article-type-new" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/07/06/C-11常规特性之noexcept/" class="article-date">
+  <time datetime="2016-07-06T10:42:33.000Z" itemprop="datePublished">2016-07-06</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C与C/">C与C++</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/07/06/C-11常规特性之noexcept/">C++11常规特性之noexcept</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>在异常处理的代码中，程序员有可能看到过如下的异常声明表达形式：<br><figure class="highlight aspectj"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">void</span> excpt_func() <span class="keyword">throw</span>(<span class="keyword">int</span>, <span class="keyword">double</span>) &#123; ... &#125;</span><br></pre></td></tr></table></figure></p>
+<p>在excpt_func函数声明之后，我们定义了一个动态异常声明throw(int, double)，该声明指出了excpt_func可能抛出的异常的类型。事实上，该特性很少被使用，因此在C++11中被弃用了（参见附录B），而表示函数不会抛出异常的动态异常声明throw()也被新的noexcept异常声明所取代。</p>
+<p>noexcept形如其名地，表示其修饰的函数不会抛出异常。不过与throw()动态异常声明不同的是，在C++11中如果noexcept修饰的函数抛出了异常，编译器可以选择直接调用std::terminate()函数来终止程序的运行，这比基于异常机制的throw()在效率上会高一些。这是因为异常机制会带来一些额外开销，比如函数抛出异常，会导致函数栈被依次地展开（unwind），并依帧调用在本帧中已构造的自动变量的析构函数等。</p>
+<p>从语法上讲，noexcept修饰符有两种形式，一种就是简单地在函数声明后加上noexcept关键字。比如：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">excpt_func</span><span class="params">()</span> <span class="keyword">noexcept</span></span>;</span><br></pre></td></tr></table></figure></p>
+<p>另外一种则可以接受一个常量表达式作为参数，如下所示：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">excpt_func</span><span class="params">()</span> <span class="title">noexcept</span> <span class="params">(常量表达式)</span></span>;</span><br></pre></td></tr></table></figure></p>
+<p>常量表达式的结果会被转换成一个bool类型的值。该值为true，表示函数不会抛出异常，反之，则有可能抛出异常。这里，不带常量表达式的noexcept相当于声明了noexcept(true)，即不会抛出异常。</p>
+<p>在通常情况下，在C++11中使用noexcept可以有效地阻止异常的传播与扩散。我们可以看看下面这个例子<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">Throw</span><span class="params">()</span> </span>&#123; <span class="keyword">throw</span> <span class="number">1</span>; &#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">NoBlockThrow</span><span class="params">()</span> </span>&#123; Throw(); &#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">BlockThrow</span><span class="params">()</span> <span class="keyword">noexcept</span> </span>&#123; Throw(); &#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        Throw();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">catch</span>(...) &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"Found throw."</span> &lt;&lt; endl;     <span class="comment">// Found throw.</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        NoBlockThrow();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">catch</span>(...) &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"Throw is not blocked."</span> &lt;&lt; endl;    <span class="comment">// Throw is not blocked.</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        BlockThrow();   <span class="comment">// terminate called after throwing an instance of 'int'</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">catch</span>(...) &#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"Found throw 1."</span> &lt;&lt; endl;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 编译选项:g++ -std=c++11 2-6-1.cpp</span></span><br></pre></td></tr></table></figure></p>
+<p>在代码清单2-12中，我们定义了Throw函数，该函数的唯一作用是抛出一个异常。而NoBlockThrow是一个调用Throw的普通函数，BlockThrow则是一个noexcept修饰的函数。从main的运行中我们可以看到，NoBlockThrow会让Throw函数抛出的异常继续抛出，直到main中的catch语句将其捕捉。而BlockThrow则会直接调用std::terminate中断程序的执行，从而阻止了异常的继续传播。从使用效果上看，这与C++98中的throw()是一样的。<br>而noexcept作为一个操作符时，通常可以用于模板。比如：<br><figure class="highlight crystal"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">template &lt;<span class="class"><span class="keyword">class</span> <span class="title">T</span>&gt;</span></span><br><span class="line">  void <span class="function"><span class="keyword">fun</span>() <span class="title">noexcept</span></span>(noexcept(<span class="constant">T</span>())) &#123;&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这里，fun函数是否是一个noexcept的函数，将由T()表达式是否会抛出异常所决定。这里的第二个noexcept就是一个noexcept操作符。当其参数是一个有可能抛出异常的表达式的时候，其返回值为false，反之为true（实际noexcept参数返回false还包括一些情况，这里就不展开讲了）。这样一来，我们就可以使模板函数根据条件实现noexcept修饰的版本或无noexcept修饰的版本。从泛型编程的角度看来，这样的设计保证了关于“函数是否抛出异常”这样的问题可以通过表达式进行推导。因此这也可以视作C++11为了更好地支持泛型编程而引入的特性。</p>
+<p>虽然noexcept修饰的函数通过std::terminate的调用来结束程序的执行的方式可能会带来很多问题，比如无法保证对象的析构函数的正常调用，无法保证栈的自动释放等，但很多时候，“暴力”地终止整个程序确实是很简单有效的做法。事实上，noexcept被广泛地、系统地应用在C++11的标准库中，用于提高标准库的性能，以及满足一些阻止异常扩散的需求。</p>
+<p>比如在C++98中，存在着使用throw()来声明不抛出异常的函数。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt; <span class="keyword">class</span> A &#123;</span><br><span class="line">  <span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">constexpr</span> T <span class="title">min</span><span class="params">()</span> <span class="title">throw</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> T(); &#125;</span><br><span class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">constexpr</span> T <span class="title">max</span><span class="params">()</span> <span class="title">throw</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> T(); &#125;</span><br><span class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">constexpr</span> T <span class="title">lowest</span><span class="params">()</span> <span class="title">throw</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> T(); &#125;</span><br><span class="line">...</span><br></pre></td></tr></table></figure></p>
+<p>而在C++11中，则使用noexcept来替换throw()。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> T&gt; <span class="keyword">class</span> A &#123;</span><br><span class="line">  <span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">constexpr</span> T <span class="title">min</span><span class="params">()</span> <span class="keyword">noexcept</span> </span>&#123; <span class="keyword">return</span> T(); &#125;</span><br><span class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">constexpr</span> T <span class="title">max</span><span class="params">()</span> <span class="keyword">noexcept</span>  </span>&#123; <span class="keyword">return</span> T(); &#125;</span><br><span class="line">    <span class="function"><span class="keyword">static</span> <span class="keyword">constexpr</span> T <span class="title">lowest</span><span class="params">()</span> <span class="keyword">noexcept</span> </span>&#123; <span class="keyword">return</span> T(); &#125;</span><br><span class="line">...</span><br></pre></td></tr></table></figure></p>
+<p>又比如，在C++98中，new可能会包含一些抛出的std::bad_alloc异常。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span>* <span class="keyword">operator</span> <span class="title">new</span><span class="params">(<span class="built_in">std</span>::size_t)</span> <span class="title">throw</span><span class="params">(<span class="built_in">std</span>::bad_alloc)</span></span>;</span><br><span class="line"><span class="keyword">void</span>* <span class="keyword">operator</span> <span class="keyword">new</span>[](<span class="built_in">std</span>::<span class="keyword">size_t</span>) <span class="keyword">throw</span>(<span class="built_in">std</span>::bad_alloc);</span><br></pre></td></tr></table></figure></p>
+<p>而在C++11中，则使用noexcept(false)来进行替代。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span>* <span class="keyword">operator</span> <span class="title">new</span><span class="params">(<span class="built_in">std</span>::size_t)</span> <span class="title">noexcept</span><span class="params">(<span class="literal">false</span>)</span></span>;</span><br><span class="line"><span class="keyword">void</span>* <span class="keyword">operator</span> <span class="keyword">new</span>[](<span class="built_in">std</span>::<span class="keyword">size_t</span>) <span class="keyword">noexcept</span>(<span class="literal">false</span>);</span><br></pre></td></tr></table></figure></p>
+<p>当然，noexcept更大的作用是保证应用程序的安全。比如一个类析构函数不应该抛出异常，那么对于常被析构函数调用的delete函数来说，C++11默认将delete函数设置成noexcept，就可以提高应用程序的安全性。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="keyword">operator</span> <span class="title">delete</span><span class="params">(<span class="keyword">void</span>*)</span> <span class="keyword">noexcept</span></span>;</span><br><span class="line"><span class="keyword">void</span> <span class="keyword">operator</span> <span class="keyword">delete</span>[](<span class="keyword">void</span>*) <span class="keyword">noexcept</span>;</span><br></pre></td></tr></table></figure></p>
+<p>而同样出于安全考虑，C++11标准中让类的析构函数默认也是noexcept(true)的。当然，如果程序员显式地为析构函数指定了noexcept，或者类的基类或成员有noexcept(false)的析构函数，析构函数就不会再保持默认值。我们可以看看下面的例子:<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> A &#123;</span><br><span class="line">    ~A() &#123; <span class="keyword">throw</span> <span class="number">1</span>; &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> B &#123;</span><br><span class="line">    ~B() <span class="keyword">noexcept</span>(<span class="literal">false</span>) &#123; <span class="keyword">throw</span> <span class="number">2</span>; &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> C &#123;</span><br><span class="line">    B b;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">funA</span><span class="params">()</span> </span>&#123; A a; &#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">funB</span><span class="params">()</span> </span>&#123; B b; &#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">funC</span><span class="params">()</span> </span>&#123; C c; &#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        funB();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">catch</span>(...)&#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"caught funB."</span> &lt;&lt; endl; <span class="comment">// caught funB.</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        funC();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">catch</span>(...)&#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"caught funC."</span> &lt;&lt; endl; <span class="comment">// caught funC.</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        funA(); <span class="comment">// terminate called after throwing an instance of 'int'</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">catch</span>(...)&#123;</span><br><span class="line">        <span class="built_in">cout</span> &lt;&lt; <span class="string">"caught funA."</span> &lt;&lt; endl;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 编译选项:g++ -std=c++11 2-6-2.cpp</span></span><br></pre></td></tr></table></figure></p>
+<p>在代码中，无论是析构函数声明为noexcept(false)的类B，还是包含了B类型成员的类C，其析构函数都是可以抛出异常的。只有什么都没有声明的类A，其析构函数被默认为noexcept(true)，从而阻止了异常的扩散。这在实际的使用中，应该引起程序员的注意。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/07/06/C-11常规特性之noexcept/" data-id="ciqcg7fw1005qvkqyc1kuah9l" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-C-11常规特性之其他一些新特性" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/07/06/C-11常规特性之其他一些新特性/" class="article-date">
+  <time datetime="2016-07-06T04:01:15.000Z" itemprop="datePublished">2016-07-06</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C与C/">C与C++</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/07/06/C-11常规特性之其他一些新特性/">C++11常规特性之其他一些新特性</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>C++11有很多的新特性，这里只记录一下一些比较会常用到的新特性，有：auto和decltype、nullptr、noexcept、lambda、基于范围的for语句、初始化器列表、右值引用和move语义、constexpr、override和final、强类型枚举（Strong-type enums）、智能指针（Smart Pointers）、非成员begin()和end()以及static_assert和type traits</p>
+<h3 id="nullptr"><a href="#nullptr" class="headerlink" title="nullptr"></a>nullptr</h3><p>以前都是用0来表示空指针的，但由于0可以被隐式类型转换为整形，这就会存在一些问题。关键字nullptr是std::nullptr_t类型的值，用来指代空指针。nullptr和任何指针类型以及类成员指针类型的空值之间可以发生隐式类型转换，同样也可以隐式转换为bool型（取值为false）。但是不存在到整形的隐式类型转换。但是为了向前兼容，0仍然是个合法的空指针值。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">foo</span><span class="params">(<span class="keyword">int</span>* p)</span> </span>&#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">bar</span><span class="params">(<span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;<span class="keyword">int</span>&gt; p)</span> </span>&#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span>* p1 = <span class="literal">NULL</span>;</span><br><span class="line"><span class="keyword">int</span>* p2 = <span class="literal">nullptr</span>;   </span><br><span class="line"><span class="keyword">if</span>(p1 == p2)</span><br><span class="line">&#123;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">foo(<span class="literal">nullptr</span>);</span><br><span class="line">bar(<span class="literal">nullptr</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">bool</span> f = <span class="literal">nullptr</span>;</span><br><span class="line"><span class="keyword">int</span> i = <span class="literal">nullptr</span>; <span class="comment">// error: A native nullptr can only be converted to bool or, using reinterpret_cast, to an integral type</span></span><br></pre></td></tr></table></figure></p>
+<h3 id="Range-based-for-loops-（基于范围的for循环）"><a href="#Range-based-for-loops-（基于范围的for循环）" class="headerlink" title="Range-based for loops （基于范围的for循环）"></a>Range-based for loops （基于范围的for循环）</h3><p>为了在遍历容器时支持”foreach”用法，C++11扩展了for语句的语法。用这个新的写法，可以遍历C类型的数组、初始化列表以及任何重载了非成员的begin()和end()函数的类型。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span> x : &#123; <span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">5</span>,<span class="number">8</span>,<span class="number">13</span>,<span class="number">21</span>,<span class="number">34</span> &#125;) <span class="built_in">cout</span> &lt;&lt; x &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="built_in">vector</span>&lt;<span class="keyword">double</span>&gt;&amp; v)</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span> x : v) <span class="built_in">cout</span> &lt;&lt; x &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span>&amp; x : v) ++x;  <span class="comment">// using a reference to allow us to change the value</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> arr[] = &#123;<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>&#125;;</span><br><span class="line"><span class="keyword">for</span>(<span class="keyword">int</span>&amp; e : arr) &#123;e=e*e;&#125;;</span><br></pre></td></tr></table></figure></p>
+<h3 id="constexpr和const"><a href="#constexpr和const" class="headerlink" title="constexpr和const"></a>constexpr和const</h3><p>const并未区分出编译期常量和运行期常量<br>constexpr限定在了编译期常量<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">constexpr</span> <span class="keyword">int</span> mf = <span class="number">20</span>; <span class="comment">// 常量表达式</span></span><br><span class="line"><span class="keyword">constexpr</span> <span class="keyword">int</span> limit = mf + <span class="number">1</span>; <span class="comment">// 常量表达式</span></span><br><span class="line"><span class="keyword">constexpr</span> <span class="keyword">int</span> sz = size(); <span class="comment">// 如果size()是常量表达式则编译通过，否则报错</span></span><br></pre></td></tr></table></figure></p>
+<p>constexpr修饰的函数，返回值不一定是编译期常量。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;array&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">constexpr</span> <span class="keyword">int</span> <span class="title">foo</span><span class="params">(<span class="keyword">int</span> i)</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> i + <span class="number">5</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> i = <span class="number">10</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">array</span>&lt;<span class="keyword">int</span>, foo(5)&gt; arr; <span class="comment">// OK</span></span><br><span class="line"></span><br><span class="line">    foo(i); <span class="comment">// Call is Ok</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// But...</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">array</span>&lt;<span class="keyword">int</span>, foo(i)&gt; arr1; <span class="comment">// Error</span></span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>constexpr修饰的函数，简单的来说，如果其传入的参数可以在编译时期计算出来，那么这个函数就会产生编译时期的值。但是，传入的参数如果不能在编译时期计算出来，那么constexpr修饰的函数就和普通函数一样了。不过，我们不必因此而写两个版本，所以如果函数体适用于constexpr函数的条件，可以尽量加上constexpr。</p>
+<p>而检测constexpr函数是否产生编译时期值的方法很简单，就是利用std::array需要编译期常值才能编译通过的小技巧。这样的话，即可检测你所写的函数是否真的产生编译期常值了。</p>
+<p>以上内容来自<a href="https://www.zhihu.com/question/35614219/answer/63798713" target="_blank" rel="external">知乎</a></p>
+<p>通常，我们希望编译时期计算可以保护全局或者名字空间内的对象，对名字空间内的对象，我们希望它保存在只读空间内。<br>对于那些构造函数比较简单，可以成为常量表达式（也就是可以使用constexpr进行修饰）的对象可以做到这一点<br><figure class="highlight aspectj"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">struct Point &#123;</span><br><span class="line">      <span class="keyword">int</span> x,y;</span><br><span class="line">      constexpr Point(<span class="keyword">int</span> xx, <span class="keyword">int</span> yy) : x(xx), y(yy) &#123; &#125;</span><br><span class="line">  &#125;;</span><br><span class="line">  constexpr <span class="function">Point <span class="title">origo</span><span class="params">(<span class="number">0</span>,<span class="number">0</span>)</span></span>;</span><br><span class="line">  constexpr <span class="keyword">int</span> z = origo.x;</span><br><span class="line">  constexpr Point a[] = &#123;Point(<span class="number">0</span>,<span class="number">0</span>), Point(<span class="number">1</span>,<span class="number">1</span>), Point(<span class="number">2</span>,<span class="number">2</span>) &#125;;</span><br><span class="line">  constexpr <span class="keyword">int</span> x = a[<span class="number">1</span>].x;   <span class="comment">// x becomes 1</span></span><br></pre></td></tr></table></figure></p>
+<ol>
+<li>const的主要功能是修饰一个对象而不是通过一个接口（即使对象很容易通过其他接口修改）。只不过声明一个对象常量为编译器提供了优化的机会。特别是，如果一个声明了一个对象常量而他的地址没有取到，编译器通常可以在编译时对他进行初始化（尽管这不是肯定的）保证这个对象在他的列表里而不是把它添加到生成代码里。</li>
+<li>constexpr的主要功能可以在编译时计算表达式的值进行了范围扩展，这是一种计算安全而且可以用在编译时期（如初始化枚举或者整体模板参数）。constexpr声明对象可以在初始化编译的时候计算出结果来。他们基本上只保存在编译器的列表，如果需要的话会释放到生成的代码里。</li>
+</ol>
+<p>以上内容来自<a href="http://blog.jobbole.com/55063/" target="_blank" rel="external">知乎</a></p>
+<h3 id="override和final"><a href="#override和final" class="headerlink" title="override和final"></a>override和final</h3><p>我总觉得C++中虚函数的设计很差劲，因为时至今日仍然没有一个强制的机制来标识虚函数会在派生类里被改写。vitual关键字是可选的，这使得阅读代码变得很费劲。因为可能需要追溯到继承体系的源头才能确定某个方法是否是虚函数。为了增加可读性，我总是在派生类里也写上virtual关键字，并且也鼓励大家都这么做。即使这样，仍然会产生一些微妙的错误。看下面这个例子：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> B</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">   <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">short</span>)</span> </span>&#123;<span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"B::f"</span> &lt;&lt; <span class="built_in">std</span>::endl;&#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> D : <span class="keyword">public</span> B</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">   <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span>)</span> </span>&#123;<span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"D::f"</span> &lt;&lt; <span class="built_in">std</span>::endl;&#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>D::f 按理应当重写 B::f。然而二者的声明是不同的，一个参数是short，另一个是int。因此D::f（原文为B::f，可能是作者笔误——译者注）只是拥有同样名字的另一个函数（重载）而不是重写。当你通过B类型的指针调用f()可能会期望打印出D::f，但实际上则会打出 B::f 。</p>
+<p>另一个很微妙的错误情况：参数相同，但是基类的函数是const的，派生类的函数却不是。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> B</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">   <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span>)</span> <span class="keyword">const</span> </span>&#123;<span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"B::f "</span> &lt;&lt; <span class="built_in">std</span>::endl;&#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> D : <span class="keyword">public</span> B</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">   <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span>)</span> </span>&#123;<span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"D::f"</span> &lt;&lt; <span class="built_in">std</span>::endl;&#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>同样，这两个函数是重载而不是重写，所以你通过B类型指针调用f()将打印B::f，而不是D::f。</p>
+<p>幸运的是，现在有一种方式能描述你的意图。新标准加入了两个新的标识符（不是关键字）:：</p>
+<ol>
+<li>override，表示函数应当重写基类中的虚函数。</li>
+<li>final，表示派生类不应当重写这个虚函数。<br>第一个的例子如下：<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> B</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">   <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">short</span>)</span> </span>&#123;<span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"B::f"</span> &lt;&lt; <span class="built_in">std</span>::endl;&#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> D : <span class="keyword">public</span> B</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">   <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span>)</span> override </span>&#123;<span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"D::f"</span> &lt;&lt; <span class="built_in">std</span>::endl;&#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>现在这将触发一个编译错误（后面那个例子，如果也写上override标识，会得到相同的错误提示）：<br><figure class="highlight nimrod"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">'D::f' : <span class="keyword">method</span> <span class="keyword">with</span> override specifier 'override' did <span class="keyword">not</span> override <span class="type">any</span> base class methods</span><br></pre></td></tr></table></figure></p>
+<p>另一方面，如果你希望函数不要再被派生类进一步重写，你可以把它标识为final。可以在基类或任何派生类中使用final。在派生类中，可以同时使用override和final标识。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> B</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">   <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span>)</span> </span>&#123;<span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"B::f"</span> &lt;&lt; <span class="built_in">std</span>::endl;&#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> D : <span class="keyword">public</span> B</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">   <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span>)</span> override final </span>&#123;<span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"D::f"</span> &lt;&lt; <span class="built_in">std</span>::endl;&#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> F : <span class="keyword">public</span> D</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">   <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span>)</span> override </span>&#123;<span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"F::f"</span> &lt;&lt; <span class="built_in">std</span>::endl;&#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>被标记成final的函数将不能再被F::f重写。</p>
+<h3 id="Strongly-typed-enums-强类型枚举"><a href="#Strongly-typed-enums-强类型枚举" class="headerlink" title="Strongly-typed enums 强类型枚举"></a>Strongly-typed enums 强类型枚举</h3><p>传统的C++枚举类型存在一些缺陷：它们会将枚举常量暴露在外层作用域中（这可能导致名字冲突，如果同一个作用域中存在两个不同的枚举类型，但是具有相同的枚举常量就会冲突），而且它们会被隐式转换为整形，无法拥有特定的用户定义类型。</p>
+<p>在C++11中通过引入了一个称为强类型枚举的新类型，修正了这种情况。强类型枚举由关键字enum class标识。它不会将枚举常量暴露到外层作用域中，也不会隐式转换为整形，并且拥有用户指定的特定类型（传统枚举也增加了这个性质）。<br><figure class="highlight crystal"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">enum</span> <span class="title">class</span> <span class="title">Options</span> &#123;<span class="title">None</span>, <span class="title">One</span>, <span class="title">All</span>&#125;;</span></span><br><span class="line"><span class="constant">Options</span> o = <span class="constant">Options::All</span>;</span><br></pre></td></tr></table></figure></p>
+<p>在标准C++中，枚举类型不是类型安全的。枚举类型被视为整数，这使得两种不同的枚举类型之间可以进行比较。C++03 唯一提供的安全机制是一个整数或一个枚举型值不能隐式转换到另一个枚举别型。 此外，枚举所使用整数类型及其大小都由实现方法定义，皆无法明确指定。 最后，枚举的名称全数暴露于一般范围中，因此C++03两个不同的枚举，不可以有相同的枚举名。 (好比 enum Side{ Right, Left }; 和 enum Thing{ Wrong, Right }; 不能一起使用。)<br><figure class="highlight crystal"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">enum</span> <span class="title">class</span> <span class="title">Enumeration</span></span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="constant">Val1</span>,</span><br><span class="line">  <span class="constant">Val2</span>,</span><br><span class="line">  <span class="constant">Val3</span> = <span class="number">100</span>,</span><br><span class="line">  <span class="constant">Val4</span> /* = <span class="number">101</span> *<span class="regexp">/,</span><br><span class="line">&#125;;</span></span><br></pre></td></tr></table></figure></p>
+<p>此种枚举为类型安全的。枚举类型不能隐式地转换为整数；也无法与整数数值做比较。 (表示式 Enumeration::Val4 == 101 会触发编译期错误)。</p>
+<p>枚举类型所使用类型必须显式指定。在上面的示例中，使用的是默认类型 int，但也可以指定其他类型：<br><figure class="highlight crystal"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">enum</span> <span class="title">class</span> <span class="title">Enum2</span> : <span class="title">unsigned</span> <span class="title">int</span> &#123;<span class="title">Val1</span>, <span class="title">Val2</span>&#125;;</span></span><br></pre></td></tr></table></figure></p>
+<p>枚举类型的语汇范围(scoping)定义于枚举类型的名称范围中。 使用枚举类型的枚举名时，必须明确指定其所属范围。 由前述枚举类型 Enum2 为例，Enum2::Val1是有意义的表示法， 而单独的 Val1 则否。</p>
+<p>此外，C++11 允许为传统的枚举指定使用类型：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">enum</span> Enum3 : <span class="keyword">unsigned</span> <span class="keyword">long</span> &#123;Val1 = <span class="number">1</span>, Val2&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>枚举名 Val1 定义于 Enum3 的枚举范围中(Enum3::Val1)，但为了兼容性， Val1 仍然可以于一般的范围中单独使用。</p>
+<p>在 C++11 中，枚举类型的前置声明 (forward declaration) 也是可行的，只要使用可指定类型的新式枚举即可。 之前的 C++ 无法写出枚举的前置声明，是由于无法确定枚举参数所占的空间大小， C++11 解决了这个问题：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">enum</span> Enum1;                     <span class="comment">// 不合法的 C++ 與 C++11; 無法判別大小</span></span><br><span class="line"><span class="keyword">enum</span> Enum2 : <span class="keyword">unsigned</span> <span class="keyword">int</span>;      <span class="comment">// 合法的 C++11</span></span><br><span class="line"><span class="keyword">enum</span> <span class="keyword">class</span> Enum3;               <span class="comment">// 合法的 C++11，列舉類別使用預設型別 int</span></span><br><span class="line"><span class="keyword">enum</span> <span class="keyword">class</span> Enum4: <span class="keyword">unsigned</span> <span class="keyword">int</span>; <span class="comment">// 合法的 C++11</span></span><br><span class="line"><span class="keyword">enum</span> Enum2 : <span class="keyword">unsigned</span> <span class="keyword">short</span>;    <span class="comment">// 不合法的 C++11，Enum2 已被聲明為 unsigned int</span></span><br></pre></td></tr></table></figure></p>
+<h3 id="static-assert和-type-traits"><a href="#static-assert和-type-traits" class="headerlink" title="static_assert和 type traits"></a>static_assert和 type traits</h3><p>static_assert提供一个编译时的断言检查。如果断言为真，什么也不会发生。如果断言为假，编译器会打印一个特殊的错误信息。是在编译的时候进行断言，所以在实时编译的环境下编辑代码的时候，如果断言为假的话，就会直接提示错误<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="keyword">int</span> sj = <span class="number">4</span>;</span><br><span class="line"><span class="keyword">static_assert</span>(sj&lt;<span class="number">9</span>, <span class="string">"Size is too small"</span>); <span class="comment">//OK and assert is true</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> a = <span class="number">4</span>;</span><br><span class="line"><span class="comment">// error 因为是在编译期的断言，所以在编译期必须能够对断言的内容进行确定，由于a是运行时动态确定的，所以这里编译错误</span></span><br><span class="line"><span class="keyword">static_assert</span>(a&lt;<span class="number">9</span>, <span class="string">"Size is too small"</span>);</span><br></pre></td></tr></table></figure></p>
+<p>static_assert和type traits一起使用能发挥更大的威力。type traits是一些class，在编译时提供关于类型的信息。在头文件<type_traits>中可以找到它们。这个头文件中有好几种class: helper class，用来产生编译时常量。type traits class，用来在编译时获取类型信息，还有就是type transformation class，他们可以将已存在的类型变换为新的类型。</type_traits></p>
+<p>下面这段代码原本期望只做用于整数类型。<br><figure class="highlight livescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">template &lt;typename T1, typename T2&gt;</span><br><span class="line">auto add<span class="function"><span class="params">(T1 t1, T2 t2)</span> -&gt;</span> decltype(t1 + t2)</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">return</span> t1 + t2;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>但是如果有人写出如下代码，编译器并不会报错<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; add(<span class="number">1</span>, <span class="number">3.14</span>) &lt;&lt; <span class="built_in">std</span>::endl;</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; add(<span class="string">"one"</span>, <span class="number">2</span>) &lt;&lt; <span class="built_in">std</span>::endl;</span><br></pre></td></tr></table></figure></p>
+<p>程序会打印出4.14和”e”。但是如果我们加上编译时断言，那么以上两行将产生编译错误。<br><figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">template &lt;typename <span class="constant">T1,</span> typename <span class="constant">T2&gt;</span></span><br><span class="line">auto add(<span class="constant">T1 </span>t1, <span class="constant">T2 </span>t2) -&gt; decltype(t1 + t2)</span><br><span class="line">&#123;</span><br><span class="line">   static_assert(<span class="symbol">std:</span><span class="symbol">:is_integral&lt;T1&gt;</span><span class="symbol">:</span><span class="symbol">:value</span>, <span class="string">"Type T1 must be integral"</span>);</span><br><span class="line">   static_assert(<span class="symbol">std:</span><span class="symbol">:is_integral&lt;T2&gt;</span><span class="symbol">:</span><span class="symbol">:value</span>, <span class="string">"Type T2 must be integral"</span>);</span><br><span class="line"></span><br><span class="line">   <span class="keyword">return</span> t1 + t2;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight vbnet"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">error</span> C2338: Type T2 must be integral</span><br><span class="line">see reference <span class="keyword">to</span> <span class="keyword">function</span> template instantiation <span class="comment">'T2 add<span class="xmlDocTag">&lt;int,double&gt;</span>(T1,T2)' being compiled</span></span><br><span class="line">   <span class="keyword">with</span></span><br><span class="line">   [</span><br><span class="line">      T2=<span class="built_in">double</span>,</span><br><span class="line">      T1=int</span><br><span class="line">   ]</span><br><span class="line"><span class="keyword">error</span> C2338: Type T1 must be integral</span><br><span class="line">see reference <span class="keyword">to</span> <span class="keyword">function</span> template instantiation <span class="comment">'T1 add<span class="xmlDocTag">&lt;const char*,int&gt;</span>(T1,T2)' being compiled</span></span><br><span class="line">   <span class="keyword">with</span></span><br><span class="line">   [</span><br><span class="line">      T1=<span class="keyword">const</span> <span class="built_in">char</span> *,</span><br><span class="line">      T2=int</span><br><span class="line">   ]</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/07/06/C-11常规特性之其他一些新特性/" data-id="ciqcg7fvz005nvkqy8laqoyq8" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-套接字" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/07/02/套接字/" class="article-date">
+  <time datetime="2016-07-02T06:37:39.000Z" itemprop="datePublished">2016-07-02</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/07/02/套接字/">套接字</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>消息队列、信号灯、共享内存等，都是基于Sys V的IPC机制进行讨论的，它们的应用局限在单一计算机内的进程间通信；基于BSD套接口不仅可以实现单机内的进程间通信，还可以实现不同计算机进程之间的通信。</p>
+<p>一个套接口可以看作是进程间通信的端点（endpoint），每个套接口的名字都是唯一的（唯一的含义是不言而喻的），其他进程可以发现、连接并且与之通信。通信域用来说明套接口通信的协议，不同的通信域有不同的通信协议以及套接口的地址结构等等，因此，创建一个套接口时，要指明它的通信域。比较常见的是unix域套接口（采用套接口机制实现单机内的进程间通信）及网际通信域。</p>
+<h3 id="1、背景知识"><a href="#1、背景知识" class="headerlink" title="1、背景知识"></a>1、背景知识</h3><p>linux目前的网络内核代码主要基于伯克利的BSD的unix实现，整个结构采用的是一种面向对象的分层机制。层与层之间有严格的接口定义。这里我们引用[1]中的一个图表来描述linux支持的一些通信协议：<br><img src="/pictures/Linux/进程间通信/共享内存-套接字通信协议.png" alt=""></p>
+<p>我们这里只关心IPS，即因特网协议族，也就是通常所说的TCP/IP网络。我们这里假设读者具有网络方面的一些背景知识，如了解网络的分层结构，通常所说的7层结构；了解IP地址以及路由的一些基本知识。</p>
+<p>目前linux网络API是基于BSD套接口的（系统V提供基于流I/O子系统的用户接口，但是linux内核目前不支持流I/O子系统）。套接口可以说是网络编程中一个非常重要的概念，linux以文件的形式实现套接口，与套接口相应的文件属于sockfs特殊文件系统，创建一个套接口就是在sockfs中创建一个特殊文件，并建立起为实现套接口功能的相关数据结构。换句话说，对每一个新创建的BSD套接口，linux内核都将在sockfs特殊文件系统中创建一个新的inode。描述套接口的数据结构是socket，将在后面给出。</p>
+<h3 id="2、重要数据结构"><a href="#2、重要数据结构" class="headerlink" title="2、重要数据结构"></a>2、重要数据结构</h3><p>下面是在网络编程中比较重要的几个数据结构，读者可以在后面介绍编程API部分再回过头来了解它们。</p>
+<h4 id="（1）表示套接口的数据结构struct-socket"><a href="#（1）表示套接口的数据结构struct-socket" class="headerlink" title="（1）表示套接口的数据结构struct socket"></a>（1）表示套接口的数据结构struct socket</h4><p>套接口是由socket数据结构代表的，形式如下：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> socket</span><br><span class="line">&#123;</span><br><span class="line">socket_state  state;     <span class="comment">/* 指明套接口的连接状态，一个套接口的连接状态可以有以下几种</span><br><span class="line">套接口是空闲的，还没有进行相应的端口及地址的绑定；还没有连接；正在连接中；已经连接；正在解除连接。 */</span></span><br><span class="line">  <span class="keyword">unsigned</span> <span class="keyword">long</span>    flags;</span><br><span class="line">  <span class="keyword">struct</span> proto_ops  ops;  <span class="comment">/* 指明可对套接口进行的各种操作 */</span></span><br><span class="line">  <span class="keyword">struct</span> inode    inode;    <span class="comment">/* 指向sockfs文件系统中的相应inode */</span></span><br><span class="line">  <span class="keyword">struct</span> fasync_struct  *fasync_list;  <span class="comment">/* Asynchronous wake up list  */</span></span><br><span class="line">  <span class="keyword">struct</span> file    *file;          <span class="comment">/* 指向sockfs文件系统中的相应文件  */</span></span><br><span class="line"><span class="keyword">struct</span> sock    sk;  <span class="comment">/* 任何协议族都有其特定的套接口特性，该域就指向特定协议族的套接口对</span><br><span class="line">象。 */</span></span><br><span class="line">  <span class="keyword">wait_queue_head_t</span>  wait;</span><br><span class="line">  <span class="keyword">short</span>      type;</span><br><span class="line">  <span class="keyword">unsigned</span> <span class="keyword">char</span>    passcred;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<h4 id="（2）描述套接口通用地址的数据结构struct-sockaddr"><a href="#（2）描述套接口通用地址的数据结构struct-sockaddr" class="headerlink" title="（2）描述套接口通用地址的数据结构struct sockaddr"></a>（2）描述套接口通用地址的数据结构struct sockaddr</h4><p>由于历史的缘故，在bind、connect等系统调用中，特定于协议的套接口地址结构指针都要强制转换成该通用的套接口地址结构指针。结构形式如下：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> sockaddr &#123;</span><br><span class="line">	<span class="keyword">sa_family_t</span>	sa_family;	<span class="comment">/* address family, AF_xxx	*/</span></span><br><span class="line">	<span class="keyword">char</span>		sa_data[<span class="number">14</span>];	<span class="comment">/* 14 bytes of protocol address	*/</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<h4 id="（3）描述因特网地址结构的数据结构struct-sockaddr-in（这里局限于IP4）："><a href="#（3）描述因特网地址结构的数据结构struct-sockaddr-in（这里局限于IP4）：" class="headerlink" title="（3）描述因特网地址结构的数据结构struct sockaddr_in（这里局限于IP4）："></a>（3）描述因特网地址结构的数据结构struct sockaddr_in（这里局限于IP4）：</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> sockaddr_in</span><br><span class="line">  &#123;</span><br><span class="line">    __SOCKADDR_COMMON (sin_);	<span class="comment">/* 描述协议族 */</span></span><br><span class="line">    <span class="keyword">in_port_t</span> sin_port;			<span class="comment">/* 端口号 */</span></span><br><span class="line">    <span class="keyword">struct</span> in_addr sin_addr;		<span class="comment">/* 因特网地址 */</span></span><br><span class="line">    <span class="comment">/* Pad to size of `struct sockaddr'.  */</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">char</span> sin_zero[<span class="keyword">sizeof</span> (<span class="keyword">struct</span> sockaddr) -</span><br><span class="line">			   __SOCKADDR_COMMON_SIZE -</span><br><span class="line">			   <span class="keyword">sizeof</span> (<span class="keyword">in_port_t</span>) -</span><br><span class="line">			   <span class="keyword">sizeof</span> (<span class="keyword">struct</span> in_addr)];</span><br><span class="line">  &#125;;</span><br></pre></td></tr></table></figure>
+<p>一般来说，读者最关心的是前三个域，即通信协议、端口号及地址。</p>
+<h3 id="3、套接口编程的几个重要步骤："><a href="#3、套接口编程的几个重要步骤：" class="headerlink" title="3、套接口编程的几个重要步骤："></a>3、套接口编程的几个重要步骤：</h3><h4 id="（1）创建套接口，由系统调用socket实现："><a href="#（1）创建套接口，由系统调用socket实现：" class="headerlink" title="（1）创建套接口，由系统调用socket实现："></a>（1）创建套接口，由系统调用socket实现：</h4><figure class="highlight aspectj"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">socket</span><span class="params">( <span class="keyword">int</span> domain, <span class="keyword">int</span> type, <span class="keyword">int</span> ptotocol)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>参数domain指明通信域，如PF_UNIX（unix域），PF_INET（IPv4），PF_INET6(IPv6)等；type指明通信类型，如SOCK_STREAM(面向连接方式)、SOCK_DGRAM(非面向连接方式)等。一般来说，参数protocol可设置为0，除非用在原始套接口上（原始套接口有一些特殊功能，后面还将介绍）。</p>
+<p>注：socket（）系统调用为套接口在sockfs文件系统中分配一个新的文件和dentry对象，并通过文件描述符把它们与调用进程联系起来。进程可以像访问一个已经打开的文件一样访问套接口在sockfs中的对应文件。但进程绝不能调用open()来访问该文件（sockfs文件系统没有可视安装点，其中的文件永远不会出现在系统目录树上），当套接口被关闭时，内核会自动删除sockfs中的inodes。</p>
+<h4 id="（2）绑定地址"><a href="#（2）绑定地址" class="headerlink" title="（2）绑定地址"></a>（2）绑定地址</h4><p>根据传输层协议（TCP、UDP）的不同，客户机及服务器的处理方式也有很大不同。但是，不管通信双方使用何种传输协议，都需要一种标识自己的机制。</p>
+<p>通信双方一般由两个方面标识：地址和端口号（通常，一个IP地址和一个端口号常常被称为一个套接口）。根据地址可以寻址到主机，根据端口号则可以寻址到主机提供特定服务的进程，实际上，一个特定的端口号代表了一个提供特定服务的进程。</p>
+<p>对于使用TCP传输协议通信方式来说，通信双方需要给自己绑定一个唯一标识自己的套接口，以便建立连接；对于使用UDP传输协议，只需要服务器绑定一个标识自己的套接口就可以了，用户则不需要绑定(在需要时，如调用connect时[注1]，内核会自动分配一个本地地址和本地端口号)。绑定操作由系统调用bind()完成：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">bind</span><span class="params">( <span class="keyword">int</span> sockfd, <span class="keyword">const</span> <span class="keyword">struct</span> sockaddr * my_addr, socklen_t my_addr_len)</span></span></span><br></pre></td></tr></table></figure></p>
+<p>第二个参数对于Ipv4来说，实际上需要填充的结构是struct sockaddr_in，前面已经介绍了该结构。这里只想强调该结构的第一个域，它表明该套接口使用的通信协议，如AF_INET。联系socket系统调用的第一个参数，读者可能会想到PF_INET与AF_INET究竟有什么不同？实际上，原来的想法是每个通信域（如PF_INET）可能对应多个协议（如AF<em>INET），而事实上支持多个协议的通信域一直没有实现。因此，在linux内核中，AF</em><strong><em>与PF_</em></strong>被定义为同一个常数，因此，在编程时可以不加区分地使用他们。</p>
+<p>注1：在采用非面向连接通信方式时，也会用到connect()调用，不过与在面向连接中的connect（）调用有本质的区别：在非面向连接通信中，connect调用只是先设置一下对方的地址，内核为本地套接口记下对方的地址，然后采用send()来发送数据，这样避免每次发送时都要提供相同的目的地址。其中的connect()调用不涉及握手过程；而在面向连接的通信方式中，connect()要完成一个严格的握手过程。</p>
+<h4 id="（3）请求建立连接（由TCP客户发起）"><a href="#（3）请求建立连接（由TCP客户发起）" class="headerlink" title="（3）请求建立连接（由TCP客户发起）"></a>（3）请求建立连接（由TCP客户发起）</h4><p>对于采用面向连接的传输协议TCP实现通信来说，一个比较重要的步骤就是通信双方建立连接（如果采用udp传输协议则不需要），由系统调用connect()完成：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">connect</span><span class="params">( <span class="keyword">int</span> sockfd, <span class="keyword">const</span> <span class="keyword">struct</span> sockaddr * servaddr, socklen_t addrlen)</span></span></span><br></pre></td></tr></table></figure></p>
+<p>第一个参数为本地调用socket后返回的描述符，第二个参数为服务器的地址结构指针。connect（）向指定的套接口请求建立连接。</p>
+<p>注：与connect（）相对应，在服务器端，通过系统调用listen()，指定服务器端的套接口为监听套接口，监听每一个向服务器套接口发出的连接请求，并通过握手机制建立连接。内核为listen()维护两个队列：已完成连接队列和未完成连接队列。</p>
+<h4 id="（4）接受连接请求（由TCP服务器端发起）"><a href="#（4）接受连接请求（由TCP服务器端发起）" class="headerlink" title="（4）接受连接请求（由TCP服务器端发起）"></a>（4）接受连接请求（由TCP服务器端发起）</h4><p>服务器端通过监听套接口，为所有连接请求建立了两个队列：已完成连接队列和未完成连接队列（每个监听套接口都对应这样两个队列，当然，一般服务器只有一个监听套接口）。通过accept()调用，服务器将在监听套接口的已连接队列头中，返回用于代表当前连接的套接口描述字。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">accept</span><span class="params">( <span class="keyword">int</span> sockfd, <span class="keyword">struct</span> sockaddr * cliaddr, socklen_t * addrlen)</span></span></span><br></pre></td></tr></table></figure></p>
+<p>第一个参数指明哪个监听套接口，一般是由listen（）系统调用指定的（由于每个监听套接口都对应已连接和未连接两个队列，因此它的内部机制实质是通过sockfd指定在哪个已连接队列头中返回一个用于当前客户的连接，如果相应的已连接队列为空，accept进入睡眠）。第二个参数指明客户的地址结构，如果对客户的身份不感兴趣，可指定其为空。</p>
+<p>注：对于采用TCP传输协议进行通信的服务器和客户机来说，一定要经过客户请求建立连接，服务器接受连接请求这一过程；而对采用UDP传输协议的通信双方则不需要这一步骤。</p>
+<h4 id="（5）通信"><a href="#（5）通信" class="headerlink" title="（5）通信"></a>（5）通信</h4><p>客户机可以通过套接口接收服务器传过来的数据，也可以通过套接口向服务器发送数据。前面所有的准备工作（创建套接口、绑定等操作）都是为这一步骤准备的。</p>
+<p>常用的从套接口中接收数据的调用有：recv、recvfrom、recvmsg等，常用的向套接口中发送数据的调用有send、sendto、sendmsg等。<br><figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">recv</span>(<span class="params"><span class="keyword">int</span> s, <span class="keyword">void</span> *</span><br><span class="line">        buf, size_t</span><br><span class="line">        len, <span class="keyword">int</span></span><br><span class="line">        flags</span>)</span><br><span class="line"><span class="keyword">int</span> <span class="title">recvfrom</span>(<span class="params"><span class="keyword">int</span> s,  <span class="keyword">void</span> *</span><br><span class="line">        buf,  size_t</span><br><span class="line">        len, <span class="keyword">int</span></span><br><span class="line">        flags, <span class="keyword">struct</span> sockaddr *</span><br><span class="line">        <span class="keyword">from</span>, socklen_t *</span><br><span class="line">        fromlen</span>)</span><br><span class="line"><span class="keyword">int</span> <span class="title">recvmsg</span>(<span class="params"><span class="keyword">int</span> s, <span class="keyword">struct</span> msghdr *</span><br><span class="line">        msg, <span class="keyword">int</span></span><br><span class="line">        flags</span>)</span><br><span class="line"><span class="keyword">int</span> <span class="title">send</span>(<span class="params"><span class="keyword">int</span> s,<span class="keyword">const</span> <span class="keyword">void</span> *</span><br><span class="line">        msg, size_t</span><br><span class="line">        len, <span class="keyword">int</span></span><br><span class="line">        flags</span>)</span><br><span class="line"><span class="keyword">int</span> <span class="title">sendto</span>(<span class="params"><span class="keyword">int</span> s, <span class="keyword">const</span> <span class="keyword">void</span> *</span><br><span class="line">        msg, size_t</span><br><span class="line">        len, <span class="keyword">int</span></span><br><span class="line">        flags <span class="keyword">const</span> <span class="keyword">struct</span> sockaddr *</span><br><span class="line">        to, socklen_t</span><br><span class="line">        tolen</span>)</span><br><span class="line"><span class="keyword">int</span> <span class="title">sendmsg</span>(<span class="params"><span class="keyword">int</span> s, <span class="keyword">const</span> <span class="keyword">struct</span> msghdr *</span><br><span class="line">        msg, <span class="keyword">int</span></span><br><span class="line">        flags</span>)</span></span><br></pre></td></tr></table></figure></p>
+<p>这里不再对这些调用作具体的说明，只想强调一下，recvfrom（）以及recvmsg（）可用于面向连接的套接口，也可用于面向非连接的套接口；而recv（）一般用于面向连接的套接口。另外，在调用了connect()之后，就应给调用send()而不是sendto()了，因为调用了connect之后，目标就已经确定了。</p>
+<p>前面讲到，socket（）系统调用返回套接口描述字，实际上它是一个文件描述符。所以，可以对套接口进行通常的读写操作，即使用read()及write()方法。在实际应用中，由于面向连接的通信（采用TCP传输协议）是可靠的，同时又保证字节流原有的顺序，所以更适合用read及write方法。而非面向连接的通信（采用UDP传输协议）是不可靠的，字节流也不一定保持原有的顺序，所以一般不宜用read及write方法。</p>
+<h4 id="（6）通信的最后一步是关闭套接口"><a href="#（6）通信的最后一步是关闭套接口" class="headerlink" title="（6）通信的最后一步是关闭套接口"></a>（6）通信的最后一步是关闭套接口</h4><p>由close()来完成此项功能，它唯一的参数是套接口描述字，不再赘述。</p>
+<h3 id="4、典型调用代码："><a href="#4、典型调用代码：" class="headerlink" title="4、典型调用代码："></a>4、典型调用代码：</h3><p>到处可以发现基于套接口的客户机及服务器程序，这里不再给出完整的范例代码，只是给出它们的典型调用代码，并给出简要说明。</p>
+<h4 id="（1）典型的TCP服务器代码："><a href="#（1）典型的TCP服务器代码：" class="headerlink" title="（1）典型的TCP服务器代码："></a>（1）典型的TCP服务器代码：</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">... ...</span><br><span class="line"><span class="keyword">int</span> listen_fd, connect_fd;</span><br><span class="line"><span class="keyword">struct</span> sockaddr_in serv_addr, client_addr;</span><br><span class="line">... ...</span><br><span class="line">listen_fd = socket ( PF_INET, SOCK_STREAM, <span class="number">0</span> );</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 创建网际Ipv4域的（由PF_INET指定）面向连接的（由SOCK_STREAM指定，</span><br><span class="line">如果创建非面向连接的套接口则指定为SOCK_DGRAM）</span><br><span class="line">的套接口。第三个参数0表示由内核确定缺省的传输协议，</span><br><span class="line">对于本例，由于创建的是可靠的面向连接的基于流的套接口，</span><br><span class="line">内核将选择TCP作为本套接口的传输协议） */</span></span><br><span class="line"></span><br><span class="line">bzero( &amp;serv_addr, <span class="keyword">sizeof</span>(serv_addr) );</span><br><span class="line">serv_addr.sin_family = AF_INET ;  <span class="comment">/* 指明通信协议族 */</span></span><br><span class="line">serv_addr.sin_port = htons( <span class="number">49152</span> ) ;       <span class="comment">/* 分配端口号 */</span></span><br><span class="line">inet_pton(AF_INET, <span class="string">" 192.168.0.11"</span>, &amp;serv_addr.sin_sddr) ;</span><br><span class="line"><span class="comment">/* 分配地址，把点分十进制IPv4地址转化为32位二进制Ipv4地址。 */</span></span><br><span class="line">bind( listen_fd, (<span class="keyword">struct</span> sockaddr*) serv_addr, <span class="keyword">sizeof</span> ( <span class="keyword">struct</span> sockaddr_in )) ;</span><br><span class="line"><span class="comment">/* 实现绑定操作 */</span></span><br><span class="line">listen( listen_fd, max_num) ;</span><br><span class="line"><span class="comment">/* 套接口进入侦听状态，max_num规定了内核为此套接口排队的最大连接个数 */</span></span><br><span class="line"><span class="keyword">for</span>( ; ; ) &#123;</span><br><span class="line">... ...</span><br><span class="line">connect_fd = accept( listen_fd, (<span class="keyword">struct</span> sockaddr*)client_addr, &amp;len ) ; <span class="comment">/* 获得连接fd. */</span></span><br><span class="line">... ...					<span class="comment">/* 发送和接收数据 */</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注：端口号的分配是有一些惯例的，不同的端口号对应不同的服务或进程。比如一般都把端口号21分配给FTP服务器的TCP/IP实现。端口号一般分为3段，0-1023（受限的众所周知的端口，由分配数值的权威机构IANA管理），1024-49151（可以从IANA那里申请注册的端口），49152-65535（临时端口，这就是为什么代码中的端口号为49152）。</p>
+<p>对于多字节整数在内存中有两种存储方式：一种是低字节在前，高字节在后，这样的存储顺序被称为低端字节序（little-endian）；高字节在前，低字节在后的存储顺序则被称为高端字节序（big-endian）。网络协议在处理多字节整数时，采用的是高端字节序，而不同的主机可能采用不同的字节序。因此在编程时一定要考虑主机字节序与网络字节序间的相互转换。这就是程序中使用htons函数的原因，它返回网络字节序的整数。</p>
+<h4 id="（2）典型的TCP客户代码："><a href="#（2）典型的TCP客户代码：" class="headerlink" title="（2）典型的TCP客户代码："></a>（2）典型的TCP客户代码：</h4><figure class="highlight lasso"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">...</span> <span class="attribute">...</span></span><br><span class="line">int socket_fd;</span><br><span class="line">struct sockaddr_in serv_addr ;</span><br><span class="line"><span class="attribute">...</span> <span class="attribute">...</span></span><br><span class="line">socket_fd = socket ( PF_INET, SOCK_STREAM, <span class="number">0</span> );</span><br><span class="line">bzero( <span class="subst">&amp;</span>serv_addr, sizeof(serv_addr) );</span><br><span class="line">serv_addr<span class="built_in">.</span>sin_family = AF_INET ;  <span class="comment">/* 指明通信协议族 */</span></span><br><span class="line">serv_addr<span class="built_in">.</span>sin_port = htons( <span class="number">49152</span> ) ;       <span class="comment">/* 分配端口号 */</span></span><br><span class="line">inet_pton(AF_INET, <span class="string">" 192.168.0.11"</span>, <span class="subst">&amp;</span>serv_addr<span class="built_in">.</span>sin_sddr) ;</span><br><span class="line"><span class="comment">/* 分配地址，把点分十进制IPv4地址转化为32位二进制Ipv4地址。 */</span></span><br><span class="line">connect( socket_fd, (struct sockaddr*)serv_addr, sizeof( serv_addr ) ) ; <span class="comment">/* 向服务器发起连接请求 */</span></span><br><span class="line"><span class="attribute">...</span> <span class="attribute">...</span>							<span class="comment">/* 发送和接收数据 */</span></span><br><span class="line"><span class="attribute">...</span> <span class="attribute">...</span></span><br></pre></td></tr></table></figure>
+<p>对比两段代码可以看出，许多调用是服务器或客户机所特有的。另外，对于非面向连接的传输协议，代码还有简单些，没有连接的发起请求和接收请求部分。</p>
+<h3 id="5、网络编程中的其他重要概念"><a href="#5、网络编程中的其他重要概念" class="headerlink" title="5、网络编程中的其他重要概念"></a>5、网络编程中的其他重要概念</h3><p>下面列出了网络编程中的其他重要概念，基本上都是给出这些概念能够实现的功能，读者在编程过程中如果需要这些功能，可查阅相关概念。</p>
+<h4 id="（1）、I-O复用的概念"><a href="#（1）、I-O复用的概念" class="headerlink" title="（1）、I/O复用的概念"></a>（1）、I/O复用的概念</h4><p>I/O复用提供一种能力，这种能力使得当一个I/O条件满足时，进程能够及时得到这个信息。I/O复用一般应用在进程需要处理多个描述字的场合。它的一个优势在于，进程不是阻塞在真正的I/O调用上，而是阻塞在select()调用上，select()可以同时处理多个描述字，如果它所处理的所有描述字的I/O都没有处于准备好的状态，那么将阻塞；如果有一个或多个描述字I/O处于准备好状态，则select()不阻塞，同时会根据准备好的特定描述字采取相应的I/O操作。</p>
+<h4 id="（2）、Unix通信域"><a href="#（2）、Unix通信域" class="headerlink" title="（2）、Unix通信域"></a>（2）、Unix通信域</h4><p>前面主要介绍的是PF_INET通信域，实现网际间的进程间通信。基于Unix通信域（调用socket时指定通信域为PF_LOCAL即可）的套接口可以实现单机之间的进程间通信。采用Unix通信域套接口有几个好处：Unix通信域套接口通常是TCP套接口速度的两倍；另一个好处是，通过Unix通信域套接口可以实现在进程间传递描述字。所有可用描述字描述的对象，如文件、管道、有名管道及套接口等，在我们以某种方式得到该对象的描述字后，都可以通过基于Unix域的套接口来实现对描述字的传递。接收进程收到的描述字值不一定与发送进程传递的值一致（描述字是特定于进程的），但是特们指向内核文件表中相同的项。</p>
+<h4 id="（3）、原始套接口"><a href="#（3）、原始套接口" class="headerlink" title="（3）、原始套接口"></a>（3）、原始套接口</h4><p>原始套接口提供一般套接口所不提供的功能：<br>原始套接口可以读写一些用于控制的控制协议分组，如ICMPv4等，进而可实现一些特殊功能。<br>原始套接口可以读写特殊的IPv4数据包。内核一般只处理几个特定协议字段的数据包，那么一些需要不同协议字段的数据包就需要通过原始套接口对其进行读写；<br>通过原始套接口可以构造自己的Ipv4头部，也是比较有意思的一点。</p>
+<p>创建原始套接口需要root权限。</p>
+<h4 id="（4）、对数据链路层的访问"><a href="#（4）、对数据链路层的访问" class="headerlink" title="（4）、对数据链路层的访问"></a>（4）、对数据链路层的访问</h4><p>对数据链路层的访问，使得用户可以侦听本地电缆上的所有分组，而不需要使用任何特殊的硬件设备，在linux下读取数据链路层分组需要创建SOCK_PACKET类型的套接口，并需要有root权限。</p>
+<h4 id="（5）、带外数据（out-of-band-data）"><a href="#（5）、带外数据（out-of-band-data）" class="headerlink" title="（5）、带外数据（out-of-band data）"></a>（5）、带外数据（out-of-band data）</h4><p>如果有一些重要信息要立刻通过套接口发送（不经过排队），请查阅与带外数据相关的文献。</p>
+<h4 id="（6）、多播"><a href="#（6）、多播" class="headerlink" title="（6）、多播"></a>（6）、多播</h4><p>linux内核支持多播，但是在默认状态下，多数linux系统都关闭了对多播的支持。因此，为了实现多播，可能需要重新配置并编译内核。具体请参考[4]及[2]。</p>
+<p>结论：linux套接口编程的内容可以说是极大丰富，同时它涉及到许多的网络背景知识，有兴趣的读者可在[2]中找到比较系统而全面的介绍。</p>
+<h3 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h3><ol>
+<li>Understanding the Linux Kernel, 2nd Edition, By Daniel P. Bovet, Marco Cesati , 对各主题阐述得重点突出，脉络清晰。网络部分分析集中在TCP/IP协议栈的数据连路层、网络层以及传输层。</li>
+<li>UNIX网络编程第一卷：套接口API和X/Open传输接口API，作者：W.Richard Stevens，译者：杨继张，清华大学出版社。不仅对套接口网络编程有极好的描述，而且极为详尽的阐述了相关的网络背景知识。不论是入门还是深入研究，都是不可多得的好资料。</li>
+<li>Linux内核源代码情景分析（下），毛德操、胡希明著，浙江大学出版社，给出了unix域套接口部分的内核代码分析。</li>
+<li>GNU/Linux编程指南，入门、应用、精通，第二版，Kurt Wall等著，张辉译</li>
+</ol>
+<p>本文转载自<a href="http://www.ibm.com/developerworks/cn/linux/l-ipc/part6/index.html" target="_blank" rel="external">这里</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/07/02/套接字/" data-id="ciqcg7fte001jvkqynuxr1a5p" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-信号灯" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2016/07/02/信号灯/" class="article-date">
@@ -162,7 +442,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/02/信号灯/" data-id="ciqbvirn1002gpsqyhiuog86d" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/02/信号灯/" data-id="ciqcg7fu1002gvkqynqy2kvxm" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a></li></ul>
@@ -270,7 +550,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/02/消息队列/" data-id="ciqbvirm5001apsqys6tga2ng" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/02/消息队列/" data-id="ciqcg7ft0001avkqymnh7wiwz" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a></li></ul>
@@ -369,7 +649,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/02/共享内存/" data-id="ciqbvirmy002dpsqyami9dvdo" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/02/共享内存/" data-id="ciqcg7fty002dvkqyrfiorzj1" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a></li></ul>
@@ -483,7 +763,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/02/管道/" data-id="ciqbvirlu000rpsqy038tkcll" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/02/管道/" data-id="ciqcg7fsj000rvkqyjxz6ig1e" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a></li></ul>
@@ -553,7 +833,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/05/10/TCP-Nagel算法/" data-id="ciqbvirno003gpsqy21c1y1fl" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/05/10/TCP-Nagel算法/" data-id="ciqcg7fup003gvkqydse00hx8" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TCP-IP/">TCP/IP</a></li></ul>
@@ -620,243 +900,11 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/05/10/连续发送多份小数据时40ms延迟问题/" data-id="ciqbvirlm000fpsqywdb4xpfp" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/05/10/连续发送多份小数据时40ms延迟问题/" data-id="ciqcg7fsb000fvkqy2swerio6" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TCP-IP/">TCP/IP</a></li></ul>
 
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-ICMP-协议" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/04/26/ICMP-协议/" class="article-date">
-  <time datetime="2016-04-26T12:05:10.000Z" itemprop="datePublished">2016-04-26</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/计算机网络/">计算机网络</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/04/26/ICMP-协议/">ICMP 协议</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>ICMP 经常被认为是 IP 层的一个组成部分，它传递差错报文以及其他需要注意的信息。ICMP 报文通常被 IP 层或更高层协议(TCP 或 UDP)使用。ICMP 报文是在 IP 数据报内部传输的。IP 协议是不可靠协议，不能保证 IP 数据报能够成功的到达目的主机，无法进行差错控制，而 ICMP 协议能够协助 IP 协议完成这些功能。下面是 ICMP 报文的数据结构：</p>
-<p>类型：一个 8 位类型字段，表示 ICMP 数据包类型;</p>
-<p>代码：一个 8 位代码域，表示指定类型中的一个功能，如果一个类型中只有一种功能，代码域置为 0;</p>
-<p>检验和：数据包中 ICMP 部分上的一个 16 位检验和;</p>
-<p><img src="/pictures/计算机网络/ICMP协议/ICMP报文格式.png" alt=""></p>
-<p>以下针对 ICMP 差错报文的类型进行分析：</p>
-<p>1、ICMP 目标不可达消息：IP 路由器无法将 IP 数据报发送给目的地址时，会给发送端主机返回一个目标不可达 ICMP 消息，并在这个消息中显示不可达的具体原因。</p>
-<p>2、ICMP 重定向消息：如果路由器发现发送端主机使用次优的路径发送数据时，那么它会返回一个 ICMP 重定向消息给这个主机，这个消息包含了最合适的路由信息和源数据。主要发生在路由器持有更好的路由信息的情况下，路由器会通过这个 ICMP 重定向消息给发送端主机一个更合适的发送路由。</p>
-<p>3、ICMP 超时消息：IP 数据包中有一个字段 TTL(Time to live，生存周期)，它的值随着每经过一个路由器就会减 1，直到减到 0 时该 IP 数据包被丢弃。此时，IP 路由器将发送一个 ICMP 超时消息给发送端主机，并通知该包已被丢弃。</p>
-<p>4、源抑制消息：当 TCP/IP 主机发送数据到另一主机时，如果速度达到路由器或者链路的饱和状态，路由器发出一个 ICMP 源抑制消息。</p>
-<h4 id="ICMP-查询报文"><a href="#ICMP-查询报文" class="headerlink" title="ICMP 查询报文"></a>ICMP 查询报文</h4><p>ICMP 回送消息：用于进行通信的主机或路由之间，判断发送数据包是否成功到达对端的消息。可以向对端主机发送回送请求消息，也可以接收对端主机回来的回送应答消息。</p>
-<p>ICMP 地址掩码消息：主要用于主机或路由想要了解子网掩码的情况。可以向那些主机或路由器发送 ICMP 地址掩码请求消息，然后通过接收 ICMP 地址掩码应答消息获取子网掩码信息。</p>
-<p>ICMP 时间戳消息：可以向那些主机或路由器发送 ICMP 时间戳请求消息，然后通过接收 ICMP 时间戳应答消息获取时间信息。</p>
-<h4 id="Ping-程序"><a href="#Ping-程序" class="headerlink" title="Ping 程序"></a>Ping 程序</h4><p>Ping 程序利用 ICMP 回显请求报文和回显应答报文(而不用经过传输层)来测试目标主机是否可达。它是一个检查系统连接性的基本诊断工具。</p>
-<p>ICMP 回显请求和 ICMP 回显应答报文是配合工作的。当源主机向目标主机发送了 ICMP 回显请求数据包后，它期待着目标主机的回答。目标主机在收到一个 ICMP 回显请求数据包后，它会交换源、目的主机的地址，然后将收到的 ICMP 回显请求数据包中的数据部分原封不动地封装在自己的 ICMP 回显应答数据包中，然后发回给发送 ICMP 回显请求的一方。如果校验正确，发送者便认为目标主机的回显服务正常，也即物理连接畅通。</p>
-<h4 id="Traceroute-程序"><a href="#Traceroute-程序" class="headerlink" title="Traceroute 程序"></a>Traceroute 程序</h4><p>Traceroute 程序主要用来侦测源主机到目的主机之间所经过的路由的情况。</p>
-<p>Traceroute 使用 ICMP 报文和 IP 首部中的 TTL 字段，它充分利用了 ICMP 超时消息。其原理很简单，开始时发送一个 TTL 字段为 1 的 UDP 数据报，而后每次收到 ICMP 超时萧后，按顺序再发送一个 TTL 字段加 1 的 UDP 数据报，以确定路径中的每个路由器，而每个路由器在丢弃 UDP 数据报时都会返回一个 ICMP 超时报文，而最终到达目的主机后，由于 ICM P选择了一个不可能的值作为 UDP 端口(大于30000)。这样目的主机就会发送一个端口不可达的 ICMP 差错报文。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/04/26/ICMP-协议/" data-id="ciqbvirpu004spsqyemux7vb0" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TCP-IP/">TCP/IP</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-DDOS攻击简介" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/04/26/DDOS攻击简介/" class="article-date">
-  <time datetime="2016-04-26T08:34:37.000Z" itemprop="datePublished">2016-04-26</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/计算机网络/">计算机网络</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/04/26/DDOS攻击简介/">DDOS攻击简介</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>DDOs攻击主要有两种类型：流量攻击和占用服务器资源攻击</p>
-<p>针对于TCP/IP协议的不同，ddos可以利用好几个协议的漏洞进行攻击。</p>
-<h2 id="基于TCP协议的攻击"><a href="#基于TCP协议的攻击" class="headerlink" title="基于TCP协议的攻击"></a>基于TCP协议的攻击</h2><h4 id="SYN-Flood-攻击"><a href="#SYN-Flood-攻击" class="headerlink" title="SYN Flood 攻击"></a>SYN Flood 攻击</h4><p>基于TCP协议的攻击主要利用的是TCP的三次握手漏洞，由于TCP建立连接的时候需要三次握手，当服务器收到一个SYN包后，服务器会处于SYN_Received状态，并且在系统中保存半连接的数据，同时发送SYN-ACK包给客户端，但是此时客户端消失了，而处于这个状态的服务器会有一个定时器，在收不到客户端的回复的时候，会重新的发送SYN-ACk数据包（3-5次，并且等待一个SYN-time，一般是30秒到2分钟），此时半连接的数据一直占着系统资源，这样的话，如果有大量这种行为就会导致服务器资源被一直占用着，而正常连接行为的客户却得不到处理。这就是所谓的SYN攻击</p>
-<h4 id="ACK-Flood-攻击"><a href="#ACK-Flood-攻击" class="headerlink" title="ACK Flood 攻击"></a>ACK Flood 攻击</h4><p>ACK Flood攻击是在TCP连接建立之后，所有的数据传输TCP报文都是带有ACK标志位的，主机在接收到一个带有ACK标志位的数据包的时候，需要检查该数据包所表示的连接四元组是否存在，如果存在则检查该数据包所表示的状态是否合法，然后再向应用层传递该数据包。如果在检查中发现该数据包不合法，例如该数据包所指向的目的端口在本机并未开放，则主机操作系统协议栈会回应RST包告诉对方此端口不存在。<br>这里，服务器要做两个动作：查表、回应 ACK/RST。这种攻击方式显然没有SYN Flood给服务器带来的冲击大，因此攻击者一定要用大流量ACK小包冲击才会对服务器造成影响。按照我们对TCP协议的理解，随机源IP的ACK小包应该会被Server很快丢弃，因为在服务器的TCP堆栈中没有这些ACK包的状态信息。但是实际上通过测试，发现有一些TCP服务会对ACK Flood比较敏感，比如说JSP Server，在数量并不多的ACK小包的打击下，JSP Server就很难处理正常的连接请求。对于Apache或者IIS来说，10kpps的ACK Flood不构成危胁，但是更高数量的ACK Flood会造成服务器网卡中断频率过高，负载过重而停止响应。可以肯定的是，ACK Flood不但可以危害路由器等网络设备，而且对服务器上的应用有不小的影响。</p>
-<p>也有另外一种攻击：connection 攻击，就是大量的肉机与服务器建立连接，占用服务器的资源不放，而一台服务器的连接数量是有限的，大量的连接都被占用了，新的正常连接得不到服务。</p>
-<h2 id="基于UDP的攻击"><a href="#基于UDP的攻击" class="headerlink" title="基于UDP的攻击"></a>基于UDP的攻击</h2><p>UDP Flood是日渐猖厥的流量型DoS攻击，原理也很简单。常见的情况是利用大量UDP小包冲击DNS服务器或Radius认证服务器、流媒体视频服务器。 100k pps的UDP Flood经常将线路上的骨干设备例如防火墙打瘫，造成整个网段的瘫痪。由于UDP协议是一种无连接的服务，在UDP FLOOD攻击中，攻击者可发送大量伪造源IP地址的小UDP包。但是，由于UDP协议是无连接性的，所以只要开了一个UDP的端口提供相关服务的话，那么就可针对相关的服务进行攻击。</p>
-<h2 id="基于ICMP的攻击"><a href="#基于ICMP的攻击" class="headerlink" title="基于ICMP的攻击"></a>基于ICMP的攻击</h2><h4 id="死亡之ping"><a href="#死亡之ping" class="headerlink" title="死亡之ping"></a>死亡之ping</h4><p>IP协议规定IP包最大尺寸为65536，大部分的处理程序在处理IP包的时候，会假定报文不会超过最大的尺寸，利用该漏洞，可以发送大于65536的数据包，使得系统在处理报文的时候发生内存溢出，从而使得系统崩溃。这就是死亡之ping的实现原理，发送大于限制长度的报文来使得服务器出现系统奔溃</p>
-<h4 id="echo攻击"><a href="#echo攻击" class="headerlink" title="echo攻击"></a>echo攻击</h4><p>利用ICMP的echo机制，对服务器发送大量的ICMP包，占用服务器的带宽，也可以利用ICMP的广播机制，将源端IP伪造成服务器的IP，向网络广播ICMP echo request，从而使得大量的网络机器向服务器发送ICMP echo应答包，占用服务器的大量带宽。</p>
-<h4 id="针对链接的ICMP-DoS"><a href="#针对链接的ICMP-DoS" class="headerlink" title="针对链接的ICMP DoS"></a>针对链接的ICMP DoS</h4><p>针对连接的DoS攻击，可以终止现有的网络连接。针对网络连接的DoS攻击会影响所有的IP设备，因为它使用了合法的ICMP消息。Nuke通过发送一个伪造的ICMP Destination Unreachable或Redirect消息来终止合法的网络连接。更具恶意的攻击，如puke和smack，会给某一个范围内的端口发送大量的数据包，毁掉大量的网络连接，同时还会消耗受害主机CPU的时钟周期。</p>
-<h4 id="基于ICMP重定向的路由欺骗技术"><a href="#基于ICMP重定向的路由欺骗技术" class="headerlink" title="基于ICMP重定向的路由欺骗技术"></a>基于ICMP重定向的路由欺骗技术</h4><p>攻击者可利用ICMP重定向报文破坏路由，并以此增强其窃听能力。除了路由器，主机必须服从ICMP重定向。如果一台机器想网络中的另一台机器发送了一个ICMP重定向消息，这就可能引起其他机器具有一张无效的路由表。如果一台机器伪装成路由器截获所有到某些目标网络或全部目标网络的IP数据包，这样就形成了窃听。通过ICMP技术还可以抵达防火墙后的机器进行攻击和窃听。</p>
-<p>注：重定向路由欺骗技术尚无实际应用。</p>
-<h2 id="HTTP-Get-攻击"><a href="#HTTP-Get-攻击" class="headerlink" title="HTTP Get 攻击"></a>HTTP Get 攻击</h2><p>这种攻击主要是针对存在ASP、JSP、PHP、CGI等脚本程序，并调用MSSQLServer、MySQLServer、Oracle等数据库的网站系统而设计的，特征是和服务器建立正常的TCP连接，并不断的向脚本程序提交查询、列表等大量耗费数据库资源的调用，典型的以小博大的攻击方法。一般来说，提交一个GET或POST指令对客户端的耗费和带宽的占用是几乎可以忽略的，而服务器为处理此请求却可能要从上万条记录中去查出某个记录，这种处理过程对资源的耗费是很大的，常见的数据库服务器很少能支持数百个查询指令同时执行，而这对于客户端来说却是轻而易举的，因此攻击者只需通过Proxy代理向主机服务器大量递交查询指令，只需数分钟就会把服务器资源消耗掉而导致拒绝服务，常见的现象就是网站慢如蜗牛、ASP程序失效、PHP连接数据库失败、数据库主程序占用CPU偏高。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/04/26/DDOS攻击简介/" data-id="ciqbvirpv004vpsqyv2lholjp" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TCP-IP/">TCP/IP</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-内网穿透简介" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/04/26/内网穿透简介/" class="article-date">
-  <time datetime="2016-04-26T06:13:50.000Z" itemprop="datePublished">2016-04-26</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/计算机网络/">计算机网络</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/04/26/内网穿透简介/">内网穿透简介</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="NAT的类型"><a href="#NAT的类型" class="headerlink" title="NAT的类型"></a>NAT的类型</h2><p>NAT一般有两种大的类型：cone（漏斗）类型和symmetric（对称）类型</p>
-<h3 id="cone"><a href="#cone" class="headerlink" title="cone"></a>cone</h3><p>cone类型又分为三种小的类型，分别为：full cone、restricted cone和port restricted cone</p>
-<p>在cone类型中，内网ip-port对在NAT中的映射是不变的，即使所访问的外网ip-port端口不一样，这也是其命名为cone的原因。</p>
-<h4 id="full-cone"><a href="#full-cone" class="headerlink" title="full cone"></a>full cone</h4><p>full cone是限制最少的类型，在NAT服务器上，一个内网的ip-port对只映射到一个公网的ip-port对，而不管内网主机访问的外网ip-port对的不同。</p>
-<h4 id="restricted-cone"><a href="#restricted-cone" class="headerlink" title="restricted cone"></a>restricted cone</h4><p>restricted cone相对于full cone类型增加了外网ip的限制，只有内网的机器访问了某个外网的机器，该外网机器的数据包才可以通过NAT的限制。在NAT的映射中，NAT维持一个映射关系：<br>{对端外网ip：内网ip：内网port}—-&gt;{公网ip：公网port}，同一个外网ip的机器不同的port都可以通过该映射，从而实现与内网的通讯。</p>
-<h4 id="port-restricted-cone"><a href="#port-restricted-cone" class="headerlink" title="port restricted cone"></a>port restricted cone</h4><p> port restricted cone类型在restricted cone类型的基础上增加了port的限制，必须又内网的机器访问外网机器的某个端口，该外网机器的对应端口发出的数据包才可以通过NAT。NAT维持的映射关系如下：<br> {对端外网ip：对端外网port：内网ip：内网port}—-&gt;{公网ip：公网port}，同一个机器的特定端口才可以通过该映射。</p>
- <font color="red">注意，在以上的三种类型中，只要内网ip-port对不变，其在NAT的映射所对应的公网ip-port对就不会改变，也就是说，同一个内网ip-port在通讯过程中，其所对外的公网ip-port是不变的</font>
-
-<h3 id="symmetric"><a href="#symmetric" class="headerlink" title="symmetric"></a>symmetric</h3><p>该类型的限制最严格，端口对端口的通讯都会有一个特定的映射，就拿port restricted cone来说，对于映射：{对端外网ip：对端外网port：内网ip：内网port}—-&gt;{公网ip：公网port}， 只要是四元组中的内网ip：内网port不变，那么所有的四元组都会被映射到同一个{公网ip：公网port}，而在symmetric类型下，只要四元组中有一个是变化的，都会被映射到不同的而且唯一的{公网ip：公网port}。</p>
-<p>cone 的映射是多对一的映射，类似于一个漏斗，而symmetric的映射是一个一对一的映射，也就是对称的映射。</p>
-<h2 id="NAT穿透"><a href="#NAT穿透" class="headerlink" title="NAT穿透"></a>NAT穿透</h2><p>根据NAT的类型不同，具体的实现细节也是不同的。但是不管是NAT类型不同，还是所采用的打洞技术不同，都需要使用到第三方服务器作为彼此信息的转发者。采用UDP来实现打洞，成功率会比较高，实现起来也比较容易。而采用TCP来打洞的话，成功率较低，而且实现起来会比较的麻烦，主要的原因就是对于TCP来说，既要打洞又要建立监听，而两者所使用的端口都是一样的，而且如果两端同时收到对端的SYN，那么两端都会处于SYN-Received状态，具体进一步的处理就要看不同的系统的TCP栈处理程序了，这个也就会导致TCP在打洞方面的成功率低于UDP。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/04/26/内网穿透简介/" data-id="ciqbvirmv002apsqy9h0nlqo8" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TCP-IP/">TCP/IP</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-typedef与define的区别" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/04/12/typedef与define的区别/" class="article-date">
-  <time datetime="2016-04-12T02:50:47.000Z" itemprop="datePublished">2016-04-12</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/C与C/">C与C++</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/04/12/typedef与define的区别/">typedef与define的区别</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="typedef"><a href="#typedef" class="headerlink" title="typedef"></a>typedef</h2><p>typedef故名思意就是类型定义的意思，但是它并不是定义一个新的类型而是给已有的类型起一个别名，在这一点上与引用的含义类似，引用是变量或对象的别名，而typedef定义的是类型的别名。typedef的作用主要有两点：</p>
-<h4 id="1-1-简化复杂的类型声明"><a href="#1-1-简化复杂的类型声明" class="headerlink" title="1.1  简化复杂的类型声明"></a>1.1  简化复杂的类型声明</h4><p>简化复杂的类型声明，或给已有类型起一含义明确的别名；如：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//声明了一个返回 bool 类型并带有两个(int和double)形参的函数的指针类型FuncPointer</span></span><br><span class="line"><span class="function"><span class="keyword">typedef</span> <span class="title">bool</span> <span class="params">(*FuncPointer)</span><span class="params">(<span class="keyword">int</span>, <span class="keyword">double</span>)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//声明了一个FuncPointer类型的函数指针对象pFunc</span></span><br><span class="line">FuncPointer pFunc;</span><br></pre></td></tr></table></figure></p>
-<h4 id="1-2-定义与平台无关的类型"><a href="#1-2-定义与平台无关的类型" class="headerlink" title="1.2  定义与平台无关的类型"></a>1.2  定义与平台无关的类型</h4><p>定义与平台无关的类型，屏蔽不同平台的类型差异化；如：<br>用typedef来定义与平台无关的类型。<br>比如定义一个叫 REAL 的浮点类型，在目标平台一上，让它表示最高精度的类型为：<br>typedef long double REAL;<br>在不支持 long double 的平台二上，改为：<br>typedef double REAL;<br>在连 double 都不支持的平台三上，改为：<br>typedef float REAL;<br>也就是说，当跨平台时，只要改下 typedef 本身就行，不用对其他源码做任何修改。<br>标准库就广泛使用了这个技巧，比如size_t。另外，因为typedef是定义了一种类型的新别名，不是简单的字符串替换，所以它比宏来得稳健。</p>
-<h4 id="1-3-与struct的结合使用"><a href="#1-3-与struct的结合使用" class="headerlink" title="1.3  与struct的结合使用"></a>1.3  与struct的结合使用</h4><p>在C++中，struct与class的作用相同，就是默认的访问权限不同，struct默认为public，而class默认为private的。</p>
-<figure class="highlight dns"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">struct Person  </span><br><span class="line">&#123;  </span><br><span class="line">    string name<span class="comment">;  </span></span><br><span class="line">    int age<span class="comment">;  </span></span><br><span class="line">    float height<span class="comment">;  </span></span><br><span class="line">&#125;<span class="comment">;  </span></span><br><span class="line">Person person<span class="comment">;</span></span><br></pre></td></tr></table></figure>
-<p>定义一个Struct的类型Person，定义一个Person的对象person。</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> Person  </span><br><span class="line">&#123;  </span><br><span class="line">    <span class="built_in">string</span> name;  </span><br><span class="line">    <span class="keyword">int</span> age;  </span><br><span class="line">    <span class="keyword">float</span> height;  </span><br><span class="line">&#125;person;</span><br></pre></td></tr></table></figure>
-<p>定义一个Struct的类型Person，在定义的同时还声明了一个Person的对象person。</p>
-<p>但是在C语言中，struct的定义和声明要用typedef。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> __Person  </span><br><span class="line">&#123;  </span><br><span class="line">    <span class="built_in">string</span> name;  </span><br><span class="line">    <span class="keyword">int</span> age;  </span><br><span class="line">    <span class="keyword">float</span> height;  </span><br><span class="line">&#125;Person;    <span class="comment">//这是Person是结构体的一个别名  </span></span><br><span class="line">Person person;</span><br></pre></td></tr></table></figure></p>
-<p>如果没有typedef就必须用struct Person person;来声明，如：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> Person  </span><br><span class="line">&#123;  </span><br><span class="line">    <span class="built_in">string</span> name;  </span><br><span class="line">    <span class="keyword">int</span> age;  </span><br><span class="line">    <span class="keyword">float</span> height;  </span><br><span class="line">&#125;;  </span><br><span class="line"><span class="keyword">struct</span> Person person;</span><br></pre></td></tr></table></figure></p>
-<p>或<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> Person  </span><br><span class="line">&#123;  </span><br><span class="line">    <span class="built_in">string</span> name;  </span><br><span class="line">    <span class="keyword">int</span> age;  </span><br><span class="line">    <span class="keyword">float</span> height;  </span><br><span class="line">&#125;person;    <span class="comment">//person是Person的对象</span></span><br></pre></td></tr></table></figure></p>
-<h2 id="typedef与-define的区别"><a href="#typedef与-define的区别" class="headerlink" title="typedef与#define的区别"></a>typedef与#define的区别</h2><h4 id="2-1-执行时间不同"><a href="#2-1-执行时间不同" class="headerlink" title="2.1.  执行时间不同"></a>2.1.  执行时间不同</h4><p>关键字typedef在编译阶段有效，由于是在编译阶段，因此typedef有类型检查的功能。</p>
-<p>#define则是宏定义，发生在预处理阶段，也就是编译之前，它只进行简单而机械的字符串替换，而不进行任何检查。<br>typedef会做相应的类型检查：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="keyword">unsigned</span> <span class="keyword">int</span> UINT;  </span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">func</span><span class="params">()</span>  </span><br><span class="line"></span>&#123;  </span><br><span class="line">    UINT value = <span class="string">"abc"</span>; <span class="comment">// error C2440: 'initializing' : cannot convert from 'const char [4]' to 'UINT'  </span></span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; value &lt;&lt; endl;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>#define不做类型检查：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//#define用法例子：  </span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">define</span> f(x) x*x  </span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span>  </span><br><span class="line"></span>&#123;  </span><br><span class="line">    <span class="keyword">int</span> a=<span class="number">6</span>, b=<span class="number">2</span>, c;  </span><br><span class="line">    c=f(a) / f(b);  </span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%d\n"</span>, c);  </span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>程序的输出结果是: 36，根本原因就在于#define只是简单的字符串替换。</p>
-<h4 id="2-2-功能有差异"><a href="#2-2-功能有差异" class="headerlink" title="2.2. 功能有差异"></a>2.2. 功能有差异</h4><p>typedef用来定义类型的别名，定义与平台无关的数据类型，与struct的结合使用等。</p>
-<p>#define不只是可以为类型取别名，还可以定义常量、变量、编译开关等。</p>
-<h4 id="2-3．作用域不同"><a href="#2-3．作用域不同" class="headerlink" title="2.3．作用域不同"></a>2.3．作用域不同</h4><p>#define没有作用域的限制，只要是之前预定义过的宏，在以后的程序中都可以使用。<br>而typedef有自己的作用域。</p>
-<p>【例2.3.1】没有作用域的限制，只要是之前预定义过就可以<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">func1</span><span class="params">()</span>  </span><br><span class="line"></span>&#123;  </span><br><span class="line">    <span class="preprocessor">#<span class="keyword">define</span> HW <span class="string">"HelloWorld"</span>;  </span></span><br><span class="line">&#125;  </span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">func2</span><span class="params">()</span>  </span><br><span class="line"></span>&#123;  </span><br><span class="line">    <span class="built_in">string</span> str = HW;  </span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; str &lt;&lt; endl;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">【例<span class="number">2.3</span><span class="number">.2</span>】而<span class="keyword">typedef</span>有自己的作用域</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">func1</span><span class="params">()</span>  </span><br><span class="line"></span>&#123;  </span><br><span class="line">    <span class="keyword">typedef</span> <span class="keyword">unsigned</span> <span class="keyword">int</span> UINT;  </span><br><span class="line">&#125;  </span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">func2</span><span class="params">()</span>  </span><br><span class="line"></span>&#123;  </span><br><span class="line">    UINT uValue = <span class="number">5</span>;<span class="comment">//error C2065: 'UINT' : undeclared identifier  </span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>【例2.3.3】<br><figure class="highlight zephir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span>  </span><br><span class="line"></span>&#123;  </span><br><span class="line">    typedef unsigned <span class="keyword">int</span> <span class="keyword">UINT</span>;  </span><br><span class="line">    <span class="keyword">UINT</span> valueA;  </span><br><span class="line">    A() : valueA(<span class="number">0</span>)&#123;&#125;  </span><br><span class="line">&#125;;  </span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">B</span>  </span><br><span class="line"></span>&#123;  </span><br><span class="line">    <span class="keyword">UINT</span> valueB;  </span><br><span class="line">    <span class="comment">//error C2146: syntax error : missing ';' before identifier 'valueB'  </span></span><br><span class="line">    <span class="comment">//error C4430: missing type specifier - int assumed. Note: C++ does not support default-int  </span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
-<p>上面例子在B类中使用UINT会出错，因为UINT只在类A的作用域中。此外，在类中用typedef定义的类型别名还具有相应的访问权限<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> A  </span><br><span class="line">&#123;  </span><br><span class="line">    <span class="keyword">typedef</span> <span class="keyword">unsigned</span> <span class="keyword">int</span> UINT;  </span><br><span class="line">    UINT valueA;  </span><br><span class="line">    A() : valueA(<span class="number">0</span>)&#123;&#125;  </span><br><span class="line">&#125;;  </span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">func3</span><span class="params">()</span>  </span><br><span class="line"></span>&#123;  </span><br><span class="line">    A::UINT i = <span class="number">1</span>;  </span><br><span class="line">    <span class="comment">// error C2248: 'A::UINT' : cannot access private typedef declared in class 'A'  </span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>而给UINT加上public访问权限后，则可编译通过。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> A  </span><br><span class="line">&#123;  </span><br><span class="line"><span class="keyword">public</span>:  </span><br><span class="line">    <span class="keyword">typedef</span> <span class="keyword">unsigned</span> <span class="keyword">int</span> UINT;  </span><br><span class="line">    UINT valueA;  </span><br><span class="line">    A() : valueA(<span class="number">0</span>)&#123;&#125;  </span><br><span class="line">&#125;;  </span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">func3</span><span class="params">()</span>  </span><br><span class="line"></span>&#123;  </span><br><span class="line">    A::UINT i = <span class="number">1</span>;  </span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; i &lt;&lt; endl;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h4 id="2-4．-对指针的操作"><a href="#2-4．-对指针的操作" class="headerlink" title="2.4． 对指针的操作"></a>2.4． 对指针的操作</h4><p>二者修饰指针类型时，作用不同。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="keyword">int</span> * pint;  </span><br><span class="line"><span class="preprocessor">#<span class="keyword">define</span> PINT int *  </span></span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> i1 = <span class="number">1</span>, i2 = <span class="number">2</span>;  </span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> pint p1 = &amp;i1;    <span class="comment">//p不可更改，p指向的内容可以更改，相当于 int * const p;  </span></span><br><span class="line"><span class="keyword">const</span> PINT p2 = &amp;i2;    <span class="comment">//p可以更改，p指向的内容不能更改，相当于 const int *p；或 int const *p；  </span></span><br><span class="line"></span><br><span class="line">pint s1, s2;    <span class="comment">//s1和s2都是int型指针  </span></span><br><span class="line">PINT s3, s4;    <span class="comment">//相当于int * s3，s4；只有一个是指针。  </span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">TestPointer</span><span class="params">()</span>  </span><br><span class="line"></span>&#123;  </span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"p1:"</span> &lt;&lt; p1 &lt;&lt; <span class="string">"  *p1:"</span> &lt;&lt; *p1 &lt;&lt; endl;  </span><br><span class="line">    <span class="comment">//p1 = &amp;i2; //error C3892: 'p1' : you cannot assign to a variable that is const  </span></span><br><span class="line">    *p1 = <span class="number">5</span>;  </span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"p1:"</span> &lt;&lt; p1 &lt;&lt; <span class="string">"  *p1:"</span> &lt;&lt; *p1 &lt;&lt; endl;  </span><br><span class="line"></span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"p2:"</span> &lt;&lt; p2 &lt;&lt; <span class="string">"  *p2:"</span> &lt;&lt; *p2 &lt;&lt; endl;  </span><br><span class="line">    <span class="comment">//*p2 = 10; //error C3892: 'p2' : you cannot assign to a variable that is const  </span></span><br><span class="line">    p2 = &amp;i1;  </span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"p2:"</span> &lt;&lt; p2 &lt;&lt; <span class="string">"  *p2:"</span> &lt;&lt; *p2 &lt;&lt; endl;  </span><br><span class="line">&#125;  </span><br><span class="line"></span><br><span class="line">结果：</span><br><span class="line">p1:<span class="number">00</span>EFD094  *p1:<span class="number">1</span></span><br><span class="line">p1:<span class="number">00</span>EFD094  *p1:<span class="number">5</span></span><br><span class="line">p2:<span class="number">00</span>EFD098  *p2:<span class="number">2</span></span><br><span class="line">p2:<span class="number">00</span>EFD094  *p2:<span class="number">5</span></span><br></pre></td></tr></table></figure></p>
-<p>以上内容转自<a href="http://blog.csdn.net/luoweifu/article/details/41630195" target="_blank" rel="external">这里</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/04/12/typedef与define的区别/" data-id="ciqbvirn6002npsqy5pm2tvdl" class="article-share-link">Share</a>
-      
-      
     </footer>
   </div>
   
@@ -877,7 +925,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">9</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java/">Java</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">9</span></li></ul>
     </div>
   </div>
 
@@ -886,7 +934,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/设计模式/">设计模式</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java底层机制/">Java底层机制</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/设计模式/">设计模式</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
     </div>
   </div>
 
@@ -895,7 +943,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/C-11-常规新特性/" style="font-size: 18.33px;">C++11 常规新特性</a> <a href="/tags/Linux-网络编程/" style="font-size: 16.67px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 16.67px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 15px;">Linux用户管理</a> <a href="/tags/Linux进程间通信/" style="font-size: 16.67px;">Linux进程间通信</a> <a href="/tags/TCP-IP/" style="font-size: 20px;">TCP/IP</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/动态规划/" style="font-size: 13.33px;">动态规划</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/数组/" style="font-size: 10px;">数组</a> <a href="/tags/树结构/" style="font-size: 13.33px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 11.67px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 11.67px;">爬虫</a> <a href="/tags/设计模式/" style="font-size: 13.33px;">设计模式</a> <a href="/tags/随记/" style="font-size: 11.67px;">随记</a>
+      <a href="/tags/C-11-常规新特性/" style="font-size: 18.33px;">C++11 常规新特性</a> <a href="/tags/Java底层机制/" style="font-size: 15px;">Java底层机制</a> <a href="/tags/Linux-网络编程/" style="font-size: 16.67px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 16.67px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 15px;">Linux用户管理</a> <a href="/tags/Linux进程间通信/" style="font-size: 16.67px;">Linux进程间通信</a> <a href="/tags/TCP-IP/" style="font-size: 20px;">TCP/IP</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/动态规划/" style="font-size: 13.33px;">动态规划</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/数组/" style="font-size: 10px;">数组</a> <a href="/tags/树结构/" style="font-size: 13.33px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 11.67px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 11.67px;">爬虫</a> <a href="/tags/设计模式/" style="font-size: 13.33px;">设计模式</a> <a href="/tags/随记/" style="font-size: 11.67px;">随记</a>
     </div>
   </div>
 
@@ -904,7 +952,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a><span class="archive-list-count">14</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a><span class="archive-list-count">18</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
     </div>
   </div>
 
@@ -916,23 +964,23 @@
       <ul>
         
           <li>
+            <a href="/2016/07/07/Java之垃圾回收/">Java之垃圾回收</a>
+          </li>
+        
+          <li>
+            <a href="/2016/07/07/Java之内存管理/">内存管理</a>
+          </li>
+        
+          <li>
+            <a href="/2016/07/07/Java之类的反射机制/">Java之类的反射机制</a>
+          </li>
+        
+          <li>
+            <a href="/2016/07/07/Java之类的加载到执行/">Java之类的加载到执行</a>
+          </li>
+        
+          <li>
             <a href="/2016/07/07/设计模式之单例模式/">设计模式之单例模式</a>
-          </li>
-        
-          <li>
-            <a href="/2016/07/06/设计模式之观察者模式/">设计模式之观察者模式</a>
-          </li>
-        
-          <li>
-            <a href="/2016/07/06/设计模式之工厂模式/">设计模式之工厂模式</a>
-          </li>
-        
-          <li>
-            <a href="/2016/07/06/C-11常规特性之auto和decltype/">C++11常规特性之auto和decltype</a>
-          </li>
-        
-          <li>
-            <a href="/2016/07/06/C-11常规特性之统一初始化和初始化器列表/">C++11常规特性之统一初始化和初始化器列表</a>
           </li>
         
       </ul>

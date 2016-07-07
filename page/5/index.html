@@ -65,6 +65,183 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-Linux-I-O-模型" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/03/11/Linux-I-O-模型/" class="article-date">
+  <time datetime="2016-03-11T11:18:01.000Z" itemprop="datePublished">2016-03-11</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/03/11/Linux-I-O-模型/">Linux I/O 模型</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>unix下有5中可用的I/O模型，分别为：</p>
+<h4 id="阻塞式I-O"><a href="#阻塞式I-O" class="headerlink" title="阻塞式I/O"></a>阻塞式I/O</h4><h4 id="非阻塞式I-O"><a href="#非阻塞式I-O" class="headerlink" title="非阻塞式I/O"></a>非阻塞式I/O</h4><h4 id="I-O复用（事件驱动IO，-select、poll和epoll）"><a href="#I-O复用（事件驱动IO，-select、poll和epoll）" class="headerlink" title="I/O复用（事件驱动IO， select、poll和epoll）"></a>I/O复用（事件驱动IO， <a href="../IO-多路复用之select、poll、epoll详解/">select、poll和epoll</a>）</h4><h4 id="信号驱动式I-O（SIGIO）"><a href="#信号驱动式I-O（SIGIO）" class="headerlink" title="信号驱动式I/O（SIGIO）"></a>信号驱动式I/O（SIGIO）</h4><h4 id="异步I-O"><a href="#异步I-O" class="headerlink" title="异步I/O"></a>异步I/O</h4><p>要先理解I/O模型，需要先知道IO发生时所涉及到的步骤和对象，对于一个network IO (这里我们以read举例)，它会涉及到两个系统对象，一个是调用这个IO的process (or thread)，另一个就是系统内核(kernel)。当一个read操作发生时，它会经历两个阶段：<br><figure class="highlight livecodeserver"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span> 等待数据准备 (Waiting <span class="keyword">for</span> <span class="operator">the</span> data <span class="built_in">to</span> be ready)</span><br><span class="line"></span><br><span class="line"><span class="number">2</span> 将数据从内核拷贝到进程中 (Copying <span class="operator">the</span> data <span class="built_in">from</span> <span class="operator">the</span> kernel <span class="built_in">to</span> <span class="operator">the</span> <span class="built_in">process</span>)</span><br></pre></td></tr></table></figure></p>
+<p>记住这两点很重要，因为这些IO Model的区别就是在两个阶段上各有不同的情况。</p>
+<h3 id="阻塞式I-O模型"><a href="#阻塞式I-O模型" class="headerlink" title="阻塞式I/O模型"></a>阻塞式I/O模型</h3><p>在linux中，默认情况下所有的socket都是blocking，一个典型的读操作流程大概是这样：<br><img src="/pictures/LinuxIO模型-阻塞IO.png" alt=""></p>
+<p>当用户进程调用了recvfrom这个系统调用，kernel就开始了IO的第一个阶段：准备数据。对于network io来说，很多时候数据在一开始还没有到达（比如，还没有收到一个完整的UDP包），这个时候kernel就要等待足够的数据到来。而在用户进程这边，整个进程会被阻塞。当kernel一直等到数据准备好了，它就会将数据从kernel中拷贝到用户内存，然后kernel返回结果，用户进程才解除block的状态，重新运行起来。<br>所以，blocking IO的特点就是在IO执行的两个阶段都被block了。</p>
+<h3 id="非阻塞式I-O-模型"><a href="#非阻塞式I-O-模型" class="headerlink" title="非阻塞式I/O 模型"></a>非阻塞式I/O 模型</h3><p>非阻塞的接口相比于阻塞型接口的显著差异在于，在被调用之后立即返回。使用如下的函数可以将某句柄 fd 设为非阻塞状态。<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fcntl( fd, F_SETFL, O_NONBLOCK );</span><br></pre></td></tr></table></figure></p>
+<p>linux下，可以通过设置socket使其变为non-blocking。当对一个non-blocking socket执行读操作时，流程是这个样子：<br><img src="/pictures/LinuxIO模型-非阻塞IO.png" alt=""></p>
+<p>从图中可以看出，当用户进程发出read操作时，如果kernel中的数据还没有准备好，那么它并不会block用户进程，而是立刻返回一个error。从用户进程角度讲 ，它发起一个read操作后，并不需要等待，而是马上就得到了一个结果。用户进程判断结果是一个error时，它就知道数据还没有准备好，于是它可以再次发送read操作。一旦kernel中的数据准备好了，并且又再次收到了用户进程的system call，那么它马上就将数据拷贝到了用户内存，然后返回。所以，用户进程其实是需要不断的主动询问kernel数据好了没有。</p>
+<font color="red">但是上述模型绝不被推荐。因为，循环调用 recv() 将大幅度推高 CPU 占用率；此外，在这个方案中，recv() 更多的是起到检测“操作是否完成”的作用，实际操作系统提供了更为高效的检测“操作是否完成“作用的接口，例如 select()。</font>
+
+<h3 id="I-O复用（事件驱动IO，-select、poll和epoll）-1"><a href="#I-O复用（事件驱动IO，-select、poll和epoll）-1" class="headerlink" title="I/O复用（事件驱动IO， select、poll和epoll）"></a>I/O复用（事件驱动IO， <a href="2016/03/11/IO-多路复用之select、poll、epoll详解/">select、poll和epoll</a>）</h3><p>我们都知道，select/epoll的好处就在于单个process就可以同时处理多个网络连接的IO。它的基本原理就是select/epoll这个function会不断的轮询所负责的所有socket，当某个socket有数据到达了，就通知用户进程。它的流程如图：<br><img src="/pictures/LinuxIO模型-多路IO复用.png" alt=""></p>
+<p>当用户进程调用了select，那么整个进程会被block，而同时，kernel会“监视”所有select负责的socket，当任何一个socket中的数据准备好了，select就会返回。这个时候用户进程再调用read操作，将数据从kernel拷贝到用户进程。<br>这个图和blocking IO的图其实并没有太大的不同，事实上，还更差一些。因为这里需要使用两个system call (select 和 recvfrom)，而blocking IO只调用了一个system call (recvfrom)。但是，用select的优势在于它可以同时处理多个connection。（多说一句。所以，如果处理的连接数不是很高的话，使用select/epoll的web server不一定比使用multi-threading + blocking IO的web server性能更好，可能延迟还更大。select/epoll的优势并不是对于单个连接能处理得更快，而是在于能处理更多的连接。）<br>在IO multiplexing Model中，实际中，对于每一个socket，一般都设置成为non-blocking，但是，如上图所示，整个用户的process其实是一直被block的。只不过process是被select这个函数block，而不是被socket IO给block。</p>
+<h3 id="信号驱动式I-O（SIGIO）-1"><a href="#信号驱动式I-O（SIGIO）-1" class="headerlink" title="信号驱动式I/O（SIGIO）"></a>信号驱动式I/O（SIGIO）</h3><p>我们也可以使用信号，让内核在描述符就绪时发送SIGIO信号通知我们。这种模型就是信号驱动模式IO，如下图所示：<br><img src="/pictures/LinuxIO模型-信号驱动IO.png" alt=""></p>
+<p>我们先开启套接字的信号驱动模式，并通过sigaction系统调用安装一个信号处理函数。该系统调用将立刻返回，我们的进程继续工作，也就是说它没有被阻塞。当数据报准备好读取时，内核就为该进程产生一个SIGIO信号。我们随后既可以在信号处理函数中调用recvfrom读取数据报，并通知主循环数据已经准备好，也可以立刻通知主循环，然让他读取数据报。</p>
+<p>无论如何处理信号，这种模型的优势在于等待数据报到达期间进程不被阻塞。主循环可以继续执行，只要等待来自信号处理函数的通知：既可以是数据报以准备好被处理，也可以是数据报已准备好被读取。</p>
+<h3 id="异步I-O-1"><a href="#异步I-O-1" class="headerlink" title="异步I/O"></a>异步I/O</h3><p>linux下的asynchronous IO其实用得很少。先看一下它的流程：<br><img src="/pictures/LinuxIO模型-异步IO.png" alt=""><br>用户进程发起read操作之后，立刻就可以开始去做其它的事。而另一方面，从kernel的角度，当它受到一个asynchronous read之后，首先它会立刻返回，所以不会对用户进程产生任何block。然后，kernel会等待数据准备完成，然后将数据拷贝到用户内存，当这一切都完成之后，kernel会给用户进程发送一个signal，告诉它read操作完成了。</p>
+<h4 id="阻塞与非阻塞的区别："><a href="#阻塞与非阻塞的区别：" class="headerlink" title="阻塞与非阻塞的区别："></a>阻塞与非阻塞的区别：</h4><p>由图形我们可以知道，其实两者的而区别只在于当内核没有数据的时候，程序阻塞或不阻塞，如果内核没有数据的时候，程序一直等待的话，那么属于阻塞IO，如果没有数据的时候立刻返回，就是非阻塞IO。</p>
+<h4 id="同步和异步IO的区别："><a href="#同步和异步IO的区别：" class="headerlink" title="同步和异步IO的区别："></a>同步和异步IO的区别：</h4><p>同步IO与异步IO的区别就是在IO操作期间，程序有没有出现过阻塞，不管是内核数据准备期间，还是数据从内核复制到用户空间期间，只要是出现过阻塞的，那么就是同步IO，由上面的分析我们可以知道，其实阻塞式I/O，非阻塞式I/O，I/O复用（事件驱动IO， select、poll和epoll），信号驱动式I/O（SIGIO）都属于同步IO。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/03/11/Linux-I-O-模型/" data-id="ciqbvirok004jpsqyrau0nau3" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-磁盘的分割、格式化、检验与挂载" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/02/29/磁盘的分割、格式化、检验与挂载/" class="article-date">
+  <time datetime="2016-02-29T14:51:39.000Z" itemprop="datePublished">2016-02-29</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/02/29/磁盘的分割、格式化、检验与挂载/">磁盘的分割、格式化、检验与挂载</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>我们都知道，在Linux下，想要使用一颗磁盘，那么都必须要经过这几个动作：分割、格式化、（检验）<br>挂载。</p>
+<h4 id="磁盘分区：fdisk"><a href="#磁盘分区：fdisk" class="headerlink" title="磁盘分区：fdisk"></a>磁盘分区：fdisk</h4><figure class="highlight autoit"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root<span class="constant">@www</span> ~]<span class="preprocessor"># fdisk [-l] 装置名称</span></span><br><span class="line">选项与参数：</span><br><span class="line">-l ：输出后面接的装置所有的 partition 内容。若仅有 fdisk -l 时， 则系统将会把整个系统内能够搜到的装置的</span><br><span class="line">     partition 均列出来。</span><br><span class="line"></span><br><span class="line"><span class="preprocessor"># 没有加 -l 参数时，直接进行后面接的磁盘的分区操作</span></span><br><span class="line">[root<span class="constant">@www</span> ~]<span class="preprocessor"># fdisk /dev/sdc   &lt;==将进入对/dev/sdc磁盘的分区操作</span></span><br></pre></td></tr></table></figure>
+<h4 id="磁盘格式化：mkfs"><a href="#磁盘格式化：mkfs" class="headerlink" title="磁盘格式化：mkfs"></a>磁盘格式化：mkfs</h4><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]# mkfs [-t 文件系统格式] 装置文件名</span><br><span class="line">选项与参数：</span><br><span class="line">-t ：可以接文件系统格式，例如 ext3, ext2, vfat 等(系统有支持才会生效)</span><br><span class="line"></span><br><span class="line">[root@www ~]# mkfs -t ext3 /dev/hdc6</span><br><span class="line"></span><br><span class="line"><span class="header"># 按下两个[tab]，会发现 mkfs 支持的文件格式如下所示！可以格式化 vfat ！</span></span><br><span class="line">[<span class="link_label">root@www ~</span>]# mkfs[<span class="link_label">tab</span>][<span class="link_reference">tab</span>]</span><br><span class="line">mkfs mkfs.cramfs mkfs.ext2 mkfs.ext3 mkfs.msdos mkfs.vfat</span><br></pre></td></tr></table></figure>
+<p>mkfs命令会将每一种文件系统的参数都给默认化，如果需要自己加入参数，那么可以使用mke2fs命令</p>
+<figure class="highlight scheme"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="list">[<span class="keyword">root@www</span> ~]# mke2fs <span class="list">[<span class="keyword">-b</span> block大小] <span class="list">[<span class="keyword">-i</span> block大小] <span class="list">[<span class="keyword">-L</span> 标头] <span class="list">[<span class="keyword">-cj</span>] 装置</span><br><span class="line">选项与参数：</span><br><span class="line">-b ：可以设定每个 block 的大小，目前支持 <span class="number">1024</span>, <span class="number">2048</span>, <span class="number">4096</span> bytes 三种；</span><br><span class="line">-i ：多少容量给予一个 inode 呢？</span><br><span class="line">-c ：检查磁盘错误，仅下达一次 -c 时，会进行快速读取测试； 如果下达两次 -c -c 癿话，会测试读写<span class="list">(<span class="keyword">read-write</span>)</span>，</span><br><span class="line">     会很慢～</span><br><span class="line">-L ：后面可以接标头名称 <span class="list">(<span class="keyword">Label</span>)</span>，这个 label 是有用的喔！</span><br><span class="line">-j ：本来 mke2fs 是 EXT2 ，加上 -j 后，会主动加入 journal 而成为 EXT3。</span><br><span class="line"></span><br><span class="line"><span class="list">[<span class="keyword">root@www</span> ~]# mke2fs -j -L <span class="string">"vbird_logical"</span> -b <span class="number">2048</span> -i <span class="number">8192</span> /dev/hdc6</span></span></span></span></span></span></span><br></pre></td></tr></table></figure>
+<h4 id="磁盘检验：-fsck-badblocks"><a href="#磁盘检验：-fsck-badblocks" class="headerlink" title="磁盘检验： fsck, badblocks"></a>磁盘检验： fsck, badblocks</h4><p>fsch是用来检查与修正文件系统错误的指令。注意：通帯只有身为 root 的文件系统有问题的时候才使用这个指令，否则在正常状况下使用此一指令， 可能会造成对系统的危害！通帯使用这个指令的场合都是在系统出现极大的问题，导致你在 Linux 开机的时候得进入单人单机模式下进行维护的行为时，才必项使用此指令！</p>
+<p>此外，由于 fsck 在扫瞄硬盘的时候，可能会造成部分 filesystem<br>的损坏，所以『执行 fsck 时， 被检查的 partition 务必不可挂载到系统上！亦即是需要在卸除的状态！』</p>
+<p>ext2/ext3文件系统的最顶层(就是挂载点那个目录底下)会存在一个『lost+found』的目录吧！ 该目录就是在当你使用 fsck 检查文件系统后，若出现问题时，有问题的数据会被放置到这个目录中！所以理论上这个目录不应该会有任何数据，若系统自动产生数据在里面，那…你就得特别注意你的文件系统！！！<br><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]# fsck [-t 文件系统] [-ACay] 装置名称</span><br><span class="line">选项与参数：</span><br><span class="line">-t ：如同 mkfs 一样，fsck 也是个综合软件而已！因此我们同样需要指定文件系统。</span><br><span class="line"><span class="code">     不过由于现今的 Linux 太聪明了，他会自动的透过 superblock 去分辨文件系统， 因此通常可以不需要这个选顷！</span></span><br><span class="line">-A ：依据 /etc/fstab 癿内容，将需要的装置扫瞄一次。通常开机过程中就会执行此指令了。</span><br><span class="line">-a ：自动修复检查到的有问题的扇区，所以你不用一直按 y ！</span><br><span class="line">-y ：与 -a 类似，但是某些 filesystem 仅支持 -y 这个参数！</span><br><span class="line">-C ：可以在检验的过程当中，使用一个直方图来显示目前的进度！</span><br><span class="line">EXT2/EXT3 的额外选项功能：(e2fsck 指令所提供)</span><br><span class="line">-f ：强制检查！一般来说，如果 fsck 没有发现任何 unclean 的旗标，不会主动进入细部检查的，</span><br><span class="line"><span class="code">     如果您想要强制 fsck 进入细部检查，就得加上 -f 旗标！</span></span><br><span class="line">-D ：针对文件系统下的目录进行优化配置。</span><br><span class="line"></span><br><span class="line">范例一：强制的将前面我们建立的 /dev/hdc6 这个装置给他检验一下！</span><br><span class="line">[root@www ~]# fsck -C -f -t ext3 /dev/hdc6</span><br><span class="line">fsck 1.39 (29-May-2006)</span><br><span class="line">e2fsck 1.39 (29-May-2006)</span><br><span class="line">Pass 1: Checking inodes, blocks, and sizes</span><br><span class="line">Pass 2: Checking directory structure</span><br><span class="line">Pass 3: Checking directory connectivity</span><br><span class="line">Pass 4: Checking reference counts</span><br><span class="line">Pass 5: Checking group summary information</span><br><span class="line">vbird_logical: 11/251968 files (9.1% non-contiguous), 36926/1004046 blocks</span><br><span class="line"><span class="header"># 如果没有加上 -f 的选项，则由于这个文件系统不曾出现问题，</span></span><br><span class="line"><span class="header"># 检查的经过非常的快速！若加上 -f 强制检查，才会一项一项的显示过程。</span></span><br><span class="line"></span><br><span class="line">范例二：系统有多少文件系统支持的 fsck 软件？</span><br><span class="line">[<span class="link_label">root@www ~</span>]# fsck[<span class="link_label">tab</span>][<span class="link_reference">tab</span>]</span><br><span class="line">fsck fsck.cramfs fsck.ext2 fsck.ext3 fsck.msdos fsck.vfat</span><br></pre></td></tr></table></figure></p>
+<p>刚刚谈到的 fsck 是用来检验文件系统是否出错，至于badblocks 则是用来检查硬盘软软盘扇区有没有坏轨的！ 由与这个指令其实可以透过『 mke2fs -c 装置文件名 』在进行格式化的时候处理磁盘表面的读取测试， 因此目前大多不使用这个指令！</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]<span class="comment"># badblocks -[svw] 装置名称</span></span><br><span class="line">选项与参数：</span><br><span class="line"><span class="operator">-s</span> ：在屏幕上列出进度</span><br><span class="line">-v ：可以在屏幕上看到进度</span><br><span class="line">-w：使用写入癿方式来测试，建议不要使用此一参数，尤其是待检查的装置已有档案时！</span><br><span class="line"> [root@www ~]<span class="comment"># badblocks -sv /dev/hdc6</span></span><br><span class="line"> Checking blocks <span class="number">0</span> to <span class="number">2008093</span></span><br><span class="line"> Checking <span class="keyword">for</span> bad blocks (<span class="built_in">read</span>-only <span class="built_in">test</span>): <span class="keyword">done</span></span><br><span class="line"> Pass completed, <span class="number">0</span> bad blocks found.</span><br></pre></td></tr></table></figure>
+<h4 id="磁盘挂载与卸除"><a href="#磁盘挂载与卸除" class="headerlink" title="磁盘挂载与卸除"></a>磁盘挂载与卸除</h4><p>以下列出磁盘挂载的例子：</p>
+<figure class="highlight nimrod"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">范例一：将刚刚建立的 /dev/hdc6 挂载到 /mnt/hdc6 上面！</span><br><span class="line">[root@www ~]<span class="comment"># mkdir /mnt/hdc6</span></span><br><span class="line">[root@www ~]<span class="comment"># mount /dev/hdc6 /mnt/hdc6</span></span><br><span class="line">[root@www ~]<span class="comment"># df</span></span><br><span class="line"><span class="type">Filesystem</span> <span class="number">1</span>K-blocks <span class="type">Used</span> <span class="type">Available</span> <span class="type">Use</span>% <span class="type">Mounted</span> on</span><br><span class="line">.....中间省略.....</span><br><span class="line">/dev/hdc6 <span class="number">1976312</span> <span class="number">42072</span> <span class="number">1833836</span> <span class="number">3</span>% /mnt/hdc6</span><br><span class="line"><span class="comment"># 看起来，真的有挂载！档案大小约为 2GB 左右！</span></span><br><span class="line"></span><br><span class="line">范例二：观察目前『已挂载』的文件系统，包括各文件系统的<span class="type">Label</span>名称</span><br><span class="line">[root@www ~]<span class="comment"># mount -l</span></span><br><span class="line">/dev/hdc2 on / <span class="keyword">type</span> ext3 (rw) [/<span class="number">1</span>]</span><br><span class="line"><span class="keyword">proc</span> on /<span class="keyword">proc</span> <span class="keyword">type</span> <span class="keyword">proc</span> (rw)</span><br><span class="line">sysfs on /sys <span class="keyword">type</span> sysfs (rw)</span><br><span class="line">devpts on /dev/pts <span class="keyword">type</span> devpts (rw,gid=<span class="number">5</span>,mode=<span class="number">620</span>)</span><br><span class="line">/dev/hdc3 on /home <span class="keyword">type</span> ext3 (rw) [/home]</span><br><span class="line">/dev/hdc1 on /boot <span class="keyword">type</span> ext3 (rw) [/boot]</span><br><span class="line">tmpfs on /dev/shm <span class="keyword">type</span> tmpfs (rw)</span><br><span class="line">none on /<span class="keyword">proc</span>/sys/fs/binfmt_misc <span class="keyword">type</span> binfmt_misc (rw)</span><br><span class="line">sunrpc on /<span class="keyword">var</span>/lib/nfs/rpc_pipefs <span class="keyword">type</span> rpc_pipefs (rw)</span><br><span class="line">/dev/hdc6 on /mnt/hdc6 <span class="keyword">type</span> ext3 (rw) [vbird_logical]</span><br><span class="line"><span class="comment"># 除了实际的文件系统外，很多特殊的文件系统(proc/sysfs...)也会被显示出来！</span></span><br><span class="line"><span class="comment"># 值得注意的是，加上 -l 可以列出如上特殊字体的标头(label)</span></span><br></pre></td></tr></table></figure>
+<p>另外，我们也可以利用 mount 来将某个目录挂载到另外一个目录去！这并不是挂载文件系统，而是额外挂载某个目录的方法！ 虽然底下的方法也可以使用 symbolic link 来连结，不过在某些不支持符号链接的程序运作中，还是得要透过这样的方法才行。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">范例七：将 /home 这个目录暂时挂载到 /mnt/home 底下：</span><br><span class="line">[root@www ~]<span class="preprocessor"># mkdir /mnt/home</span></span><br><span class="line">[root@www ~]<span class="preprocessor"># mount --bind /home /mnt/home</span></span><br><span class="line">[root@www ~]<span class="preprocessor"># ls -lid /home/ /mnt/home</span></span><br><span class="line"><span class="number">2</span> drwxr-xr-x <span class="number">6</span> root root <span class="number">4096</span> Sep <span class="number">29</span> <span class="number">02</span>:<span class="number">21</span> /home/</span><br><span class="line"><span class="number">2</span> drwxr-xr-x <span class="number">6</span> root root <span class="number">4096</span> Sep <span class="number">29</span> <span class="number">02</span>:<span class="number">21</span> /mnt/home</span><br><span class="line">[root@www ~]<span class="preprocessor"># mount -l</span></span><br><span class="line">/home on /mnt/<span class="function">home type <span class="title">none</span> <span class="params">(rw,bind)</span></span></span><br></pre></td></tr></table></figure>
+<p>从此进入 /mnt/home 就是进入 /home !</p>
+<p>利用umount可以卸载装置</p>
+<figure class="highlight scheme"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="list">[<span class="keyword">root@www</span> ~]# umount <span class="list">[<span class="keyword">-fn</span>] 装置文件名戒挂载点</span><br><span class="line">选项与参数：</span><br><span class="line">-f ：强制卸除！可用在类似网络文件系统 <span class="list">(<span class="keyword">NFS</span>)</span> 无法读取到的情冴下；</span><br><span class="line">-n ：不更新 /etc/mtab 情况下卸除。</span></span></span><br></pre></td></tr></table></figure>
+<p>执行该指令时，必须保证所挂载的装置处于不使用状态，否则的话，卸载不成：</p>
+<figure class="highlight coffeescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root<span class="property">@www</span> ~]<span class="comment"># mount /dev/cdrom /media/cdrom</span></span><br><span class="line">[root<span class="property">@www</span> ~]<span class="comment"># cd /media/cdrom</span></span><br><span class="line">[root<span class="property">@www</span> cdrom]<span class="comment"># umount /media/cdrom</span></span><br><span class="line"><span class="attribute">umount</span>: /media/<span class="attribute">cdrom</span>: device <span class="keyword">is</span> busy</span><br><span class="line"><span class="attribute">umount</span>: /media/<span class="attribute">cdrom</span>: device <span class="keyword">is</span> busy</span><br></pre></td></tr></table></figure>
+<h4 id="开机挂载-etc-fstab-及-etc-mtab"><a href="#开机挂载-etc-fstab-及-etc-mtab" class="headerlink" title="开机挂载 /etc/fstab 及 /etc/mtab"></a>开机挂载 /etc/fstab 及 /etc/mtab</h4><p>开机自动挂载涉及到/etc/fstab文件，该文件的内容如下所示：</p>
+<figure class="highlight nimrod"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]<span class="comment"># cat /etc/fstab</span></span><br><span class="line"><span class="comment"># Device Mount point filesystem parameters dump fsck</span></span><br><span class="line"><span class="type">LABEL</span>=/<span class="number">1</span> / ext3 defaults <span class="number">1</span> <span class="number">1</span></span><br><span class="line"><span class="type">LABEL</span>=/home /home ext3 defaults <span class="number">1</span> <span class="number">2</span></span><br><span class="line"><span class="type">LABEL</span>=/boot /boot ext3 defaults <span class="number">1</span> <span class="number">2</span></span><br><span class="line">tmpfs  /dev/shm tmpfs defaults <span class="number">0</span> <span class="number">0</span></span><br><span class="line">devpts /dev/pts devpts gid=<span class="number">5</span>,mode=<span class="number">620</span> <span class="number">0</span> <span class="number">0</span></span><br><span class="line">sysfs /sys sysfs defaults <span class="number">0</span> <span class="number">0</span></span><br><span class="line"><span class="keyword">proc</span> /<span class="keyword">proc</span> <span class="keyword">proc</span> defaults <span class="number">0</span> <span class="number">0</span></span><br><span class="line"><span class="type">LABEL</span>=<span class="type">SWAP</span>-hdc5 swap swap defaults <span class="number">0</span> <span class="number">0</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 第一列表示的是磁盘装置文件名（如/dev/sha1）或是该装置的Label</span></span><br><span class="line"><span class="comment"># dump 表示的是文件系统需不需要备份，0表示不需要，1表示每天进行dump备份，2表示不定日期的备份</span></span><br><span class="line"><span class="comment"># fsck开机时是否检查文件系统是否完整，0表示不需要，1表示最早检查（一般只有根目录会设为1），</span></span><br><span class="line"><span class="comment"># 2也表示检查，只不过会在1检查完后再检查2。</span></span><br></pre></td></tr></table></figure>
+<p> /etc/fstab 是开机时的配置文件，不过，实际 filesystem 的挂载是记录到和不 /proc/mounts 这两个档案当中的。每次我们在更动 filesyste的 挂载时，也会同时更动这两个档案！但是，万一发生您在 /etc/fstab 输入的数据错误，导致无法顺利开机成功，而进入单人维护模式当中，那时候的 / 可是 read only 的状态，当然您就无法修改 /etc/fstab ，也无法更新 /etc/mtab 那怎么办？ 没关系，可以利用底下这一招：</p>
+ <figure class="highlight autoit"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor"># 重新挂载根目录，修改挂载的参数，使得根目录可以进行读写操作</span></span><br><span class="line">[root<span class="constant">@www</span> ~]<span class="preprocessor"># mount -n -o remount,rw /</span></span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/02/29/磁盘的分割、格式化、检验与挂载/" data-id="ciqbvirlz0011psqy7cf69xma" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Linux文件系统之df，du以及ln命令" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/02/29/Linux文件系统之df，du以及ln命令/" class="article-date">
+  <time datetime="2016-02-29T13:19:20.000Z" itemprop="datePublished">2016-02-29</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/02/29/Linux文件系统之df，du以及ln命令/">Linux文件系统之df，du以及ln命令</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="df-命令用来查看Linux文件系统的整体磁盘使用量（展示的单位为分区，即分区的磁盘使用量）"><a href="#df-命令用来查看Linux文件系统的整体磁盘使用量（展示的单位为分区，即分区的磁盘使用量）" class="headerlink" title="df 命令用来查看Linux文件系统的整体磁盘使用量（展示的单位为分区，即分区的磁盘使用量）"></a>df 命令用来查看Linux文件系统的整体磁盘使用量（展示的单位为分区，即分区的磁盘使用量）</h3><figure class="highlight haml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]# df [-ahikHTm] [目录或文件名]</span><br><span class="line">选项与参数：</span><br><span class="line">-<span class="ruby">a ：列出所有的文件系统，包括系统特有的 /proc 等文件系统；</span><br><span class="line"></span>-<span class="ruby">k ：以 <span class="constant">KBytes</span> 的容量显示各文件系统；</span><br><span class="line"></span>-<span class="ruby">m ：以 <span class="constant">MBytes</span> 的容量显示各文件系统；</span><br><span class="line"></span>-<span class="ruby">h ：以人们较易阅读的 <span class="constant">GBytes</span>, <span class="constant">MBytes</span>, <span class="constant">KBytes</span> 等格式自行显示；</span><br><span class="line"></span>-<span class="ruby"><span class="constant">H</span> ：以 <span class="constant">M</span>=<span class="number">1000</span>K 取代 <span class="constant">M</span>=<span class="number">1024</span>K 的进位方式；</span><br><span class="line"></span>-<span class="ruby"><span class="constant">T</span> ：连同该 partition 的 filesystem 名称 (例如 ext3) 也列出；</span><br><span class="line"></span>-<span class="ruby">i ：不用硬盘容量，而以 inode的数量来显示</span></span><br></pre></td></tr></table></figure>
+<p>以下列出几个例子：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line">范例一：将系统内所有的 filesystem 列出来！</span><br><span class="line">[root@www ~]<span class="preprocessor"># df</span></span><br><span class="line">Filesystem <span class="number">1</span>K-blocks Used Available Use% Mounted on</span><br><span class="line">/dev/hdc2 <span class="number">9920624</span> <span class="number">3823112</span> <span class="number">5585444</span> <span class="number">41</span>% /</span><br><span class="line">/dev/hdc3 <span class="number">4956316</span> <span class="number">141376</span> <span class="number">4559108</span> <span class="number">4</span>% /home</span><br><span class="line">/dev/hdc1 <span class="number">101086</span> <span class="number">11126</span> <span class="number">84741</span> <span class="number">12</span>% /boot</span><br><span class="line">tmpfs <span class="number">371332</span> <span class="number">0</span> <span class="number">371332</span> <span class="number">0</span>% /dev/shm</span><br><span class="line"><span class="preprocessor"># 在 Linux 底下如果 df 没有加任何选顷，那么默认会将系统内所有的</span></span><br><span class="line"><span class="preprocessor"># (不含特殊内存内的文件系统与 swap) 都以 <span class="number">1</span> Kbytes 癿容量来列出来！</span></span><br><span class="line"><span class="preprocessor"># 至于那个 /dev/shm 是与内存有关的挂载，先不要理他！</span></span><br><span class="line"></span><br><span class="line">范例二：将容量结果以易读的容量格式显示出来</span><br><span class="line">[root@www ~]<span class="preprocessor"># df -h</span></span><br><span class="line">Filesystem Size Used Avail Use% Mounted on</span><br><span class="line">/dev/hdc2 <span class="number">9.5</span>G <span class="number">3.7</span>G <span class="number">5.4</span>G <span class="number">41</span>% /</span><br><span class="line">/dev/hdc3 <span class="number">4.8</span>G <span class="number">139</span>M <span class="number">4.4</span>G <span class="number">4</span>% /home</span><br><span class="line">/dev/hdc1 <span class="number">99</span>M <span class="number">11</span>M <span class="number">83</span>M <span class="number">12</span>% /boot</span><br><span class="line">tmpfs <span class="number">363</span>M <span class="number">0</span> <span class="number">363</span>M <span class="number">0</span>% /dev/shm</span><br><span class="line"><span class="preprocessor"># 不同与范例一，这里会以 G/M 等容量格式显示出来，比较容易看啦！</span></span><br><span class="line"></span><br><span class="line">范例三：将系统内的所有特殊文件格式及名称都列出来</span><br><span class="line">[root@www ~]<span class="preprocessor"># df -aT</span></span><br><span class="line">Filesystem Type <span class="number">1</span>K-blocks Used Available Use% Mounted on</span><br><span class="line">/dev/hdc2 ext3 <span class="number">9920624</span> <span class="number">3823112</span> <span class="number">5585444</span> <span class="number">41</span>% /</span><br><span class="line">proc proc <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> - /proc</span><br><span class="line">sysfs sysfs <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> - /sys</span><br><span class="line">devpts devpts <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> - /dev/pts</span><br><span class="line">/dev/hdc3 ext3 <span class="number">4956316</span> <span class="number">141376</span> <span class="number">4559108</span> <span class="number">4</span>% /home</span><br><span class="line">/dev/hdc1 ext3 <span class="number">101086</span> <span class="number">11126</span> <span class="number">84741</span> <span class="number">12</span>% /boot</span><br><span class="line">tmpfs tmpfs <span class="number">371332</span> <span class="number">0</span> <span class="number">371332</span> <span class="number">0</span>% /dev/shm</span><br><span class="line">none binfmt_misc <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> - /proc/sys/fs/binfmt_misc</span><br><span class="line">sunrpc rpc_pipefs <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> - /var/lib/nfs/rpc_pipefs</span><br><span class="line"><span class="preprocessor"># 系统里面其实还有很多特殊的文件系统存在。那些比较特殊的文件系统几乎</span></span><br><span class="line"><span class="preprocessor"># 都是在内存当中，例如 /proc 这个挂载点。因此，这些特殊的文件系统</span></span><br><span class="line"><span class="preprocessor"># 都不会占据硬盘空间！</span></span><br><span class="line"></span><br><span class="line">范例四：将 /etc 底下的可用磁盘容量以易读容量格式显示</span><br><span class="line">[root@www ~]<span class="preprocessor"># df -h /etc</span></span><br><span class="line">Filesystem Size Used Avail Use% Mounted on</span><br><span class="line">/dev/hdc2 <span class="number">9.5</span>G <span class="number">3.7</span>G <span class="number">5.4</span>G <span class="number">41</span>% /</span><br><span class="line"><span class="preprocessor"># 在 df 后面加上目录或者是档案时， df 会自动的分析该目录或档案所在的 partition ，</span></span><br><span class="line"><span class="preprocessor"># 并将该 partition 容量显示出来， 所以，您就可以知道某个目录底下还有多少容量可以使用了！</span></span><br><span class="line"></span><br><span class="line">范例五：将目前各个 partition 当中可用的 inode 数量列出</span><br><span class="line">[root@www ~]<span class="preprocessor"># df -ih</span></span><br><span class="line">Filesystem Inodes IUsed IFree IUse% Mounted on</span><br><span class="line">/dev/hdc2 <span class="number">2.5</span>M <span class="number">147</span>K <span class="number">2.3</span>M <span class="number">6</span>% /</span><br><span class="line">/dev/hdc3 <span class="number">1.3</span>M <span class="number">46</span> <span class="number">1.3</span>M <span class="number">1</span>% /home</span><br><span class="line">/dev/hdc1 <span class="number">26</span>K <span class="number">34</span> <span class="number">26</span>K <span class="number">1</span>% /boot</span><br><span class="line">tmpfs <span class="number">91</span>K <span class="number">1</span> <span class="number">91</span>K <span class="number">1</span>% /dev/shm</span><br><span class="line"><span class="preprocessor"># 这个范例则主要列出可用的 inode 剩余量不总容量。分析一下与范例一的关系，</span></span><br><span class="line"><span class="preprocessor"># 你可以清楚的发现到，通常 inode 的数量剩余都比 block 还要多。</span></span><br></pre></td></tr></table></figure>
+<p>由于 df 主要读取的数据几乎都是针对一整个文件系统，因此读取的范围主要是在 Superblock 内的信息， 所以这个指令显示结果的速度非帯的快速。</p>
+<h3 id="du：评估文件系统癿磁盘使用量-帯用在推估目彔所占容量"><a href="#du：评估文件系统癿磁盘使用量-帯用在推估目彔所占容量" class="headerlink" title="du：评估文件系统癿磁盘使用量(帯用在推估目彔所占容量)"></a>du：评估文件系统癿磁盘使用量(帯用在推估目彔所占容量)</h3><figure class="highlight haml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]# du [-ahskm] 档案或目录名称</span><br><span class="line">选项与参数：</span><br><span class="line">-<span class="ruby">a ：列出所有的档案与目录容量，因为默认仅统计目录底下的子目录容量而已。</span><br><span class="line"></span>-<span class="ruby">h ：以人们较易读的容量格式 (<span class="constant">G</span>/<span class="constant">M</span>) 显示；</span><br><span class="line"></span>-<span class="ruby">s ：列出总量而已，而不列出每个各别的目录占用容量；（即目录占用量）</span><br><span class="line"></span>-<span class="ruby"><span class="constant">S</span> ：不包括子目录下的总计，与 -s 有点差别。</span><br><span class="line"></span>-<span class="ruby">k ：以 <span class="constant">KBytes</span> 列出容量显示；</span><br><span class="line"></span>-<span class="ruby">m ：以 <span class="constant">MBytes</span> 列出容量显示；</span></span><br></pre></td></tr></table></figure>
+<p>使用例子如下：</p>
+<figure class="highlight nimrod"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]<span class="comment"># du [-ahskm] 档案或目录名称</span></span><br><span class="line">选项与参数：</span><br><span class="line">-a ：列出所有的档案与目录容量，因为默认仅统计目录底下的子目录占用量而已。</span><br><span class="line">-h ：以人们较易读的容量格式 (G/M) 显示；</span><br><span class="line">-s ：列出总量而已，而不列出每个各别的目录占用容量；</span><br><span class="line">-S ：不包括子目录下的总计，与 -s 有点差别。</span><br><span class="line">-k ：以 <span class="type">KBytes</span> 列出容量显示；</span><br><span class="line">-m ：以 <span class="type">MBytes</span> 列出容量显示；</span><br><span class="line"></span><br><span class="line">范例一：列出目前目录下的所有档案容量</span><br><span class="line">[root@www ~]<span class="comment"># du</span></span><br><span class="line"><span class="number">8</span> ./test4 &lt;==每个目录都会列出来</span><br><span class="line"><span class="number">8</span> ./test2</span><br><span class="line">....中间省略....</span><br><span class="line"><span class="number">12</span> ./.gconfd &lt;==包括隐藏文件的目录</span><br><span class="line"><span class="number">220</span> . &lt;==这个目录(.)所占用的总量</span><br><span class="line"><span class="comment"># 直接输入 du 没有加任何选项时，则 du 会分析『目前所在目录』 的档案不目彔所占用癿硬盘空间。</span></span><br><span class="line"><span class="comment"># 但是，实际显示时，仅会显示目录容量(不显示档案)，</span></span><br><span class="line"><span class="comment"># 因此 . 目录有很多档案没有被列出来，所以全部的目录相加不会等于 .的容量！</span></span><br><span class="line"><span class="comment"># 此外，输出的数值数据为 1K 大小的容量单位。</span></span><br><span class="line"></span><br><span class="line">范例二：同范例一，但是将档案的容量也列出来</span><br><span class="line">[root@www ~]<span class="comment"># du -a</span></span><br><span class="line"><span class="number">12</span> ./install.log.syslog &lt;==有档案的列表了</span><br><span class="line"><span class="number">8</span> ./.bash_logout</span><br><span class="line"><span class="number">8</span> ./test4</span><br><span class="line"><span class="number">8</span> ./test2</span><br><span class="line">....中间省略....</span><br><span class="line"><span class="number">12</span> ./.gconfd</span><br><span class="line"><span class="number">220</span> .</span><br><span class="line"></span><br><span class="line">范例三：检查根目录底下每个目录所占用的容量</span><br><span class="line">[root@www ~]<span class="comment"># du -sm /*</span></span><br><span class="line"><span class="number">7</span> /bin <span class="number">6</span> /boot</span><br><span class="line">.....中间省略....</span><br><span class="line"><span class="number">0</span> /<span class="keyword">proc</span></span><br><span class="line">.....中间省略....</span><br><span class="line"><span class="number">1</span> /tmp <span class="number">3859</span> /usr &lt;==系统初期最大就是他了啦！</span><br><span class="line"><span class="number">77</span> /<span class="keyword">var</span></span><br><span class="line"><span class="comment"># 这是个很常被使用的功能～利用通配符 * 来代表每个目录，</span></span><br><span class="line"><span class="comment"># 如果想要检查某个目录下，那个次目录占用最大的容量，可以用这个方法找出来</span></span><br><span class="line"><span class="comment"># 值得注意的是，如果刚刚安装好 Linux 时，那么整个系统容量最大的应该是 /usr</span></span><br><span class="line"><span class="comment"># 而 /proc 虽然有列出容量，但是那个容量是在内存中，不占硬盘空间。</span></span><br></pre></td></tr></table></figure>
+<h3 id="实体链接与符号链接-ln"><a href="#实体链接与符号链接-ln" class="headerlink" title="实体链接与符号链接 ln"></a>实体链接与符号链接 ln</h3><h4 id="实体链接（硬式链接）"><a href="#实体链接（硬式链接）" class="headerlink" title="实体链接（硬式链接）"></a>实体链接（硬式链接）</h4><p>实体链接，只能链接文件，不能链接目录，不能跨 Filesystem，创建实体链接时，只是在某个目录下的block多写入一条关联数据而已，不会增加inode也不会耗用block的数量。任一个档案删除了，另外一个档案都可以将数据完整的读取出来。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]<span class="preprocessor"># ln /etc/crontab /root/crontab &lt;==建立实体链接的指令</span></span><br><span class="line">[root@www ~]<span class="preprocessor"># ll -i /etc/crontab /root/crontab</span></span><br><span class="line"><span class="number">1912701</span> -rw-r--r-- <span class="number">2</span> root root <span class="number">255</span> Jan <span class="number">6</span> <span class="number">2007</span> /etc/crontab</span><br><span class="line"><span class="number">1912701</span> -rw-r--r-- <span class="number">2</span> root root <span class="number">255</span> Jan <span class="number">6</span> <span class="number">2007</span> /root/crontab</span><br></pre></td></tr></table></figure>
+<h4 id="Symbolic-Link-符号链接，亦即是忚捷方式"><a href="#Symbolic-Link-符号链接，亦即是忚捷方式" class="headerlink" title="Symbolic Link (符号链接，亦即是忚捷方式)"></a>Symbolic Link (符号链接，亦即是忚捷方式)</h4><p>基本上， Symbolic link 就是在建立一个独立的档案，而这个档案会将数据的读取指向他 link 的那个档案的档名！由于只是利用档案来做为指向的动作，所以，当来源档被删除之后，symbolic link 的档案会『开不了』， 会一直说『无法开起某档案！』。实际上就是找不到原始『档名』而已。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]<span class="preprocessor"># ln -s /etc/crontab crontab2</span></span><br><span class="line">[root@www ~]<span class="preprocessor"># ll -i /etc/crontab /root/crontab2</span></span><br><span class="line"><span class="number">1912701</span> -rw-r--r-- <span class="number">2</span> root root <span class="number">255</span> Jan <span class="number">6</span> <span class="number">2007</span> /etc/crontab</span><br><span class="line"><span class="number">654687</span> lrwxrwxrwx <span class="number">1</span> root root <span class="number">12</span> Oct <span class="number">22</span> <span class="number">13</span>:<span class="number">58</span> /root/crontab2 -&gt; /etc/crontab</span><br><span class="line"><span class="preprocessor"># /etc/crontab 也就是/root/crontab2文件的内容，所以大小为<span class="number">12</span>bytes</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#创建目录链接</span></span><br><span class="line">[root@www ~]<span class="preprocessor"># ln -s /bin /root/bin</span></span><br><span class="line"><span class="preprocessor">#当进入/root/bin目录时，实际上进入的是/bin目录，对其所有的操作都会相当于直接在/bin目录下操作</span></span><br></pre></td></tr></table></figure>
+<p>看起来硬链接会比符号链接安全的多，因为不会因为被链接文件被删除了而导致链接文件打不开，但是由于硬链接的限制比较多，不能链接目录，不能跨文件系统，所以还是符号链接比较受欢迎！</p>
+<p>ln指令参数：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]<span class="comment"># ln [-sf] 来源文件 目标文件</span></span><br><span class="line">选项与参数：</span><br><span class="line"><span class="operator">-s</span> ：如果不加任何参数就进行连结，那就是hard link，至于 <span class="operator">-s</span> 就是symbolic link</span><br><span class="line"><span class="operator">-f</span> ：如果 目标文件 存在时，就主动将目标文件直接移除后再建立！</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/02/29/Linux文件系统之df，du以及ln命令/" data-id="ciqbviro2003vpsqyykbspogq" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-Linux磁盘概念" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2016/02/29/Linux磁盘概念/" class="article-date">
@@ -170,7 +347,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/29/Linux磁盘概念/" data-id="ciqarm474003ih8qyb7gamu6y" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/29/Linux磁盘概念/" data-id="ciqbvirnu003ppsqyv8aee0a5" class="article-share-link">Share</a>
       
       
     </footer>
@@ -254,7 +431,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/29/Linux-User、Group切换/" data-id="ciqarm47o0046h8qykc511gh2" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/29/Linux-User、Group切换/" data-id="ciqbviroh004dpsqy0vf2k05g" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a></li></ul>
@@ -339,7 +516,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/29/Linux用户管理实例/" data-id="ciqarm475003kh8qy9kvew6l6" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/29/Linux用户管理实例/" data-id="ciqbvirnx003rpsqy8ht6h9em" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a></li></ul>
@@ -395,7 +572,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/29/Linux-Group-管理/" data-id="ciqarm47t004fh8qya63x3tpm" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/29/Linux-Group-管理/" data-id="ciqbvirol004mpsqy11pc7dgl" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a></li></ul>
@@ -468,7 +645,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/Linux-User-管理/" data-id="ciqarm47q0049h8qy8ges03pw" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/28/Linux-User-管理/" data-id="ciqbviroj004gpsqyiijs39ru" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a></li></ul>
@@ -525,7 +702,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/Linux-中SUID、SGID和SBIT的用途/" data-id="ciqarm47m0042h8qyhir1r11y" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/28/Linux-中SUID、SGID和SBIT的用途/" data-id="ciqbvirof0049psqylyfy90l6" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a></li></ul>
@@ -598,245 +775,10 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/基于用户的协同过滤算法/" data-id="ciqarm45c001fh8qywx67rlf4" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/28/基于用户的协同过滤算法/" data-id="ciqbvirme001mpsqyrgbut2gr" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/推荐算法/">推荐算法</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-at命令详解" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/02/28/at命令详解/" class="article-date">
-  <time datetime="2016-02-28T12:40:18.000Z" itemprop="datePublished">2016-02-28</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Linux/">Linux</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/02/28/at命令详解/">at命令详解</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>at命令用来安排一个程序在未来的做一次性执行。所以有提交的任务都会被放在/var/spool/at目录下，并且到了执行时间的时候通过atd守护进程来执行。</p>
-<p>1．命令格式：</p>
-<p>at[参数][时间]</p>
-<p>2．命令功能：</p>
-<p>在一个指定的时间执行一个指定任务，只能执行一次，且需要开启atd进程（<code>ps -ef | grep atd</code>查看， 开启用<code>/etc/init.d/atd start or restart</code>； 开机即启动则需要运行 <code>chkconfig --level 2345 atd on</code>）。</p>
-<p>3．命令参数：</p>
-<figure class="highlight haml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">-<span class="ruby">m 当指定的任务被完成之后，将给用户发送邮件，即使没有标准输出</span><br><span class="line"></span>-<span class="ruby"><span class="constant">I</span> atq的别名</span><br><span class="line"></span>-<span class="ruby">d atrm的别名</span><br><span class="line"></span>-<span class="ruby">v 显示任务将被执行的时间</span><br><span class="line"></span>-<span class="ruby">c 打印任务的内容到标准输出</span><br><span class="line"></span>-<span class="ruby"><span class="constant">V</span> 显示版本信息</span><br><span class="line"></span>-<span class="ruby">q&lt;列队&gt; 使用指定的列队</span><br><span class="line"></span>-<span class="ruby">f&lt;文件&gt; 从指定文件读入任务而不是从标准输入读入</span><br><span class="line"></span>-<span class="ruby">t&lt;时间参数&gt; 以时间参数的形式提交要运行的任务</span></span><br></pre></td></tr></table></figure>
-<p>at允许使用一套相当复杂的指定时间的方法。他能够接受在当天的hh:mm（小时:分钟）式的时间指定。假如该时间已过去，那么就放在第二天执行。当然也能够使用midnight（深夜），noon（中午），teatime（饮茶时间，一般是下午4点）等比较模糊的 词语来指定时间。用户还能够采用12小时计时制，即在时间后面加上AM（上午）或PM（下午）来说明是上午还是下午。 也能够指定命令执行的具体日期，指定格式为month day（月 日）或mm/dd/yy（月/日/年）或dd.mm.yy（日.月.年）。指定的日期必须跟在指定时间的后面。</p>
-<p>上面介绍的都是绝对计时法，其实还能够使用相对计时法，这对于安排不久就要执行的命令是很有好处的。指定格式为：now + count time-units ，now就是当前时间，time-units是时间单位，这里能够是minutes（分钟）、hours（小时）、days（天）、weeks（星期）。count是时间的数量，究竟是几天，还是几小时，等等。 更有一种计时方法就是直接使用today（今天）、tomorrow（明天）来指定完成命令的时间。</p>
-<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">TIME</span>：时间格式，这里可以定义出什么时候要进行 <span class="tag">at</span> 这项任务的时间，格式有：</span><br><span class="line"><span class="tag">HH</span><span class="pseudo">:MM</span></span><br><span class="line"><span class="tag">ex</span>&gt; 04<span class="pseudo">:00</span></span><br><span class="line">在今日的 <span class="tag">HH</span><span class="pseudo">:MM</span> 时刻进行，若该时刻已超过，则明天的 <span class="tag">HH</span><span class="pseudo">:MM</span> 进行此任务。</span><br><span class="line"><span class="tag">HH</span><span class="pseudo">:MM</span> <span class="tag">YYYY-MM-DD</span></span><br><span class="line"><span class="tag">ex</span>&gt; 04<span class="pseudo">:00</span> 2009<span class="tag">-03-17</span></span><br><span class="line">强制规定在某年某月的某一天的特殊时刻进行该项任务</span><br><span class="line"><span class="tag">HH</span><span class="pseudo">:MM</span><span class="attr_selector">[am|pm]</span> <span class="attr_selector">[Month]</span> <span class="attr_selector">[Date]</span></span><br><span class="line"><span class="tag">ex</span>&gt; 04<span class="tag">pm</span> <span class="tag">March</span> 17</span><br><span class="line">也是一样，强制在某年某月某日的某时刻进行该项任务</span><br><span class="line"><span class="tag">HH</span><span class="pseudo">:MM</span><span class="attr_selector">[am|pm]</span> + <span class="tag">number</span> <span class="attr_selector">[minutes|hours|days|weeks]</span></span><br><span class="line"><span class="tag">ex</span>&gt; <span class="tag">now</span> + 5 <span class="tag">minutes</span></span><br><span class="line"><span class="tag">ex</span>&gt; 04<span class="tag">pm</span> + 3 <span class="tag">days</span></span><br><span class="line">就是说，在某个时间点再加几个时间后才进行该项任务。</span><br></pre></td></tr></table></figure>
-<p>4．使用实例：<br>实例1：三天后的下午 5 点锺执行 /bin/ls<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">命令：</span><br><span class="line">at <span class="number">5</span>pm+<span class="number">3</span> days</span><br><span class="line">输出：</span><br><span class="line">[root@localhost ~]<span class="preprocessor"># at <span class="number">5</span>pm+<span class="number">3</span> days</span></span><br><span class="line">at&gt; /bin/ls</span><br><span class="line">at&gt; &lt;EOT&gt;</span><br><span class="line">job <span class="number">7</span> at <span class="number">2013</span>-<span class="number">01</span>-<span class="number">08</span> <span class="number">17</span>:<span class="number">00</span></span><br><span class="line">[root@localhost ~]<span class="preprocessor">#</span></span><br></pre></td></tr></table></figure></p>
-<p>实例2：明天17点钟，输出时间到指定文件内</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">at 17:20 tomorrow&#10;&#36755;&#20986;&#65306;&#10;[root@localhost ~]# at 17:20 tomorrow&#10;at&#62; date &#62;/root/2013.log         &#10;at&#62; &#60;EOT&#62;&#10;job 8 at 2013-01-06 17:20&#10;[root@localhost ~]#</span><br></pre></td></tr></table></figure>
-<p>实例3：计划任务设定后，在没有执行之前我们可以用atq命令来查看系统没有执行工作任务<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">命令：</span><br><span class="line">atq</span><br><span class="line">输出：</span><br><span class="line">[root@localhost ~]<span class="preprocessor"># atq</span></span><br><span class="line"><span class="number">8</span>       <span class="number">2013</span>-<span class="number">01</span>-<span class="number">06</span> <span class="number">17</span>:<span class="number">20</span> a root</span><br><span class="line"><span class="number">7</span>       <span class="number">2013</span>-<span class="number">01</span>-<span class="number">08</span> <span class="number">17</span>:<span class="number">00</span> a root</span><br><span class="line">[root@localhost ~]<span class="preprocessor">#</span></span><br></pre></td></tr></table></figure></p>
-<p>实例4：删除已经设置的任务<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">命令：</span><br><span class="line">atrm <span class="number">7</span></span><br><span class="line">输出：</span><br><span class="line">[root@localhost ~]<span class="preprocessor"># atq</span></span><br><span class="line"><span class="number">8</span>       <span class="number">2013</span>-<span class="number">01</span>-<span class="number">06</span> <span class="number">17</span>:<span class="number">20</span> a root</span><br><span class="line"><span class="number">7</span>       <span class="number">2013</span>-<span class="number">01</span>-<span class="number">08</span> <span class="number">17</span>:<span class="number">00</span> a root</span><br><span class="line">[root@localhost ~]<span class="preprocessor"># atrm <span class="number">7</span></span></span><br><span class="line">[root@localhost ~]<span class="preprocessor"># atq</span></span><br><span class="line"><span class="number">8</span>       <span class="number">2013</span>-<span class="number">01</span>-<span class="number">06</span> <span class="number">17</span>:<span class="number">20</span> a root</span><br><span class="line">[root@localhost ~]<span class="preprocessor">#</span></span><br></pre></td></tr></table></figure></p>
-<p>实例5：显示已经设置的任务内容<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">命令：</span><br><span class="line">at -c <span class="number">8</span></span><br><span class="line">输出：</span><br><span class="line">[root@localhost ~]<span class="comment"># at -c 8</span></span><br><span class="line"><span class="shebang">#!/bin/sh</span></span><br><span class="line"><span class="comment"># atrun uid=0 gid=0</span></span><br><span class="line"><span class="comment"># mail     root 0</span></span><br><span class="line"><span class="built_in">umask</span> <span class="number">22</span>此处省略n个字符</span><br><span class="line">date &gt;/root/<span class="number">2013</span>.log</span><br><span class="line">[root@localhost ~]<span class="comment">#</span></span><br></pre></td></tr></table></figure></p>
-<p>5．atd 的启动与 at 运行的方式：</p>
-<p>5.1 atd 的启动</p>
-<p>要使用一次性计划任务时，我们的 Linux 系统上面必须要有负责这个计划任务的服务，那就是 atd 服务。 不过并非所有的 Linux distributions 都默认会把他打开的，所以，某些时刻我们需要手动将atd 服务激活才行。 激活的方法很简单，就是这样：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">命令：</span><br><span class="line">/etc/init.d/atd start</span><br><span class="line">/etc/init.d/atd restart</span><br><span class="line">输出：</span><br><span class="line">[root@localhost /]<span class="preprocessor"># /etc/init.d/atd start</span></span><br><span class="line">[root@localhost /]<span class="preprocessor"># /etc/init.d/atd</span></span><br><span class="line">用法：/etc/init.d/atd &#123;start|stop|restart|condrestart|status&#125;</span><br><span class="line">[root@localhost /]<span class="preprocessor"># /etc/init.d/atd stop</span></span><br><span class="line">停止 atd：[确定]</span><br><span class="line">[root@localhost /]<span class="preprocessor"># ps -ef|grep atd</span></span><br><span class="line">root     <span class="number">25062</span> <span class="number">24951</span>  <span class="number">0</span> <span class="number">14</span>:<span class="number">53</span> pts/<span class="number">0</span>    <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> grep atd</span><br><span class="line">[root@localhost /]<span class="preprocessor"># /etc/init.d/atd start</span></span><br><span class="line">[确定]td：[确定]</span><br><span class="line">[root@localhost /]<span class="preprocessor"># ps -ef|grep atd</span></span><br><span class="line">root     <span class="number">25068</span>     <span class="number">1</span>  <span class="number">0</span> <span class="number">14</span>:<span class="number">53</span> ?        <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> /usr/sbin/atd</span><br><span class="line">root     <span class="number">25071</span> <span class="number">24951</span>  <span class="number">0</span> <span class="number">14</span>:<span class="number">53</span> pts/<span class="number">0</span>    <span class="number">00</span>:<span class="number">00</span>:<span class="number">00</span> grep atd</span><br><span class="line">[root@localhost /]<span class="preprocessor"># /etc/init.d/atd restart</span></span><br><span class="line">停止 atd：[确定]</span><br><span class="line">[确定]td：[确定]</span><br><span class="line">[root@localhost /]<span class="preprocessor">#</span></span><br></pre></td></tr></table></figure></p>
-<p>说明：</p>
-<p>/etc/init.d/atd start 没有启动的时候，直接启动atd服务</p>
-<p>/etc/init.d/atd restart 服务已经启动后，重启 atd 服务</p>
-<p>备注：配置一下启动时就启动这个服务，免得每次重新启动都得再来一次</p>
-<figure class="highlight coffeescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">命令：</span><br><span class="line">chkconfig atd <span class="literal">on</span></span><br><span class="line">输出：</span><br><span class="line">[root<span class="property">@localhost</span> /]<span class="comment"># chkconfig atd on</span></span><br><span class="line">[root<span class="property">@localhost</span> /]<span class="comment">#</span></span><br></pre></td></tr></table></figure>
-<p>5.2 at 的运行方式</p>
-<p>既然是计划任务，那么应该会有任务执行的方式，并且将这些任务排进行程表中。那么产生计划任务的方式是怎么进行的? 事实上，我们使用 at 这个命令来产生所要运行的计划任务，并将这个计划任务以文字档的方式写入 /var/spool/at/ 目录内，该工作便能等待 atd 这个服务的取用与运行了。就这么简单。不过，并不是所有的人都可以进行 at 计划任务。为什么? 因为系统安全的原因。很多主机被所谓的攻击破解后，最常发现的就是他们的系统当中多了很多的黑客程序， 这些程序非常可能运用一些计划任务来运行或搜集你的系统运行信息,并定时的发送给黑客。 所以，除非是你认可的帐号，否则先不要让他们使用 at 命令。那怎么达到使用 at 的可控呢?</p>
-<p>我们可以利用 /etc/at.allow 与 /etc/at.deny 这两个文件来进行 at 的使用限制。加上这两个文件后， at 的工作情况是这样的：</p>
-<p>先找寻 /etc/at.allow 这个文件，写在这个文件中的使用者才能使用 at ，没有在这个文件中的使用者则不能使用 at (即使没有写在 at.deny 当中);如果 /etc/at.allow 不存在，就寻找 /etc/at.deny 这个文件，若写在这个 at.deny 的使用者则不能使用 at ，而没有在这个 at.deny 文件中的使用者，就可以使用 at 命令了。</p>
-<p>如果两个文件都不存在，那么只有 root 可以使用 at 这个命令。</p>
-<p>透过这个说明，我们知道 /etc/at.allow 是管理较为严格的方式，而 /etc/at.deny 则较为松散 (因为帐号没有在该文件中，就能够运行 at 了)。在一般的 distributions 当中，由于假设系统上的所有用户都是可信任的， 因此系统通常会保留一个空的 /etc/at.deny 文件，意思是允许所有人使用 at 命令的意思 (您可以自行检查一下该文件)。 不过，万一你不希望有某些使用者使用 at 的话，将那个使用者的帐号写入 /etc/at.deny 即可！ 一个帐号写一行。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/at命令详解/" data-id="ciqarm46t0033h8qyb7q42xzb" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux命令/">Linux命令</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-awk命令详解" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/02/28/awk命令详解/" class="article-date">
-  <time datetime="2016-02-28T12:35:27.000Z" itemprop="datePublished">2016-02-28</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Linux/">Linux</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/02/28/awk命令详解/">awk命令详解</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>awk是一个强大的文本分析工具，相对于grep的查找，sed的编辑，awk在其对数据分析并生成报告时，显得尤为强大。简单来说awk就是把文件逐行的读入，以空格为默认分隔符将每行切片，切开的部分再进行各种分析处理。</p>
-<p>awk有3个不同版本: awk、nawk和gawk，未作特别说明，一般指gawk，gawk 是 AWK 的 GNU 版本。</p>
-<p>awk其名称得自于它的创始人 Alfred Aho 、Peter Weinberger 和 Brian Kernighan 姓氏的首个字母。实际上 AWK 的确拥有自己的语言： AWK 程序设计语言 ， 三位创建者已将它正式定义为“样式扫描和处理语言”。它允许您创建简短的程序，这些程序读取输入文件、为数据排序、处理数据、对输入执行计算以及生成报表，还有无数其他的功能。</p>
-<p>使用方法</p>
-<p><code>awk &#39;{pattern + action}&#39; {filenames}</code></p>
-<p>尽管操作可能会很复杂，但语法总是这样，其中 pattern 表示 AWK 在数据中查找的内容，而 action 是在找到匹配内容时所执行的一系列命令。花括号（{}）不需要在程序中始终出现，但它们用于根据特定的模式对一系列指令进行分组。 pattern就是要表示的正则表达式，用斜杠括起来。</p>
-<p>awk语言的最基本功能是在文件或者字符串中基于指定规则浏览和抽取信息，awk抽取信息后，才能进行其他文本操作。完整的awk脚本通常用来格式化文本文件中的信息。</p>
-<p>通常，awk是以文件的一行为处理单位的。awk每接收文件的一行，然后执行相应的命令，来处理文本。</p>
-<p>调用awk有三种方式调用awk</p>
-<p>1.命令行方式<br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">awk [-F  field-separator]  <span class="string">'commands'</span>  <span class="function"><span class="title">input-file</span><span class="params">(s)</span></span></span><br></pre></td></tr></table></figure></p>
-<p>其中，commands 是真正awk命令，[-F域分隔符]是可选的。 input-file(s) 是待处理的文件。<br>在awk中，文件的每一行中，由域分隔符分开的每一项称为一个域。通常，在不指名-F域分隔符的情况下，默认的域分隔符是空格。</p>
-<p>2.shell脚本方式</p>
-<p>将所有的awk命令插入一个文件，并使awk程序可执行，然后awk命令解释器作为脚本的首行，一遍通过键入脚本名称来调用。<br>相当于shell脚本首行的：#!/bin/sh<br>可以换成：#!/bin/awk</p>
-<p>3.将所有的awk命令插入一个单独文件，然后调用：<br><figure class="highlight applescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">awk -f awk-<span class="keyword">script</span>-<span class="type">file</span> input-<span class="type">file</span>(s)</span><br></pre></td></tr></table></figure></p>
-<p>其中，-f选项加载awk-script-file中的awk脚本，input-file(s)跟上面的是一样的。</p>
-<p>本章重点介绍命令行方式。</p>
-<p>入门实例</p>
-<p>假设last -n 5的输出如下</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]<span class="preprocessor"># last -n <span class="number">5</span> &lt;==仅取出前五行</span></span><br><span class="line">root     pts/<span class="number">1</span>   <span class="number">192.168</span><span class="number">.1</span><span class="number">.100</span>  Tue Feb <span class="number">10</span> <span class="number">11</span>:<span class="number">21</span>   still logged in</span><br><span class="line">root     pts/<span class="number">1</span>   <span class="number">192.168</span><span class="number">.1</span><span class="number">.100</span>  Tue Feb <span class="number">10</span> <span class="number">00</span>:<span class="number">46</span> - <span class="number">02</span>:<span class="number">28</span>  (<span class="number">01</span>:<span class="number">41</span>)</span><br><span class="line">root     pts/<span class="number">1</span>   <span class="number">192.168</span><span class="number">.1</span><span class="number">.100</span>  Mon Feb  <span class="number">9</span> <span class="number">11</span>:<span class="number">41</span> - <span class="number">18</span>:<span class="number">30</span>  (<span class="number">06</span>:<span class="number">48</span>)</span><br><span class="line">dmtsai   pts/<span class="number">1</span>   <span class="number">192.168</span><span class="number">.1</span><span class="number">.100</span>  Mon Feb  <span class="number">9</span> <span class="number">11</span>:<span class="number">41</span> - <span class="number">11</span>:<span class="number">41</span>  (<span class="number">00</span>:<span class="number">00</span>)</span><br><span class="line">root     tty1                   Fri Sep  <span class="number">5</span> <span class="number">14</span>:<span class="number">09</span> - <span class="number">14</span>:<span class="number">10</span>  (<span class="number">00</span>:<span class="number">01</span>)</span><br></pre></td></tr></table></figure>
-<p>如果只是显示最近登录的5个帐号<br><figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">#last -<span class="keyword">n</span> 5 | awk  '&#123;<span class="keyword">print</span> <span class="label">$1&#125;</span>'</span><br><span class="line">root</span><br><span class="line">root</span><br><span class="line">root</span><br><span class="line">dmtsai</span><br><span class="line">root</span><br></pre></td></tr></table></figure></p>
-<p>awk工作流程是这样的：读入有’\n’换行符分割的一条记录，然后将记录按指定的域分隔符划分域，填充域，$0则表示所有域,$1表示第一个域,$n表示第n个域。默认域分隔符是”空白键” 或 “[tab]键”,所以$1表示登录用户，$3表示登录用户ip,以此类推。</p>
-<p>如果只是显示/etc/passwd的账户<br><figure class="highlight autoit"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">#cat /etc/passwd |awk  -F <span class="string">':'</span>  <span class="string">'&#123;print $1&#125;'</span>  </span></span><br><span class="line">root</span><br><span class="line">daemon</span><br><span class="line">bin</span><br><span class="line">sys</span><br></pre></td></tr></table></figure></p>
-<p>这种是awk+action的示例，每行都会执行action{print $1}。</p>
-<p>-F指定域分隔符为’:’。</p>
-<p>如果只是显示/etc/passwd的账户和账户对应的shell,而账户与shell之间以tab键分割<br><figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#<span class="keyword">cat</span> /etc/passwd |awk  -F ':'  '&#123;<span class="keyword">print</span> <span class="label">$1</span><span class="string">"\t"</span><span class="label">$7&#125;</span>'</span><br><span class="line">root    /bin/bash</span><br><span class="line">daemon  /bin/<span class="keyword">sh</span></span><br><span class="line">bin     /bin/<span class="keyword">sh</span></span><br><span class="line">sys     /bin/<span class="keyword">sh</span></span><br></pre></td></tr></table></figure></p>
-<p>如果只是显示/etc/passwd的账户和账户对应的shell,而账户与shell之间以逗号分割,而且在所有行添加列名name,shell,在最后一行添加”blue,/bin/nosh”。</p>
-<figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">cat</span> /etc/passwd |awk  -F ':'  'BEGIN &#123;<span class="keyword">print</span> <span class="string">"name,shell"</span>&#125;  &#123;<span class="keyword">print</span> <span class="label">$1</span><span class="string">","</span><span class="label">$7&#125;</span> END &#123;<span class="keyword">print</span> <span class="string">"blue,/bin/nosh"</span>&#125;'</span><br><span class="line">name,<span class="keyword">shell</span></span><br><span class="line">root,/bin/bash</span><br><span class="line">daemon,/bin/<span class="keyword">sh</span></span><br><span class="line">bin,/bin/<span class="keyword">sh</span></span><br><span class="line">sys,/bin/<span class="keyword">sh</span></span><br><span class="line">....</span><br><span class="line">blue,/bin/nosh</span><br></pre></td></tr></table></figure>
-<p>awk工作流程是这样的：先执行BEGING，然后读取文件，读入有/n换行符分割的一条记录，然后将记录按指定的域分隔符划分域，填充域，$0则表示所有域,$1表示第一个域,$n表示第n个域,随后开始执行模式所对应的动作action。接着开始读入第二条记录······直到所有的记录都读完，最后执行END操作。</p>
-<p>搜索/etc/passwd有root关键字的所有行<br><figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#awk -F: '/root/' /etc/passwd</span></span><br><span class="line"><span class="symbol">root:</span><span class="symbol">x:</span><span class="number">0</span><span class="symbol">:</span><span class="number">0</span><span class="symbol">:root</span><span class="symbol">:/root</span><span class="symbol">:/bin/bash</span></span><br></pre></td></tr></table></figure></p>
-<p>这种是pattern的使用示例，匹配了pattern(这里是root)的行才会执行action(没有指定action，默认输出每行的内容)。</p>
-<p>搜索支持正则，例如找root开头的: <code>awk -F: &#39;/^root/&#39; /etc/passwd</code></p>
-<p>搜索/etc/passwd有root关键字的所有行，并显示对应的shell<br><figure class="highlight gradle"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># awk -F: <span class="string">'/root/&#123;print $7&#125;'</span> <span class="regexp">/etc/</span>passwd             </span><br><span class="line"><span class="regexp">/bin/</span>bash</span><br></pre></td></tr></table></figure></p>
-<p>这里指定了action{print $7}</p>
-<p>awk内置变量<br>awk有许多内置变量用来设置环境信息，这些变量可以被改变，下面给出了最常用的一些变量。</p>
-<figure class="highlight dos"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">ARGC               命令行参数个数</span><br><span class="line">ARGV               命令行参数排列</span><br><span class="line">ENVIRON            支持队列中系统环境变量的使用</span><br><span class="line">FILENAME           awk浏览的文件名</span><br><span class="line">FNR                浏览文件的记录数</span><br><span class="line"><span class="built_in">FS</span>                 设置输入域分隔符，等价于命令行 -F选项</span><br><span class="line">NF                 浏览记录的域的个数</span><br><span class="line">NR                 已读的记录数</span><br><span class="line">OFS                输出域分隔符</span><br><span class="line">ORS                输出记录分隔符</span><br><span class="line">RS                 控制记录分隔符</span><br></pre></td></tr></table></figure>
-<p>此外,$0变量是指整条记录。$1表示当前行的第一个域,$2表示当前行的第二个域,……以此类推。</p>
-<p>统计/etc/passwd:文件名，每行的行号，每行的列数，对应的完整行内容:<br><figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#awk  -F ':'  '&#123;print "filename:" FILENAME ",linenumber:" NR ",columns:" NF ",linecontent:"$0&#125;' /etc/passwd</span></span><br><span class="line"><span class="symbol">filename:</span>/etc/passwd,<span class="symbol">linenumber:</span><span class="number">1</span>,<span class="symbol">columns:</span><span class="number">7</span>,<span class="symbol">linecontent:</span><span class="symbol">root:</span><span class="symbol">x:</span><span class="number">0</span><span class="symbol">:</span><span class="number">0</span><span class="symbol">:root</span><span class="symbol">:/root</span><span class="symbol">:/bin/bash</span></span><br><span class="line"><span class="symbol">filename:</span>/etc/passwd,<span class="symbol">linenumber:</span><span class="number">2</span>,<span class="symbol">columns:</span><span class="number">7</span>,<span class="symbol">linecontent:</span><span class="symbol">daemon:</span><span class="symbol">x:</span><span class="number">1</span><span class="symbol">:</span><span class="number">1</span><span class="symbol">:daemon</span><span class="symbol">:/usr/sbin</span><span class="symbol">:/bin/sh</span></span><br><span class="line"><span class="symbol">filename:</span>/etc/passwd,<span class="symbol">linenumber:</span><span class="number">3</span>,<span class="symbol">columns:</span><span class="number">7</span>,<span class="symbol">linecontent:</span><span class="symbol">bin:</span><span class="symbol">x:</span><span class="number">2</span><span class="symbol">:</span><span class="number">2</span><span class="symbol">:bin</span><span class="symbol">:/bin</span><span class="symbol">:/bin/sh</span></span><br><span class="line"><span class="symbol">filename:</span>/etc/passwd,<span class="symbol">linenumber:</span><span class="number">4</span>,<span class="symbol">columns:</span><span class="number">7</span>,<span class="symbol">linecontent:</span><span class="symbol">sys:</span><span class="symbol">x:</span><span class="number">3</span><span class="symbol">:</span><span class="number">3</span><span class="symbol">:sys</span><span class="symbol">:/dev</span><span class="symbol">:/bin/sh</span></span><br></pre></td></tr></table></figure></p>
-<p>使用printf替代print,可以让代码更加简洁，易读<br><figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="title">awk</span>  -F <span class="string">':'</span>  <span class="string">'&#123;printf("filename:%10s,linenumber:%s,columns:%s,linecontent:%s\n",FILENAME,NR,NF,<span class="variable">$0</span>)&#125;'</span> /etc/passwd</span><br></pre></td></tr></table></figure></p>
-<h5 id="print和printf"><a href="#print和printf" class="headerlink" title="print和printf"></a>print和printf</h5><p>awk中同时提供了print和printf两种打印输出的函数。其中print函数的参数可以是变量、数值或者字符串。字符串必须用双引号引用，参数用逗号分隔。如果没有逗号，参数就串联在一起而无法区分。这里，逗号的作用与输出文件的分隔符的作用是一样的，只是后者是空格而已。</p>
-<p>printf函数，其用法和c语言中printf基本相似,可以格式化字符串,输出复杂时，printf更加好用，代码更易懂。</p>
-<h5 id="awk编程-变量和赋值"><a href="#awk编程-变量和赋值" class="headerlink" title="awk编程,变量和赋值"></a>awk编程,变量和赋值</h5><p>除了awk的内置变量，awk还可以自定义变量。</p>
-<p>下面统计/etc/passwd的账户人数<br><figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">awk <span class="string">'&#123;count++;print $0;&#125; END&#123;print "user count is ", count&#125;'</span> /etc/passwd</span><br><span class="line"><span class="symbol">root:</span><span class="symbol">x:</span><span class="number">0</span><span class="symbol">:</span><span class="number">0</span><span class="symbol">:root</span><span class="symbol">:/root</span><span class="symbol">:/bin/bash</span></span><br><span class="line">......</span><br><span class="line">user count is  <span class="number">40</span></span><br></pre></td></tr></table></figure></p>
-<p>count是自定义变量。之前的action{}里都是只有一个print,其实print只是一个语句，而action{}可以有多个语句，以;号隔开。</p>
-<p>这里没有初始化count，虽然默认是0，但是妥当的做法还是初始化为0:<br><figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">awk '<span class="type">BEGIN</span> &#123;<span class="built_in">count</span>=<span class="number">0</span>;<span class="built_in">print</span> <span class="string">"[start]user count is "</span>, <span class="built_in">count</span>&#125; &#123;<span class="built_in">count</span>=<span class="built_in">count</span>+<span class="number">1</span>;<span class="built_in">print</span> $<span class="number">0</span>;&#125; <span class="type">END</span>&#123;<span class="built_in">print</span> <span class="string">"[end]user count is "</span>, <span class="built_in">count</span>&#125;' /etc/passwd</span><br><span class="line">[start]user <span class="built_in">count</span> <span class="keyword">is</span>  <span class="number">0</span></span><br><span class="line">root:x:<span class="number">0</span>:<span class="number">0</span>:root:/root:/bin/bash</span><br><span class="line">...</span><br><span class="line">[end]user <span class="built_in">count</span> <span class="keyword">is</span>  <span class="number">40</span></span><br></pre></td></tr></table></figure></p>
-<p>统计某个文件夹下的文件占用的字节数<br><figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ls</span> -<span class="keyword">l</span> |awk 'BEGIN &#123;size=0;&#125; &#123;size=size+<span class="label">$5</span>;&#125; END&#123;<span class="keyword">print</span> <span class="string">"[end]size is "</span>, size&#125;'</span><br><span class="line">[end]size is  8657198</span><br></pre></td></tr></table></figure></p>
-<p>如果以M为单位显示:<br><figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ls</span> -<span class="keyword">l</span> |awk 'BEGIN &#123;size=0;&#125; &#123;size=size+<span class="label">$5</span>;&#125; END&#123;<span class="keyword">print</span> <span class="string">"[end]size is "</span>, size/1024/1024,<span class="string">"M"</span>&#125;'</span><br><span class="line">[end]size is  8.25889 <span class="literal">M</span></span><br><span class="line">注意，统计不包括文件夹的子目录。</span><br></pre></td></tr></table></figure></p>
-<p>条件语句</p>
-<p>awk中的条件语句是从C语言中借鉴来的，见如下声明方式：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (expression) &#123;</span><br><span class="line">    statement;</span><br><span class="line">    statement;</span><br><span class="line">    ... ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (expression) &#123;</span><br><span class="line">    statement;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    statement2;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (expression) &#123;</span><br><span class="line">    statement1;</span><br><span class="line">&#125; <span class="keyword">else</span> <span class="keyword">if</span> (expression1) &#123;</span><br><span class="line">    statement2;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    statement3;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>统计某个文件夹下的文件占用的字节数,过滤4096大小的文件(一般都是文件夹):</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ls -l |awk '<span class="operator"><span class="keyword">BEGIN</span> &#123;<span class="keyword">size</span>=<span class="number">0</span>;</span>print "[<span class="operator"><span class="keyword">start</span>]<span class="keyword">size</span> <span class="keyword">is</span> <span class="string">", size&#125; &#123;if($5!=4096)&#123;size=size+$5;&#125;&#125; END&#123;print "</span>[<span class="keyword">end</span>]<span class="keyword">size</span> <span class="keyword">is</span> <span class="string">", size/1024/1024,"</span><span class="keyword">M</span><span class="string">"&#125;'</span><br><span class="line">[end]size is  8.22339 M</span></span></span><br></pre></td></tr></table></figure>
-<p>循环语句</p>
-<p>awk中的循环语句同样借鉴于C语言，支持while、do/while、for、break、continue，这些关键字的语义和C语言中的语义完全相同。</p>
-<p>数组</p>
-<p>因为awk中数组的下标可以是数字和字母，数组的下标通常被称为关键字(key)。值和关键字都存储在内部的一张针对key/value应用hash的表格里。由于hash不是顺序存储，因此在显示数组内容时会发现，它们并不是按照你预料的顺序显示出来的。数组和变量一样，都是在使用时自动创建的，awk也同样会自动判断其存储的是数字还是字符串。一般而言，awk中的数组用来从记录中收集信息，可以用于计算总和、统计单词以及跟踪模板被匹配的次数等等。</p>
-<p>显示/etc/passwd的账户</p>
-<figure class="highlight applescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">awk -F ':' 'BEGIN &#123;<span class="command">count</span>=<span class="number">0</span>;&#125; &#123;<span class="property">name</span>[<span class="command">count</span>] = $<span class="number">1</span>;<span class="command">count</span>++;&#125;; END&#123;<span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; NR; i++) print i, <span class="property">name</span>[i]&#125;' /etc/passwd</span><br><span class="line"><span class="number">0</span> root</span><br><span class="line"><span class="number">1</span> daemon</span><br><span class="line"><span class="number">2</span> bin</span><br><span class="line"><span class="number">3</span> sys</span><br><span class="line"><span class="number">4</span> sync</span><br><span class="line"><span class="number">5</span> games</span><br><span class="line">......</span><br></pre></td></tr></table></figure>
-<p>这里使用for循环遍历数组.</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/awk命令详解/" data-id="ciqarm46r0030h8qy9zsgort3" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux命令/">Linux命令</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-tee命令详解" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/02/28/tee命令详解/" class="article-date">
-  <time datetime="2016-02-28T12:29:32.000Z" itemprop="datePublished">2016-02-28</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Linux/">Linux</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/02/28/tee命令详解/">tee命令详解</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p><img src="/pictures/Linux命令面试问答-tee命令.png" alt="tee命令示意图">tee过滤器用来想多个目标发送输出的内容。如果用于管道的话，他可以将输出复制一份到文件，兵复制另外一份到屏幕上（或一些其他的程序）。</p>
-<figure class="highlight gherkin"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ll /etc |<span class="string"> nl </span>|<span class="string"> tee /temp//ll.out</span></span><br></pre></td></tr></table></figure>
-<p>在以上例子中，从ll输出可以捕获到/temp/ll.out文件中，并且同样在屏幕上显示出来。</p>
-<p>tee [ -a ] [ -i ] [檔案 … ]</p>
-<p>参数:</p>
-<p>檔案 一个或多个档案，能够接收 tee-d 的输出。</p>
-<p>Flags:</p>
-<p>-a 追加到目标文件而不是覆盖<br>-i 忽略中断。</p>
-<p>tee命令读取标准输入，把这些内容同时输出到标准输出和（多个）文件中（read from standard input and write to standard output and files. Copy standard input to each FILE, and also to standard output. If a FILE is -, copy again to standard output.）。在info tee中说道：tee命令可以重定向标准输出到多个文件（<code>tee&#39;: Redirect output to multiple files. The</code>tee’ command copies standard input to standard output and also to any files given as arguments.  This is useful when you want not only to send some data down a pipe, but also to save a copy.）。要注意的是：在使用管道线时，前一个命令的标准错误输出不会被tee读取。</p>
-<p>常用参数</p>
-<p>格式：tee</p>
-<p>只输出到标准输出，因为没有指定文件嘛。</p>
-<p>格式：tee file</p>
-<p>输出到标准输出的同时，保存到文件file中。如果文件不存在，则创建；如果已经存在，则覆盖之。（If a file being written to does not already exist, it is created. If a file being written to already exists, the data it previously<br>contained is overwritten unless the `-a’ option is used.）</p>
-<p>格式：tee -a file</p>
-<p>输出到标准输出的同时，追加到文件file中。如果文件不存在，则创建；如果已经存在，就在末尾追加内容，而不是覆盖。</p>
-<p>格式：tee -</p>
-<p>输出到标准输出两次。（A FILE of <code>-&#39; causes</code>tee’ to send another copy of input to standard output, but this is typically not that useful as the copies are interleaved.）</p>
-<p>格式：tee file1 file2 -</p>
-<p>输出到标准输出两次，同时保存到file1和file2中。</p>
-<h4 id="使用tee命令把标准错误输出也保存到文件"><a href="#使用tee命令把标准错误输出也保存到文件" class="headerlink" title="使用tee命令把标准错误输出也保存到文件"></a>使用tee命令把标准错误输出也保存到文件</h4><figure class="highlight mel"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">[root<span class="variable">@web</span> ~]# <span class="keyword">ls</span> <span class="string">"*"</span></span><br><span class="line"><span class="keyword">ls</span>: <span class="variable">*:</span> 没有那个文件或目录</span><br><span class="line">[root<span class="variable">@web</span> ~]# <span class="keyword">ls</span> <span class="string">"*"</span> | tee -</span><br><span class="line"><span class="keyword">ls</span>: <span class="variable">*:</span> 没有那个文件或目录</span><br><span class="line">[root<span class="variable">@web</span> ~]# <span class="keyword">ls</span> <span class="string">"*"</span> | tee <span class="keyword">ls</span>.txt</span><br><span class="line"><span class="keyword">ls</span>: <span class="variable">*:</span> 没有那个文件或目录</span><br><span class="line">[root<span class="variable">@web</span> ~]# cat <span class="keyword">ls</span>.txt</span><br><span class="line">[root<span class="variable">@web</span> ~]# <span class="keyword">ls</span> <span class="string">"*"</span> <span class="number">2</span>&gt;&amp;<span class="number">1</span> | tee <span class="keyword">ls</span>.txt</span><br><span class="line"><span class="keyword">ls</span>: <span class="variable">*:</span> 没有那个文件或目录</span><br><span class="line">[root<span class="variable">@web</span> ~]# cat <span class="keyword">ls</span>.txt</span><br><span class="line"><span class="keyword">ls</span>: <span class="variable">*:</span> 没有那个文件或目录</span><br><span class="line">[root<span class="variable">@web</span> ~]#</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/tee命令详解/" data-id="ciqarm46e002ih8qybwtve6vz" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux命令/">Linux命令</a></li></ul>
 
     </footer>
   </div>
@@ -867,7 +809,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/设计模式/">设计模式</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
     </div>
   </div>
 
@@ -876,7 +818,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/C-11-常规新特性/" style="font-size: 18.33px;">C++11 常规新特性</a> <a href="/tags/Linux-网络编程/" style="font-size: 16.67px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 16.67px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 15px;">Linux用户管理</a> <a href="/tags/Linux进程间通信/" style="font-size: 16.67px;">Linux进程间通信</a> <a href="/tags/TCP-IP/" style="font-size: 20px;">TCP/IP</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/动态规划/" style="font-size: 13.33px;">动态规划</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/数组/" style="font-size: 10px;">数组</a> <a href="/tags/树结构/" style="font-size: 13.33px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 11.67px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 11.67px;">爬虫</a> <a href="/tags/随记/" style="font-size: 11.67px;">随记</a>
+      <a href="/tags/C-11-常规新特性/" style="font-size: 18.33px;">C++11 常规新特性</a> <a href="/tags/Linux-网络编程/" style="font-size: 16.67px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 16.67px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 15px;">Linux用户管理</a> <a href="/tags/Linux进程间通信/" style="font-size: 16.67px;">Linux进程间通信</a> <a href="/tags/TCP-IP/" style="font-size: 20px;">TCP/IP</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/动态规划/" style="font-size: 13.33px;">动态规划</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/数组/" style="font-size: 10px;">数组</a> <a href="/tags/树结构/" style="font-size: 13.33px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 11.67px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 11.67px;">爬虫</a> <a href="/tags/设计模式/" style="font-size: 13.33px;">设计模式</a> <a href="/tags/随记/" style="font-size: 11.67px;">随记</a>
     </div>
   </div>
 
@@ -885,7 +827,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a><span class="archive-list-count">14</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
     </div>
   </div>
 
@@ -897,23 +839,23 @@
       <ul>
         
           <li>
+            <a href="/2016/07/07/设计模式之单例模式/">设计模式之单例模式</a>
+          </li>
+        
+          <li>
+            <a href="/2016/07/06/设计模式之观察者模式/">设计模式之观察者模式</a>
+          </li>
+        
+          <li>
+            <a href="/2016/07/06/设计模式之工厂模式/">设计模式之工厂模式</a>
+          </li>
+        
+          <li>
             <a href="/2016/07/06/C-11常规特性之auto和decltype/">C++11常规特性之auto和decltype</a>
           </li>
         
           <li>
             <a href="/2016/07/06/C-11常规特性之统一初始化和初始化器列表/">C++11常规特性之统一初始化和初始化器列表</a>
-          </li>
-        
-          <li>
-            <a href="/2016/07/06/C-11常规特性之右值引用和move语义/">C++11常规特性之右值引用和move语义</a>
-          </li>
-        
-          <li>
-            <a href="/2016/07/06/C-11常规特性之lambda/">C++11常规特性之lambda</a>
-          </li>
-        
-          <li>
-            <a href="/2016/07/06/C-11常规特性之noexcept/">C++11常规特性之noexcept</a>
           </li>
         
       </ul>

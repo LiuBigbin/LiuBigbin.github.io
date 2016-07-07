@@ -65,6 +65,203 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-那家姓B的树" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/03/18/那家姓B的树/" class="article-date">
+  <time datetime="2016-03-18T07:23:13.000Z" itemprop="datePublished">2016-03-18</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/数据结构/">数据结构</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/03/18/那家姓B的树/">那家姓B的树</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>姓B的树主要有三种：B-树（也就是B树），B+树以及B*树。</p>
+<h2 id="B-树（B树）"><a href="#B-树（B树）" class="headerlink" title="B-树（B树）"></a>B-树（B树）</h2><p> B 树又叫平衡多路查找树。一棵M阶的B树定义如下：</p>
+<ol>
+<li>M阶树，指的是每一个节点最多有M个子节点</li>
+<li>除了根节点可以有2&lt;= K &lt;=M个子节点之外，其他中间节点的子节点数目必须在M/2(取上限)&lt;= K &lt;=M之间</li>
+<li>所有叶子节点都出现在同一层，实际上所有的叶子节点都是空指针</li>
+<li>每一个节点中关键字的个数不其所拥有的子节点少一个，且升序排序</li>
+<li>2和4的限制导致了对于每一个中间节点，其所有的关键节点的数量为M/2(取上限)-1 &lt;= K &lt;= M-1</li>
+</ol>
+<p>B树中的每个结点根据实际情况可以包含大量的关键字信息和分支(当然是不能超过磁盘块的大小，根据磁盘驱动(disk drives)的不同，一般块的大小在1k~4k左右)；这样树的深度降低了，这就意味着查找一个元素只要很少结点从外存磁盘中读入内存，很快访问到要查找的数据.</p>
+<h4 id="B树的高度"><a href="#B树的高度" class="headerlink" title="B树的高度"></a>B树的高度</h4><p>如果一颗B树所包含的关键字为N，那么怎样求该树的高度呢？<br>这里先设每一个节点的最小子节点的数量<code>M/2(取上限)</code>为t，那么在第一层，也就是根节点，节点数量为1，第二层的节点数量至少为2，接下来每一层，由于每一个节点的子节点数量为t，于是第三层的节点数为2*t，第四层为<code>2·t·t</code>，一直下去。所以第L层的节点数为<code>2·t^(L-2)</code>; 对于B树来说，叶节点的数量为B树的所有关键字N+1，所以对于有N个关键字的B树来说，其叶子节点的层数如果为h的话，那么有<code>2·t^(h-2) = N+1</code>; 这样的话，<code>h = log_t((N+1)/2)+2</code>;由于B树的叶子节点只是一个空指针，在B树中没有表示出来，所以B树的层数为<code>H = log_t((N+1)/2)+1</code>，如果高度从根节点为0算起的话，就是<code>log_t((N+1)/2)</code>，因为上面所有的推导都是在节点的子节点最小的情况下得到的，所以实际上B树的高度要比得到的<code>log_t((N+1)/2)</code>小。</p>
+<h3 id="B树的插入删除操作"><a href="#B树的插入删除操作" class="headerlink" title="B树的插入删除操作"></a>B树的插入删除操作</h3><p>对于会修改B树结构的操作：插入、删除，在处理的过程中必须保证B树的特征，所以对于插入和删除，需要一些比较复制的处理流程：</p>
+<h4 id="插入"><a href="#插入" class="headerlink" title="插入"></a>插入</h4><p>插入一个值时，如果对应的节点的关键字恰好为M-1个，那么需要将该节点的关键字的中位数上移到其父节点中，然后该节点剩下的关键字平均分裂为两个新的节点，上移的中位数对于父节点来说其实也是一个插入操作，所以对父节点进行同样的插入造作，这样递归知道没有冲突为止。如果插入的节点的关键字小于M-1，那么直接在该节点中按照关键字的值顺序插入新的关键字。<br>下面是插入的演示：</p>
+<p>1、B树的初始结构：<br><img src="/pictures/数据结构/树结构/B树插入-初始结构.jpg" alt=""></p>
+<p>2、插入H时，结点发现空间不够，以致将其分裂成2个结点，移动中间元素G上移到新的根结点中，在实现过程中，把A和C留在当前结点中，而H和N放置新的其右邻居结点中。如下图：</p>
+<p><img src="/pictures/数据结构/树结构/B树插入-1.jpg" alt=""></p>
+<p>3、当插入E,K,Q时，不需要任何分裂操作：<br><img src="/pictures/数据结构/树结构/B树插入-2.jpg" alt=""></p>
+<p>4、插入M需要一次分裂，注意M恰好是中间关键字元素，以致向上移到父节点中<br><img src="/pictures/数据结构/树结构/B树插入-3.jpg" alt=""></p>
+<p>5、当B树的结构如下所示时：<br><img src="/pictures/数据结构/树结构/B树插入-4.jpg" alt=""></p>
+<p>6、当插入S时，含有N,P,Q,R的结点需要分裂，把中间元素Q上移到父节点中，但是情况来了，父节点中空间已经满了，所以也要进行分裂，将父节点中的中间元素M上移到新形成的根结点中，<font color="red">注意以前在父节点中的第三个指针在修改后包括D和G节点中。</font><br><img src="/pictures/数据结构/树结构/B树插入-5.jpg" alt=""></p>
+<h3 id="B树的删除"><a href="#B树的删除" class="headerlink" title="B树的删除"></a>B树的删除</h3><p>首先查找B树中需删除的元素,如果该元素在B树中存在，则将该元素在其结点中进行删除，接下来判断该元素是否有左右孩子结点，如果有，则上移孩子结点中的某相近元素(“左孩子最右边的节点”或“右孩子最左边的节点”)到父节点中，然后是移动之后的情况；如果没有，直接进入移动之后的情况。</p>
+<h4 id="移动之后的情况："><a href="#移动之后的情况：" class="headerlink" title="移动之后的情况："></a>移动之后的情况：</h4><ol>
+<li>如果当前所在的节点没有子节点，那么在删除后，需要看当前的节点的关键字是个数是否为：<code>M/2(取上限)-1 &lt;= K &lt;= M-1</code>,如果是的话，删除完成，否则的话，进入向相邻兄弟节点求借关键字步骤。</li>
+<li>如果的当前的所在节点具有子节点，那么删除后，向该关键字所对应的左或右子节点接一个关键字上移到当前节点中，先借丰满的子节点，移动后不需要修改其他，删除直接完成。如果左右子节点都不是丰满的，那么在上移一个关键字后，需要对被借关键子的子节点进入向相邻兄弟节点求借关键字步骤。</li>
+</ol>
+<h4 id="进入向相邻兄弟节点求借关键字步骤"><a href="#进入向相邻兄弟节点求借关键字步骤" class="headerlink" title="进入向相邻兄弟节点求借关键字步骤"></a>进入向相邻兄弟节点求借关键字步骤</h4><p>向相邻兄弟节点求借关键字步骤是因为当前的节点的关键子个数不符合<code>M/2(取上限)-1 &lt;= K &lt;= M-1</code>，此时可以看看与当前节点相邻的左右兄弟节点有没有丰满的，有的话，当前节点所对应的父节点的关键子下移到当前节点中，然后丰满兄弟节点的相应的关键子上移到父节点中，放在那个刚下移的关键子的位置上，结束！，如果左右兄弟节点都没有丰满的话，就只能进行节点合并了。节点合并先找出需要合并的左右兄弟节点，二选一，然后将父节点所对应的关键子下移与需要合并的两个节点组成新的节点，此时，父节点相当于删除了一个关键字，那么就需要对父节点进行进入向相邻兄弟节点求借关键字步骤了，一直递归知道B树结构平衡为止！</p>
+<p>删除演示：<br>1、B树的初始结构：<br><img src="/pictures/数据结构/树结构/B树删除-初始结构.jpg" alt=""></p>
+<p>2、首先删除元素H，当然首先查找H，H在一个叶子结点中，且该叶子结点元素数目3大于最小元素数目ceil(m/2)-1=2，则操作很简单，只需要移动K至原来H的位置，移动L至K的位置（也就是结点中删除元素后面的元素向前移动）<br><img src="/pictures/数据结构/树结构/B树删除-1.jpg" alt=""></p>
+<p>3、下一步，删除T,因为T没有在叶子结点中，而是在中间结点中找到，发现他的继承者W(字母升序的下个元素)，将W上移到T的位置，然后将原包含W的孩子结点中的W进行删除，这里恰好删除W后，该孩子结点中元素个数大于2，无需进行合并操作。<br><img src="/pictures/数据结构/树结构/B树删除-2.jpg" alt=""></p>
+<p>4、下一步删除R，R在叶子结点中,但是该结点中元素数目为2，删除导致只有1个元素，已经小于最小元素数目ceil(5/2)-1=2，此时进入进入向相邻兄弟节点求借关键字步骤<br><img src="/pictures/数据结构/树结构/B树删除-3.jpg" alt=""></p>
+<p>5、最后一步删除E，因为没有左右相邻兄弟节点是丰满的，所以进入节点合并步骤：<br><img src="/pictures/数据结构/树结构/B树删除-4.jpg" alt=""></p>
+<p>但是，由于此时的父节点不符合要求，所以需要对父节点在进入进入向相邻兄弟节点求借关键字步骤，很明显，父节点G没有对应可借的兄弟节点，所以进行节点合并<br><img src="/pictures/数据结构/树结构/B树删除-4.jpg" alt=""></p>
+<h2 id="B-树"><a href="#B-树" class="headerlink" title="B+树"></a>B+树</h2><p>谈完了B树，我们再来讨论一下B+tree，B+tree是B树的一个变种，在实际应用中，B+tree更加常见。B+树与B树的区别在于这么几点：<br>1、B+树的内部节点（也就是非叶子节点）有n个关键字，同时有n个儿子。这和B树不同，B树的内部节点有n个儿子，但只有n-1个关键字。<br>2、B+树只有叶子节点才包含行数据，而内部节点仅仅只有关键字信息和儿子的指针（这里的指针实际上就是磁盘块的文件偏移量），也就是说内部节点仅仅包含索引信息。<br>3、B+树中的数据都存在于叶子节点中，因此所有叶子节点加在一起所组成的集合包含了所有关键字的信息以及关键字对应的行数据，而B树所有叶子节点加在一起所组成的集合并未包含所有的关键字，因为有些关键字处在内部节点中。<br><img src="/pictures/数据结构/树结构/B+树.png" alt=""></p>
+<p>上图就是B+树的一个实例。可以看到叶子节点中，蓝色部分包含了所有关键字信息，一个也不少。图中叶子节点把关键字信息（蓝色）和实际数据（Q）分开了，实际上为了便于理解，你可以认为叶子节点就是一行一行顺序排列的行数据，行数据本身就包含了关键字信息。需要注意的是，中间节点的每一个关键字的值都是其对应的子节点的关键字中的那个最小的值。每一个节点之所以有一个指向其相邻兄弟的指针，是因为可以方便顺序访问，提高区间访问的性能。相比于B树，B+树更适合外存索引，原因和内节点的出度有关，因为B+树的内节点只存储索引信息和子节点的指针信息，少去了B树对应的data信息，所以一个节点所存储的索引信息比B树大很多，这样的话，节点的出度就越高。因为一般在实现B+树的时候，会是将一个节点设置成为一个页的大小，每次新建节点时，直接申请一个页的空间，这样就保证一个节点物理上也存储在一个页里，加之计算机存储分配都是按页对齐的，就实现了一个node只需一次I/O，所以一个节点的出度就取决于存储的key+data+pointer的大小，B+少了data，所以存的索引信息也就越多。</p>
+<h2 id="B-树-1"><a href="#B-树-1" class="headerlink" title="B*树"></a>B*树</h2><p>B<em>-tree是B+-tree的变体，在B+树的基础上(所有的叶子结点中包含了全部关键字的信息，及指向含有这些关键字记录的指针)，B</em>树中非根和非叶子结点再增加指向兄弟的指针；B*树定义了非叶子结点关键字个数至少为(2/3)·M，即块的最低使用率为2/3（代替B+树的1/2）。给出了一个简单实例，如下图所示：<br><img src="/pictures/数据结构/树结构/B星树.jpg" alt=""></p>
+<p>B+树的分裂：当一个结点满时，分配一个新的结点，并将原结点中1/2的数据复制到新结点，最后在父结点中增加新结点的指针；B+树的分裂只影响原结点和父结点，而不会影响兄弟结点，所以它不需要指向兄弟的指针。<br>B*树的分裂：当一个结点满时，如果它的下一个兄弟结点未满，那么将一部分数据移到兄弟结点中，再在原结点插入关键字，最后修改父结点中兄弟结点的关键字（因为兄弟结点的关键字范围改变了）；如果兄弟也满了，则在原结点与兄弟结点之间增加新结点，并各复制1/3的数据到新结点，最后在父结点增加新结点的指针。<br>所以，B*树分配新结点的概率比B+树要低，空间使用率更高；</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/03/18/那家姓B的树/" data-id="ciqbvirlh0005psqy5s19pr8z" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/树结构/">树结构</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-第K小元素选择算法" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/03/17/第K小元素选择算法/" class="article-date">
+  <time datetime="2016-03-17T13:40:02.000Z" itemprop="datePublished">2016-03-17</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/算法/">算法</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/03/17/第K小元素选择算法/">第K小元素选择算法</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>对于在一个无序的数组中找出第K小（大）的元素，目前有很多种方法，但是BFPRT算法是目前最好的算法，其复杂度在最好或最坏情况下都是O(n)。目前主要有一下几种思路：</p>
+<p>1、将n个数排序(比如快速排序或归并排序)，选取排序后的第k个数，时间复杂度为O(nlogn)。使用STL函数sort可以大大减少编码量。</p>
+<p>2、将方法1中的排序方法改为线性时间排序算法(如基数排序或计数排序)，时间复杂度为O(n)。但线性时间排序算法使用限制较多，不常使用。</p>
+<p>3、维护一个k个元素的最大堆，存储当前遇到的最小的k个数，时间复杂度为O(nlogk)。这种方法同样适用于海量数据的处理。</p>
+<p>4、部分的选择排序，即把最小的放在第1位，第二小的放在第2位，直到第k位为止，时间复杂度为O(kn)。实现非常简单。</p>
+<p>5、部分的快速排序（快速选择算法），每次划分之后判断第k个数在左右哪个部分，然后递归对应的部分，平均时间复杂度为O(n)。但最坏情况下复杂度为O(n^2)。</p>
+<p>6、BFPRT算法，修改快速选择算法的主元选取规则，使用中位数的中位数的作为主元，最坏情况下时间复杂度为O(n)。</p>
+<h4 id="BFPRT的算法步骤如下："><a href="#BFPRT的算法步骤如下：" class="headerlink" title="BFPRT的算法步骤如下："></a>BFPRT的算法步骤如下：</h4><ol>
+<li><p>将n个元素每5个一组，分成n/5(上界)组。</p>
+</li>
+<li><p>取出每一组的中位数，任意排序方法，比如插入排序。</p>
+</li>
+<li><p>递归的调用selection算法查找上一步中所有中位数的中位数，设为x，偶数个中位数的情况下设定为选取中间小的一个。</p>
+</li>
+<li><p>用x来分割数组，设小于等于x的个数为k，大于x的个数即为n-k。</p>
+</li>
+<li><p>若i==k，返回x；若i<k，在小于x的元素中递归查找第i小的元素；若i>k，在大于x的元素中递归查找第i-k小的元素。</k，在小于x的元素中递归查找第i小的元素；若i></p>
+</li>
+<li><p>终止条件：n=1时，返回的即是i小元素。</p>
+</li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/03/17/第K小元素选择算法/" data-id="ciqbvirlx000wpsqytwioafex" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/数组/">数组</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-C语言之static" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/03/17/C语言之static/" class="article-date">
+  <time datetime="2016-03-17T05:59:50.000Z" itemprop="datePublished">2016-03-17</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C与C/">C与C++</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/03/17/C语言之static/">C语言之static</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>在C或是C++语言中，一段可运行程序在内存中的内存分配图如下：<br><img src="/pictures/C与C++/程序运行内存分配图.png" alt="程序运行内存分配图"></p>
+<p>在C语言中，全局变量和静态变量都是存储在上图中的数据区下面，所以在函数中定义一个局部静态变量时，该变量的内存就在数据区中，而不是在栈内存去里面，所以当函数运行完成退出后，对应的静态局部变量还是在数据区里面，不会随着函数的退出而消亡。</p>
+<p>由于C语言代码是以文件为单位来组织的，在一个源程序所有源文件中，一个外部变量或函数只能在某个文件中定义一次，而其它文件可以通过extern声明来访问它（定义外部变量或函数的源文件中也可以包含对该外部变量的extern声明）。而static则可以限定变量或函数为静态存储。如果用static限定外部变量与函数，则可以将该对象的作用域限定为被编译源文件的剩余部分。通过static限定外部对象，可以达到隐藏外部对象的目的。因而，static限定的变量或函数不会和同一程序中其它文件中同名的相冲突。如果用static限定内部变量，则该变量从程序一开始就拥有内存，不会随其所在函数的调用和退出而分配和消失。</p>
+<p>C语言中使用静态函数的好处：</p>
+<ol>
+<li>静态函数会被自动分配在一个一直使用的存储区，直到退出应用程序实例，避免了调用函数时压栈出栈，速度快很多。</li>
+<li>关键字“static”，译成中文就是“静态的”，所以内部函数又称静态函数。但此处“static”的含义不是指存储方式，而是指对函数的作用域仅局限于本文件。 使用内部函数的好处是：不同的人编写不同的函数时，不用担心自己定义的函数，是否会与其它文件中的函数同名，因为同名也没有关系。</li>
+</ol>
+<h2 id="static变量"><a href="#static变量" class="headerlink" title="static变量:"></a>static变量:</h2><h4 id="局部"><a href="#局部" class="headerlink" title="局部"></a>局部</h4><p>a.静态局部变量在函数内定义,生存期为整个源程序，但作用域与自动变量相同，只能在定义该变量的函数内使用。退出该函数后， 尽管该变量还继续存在，但不能使用它。<br>b.对基本类型的静态局部变量若在说明时未赋以初值，则系统自动赋予0值。而对自动变量不赋初值，则其值是不定的。</p>
+<h4 id="全局"><a href="#全局" class="headerlink" title="全局"></a>全局</h4><p>全局变量本身就是静态存储方式， 静态全局变量当然也是静态存储方式。但是他们的作用域，非静态全局 变量的作用域是整个源程序（多个源文件可以共同使用）； 而静态全局变量则限制了其作用域， 即只在定义该变量的源文件内有效， 在同一源程序的其它源文件中不能使用它。</p>
+<h2 id="static函数（也叫内部函数）"><a href="#static函数（也叫内部函数）" class="headerlink" title="static函数（也叫内部函数）"></a>static函数（也叫内部函数）</h2><p>只能被本文件中的函数调用，而不能被同一程序其它文件中的函数调用。区别于一般的非静态函数（外部函数）</p>
+<h4 id="全局变量以及全局变量与静态变量的关系："><a href="#全局变量以及全局变量与静态变量的关系：" class="headerlink" title="全局变量以及全局变量与静态变量的关系："></a>全局变量以及全局变量与静态变量的关系：</h4><p>顾名思义，全局变量是指能够在全局引用的变量，相对于局部变量的概念，也叫外部变量；同静态变量一样，全局变量位于静态数据区，全局变量一处定义，多处引用，用关键字“extern”引用“外部”的变量。</p>
+<p>全局变量也可以是静态的，在前面有过说明，静态全局变量的意义就是不让“外部”引用，是单个源文件里的全局变量，即是编译阶段的全局变量，而不是连接阶段的全局变量。</p>
+<h4 id="通过上面的分析，我们不难得出以下结论："><a href="#通过上面的分析，我们不难得出以下结论：" class="headerlink" title="通过上面的分析，我们不难得出以下结论："></a>通过上面的分析，我们不难得出以下结论：</h4><p>1、 静态函数与普通函数的区别在于：静态函数不可以被同一源文件以外的函数调用。</p>
+<p>2、 静态局部变量与普通局部变量的区别在于：静态局部变量只初始化一次，下一次初始化实际上是依然是上一次的变量；</p>
+<p>3、 静态全局变量与普通全局变量的区别在于：静态全局变量的作用域仅限于所在的源文件。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/03/17/C语言之static/" data-id="ciqbvirpx004ypsqymlvp93z1" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-从整数的补码到用位运算实现任何两个数的加减法" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2016/03/16/从整数的补码到用位运算实现任何两个数的加减法/" class="article-date">
@@ -105,7 +302,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/16/从整数的补码到用位运算实现任何两个数的加减法/" data-id="ciqarm468002ch8qya88vbfkm" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/16/从整数的补码到用位运算实现任何两个数的加减法/" data-id="ciqbvirn3002jpsqy3214lu0o" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/位运算/">位运算</a></li></ul>
@@ -154,7 +351,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/15/域名污染/" data-id="ciqarm45g001kh8qypgyoz80r" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/15/域名污染/" data-id="ciqbvirmh001rpsqy2nn2mt42" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TCP-IP/">TCP/IP</a></li></ul>
@@ -222,7 +419,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/15/NAT以及内网穿透/" data-id="ciqarm470003ch8qyr0su9gko" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/15/NAT以及内网穿透/" data-id="ciqbvirnq003jpsqy1g0e1bg8" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TCP-IP/">TCP/IP</a></li></ul>
@@ -284,7 +481,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/14/TCP_IP模型常用协议/" data-id="ciqarm46w0036h8qyqzynncqg" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/14/TCP_IP模型常用协议/" data-id="ciqbvirnn003dpsqyh69mxcqy" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TCP-IP/">TCP/IP</a></li></ul>
@@ -358,7 +555,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/12/平衡二叉查找树-AVL树/" data-id="ciqarm4550019h8qydtea2eq3" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/12/平衡二叉查找树-AVL树/" data-id="ciqbvirma001gpsqyfmav5n27" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/树结构/">树结构</a></li></ul>
@@ -452,7 +649,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/11/Linux-之守护进程、僵死进程与孤儿进程/" data-id="ciqarm47k0040h8qymcs5to31" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/11/Linux-之守护进程、僵死进程与孤儿进程/" data-id="ciqbviroe0047psqy7bli5x4g" class="article-share-link">Share</a>
       
       
     </footer>
@@ -533,188 +730,11 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/11/IO-多路复用之select、poll、epoll详解/" data-id="ciqarm47v004ih8qyctx08xez" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/11/IO-多路复用之select、poll、epoll详解/" data-id="ciqbvirpq004ppsqyickbbxpy" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a></li></ul>
 
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Linux-I-O-模型" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/03/11/Linux-I-O-模型/" class="article-date">
-  <time datetime="2016-03-11T11:18:01.000Z" itemprop="datePublished">2016-03-11</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Linux/">Linux</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/03/11/Linux-I-O-模型/">Linux I/O 模型</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>unix下有5中可用的I/O模型，分别为：</p>
-<h4 id="阻塞式I-O"><a href="#阻塞式I-O" class="headerlink" title="阻塞式I/O"></a>阻塞式I/O</h4><h4 id="非阻塞式I-O"><a href="#非阻塞式I-O" class="headerlink" title="非阻塞式I/O"></a>非阻塞式I/O</h4><h4 id="I-O复用（事件驱动IO，-select、poll和epoll）"><a href="#I-O复用（事件驱动IO，-select、poll和epoll）" class="headerlink" title="I/O复用（事件驱动IO， select、poll和epoll）"></a>I/O复用（事件驱动IO， <a href="../IO-多路复用之select、poll、epoll详解/">select、poll和epoll</a>）</h4><h4 id="信号驱动式I-O（SIGIO）"><a href="#信号驱动式I-O（SIGIO）" class="headerlink" title="信号驱动式I/O（SIGIO）"></a>信号驱动式I/O（SIGIO）</h4><h4 id="异步I-O"><a href="#异步I-O" class="headerlink" title="异步I/O"></a>异步I/O</h4><p>要先理解I/O模型，需要先知道IO发生时所涉及到的步骤和对象，对于一个network IO (这里我们以read举例)，它会涉及到两个系统对象，一个是调用这个IO的process (or thread)，另一个就是系统内核(kernel)。当一个read操作发生时，它会经历两个阶段：<br><figure class="highlight livecodeserver"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span> 等待数据准备 (Waiting <span class="keyword">for</span> <span class="operator">the</span> data <span class="built_in">to</span> be ready)</span><br><span class="line"></span><br><span class="line"><span class="number">2</span> 将数据从内核拷贝到进程中 (Copying <span class="operator">the</span> data <span class="built_in">from</span> <span class="operator">the</span> kernel <span class="built_in">to</span> <span class="operator">the</span> <span class="built_in">process</span>)</span><br></pre></td></tr></table></figure></p>
-<p>记住这两点很重要，因为这些IO Model的区别就是在两个阶段上各有不同的情况。</p>
-<h3 id="阻塞式I-O模型"><a href="#阻塞式I-O模型" class="headerlink" title="阻塞式I/O模型"></a>阻塞式I/O模型</h3><p>在linux中，默认情况下所有的socket都是blocking，一个典型的读操作流程大概是这样：<br><img src="/pictures/LinuxIO模型-阻塞IO.png" alt=""></p>
-<p>当用户进程调用了recvfrom这个系统调用，kernel就开始了IO的第一个阶段：准备数据。对于network io来说，很多时候数据在一开始还没有到达（比如，还没有收到一个完整的UDP包），这个时候kernel就要等待足够的数据到来。而在用户进程这边，整个进程会被阻塞。当kernel一直等到数据准备好了，它就会将数据从kernel中拷贝到用户内存，然后kernel返回结果，用户进程才解除block的状态，重新运行起来。<br>所以，blocking IO的特点就是在IO执行的两个阶段都被block了。</p>
-<h3 id="非阻塞式I-O-模型"><a href="#非阻塞式I-O-模型" class="headerlink" title="非阻塞式I/O 模型"></a>非阻塞式I/O 模型</h3><p>非阻塞的接口相比于阻塞型接口的显著差异在于，在被调用之后立即返回。使用如下的函数可以将某句柄 fd 设为非阻塞状态。<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">fcntl( fd, F_SETFL, O_NONBLOCK );</span><br></pre></td></tr></table></figure></p>
-<p>linux下，可以通过设置socket使其变为non-blocking。当对一个non-blocking socket执行读操作时，流程是这个样子：<br><img src="/pictures/LinuxIO模型-非阻塞IO.png" alt=""></p>
-<p>从图中可以看出，当用户进程发出read操作时，如果kernel中的数据还没有准备好，那么它并不会block用户进程，而是立刻返回一个error。从用户进程角度讲 ，它发起一个read操作后，并不需要等待，而是马上就得到了一个结果。用户进程判断结果是一个error时，它就知道数据还没有准备好，于是它可以再次发送read操作。一旦kernel中的数据准备好了，并且又再次收到了用户进程的system call，那么它马上就将数据拷贝到了用户内存，然后返回。所以，用户进程其实是需要不断的主动询问kernel数据好了没有。</p>
-<font color="red">但是上述模型绝不被推荐。因为，循环调用 recv() 将大幅度推高 CPU 占用率；此外，在这个方案中，recv() 更多的是起到检测“操作是否完成”的作用，实际操作系统提供了更为高效的检测“操作是否完成“作用的接口，例如 select()。</font>
-
-<h3 id="I-O复用（事件驱动IO，-select、poll和epoll）-1"><a href="#I-O复用（事件驱动IO，-select、poll和epoll）-1" class="headerlink" title="I/O复用（事件驱动IO， select、poll和epoll）"></a>I/O复用（事件驱动IO， <a href="2016/03/11/IO-多路复用之select、poll、epoll详解/">select、poll和epoll</a>）</h3><p>我们都知道，select/epoll的好处就在于单个process就可以同时处理多个网络连接的IO。它的基本原理就是select/epoll这个function会不断的轮询所负责的所有socket，当某个socket有数据到达了，就通知用户进程。它的流程如图：<br><img src="/pictures/LinuxIO模型-多路IO复用.png" alt=""></p>
-<p>当用户进程调用了select，那么整个进程会被block，而同时，kernel会“监视”所有select负责的socket，当任何一个socket中的数据准备好了，select就会返回。这个时候用户进程再调用read操作，将数据从kernel拷贝到用户进程。<br>这个图和blocking IO的图其实并没有太大的不同，事实上，还更差一些。因为这里需要使用两个system call (select 和 recvfrom)，而blocking IO只调用了一个system call (recvfrom)。但是，用select的优势在于它可以同时处理多个connection。（多说一句。所以，如果处理的连接数不是很高的话，使用select/epoll的web server不一定比使用multi-threading + blocking IO的web server性能更好，可能延迟还更大。select/epoll的优势并不是对于单个连接能处理得更快，而是在于能处理更多的连接。）<br>在IO multiplexing Model中，实际中，对于每一个socket，一般都设置成为non-blocking，但是，如上图所示，整个用户的process其实是一直被block的。只不过process是被select这个函数block，而不是被socket IO给block。</p>
-<h3 id="信号驱动式I-O（SIGIO）-1"><a href="#信号驱动式I-O（SIGIO）-1" class="headerlink" title="信号驱动式I/O（SIGIO）"></a>信号驱动式I/O（SIGIO）</h3><p>我们也可以使用信号，让内核在描述符就绪时发送SIGIO信号通知我们。这种模型就是信号驱动模式IO，如下图所示：<br><img src="/pictures/LinuxIO模型-信号驱动IO.png" alt=""></p>
-<p>我们先开启套接字的信号驱动模式，并通过sigaction系统调用安装一个信号处理函数。该系统调用将立刻返回，我们的进程继续工作，也就是说它没有被阻塞。当数据报准备好读取时，内核就为该进程产生一个SIGIO信号。我们随后既可以在信号处理函数中调用recvfrom读取数据报，并通知主循环数据已经准备好，也可以立刻通知主循环，然让他读取数据报。</p>
-<p>无论如何处理信号，这种模型的优势在于等待数据报到达期间进程不被阻塞。主循环可以继续执行，只要等待来自信号处理函数的通知：既可以是数据报以准备好被处理，也可以是数据报已准备好被读取。</p>
-<h3 id="异步I-O-1"><a href="#异步I-O-1" class="headerlink" title="异步I/O"></a>异步I/O</h3><p>linux下的asynchronous IO其实用得很少。先看一下它的流程：<br><img src="/pictures/LinuxIO模型-异步IO.png" alt=""><br>用户进程发起read操作之后，立刻就可以开始去做其它的事。而另一方面，从kernel的角度，当它受到一个asynchronous read之后，首先它会立刻返回，所以不会对用户进程产生任何block。然后，kernel会等待数据准备完成，然后将数据拷贝到用户内存，当这一切都完成之后，kernel会给用户进程发送一个signal，告诉它read操作完成了。</p>
-<h4 id="阻塞与非阻塞的区别："><a href="#阻塞与非阻塞的区别：" class="headerlink" title="阻塞与非阻塞的区别："></a>阻塞与非阻塞的区别：</h4><p>由图形我们可以知道，其实两者的而区别只在于当内核没有数据的时候，程序阻塞或不阻塞，如果内核没有数据的时候，程序一直等待的话，那么属于阻塞IO，如果没有数据的时候立刻返回，就是非阻塞IO。</p>
-<h4 id="同步和异步IO的区别："><a href="#同步和异步IO的区别：" class="headerlink" title="同步和异步IO的区别："></a>同步和异步IO的区别：</h4><p>同步IO与异步IO的区别就是在IO操作期间，程序有没有出现过阻塞，不管是内核数据准备期间，还是数据从内核复制到用户空间期间，只要是出现过阻塞的，那么就是同步IO，由上面的分析我们可以知道，其实阻塞式I/O，非阻塞式I/O，I/O复用（事件驱动IO， select、poll和epoll），信号驱动式I/O（SIGIO）都属于同步IO。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/11/Linux-I-O-模型/" data-id="ciqarm47r004ch8qyey51b99a" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-磁盘的分割、格式化、检验与挂载" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/02/29/磁盘的分割、格式化、检验与挂载/" class="article-date">
-  <time datetime="2016-02-29T14:51:39.000Z" itemprop="datePublished">2016-02-29</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Linux/">Linux</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/02/29/磁盘的分割、格式化、检验与挂载/">磁盘的分割、格式化、检验与挂载</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>我们都知道，在Linux下，想要使用一颗磁盘，那么都必须要经过这几个动作：分割、格式化、（检验）<br>挂载。</p>
-<h4 id="磁盘分区：fdisk"><a href="#磁盘分区：fdisk" class="headerlink" title="磁盘分区：fdisk"></a>磁盘分区：fdisk</h4><figure class="highlight autoit"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root<span class="constant">@www</span> ~]<span class="preprocessor"># fdisk [-l] 装置名称</span></span><br><span class="line">选项与参数：</span><br><span class="line">-l ：输出后面接的装置所有的 partition 内容。若仅有 fdisk -l 时， 则系统将会把整个系统内能够搜到的装置的</span><br><span class="line">     partition 均列出来。</span><br><span class="line"></span><br><span class="line"><span class="preprocessor"># 没有加 -l 参数时，直接进行后面接的磁盘的分区操作</span></span><br><span class="line">[root<span class="constant">@www</span> ~]<span class="preprocessor"># fdisk /dev/sdc   &lt;==将进入对/dev/sdc磁盘的分区操作</span></span><br></pre></td></tr></table></figure>
-<h4 id="磁盘格式化：mkfs"><a href="#磁盘格式化：mkfs" class="headerlink" title="磁盘格式化：mkfs"></a>磁盘格式化：mkfs</h4><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]# mkfs [-t 文件系统格式] 装置文件名</span><br><span class="line">选项与参数：</span><br><span class="line">-t ：可以接文件系统格式，例如 ext3, ext2, vfat 等(系统有支持才会生效)</span><br><span class="line"></span><br><span class="line">[root@www ~]# mkfs -t ext3 /dev/hdc6</span><br><span class="line"></span><br><span class="line"><span class="header"># 按下两个[tab]，会发现 mkfs 支持的文件格式如下所示！可以格式化 vfat ！</span></span><br><span class="line">[<span class="link_label">root@www ~</span>]# mkfs[<span class="link_label">tab</span>][<span class="link_reference">tab</span>]</span><br><span class="line">mkfs mkfs.cramfs mkfs.ext2 mkfs.ext3 mkfs.msdos mkfs.vfat</span><br></pre></td></tr></table></figure>
-<p>mkfs命令会将每一种文件系统的参数都给默认化，如果需要自己加入参数，那么可以使用mke2fs命令</p>
-<figure class="highlight scheme"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="list">[<span class="keyword">root@www</span> ~]# mke2fs <span class="list">[<span class="keyword">-b</span> block大小] <span class="list">[<span class="keyword">-i</span> block大小] <span class="list">[<span class="keyword">-L</span> 标头] <span class="list">[<span class="keyword">-cj</span>] 装置</span><br><span class="line">选项与参数：</span><br><span class="line">-b ：可以设定每个 block 的大小，目前支持 <span class="number">1024</span>, <span class="number">2048</span>, <span class="number">4096</span> bytes 三种；</span><br><span class="line">-i ：多少容量给予一个 inode 呢？</span><br><span class="line">-c ：检查磁盘错误，仅下达一次 -c 时，会进行快速读取测试； 如果下达两次 -c -c 癿话，会测试读写<span class="list">(<span class="keyword">read-write</span>)</span>，</span><br><span class="line">     会很慢～</span><br><span class="line">-L ：后面可以接标头名称 <span class="list">(<span class="keyword">Label</span>)</span>，这个 label 是有用的喔！</span><br><span class="line">-j ：本来 mke2fs 是 EXT2 ，加上 -j 后，会主动加入 journal 而成为 EXT3。</span><br><span class="line"></span><br><span class="line"><span class="list">[<span class="keyword">root@www</span> ~]# mke2fs -j -L <span class="string">"vbird_logical"</span> -b <span class="number">2048</span> -i <span class="number">8192</span> /dev/hdc6</span></span></span></span></span></span></span><br></pre></td></tr></table></figure>
-<h4 id="磁盘检验：-fsck-badblocks"><a href="#磁盘检验：-fsck-badblocks" class="headerlink" title="磁盘检验： fsck, badblocks"></a>磁盘检验： fsck, badblocks</h4><p>fsch是用来检查与修正文件系统错误的指令。注意：通帯只有身为 root 的文件系统有问题的时候才使用这个指令，否则在正常状况下使用此一指令， 可能会造成对系统的危害！通帯使用这个指令的场合都是在系统出现极大的问题，导致你在 Linux 开机的时候得进入单人单机模式下进行维护的行为时，才必项使用此指令！</p>
-<p>此外，由于 fsck 在扫瞄硬盘的时候，可能会造成部分 filesystem<br>的损坏，所以『执行 fsck 时， 被检查的 partition 务必不可挂载到系统上！亦即是需要在卸除的状态！』</p>
-<p>ext2/ext3文件系统的最顶层(就是挂载点那个目录底下)会存在一个『lost+found』的目录吧！ 该目录就是在当你使用 fsck 检查文件系统后，若出现问题时，有问题的数据会被放置到这个目录中！所以理论上这个目录不应该会有任何数据，若系统自动产生数据在里面，那…你就得特别注意你的文件系统！！！<br><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]# fsck [-t 文件系统] [-ACay] 装置名称</span><br><span class="line">选项与参数：</span><br><span class="line">-t ：如同 mkfs 一样，fsck 也是个综合软件而已！因此我们同样需要指定文件系统。</span><br><span class="line"><span class="code">     不过由于现今的 Linux 太聪明了，他会自动的透过 superblock 去分辨文件系统， 因此通常可以不需要这个选顷！</span></span><br><span class="line">-A ：依据 /etc/fstab 癿内容，将需要的装置扫瞄一次。通常开机过程中就会执行此指令了。</span><br><span class="line">-a ：自动修复检查到的有问题的扇区，所以你不用一直按 y ！</span><br><span class="line">-y ：与 -a 类似，但是某些 filesystem 仅支持 -y 这个参数！</span><br><span class="line">-C ：可以在检验的过程当中，使用一个直方图来显示目前的进度！</span><br><span class="line">EXT2/EXT3 的额外选项功能：(e2fsck 指令所提供)</span><br><span class="line">-f ：强制检查！一般来说，如果 fsck 没有发现任何 unclean 的旗标，不会主动进入细部检查的，</span><br><span class="line"><span class="code">     如果您想要强制 fsck 进入细部检查，就得加上 -f 旗标！</span></span><br><span class="line">-D ：针对文件系统下的目录进行优化配置。</span><br><span class="line"></span><br><span class="line">范例一：强制的将前面我们建立的 /dev/hdc6 这个装置给他检验一下！</span><br><span class="line">[root@www ~]# fsck -C -f -t ext3 /dev/hdc6</span><br><span class="line">fsck 1.39 (29-May-2006)</span><br><span class="line">e2fsck 1.39 (29-May-2006)</span><br><span class="line">Pass 1: Checking inodes, blocks, and sizes</span><br><span class="line">Pass 2: Checking directory structure</span><br><span class="line">Pass 3: Checking directory connectivity</span><br><span class="line">Pass 4: Checking reference counts</span><br><span class="line">Pass 5: Checking group summary information</span><br><span class="line">vbird_logical: 11/251968 files (9.1% non-contiguous), 36926/1004046 blocks</span><br><span class="line"><span class="header"># 如果没有加上 -f 的选项，则由于这个文件系统不曾出现问题，</span></span><br><span class="line"><span class="header"># 检查的经过非常的快速！若加上 -f 强制检查，才会一项一项的显示过程。</span></span><br><span class="line"></span><br><span class="line">范例二：系统有多少文件系统支持的 fsck 软件？</span><br><span class="line">[<span class="link_label">root@www ~</span>]# fsck[<span class="link_label">tab</span>][<span class="link_reference">tab</span>]</span><br><span class="line">fsck fsck.cramfs fsck.ext2 fsck.ext3 fsck.msdos fsck.vfat</span><br></pre></td></tr></table></figure></p>
-<p>刚刚谈到的 fsck 是用来检验文件系统是否出错，至于badblocks 则是用来检查硬盘软软盘扇区有没有坏轨的！ 由与这个指令其实可以透过『 mke2fs -c 装置文件名 』在进行格式化的时候处理磁盘表面的读取测试， 因此目前大多不使用这个指令！</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]<span class="comment"># badblocks -[svw] 装置名称</span></span><br><span class="line">选项与参数：</span><br><span class="line"><span class="operator">-s</span> ：在屏幕上列出进度</span><br><span class="line">-v ：可以在屏幕上看到进度</span><br><span class="line">-w：使用写入癿方式来测试，建议不要使用此一参数，尤其是待检查的装置已有档案时！</span><br><span class="line"> [root@www ~]<span class="comment"># badblocks -sv /dev/hdc6</span></span><br><span class="line"> Checking blocks <span class="number">0</span> to <span class="number">2008093</span></span><br><span class="line"> Checking <span class="keyword">for</span> bad blocks (<span class="built_in">read</span>-only <span class="built_in">test</span>): <span class="keyword">done</span></span><br><span class="line"> Pass completed, <span class="number">0</span> bad blocks found.</span><br></pre></td></tr></table></figure>
-<h4 id="磁盘挂载与卸除"><a href="#磁盘挂载与卸除" class="headerlink" title="磁盘挂载与卸除"></a>磁盘挂载与卸除</h4><p>以下列出磁盘挂载的例子：</p>
-<figure class="highlight nimrod"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">范例一：将刚刚建立的 /dev/hdc6 挂载到 /mnt/hdc6 上面！</span><br><span class="line">[root@www ~]<span class="comment"># mkdir /mnt/hdc6</span></span><br><span class="line">[root@www ~]<span class="comment"># mount /dev/hdc6 /mnt/hdc6</span></span><br><span class="line">[root@www ~]<span class="comment"># df</span></span><br><span class="line"><span class="type">Filesystem</span> <span class="number">1</span>K-blocks <span class="type">Used</span> <span class="type">Available</span> <span class="type">Use</span>% <span class="type">Mounted</span> on</span><br><span class="line">.....中间省略.....</span><br><span class="line">/dev/hdc6 <span class="number">1976312</span> <span class="number">42072</span> <span class="number">1833836</span> <span class="number">3</span>% /mnt/hdc6</span><br><span class="line"><span class="comment"># 看起来，真的有挂载！档案大小约为 2GB 左右！</span></span><br><span class="line"></span><br><span class="line">范例二：观察目前『已挂载』的文件系统，包括各文件系统的<span class="type">Label</span>名称</span><br><span class="line">[root@www ~]<span class="comment"># mount -l</span></span><br><span class="line">/dev/hdc2 on / <span class="keyword">type</span> ext3 (rw) [/<span class="number">1</span>]</span><br><span class="line"><span class="keyword">proc</span> on /<span class="keyword">proc</span> <span class="keyword">type</span> <span class="keyword">proc</span> (rw)</span><br><span class="line">sysfs on /sys <span class="keyword">type</span> sysfs (rw)</span><br><span class="line">devpts on /dev/pts <span class="keyword">type</span> devpts (rw,gid=<span class="number">5</span>,mode=<span class="number">620</span>)</span><br><span class="line">/dev/hdc3 on /home <span class="keyword">type</span> ext3 (rw) [/home]</span><br><span class="line">/dev/hdc1 on /boot <span class="keyword">type</span> ext3 (rw) [/boot]</span><br><span class="line">tmpfs on /dev/shm <span class="keyword">type</span> tmpfs (rw)</span><br><span class="line">none on /<span class="keyword">proc</span>/sys/fs/binfmt_misc <span class="keyword">type</span> binfmt_misc (rw)</span><br><span class="line">sunrpc on /<span class="keyword">var</span>/lib/nfs/rpc_pipefs <span class="keyword">type</span> rpc_pipefs (rw)</span><br><span class="line">/dev/hdc6 on /mnt/hdc6 <span class="keyword">type</span> ext3 (rw) [vbird_logical]</span><br><span class="line"><span class="comment"># 除了实际的文件系统外，很多特殊的文件系统(proc/sysfs...)也会被显示出来！</span></span><br><span class="line"><span class="comment"># 值得注意的是，加上 -l 可以列出如上特殊字体的标头(label)</span></span><br></pre></td></tr></table></figure>
-<p>另外，我们也可以利用 mount 来将某个目录挂载到另外一个目录去！这并不是挂载文件系统，而是额外挂载某个目录的方法！ 虽然底下的方法也可以使用 symbolic link 来连结，不过在某些不支持符号链接的程序运作中，还是得要透过这样的方法才行。</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">范例七：将 /home 这个目录暂时挂载到 /mnt/home 底下：</span><br><span class="line">[root@www ~]<span class="preprocessor"># mkdir /mnt/home</span></span><br><span class="line">[root@www ~]<span class="preprocessor"># mount --bind /home /mnt/home</span></span><br><span class="line">[root@www ~]<span class="preprocessor"># ls -lid /home/ /mnt/home</span></span><br><span class="line"><span class="number">2</span> drwxr-xr-x <span class="number">6</span> root root <span class="number">4096</span> Sep <span class="number">29</span> <span class="number">02</span>:<span class="number">21</span> /home/</span><br><span class="line"><span class="number">2</span> drwxr-xr-x <span class="number">6</span> root root <span class="number">4096</span> Sep <span class="number">29</span> <span class="number">02</span>:<span class="number">21</span> /mnt/home</span><br><span class="line">[root@www ~]<span class="preprocessor"># mount -l</span></span><br><span class="line">/home on /mnt/<span class="function">home type <span class="title">none</span> <span class="params">(rw,bind)</span></span></span><br></pre></td></tr></table></figure>
-<p>从此进入 /mnt/home 就是进入 /home !</p>
-<p>利用umount可以卸载装置</p>
-<figure class="highlight scheme"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="list">[<span class="keyword">root@www</span> ~]# umount <span class="list">[<span class="keyword">-fn</span>] 装置文件名戒挂载点</span><br><span class="line">选项与参数：</span><br><span class="line">-f ：强制卸除！可用在类似网络文件系统 <span class="list">(<span class="keyword">NFS</span>)</span> 无法读取到的情冴下；</span><br><span class="line">-n ：不更新 /etc/mtab 情况下卸除。</span></span></span><br></pre></td></tr></table></figure>
-<p>执行该指令时，必须保证所挂载的装置处于不使用状态，否则的话，卸载不成：</p>
-<figure class="highlight coffeescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[root<span class="property">@www</span> ~]<span class="comment"># mount /dev/cdrom /media/cdrom</span></span><br><span class="line">[root<span class="property">@www</span> ~]<span class="comment"># cd /media/cdrom</span></span><br><span class="line">[root<span class="property">@www</span> cdrom]<span class="comment"># umount /media/cdrom</span></span><br><span class="line"><span class="attribute">umount</span>: /media/<span class="attribute">cdrom</span>: device <span class="keyword">is</span> busy</span><br><span class="line"><span class="attribute">umount</span>: /media/<span class="attribute">cdrom</span>: device <span class="keyword">is</span> busy</span><br></pre></td></tr></table></figure>
-<h4 id="开机挂载-etc-fstab-及-etc-mtab"><a href="#开机挂载-etc-fstab-及-etc-mtab" class="headerlink" title="开机挂载 /etc/fstab 及 /etc/mtab"></a>开机挂载 /etc/fstab 及 /etc/mtab</h4><p>开机自动挂载涉及到/etc/fstab文件，该文件的内容如下所示：</p>
-<figure class="highlight nimrod"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]<span class="comment"># cat /etc/fstab</span></span><br><span class="line"><span class="comment"># Device Mount point filesystem parameters dump fsck</span></span><br><span class="line"><span class="type">LABEL</span>=/<span class="number">1</span> / ext3 defaults <span class="number">1</span> <span class="number">1</span></span><br><span class="line"><span class="type">LABEL</span>=/home /home ext3 defaults <span class="number">1</span> <span class="number">2</span></span><br><span class="line"><span class="type">LABEL</span>=/boot /boot ext3 defaults <span class="number">1</span> <span class="number">2</span></span><br><span class="line">tmpfs  /dev/shm tmpfs defaults <span class="number">0</span> <span class="number">0</span></span><br><span class="line">devpts /dev/pts devpts gid=<span class="number">5</span>,mode=<span class="number">620</span> <span class="number">0</span> <span class="number">0</span></span><br><span class="line">sysfs /sys sysfs defaults <span class="number">0</span> <span class="number">0</span></span><br><span class="line"><span class="keyword">proc</span> /<span class="keyword">proc</span> <span class="keyword">proc</span> defaults <span class="number">0</span> <span class="number">0</span></span><br><span class="line"><span class="type">LABEL</span>=<span class="type">SWAP</span>-hdc5 swap swap defaults <span class="number">0</span> <span class="number">0</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 第一列表示的是磁盘装置文件名（如/dev/sha1）或是该装置的Label</span></span><br><span class="line"><span class="comment"># dump 表示的是文件系统需不需要备份，0表示不需要，1表示每天进行dump备份，2表示不定日期的备份</span></span><br><span class="line"><span class="comment"># fsck开机时是否检查文件系统是否完整，0表示不需要，1表示最早检查（一般只有根目录会设为1），</span></span><br><span class="line"><span class="comment"># 2也表示检查，只不过会在1检查完后再检查2。</span></span><br></pre></td></tr></table></figure>
-<p> /etc/fstab 是开机时的配置文件，不过，实际 filesystem 的挂载是记录到和不 /proc/mounts 这两个档案当中的。每次我们在更动 filesyste的 挂载时，也会同时更动这两个档案！但是，万一发生您在 /etc/fstab 输入的数据错误，导致无法顺利开机成功，而进入单人维护模式当中，那时候的 / 可是 read only 的状态，当然您就无法修改 /etc/fstab ，也无法更新 /etc/mtab 那怎么办？ 没关系，可以利用底下这一招：</p>
- <figure class="highlight autoit"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor"># 重新挂载根目录，修改挂载的参数，使得根目录可以进行读写操作</span></span><br><span class="line">[root<span class="constant">@www</span> ~]<span class="preprocessor"># mount -n -o remount,rw /</span></span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/29/磁盘的分割、格式化、检验与挂载/" data-id="ciqarm44s000uh8qyb5p70qv1" class="article-share-link">Share</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Linux文件系统之df，du以及ln命令" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/02/29/Linux文件系统之df，du以及ln命令/" class="article-date">
-  <time datetime="2016-02-29T13:19:20.000Z" itemprop="datePublished">2016-02-29</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Linux/">Linux</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/02/29/Linux文件系统之df，du以及ln命令/">Linux文件系统之df，du以及ln命令</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h3 id="df-命令用来查看Linux文件系统的整体磁盘使用量（展示的单位为分区，即分区的磁盘使用量）"><a href="#df-命令用来查看Linux文件系统的整体磁盘使用量（展示的单位为分区，即分区的磁盘使用量）" class="headerlink" title="df 命令用来查看Linux文件系统的整体磁盘使用量（展示的单位为分区，即分区的磁盘使用量）"></a>df 命令用来查看Linux文件系统的整体磁盘使用量（展示的单位为分区，即分区的磁盘使用量）</h3><figure class="highlight haml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]# df [-ahikHTm] [目录或文件名]</span><br><span class="line">选项与参数：</span><br><span class="line">-<span class="ruby">a ：列出所有的文件系统，包括系统特有的 /proc 等文件系统；</span><br><span class="line"></span>-<span class="ruby">k ：以 <span class="constant">KBytes</span> 的容量显示各文件系统；</span><br><span class="line"></span>-<span class="ruby">m ：以 <span class="constant">MBytes</span> 的容量显示各文件系统；</span><br><span class="line"></span>-<span class="ruby">h ：以人们较易阅读的 <span class="constant">GBytes</span>, <span class="constant">MBytes</span>, <span class="constant">KBytes</span> 等格式自行显示；</span><br><span class="line"></span>-<span class="ruby"><span class="constant">H</span> ：以 <span class="constant">M</span>=<span class="number">1000</span>K 取代 <span class="constant">M</span>=<span class="number">1024</span>K 的进位方式；</span><br><span class="line"></span>-<span class="ruby"><span class="constant">T</span> ：连同该 partition 的 filesystem 名称 (例如 ext3) 也列出；</span><br><span class="line"></span>-<span class="ruby">i ：不用硬盘容量，而以 inode的数量来显示</span></span><br></pre></td></tr></table></figure>
-<p>以下列出几个例子：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line">范例一：将系统内所有的 filesystem 列出来！</span><br><span class="line">[root@www ~]<span class="preprocessor"># df</span></span><br><span class="line">Filesystem <span class="number">1</span>K-blocks Used Available Use% Mounted on</span><br><span class="line">/dev/hdc2 <span class="number">9920624</span> <span class="number">3823112</span> <span class="number">5585444</span> <span class="number">41</span>% /</span><br><span class="line">/dev/hdc3 <span class="number">4956316</span> <span class="number">141376</span> <span class="number">4559108</span> <span class="number">4</span>% /home</span><br><span class="line">/dev/hdc1 <span class="number">101086</span> <span class="number">11126</span> <span class="number">84741</span> <span class="number">12</span>% /boot</span><br><span class="line">tmpfs <span class="number">371332</span> <span class="number">0</span> <span class="number">371332</span> <span class="number">0</span>% /dev/shm</span><br><span class="line"><span class="preprocessor"># 在 Linux 底下如果 df 没有加任何选顷，那么默认会将系统内所有的</span></span><br><span class="line"><span class="preprocessor"># (不含特殊内存内的文件系统与 swap) 都以 <span class="number">1</span> Kbytes 癿容量来列出来！</span></span><br><span class="line"><span class="preprocessor"># 至于那个 /dev/shm 是与内存有关的挂载，先不要理他！</span></span><br><span class="line"></span><br><span class="line">范例二：将容量结果以易读的容量格式显示出来</span><br><span class="line">[root@www ~]<span class="preprocessor"># df -h</span></span><br><span class="line">Filesystem Size Used Avail Use% Mounted on</span><br><span class="line">/dev/hdc2 <span class="number">9.5</span>G <span class="number">3.7</span>G <span class="number">5.4</span>G <span class="number">41</span>% /</span><br><span class="line">/dev/hdc3 <span class="number">4.8</span>G <span class="number">139</span>M <span class="number">4.4</span>G <span class="number">4</span>% /home</span><br><span class="line">/dev/hdc1 <span class="number">99</span>M <span class="number">11</span>M <span class="number">83</span>M <span class="number">12</span>% /boot</span><br><span class="line">tmpfs <span class="number">363</span>M <span class="number">0</span> <span class="number">363</span>M <span class="number">0</span>% /dev/shm</span><br><span class="line"><span class="preprocessor"># 不同与范例一，这里会以 G/M 等容量格式显示出来，比较容易看啦！</span></span><br><span class="line"></span><br><span class="line">范例三：将系统内的所有特殊文件格式及名称都列出来</span><br><span class="line">[root@www ~]<span class="preprocessor"># df -aT</span></span><br><span class="line">Filesystem Type <span class="number">1</span>K-blocks Used Available Use% Mounted on</span><br><span class="line">/dev/hdc2 ext3 <span class="number">9920624</span> <span class="number">3823112</span> <span class="number">5585444</span> <span class="number">41</span>% /</span><br><span class="line">proc proc <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> - /proc</span><br><span class="line">sysfs sysfs <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> - /sys</span><br><span class="line">devpts devpts <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> - /dev/pts</span><br><span class="line">/dev/hdc3 ext3 <span class="number">4956316</span> <span class="number">141376</span> <span class="number">4559108</span> <span class="number">4</span>% /home</span><br><span class="line">/dev/hdc1 ext3 <span class="number">101086</span> <span class="number">11126</span> <span class="number">84741</span> <span class="number">12</span>% /boot</span><br><span class="line">tmpfs tmpfs <span class="number">371332</span> <span class="number">0</span> <span class="number">371332</span> <span class="number">0</span>% /dev/shm</span><br><span class="line">none binfmt_misc <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> - /proc/sys/fs/binfmt_misc</span><br><span class="line">sunrpc rpc_pipefs <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> - /var/lib/nfs/rpc_pipefs</span><br><span class="line"><span class="preprocessor"># 系统里面其实还有很多特殊的文件系统存在。那些比较特殊的文件系统几乎</span></span><br><span class="line"><span class="preprocessor"># 都是在内存当中，例如 /proc 这个挂载点。因此，这些特殊的文件系统</span></span><br><span class="line"><span class="preprocessor"># 都不会占据硬盘空间！</span></span><br><span class="line"></span><br><span class="line">范例四：将 /etc 底下的可用磁盘容量以易读容量格式显示</span><br><span class="line">[root@www ~]<span class="preprocessor"># df -h /etc</span></span><br><span class="line">Filesystem Size Used Avail Use% Mounted on</span><br><span class="line">/dev/hdc2 <span class="number">9.5</span>G <span class="number">3.7</span>G <span class="number">5.4</span>G <span class="number">41</span>% /</span><br><span class="line"><span class="preprocessor"># 在 df 后面加上目录或者是档案时， df 会自动的分析该目录或档案所在的 partition ，</span></span><br><span class="line"><span class="preprocessor"># 并将该 partition 容量显示出来， 所以，您就可以知道某个目录底下还有多少容量可以使用了！</span></span><br><span class="line"></span><br><span class="line">范例五：将目前各个 partition 当中可用的 inode 数量列出</span><br><span class="line">[root@www ~]<span class="preprocessor"># df -ih</span></span><br><span class="line">Filesystem Inodes IUsed IFree IUse% Mounted on</span><br><span class="line">/dev/hdc2 <span class="number">2.5</span>M <span class="number">147</span>K <span class="number">2.3</span>M <span class="number">6</span>% /</span><br><span class="line">/dev/hdc3 <span class="number">1.3</span>M <span class="number">46</span> <span class="number">1.3</span>M <span class="number">1</span>% /home</span><br><span class="line">/dev/hdc1 <span class="number">26</span>K <span class="number">34</span> <span class="number">26</span>K <span class="number">1</span>% /boot</span><br><span class="line">tmpfs <span class="number">91</span>K <span class="number">1</span> <span class="number">91</span>K <span class="number">1</span>% /dev/shm</span><br><span class="line"><span class="preprocessor"># 这个范例则主要列出可用的 inode 剩余量不总容量。分析一下与范例一的关系，</span></span><br><span class="line"><span class="preprocessor"># 你可以清楚的发现到，通常 inode 的数量剩余都比 block 还要多。</span></span><br></pre></td></tr></table></figure>
-<p>由于 df 主要读取的数据几乎都是针对一整个文件系统，因此读取的范围主要是在 Superblock 内的信息， 所以这个指令显示结果的速度非帯的快速。</p>
-<h3 id="du：评估文件系统癿磁盘使用量-帯用在推估目彔所占容量"><a href="#du：评估文件系统癿磁盘使用量-帯用在推估目彔所占容量" class="headerlink" title="du：评估文件系统癿磁盘使用量(帯用在推估目彔所占容量)"></a>du：评估文件系统癿磁盘使用量(帯用在推估目彔所占容量)</h3><figure class="highlight haml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]# du [-ahskm] 档案或目录名称</span><br><span class="line">选项与参数：</span><br><span class="line">-<span class="ruby">a ：列出所有的档案与目录容量，因为默认仅统计目录底下的子目录容量而已。</span><br><span class="line"></span>-<span class="ruby">h ：以人们较易读的容量格式 (<span class="constant">G</span>/<span class="constant">M</span>) 显示；</span><br><span class="line"></span>-<span class="ruby">s ：列出总量而已，而不列出每个各别的目录占用容量；（即目录占用量）</span><br><span class="line"></span>-<span class="ruby"><span class="constant">S</span> ：不包括子目录下的总计，与 -s 有点差别。</span><br><span class="line"></span>-<span class="ruby">k ：以 <span class="constant">KBytes</span> 列出容量显示；</span><br><span class="line"></span>-<span class="ruby">m ：以 <span class="constant">MBytes</span> 列出容量显示；</span></span><br></pre></td></tr></table></figure>
-<p>使用例子如下：</p>
-<figure class="highlight nimrod"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]<span class="comment"># du [-ahskm] 档案或目录名称</span></span><br><span class="line">选项与参数：</span><br><span class="line">-a ：列出所有的档案与目录容量，因为默认仅统计目录底下的子目录占用量而已。</span><br><span class="line">-h ：以人们较易读的容量格式 (G/M) 显示；</span><br><span class="line">-s ：列出总量而已，而不列出每个各别的目录占用容量；</span><br><span class="line">-S ：不包括子目录下的总计，与 -s 有点差别。</span><br><span class="line">-k ：以 <span class="type">KBytes</span> 列出容量显示；</span><br><span class="line">-m ：以 <span class="type">MBytes</span> 列出容量显示；</span><br><span class="line"></span><br><span class="line">范例一：列出目前目录下的所有档案容量</span><br><span class="line">[root@www ~]<span class="comment"># du</span></span><br><span class="line"><span class="number">8</span> ./test4 &lt;==每个目录都会列出来</span><br><span class="line"><span class="number">8</span> ./test2</span><br><span class="line">....中间省略....</span><br><span class="line"><span class="number">12</span> ./.gconfd &lt;==包括隐藏文件的目录</span><br><span class="line"><span class="number">220</span> . &lt;==这个目录(.)所占用的总量</span><br><span class="line"><span class="comment"># 直接输入 du 没有加任何选项时，则 du 会分析『目前所在目录』 的档案不目彔所占用癿硬盘空间。</span></span><br><span class="line"><span class="comment"># 但是，实际显示时，仅会显示目录容量(不显示档案)，</span></span><br><span class="line"><span class="comment"># 因此 . 目录有很多档案没有被列出来，所以全部的目录相加不会等于 .的容量！</span></span><br><span class="line"><span class="comment"># 此外，输出的数值数据为 1K 大小的容量单位。</span></span><br><span class="line"></span><br><span class="line">范例二：同范例一，但是将档案的容量也列出来</span><br><span class="line">[root@www ~]<span class="comment"># du -a</span></span><br><span class="line"><span class="number">12</span> ./install.log.syslog &lt;==有档案的列表了</span><br><span class="line"><span class="number">8</span> ./.bash_logout</span><br><span class="line"><span class="number">8</span> ./test4</span><br><span class="line"><span class="number">8</span> ./test2</span><br><span class="line">....中间省略....</span><br><span class="line"><span class="number">12</span> ./.gconfd</span><br><span class="line"><span class="number">220</span> .</span><br><span class="line"></span><br><span class="line">范例三：检查根目录底下每个目录所占用的容量</span><br><span class="line">[root@www ~]<span class="comment"># du -sm /*</span></span><br><span class="line"><span class="number">7</span> /bin <span class="number">6</span> /boot</span><br><span class="line">.....中间省略....</span><br><span class="line"><span class="number">0</span> /<span class="keyword">proc</span></span><br><span class="line">.....中间省略....</span><br><span class="line"><span class="number">1</span> /tmp <span class="number">3859</span> /usr &lt;==系统初期最大就是他了啦！</span><br><span class="line"><span class="number">77</span> /<span class="keyword">var</span></span><br><span class="line"><span class="comment"># 这是个很常被使用的功能～利用通配符 * 来代表每个目录，</span></span><br><span class="line"><span class="comment"># 如果想要检查某个目录下，那个次目录占用最大的容量，可以用这个方法找出来</span></span><br><span class="line"><span class="comment"># 值得注意的是，如果刚刚安装好 Linux 时，那么整个系统容量最大的应该是 /usr</span></span><br><span class="line"><span class="comment"># 而 /proc 虽然有列出容量，但是那个容量是在内存中，不占硬盘空间。</span></span><br></pre></td></tr></table></figure>
-<h3 id="实体链接与符号链接-ln"><a href="#实体链接与符号链接-ln" class="headerlink" title="实体链接与符号链接 ln"></a>实体链接与符号链接 ln</h3><h4 id="实体链接（硬式链接）"><a href="#实体链接（硬式链接）" class="headerlink" title="实体链接（硬式链接）"></a>实体链接（硬式链接）</h4><p>实体链接，只能链接文件，不能链接目录，不能跨 Filesystem，创建实体链接时，只是在某个目录下的block多写入一条关联数据而已，不会增加inode也不会耗用block的数量。任一个档案删除了，另外一个档案都可以将数据完整的读取出来。</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]<span class="preprocessor"># ln /etc/crontab /root/crontab &lt;==建立实体链接的指令</span></span><br><span class="line">[root@www ~]<span class="preprocessor"># ll -i /etc/crontab /root/crontab</span></span><br><span class="line"><span class="number">1912701</span> -rw-r--r-- <span class="number">2</span> root root <span class="number">255</span> Jan <span class="number">6</span> <span class="number">2007</span> /etc/crontab</span><br><span class="line"><span class="number">1912701</span> -rw-r--r-- <span class="number">2</span> root root <span class="number">255</span> Jan <span class="number">6</span> <span class="number">2007</span> /root/crontab</span><br></pre></td></tr></table></figure>
-<h4 id="Symbolic-Link-符号链接，亦即是忚捷方式"><a href="#Symbolic-Link-符号链接，亦即是忚捷方式" class="headerlink" title="Symbolic Link (符号链接，亦即是忚捷方式)"></a>Symbolic Link (符号链接，亦即是忚捷方式)</h4><p>基本上， Symbolic link 就是在建立一个独立的档案，而这个档案会将数据的读取指向他 link 的那个档案的档名！由于只是利用档案来做为指向的动作，所以，当来源档被删除之后，symbolic link 的档案会『开不了』， 会一直说『无法开起某档案！』。实际上就是找不到原始『档名』而已。</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]<span class="preprocessor"># ln -s /etc/crontab crontab2</span></span><br><span class="line">[root@www ~]<span class="preprocessor"># ll -i /etc/crontab /root/crontab2</span></span><br><span class="line"><span class="number">1912701</span> -rw-r--r-- <span class="number">2</span> root root <span class="number">255</span> Jan <span class="number">6</span> <span class="number">2007</span> /etc/crontab</span><br><span class="line"><span class="number">654687</span> lrwxrwxrwx <span class="number">1</span> root root <span class="number">12</span> Oct <span class="number">22</span> <span class="number">13</span>:<span class="number">58</span> /root/crontab2 -&gt; /etc/crontab</span><br><span class="line"><span class="preprocessor"># /etc/crontab 也就是/root/crontab2文件的内容，所以大小为<span class="number">12</span>bytes</span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#创建目录链接</span></span><br><span class="line">[root@www ~]<span class="preprocessor"># ln -s /bin /root/bin</span></span><br><span class="line"><span class="preprocessor">#当进入/root/bin目录时，实际上进入的是/bin目录，对其所有的操作都会相当于直接在/bin目录下操作</span></span><br></pre></td></tr></table></figure>
-<p>看起来硬链接会比符号链接安全的多，因为不会因为被链接文件被删除了而导致链接文件打不开，但是由于硬链接的限制比较多，不能链接目录，不能跨文件系统，所以还是符号链接比较受欢迎！</p>
-<p>ln指令参数：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root@www ~]<span class="comment"># ln [-sf] 来源文件 目标文件</span></span><br><span class="line">选项与参数：</span><br><span class="line"><span class="operator">-s</span> ：如果不加任何参数就进行连结，那就是hard link，至于 <span class="operator">-s</span> 就是symbolic link</span><br><span class="line"><span class="operator">-f</span> ：如果 目标文件 存在时，就主动将目标文件直接移除后再建立！</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/29/Linux文件系统之df，du以及ln命令/" data-id="ciqarm47a003oh8qykj84pjlv" class="article-share-link">Share</a>
-      
-      
     </footer>
   </div>
   
@@ -744,7 +764,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/设计模式/">设计模式</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
     </div>
   </div>
 
@@ -753,7 +773,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/C-11-常规新特性/" style="font-size: 18.33px;">C++11 常规新特性</a> <a href="/tags/Linux-网络编程/" style="font-size: 16.67px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 16.67px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 15px;">Linux用户管理</a> <a href="/tags/Linux进程间通信/" style="font-size: 16.67px;">Linux进程间通信</a> <a href="/tags/TCP-IP/" style="font-size: 20px;">TCP/IP</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/动态规划/" style="font-size: 13.33px;">动态规划</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/数组/" style="font-size: 10px;">数组</a> <a href="/tags/树结构/" style="font-size: 13.33px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 11.67px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 11.67px;">爬虫</a> <a href="/tags/随记/" style="font-size: 11.67px;">随记</a>
+      <a href="/tags/C-11-常规新特性/" style="font-size: 18.33px;">C++11 常规新特性</a> <a href="/tags/Linux-网络编程/" style="font-size: 16.67px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 16.67px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 15px;">Linux用户管理</a> <a href="/tags/Linux进程间通信/" style="font-size: 16.67px;">Linux进程间通信</a> <a href="/tags/TCP-IP/" style="font-size: 20px;">TCP/IP</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/动态规划/" style="font-size: 13.33px;">动态规划</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/数组/" style="font-size: 10px;">数组</a> <a href="/tags/树结构/" style="font-size: 13.33px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 11.67px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 11.67px;">爬虫</a> <a href="/tags/设计模式/" style="font-size: 13.33px;">设计模式</a> <a href="/tags/随记/" style="font-size: 11.67px;">随记</a>
     </div>
   </div>
 
@@ -762,7 +782,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a><span class="archive-list-count">14</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
     </div>
   </div>
 
@@ -774,23 +794,23 @@
       <ul>
         
           <li>
+            <a href="/2016/07/07/设计模式之单例模式/">设计模式之单例模式</a>
+          </li>
+        
+          <li>
+            <a href="/2016/07/06/设计模式之观察者模式/">设计模式之观察者模式</a>
+          </li>
+        
+          <li>
+            <a href="/2016/07/06/设计模式之工厂模式/">设计模式之工厂模式</a>
+          </li>
+        
+          <li>
             <a href="/2016/07/06/C-11常规特性之auto和decltype/">C++11常规特性之auto和decltype</a>
           </li>
         
           <li>
             <a href="/2016/07/06/C-11常规特性之统一初始化和初始化器列表/">C++11常规特性之统一初始化和初始化器列表</a>
-          </li>
-        
-          <li>
-            <a href="/2016/07/06/C-11常规特性之右值引用和move语义/">C++11常规特性之右值引用和move语义</a>
-          </li>
-        
-          <li>
-            <a href="/2016/07/06/C-11常规特性之lambda/">C++11常规特性之lambda</a>
-          </li>
-        
-          <li>
-            <a href="/2016/07/06/C-11常规特性之noexcept/">C++11常规特性之noexcept</a>
           </li>
         
       </ul>

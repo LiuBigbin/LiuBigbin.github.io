@@ -65,6 +65,79 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-Java之JVM调优" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/07/08/Java之JVM调优/" class="article-date">
+  <time datetime="2016-07-08T07:43:34.000Z" itemprop="datePublished">2016-07-08</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Java/">Java</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/07/08/Java之JVM调优/">Java之JVM调优</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>JVM的调优主要在垃圾回收上，于是调优的主要工作主要集中在两个部分：堆空间的设置和垃圾回收器的选择</p>
+<h3 id="堆大小设置"><a href="#堆大小设置" class="headerlink" title="堆大小设置"></a>堆大小设置</h3><p>JVM中最大堆大小有三方面限制：相关操作系统的数据模型（32-bt还是64-bit）限制；系统的可用虚拟内存限 制；系统的可用物理内存限制。32位系统下，一般限制在1.5G~2G；64为操作系统对内存无限制。在 Windows Server 2003 系统，3.5G物理内存，JDK5.0下测试，最大可设置为1478m。<br>典型设置：<br><figure class="highlight haml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">java -Xmx3550m -Xms3550m -Xmn2g –Xss128k</span><br><span class="line">-<span class="ruby"><span class="constant">Xmx3550m</span>：设置<span class="constant">JVM</span>最大可用内存为<span class="number">3550</span>M。</span><br><span class="line"></span>-<span class="ruby"><span class="constant">Xms3550m</span>：设置<span class="constant">JVM</span>促使内存为<span class="number">3550</span>m。此值可以设置与-<span class="constant">Xmx</span>相同，以避免每次垃圾回收完成 后<span class="constant">JVM</span>重新分配内存。</span><br><span class="line"></span>-<span class="ruby"><span class="constant">Xmn2g</span>：设置年轻代大小为<span class="number">2</span>G。整个堆大小=年轻代大小 + 年老代大小 + 持久代大小。</span></span><br></pre></td></tr></table></figure></p>
+<p>持久代一般 固定大小为64m，所以增大年轻代后，将会减小年老代大小。此值对系统性能影响较大，Sun官方推荐配置为整个堆的3/8。<br>-Xss128k：设置每个线程的堆栈大小。JDK5.0以后每个线程堆栈大小为1M，以前每个线程堆栈大小 为256K。更具应用的线程所需内存大小进行调整。在相同物理内存下，减小这个值能生成更多的线 程。但是操作系统对一个进程内的线程数还是有限制的，不能无限生成，经验值在3000~5000左右。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">java -Xmx3550m -Xms3550m -Xss128k -XX:NewRatio=<span class="number">4</span> -XX:SurvivorRatio=<span class="number">4</span></span><br><span class="line">     -XX:MaxPermSize=<span class="number">16</span>m -XX:MaxTenuringThreshold=<span class="number">0</span></span><br></pre></td></tr></table></figure></p>
+<p><code>-XX:NewRatio=4</code>:设置年轻代（包括Eden和两个Survivor区）与年老代的比值（除去持久代）。设 置为4，则年轻代与年老代所占比值为1：4，年轻代占整个堆栈的1/5</p>
+<p><code>-XX:SurvivorRatio=4</code>：设置年轻代中Eden区与Survivor区的大小比值。设置为4，则两个Survivor 区与一个Eden区的比值为2:4，一个Survivor区占整个年轻代的1/6</p>
+<p><code>-XX:MaxPermSize=16m</code>:设置持久代大小为16m。</p>
+<p><code>-XX:MaxTenuringThreshold=0</code>：设置垃圾最大年龄。如果设置为0的话，则年轻代对象不经过 Survivor区，直接进入年老代。对于年老代比较多的应用，可以提高效率。如果将此值设置为一个较大 值，则年轻代对象会在Survivor区进行多次复制，这样可以增加对象再年轻代的存活时间，增加在年轻代即被回收的概论。</p>
+<h3 id="回收器选择"><a href="#回收器选择" class="headerlink" title="回收器选择"></a>回收器选择</h3><p>JVM给了三种选择：串行收集器、并行收集器、并发收集器，但是串行收集器只适用于小数据量的情况，所以 这里的选择主要针对并行收集器和并发收集器。默认情况下，JDK5.0以前都是使用串行收集器，如果想使用其 他收集器需要在启动时加入相应参数。JDK5.0以后，JVM会根据当前系统配置进行判断。</p>
+<h4 id="吞吐量优先的并行收集器"><a href="#吞吐量优先的并行收集器" class="headerlink" title="吞吐量优先的并行收集器"></a>吞吐量优先的并行收集器</h4><p>如上文所述，并行收集器主要以到达一定的吞吐量为目标，适用于科学技术和后台处理等。</p>
+<p>典型配置：<br><figure class="highlight haml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">java -Xmx3800m -Xms3800m -Xmn2g -Xss128k -XX:+UseParallelGC -XX:ParallelGCThreads=20</span><br><span class="line">-<span class="ruby"><span class="constant">XX</span><span class="symbol">:+UseParallelGC</span>：选择垃圾收集器为并行收集器。此配置仅对年轻代有效。即上述配置下，</span><br><span class="line"></span>                    年轻代使用并发收集，而年老代仍旧使用串行收集。</span><br><span class="line">-<span class="ruby"><span class="constant">XX</span><span class="symbol">:ParallelGCThreads=</span><span class="number">20</span>：配置并行收集器的线程数，即：同时多少个线程一起进行垃圾回收。</span><br><span class="line"></span>                          此值最好配置与处理器数目相等。</span><br><span class="line"></span><br><span class="line">java -Xmx3550m -Xms3550m -Xmn2g -Xss128k -XX:+UseParallelGC -XX:ParallelGCThreads=20</span><br><span class="line">     -<span class="ruby"><span class="constant">XX</span><span class="symbol">:+UseParallelOldGC</span></span><br><span class="line"></span>-<span class="ruby"><span class="constant">XX</span><span class="symbol">:+UseParallelOldGC</span>：配置年老代垃圾收集方式为并行收集。<span class="constant">JDK6</span>.<span class="number">0</span>支持对年老代并行收集。</span><br><span class="line"></span></span><br><span class="line">java -Xmx3550m -Xms3550m -Xmn2g -Xss128k -XX:+UseParallelGC -XX:MaxGCPauseMillis=100</span><br><span class="line">-<span class="ruby"><span class="constant">XX</span><span class="symbol">:MaxGCPauseMillis=</span><span class="number">100</span><span class="symbol">:</span>设置每次年轻代垃圾回收的最长时间，如果无法满足此时间，</span><br><span class="line"></span>                         JVM会自动调整年轻代大小，以满足此值</span><br><span class="line"></span><br><span class="line">java -Xmx3550m -Xms3550m -Xmn2g -Xss128k -XX:+UseParallelGC XX:MaxGCPauseMillis=100</span><br><span class="line">     -<span class="ruby"><span class="constant">XX</span><span class="symbol">:+UseAdaptiveSizePolicy</span></span><br><span class="line"></span>-<span class="ruby"><span class="constant">XX</span><span class="symbol">:+UseAdaptiveSizePolicy</span>：设置此选项后，并行收集器会自动选择年轻代区大小和相应的<span class="constant">Survivor</span>区比例，</span><br><span class="line"></span>                            以达到目标系统规定的最低相应时间或者收集频率等，此值建议使用并行收集器时，</span><br><span class="line">                            一直打开。</span><br></pre></td></tr></table></figure></p>
+<h4 id="响应时间优先的并发收集器"><a href="#响应时间优先的并发收集器" class="headerlink" title="响应时间优先的并发收集器"></a>响应时间优先的并发收集器</h4><p>如上文所述，并发收集器主要是保证系统的响应时间，减少垃圾收集时的停顿时间。适用于应用服务器、电信 领域等。</p>
+<p>典型配置：<br><figure class="highlight haml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">java -Xmx3550m -Xms3550m -Xmn2g -Xss128k -XX:ParallelGCThreads=20</span><br><span class="line">     -<span class="ruby"><span class="constant">XX</span><span class="symbol">:+UseConcMarkSweepGC</span> -<span class="constant">XX</span><span class="symbol">:+UseParNewGC</span></span><br><span class="line"></span>-<span class="ruby"><span class="constant">XX</span><span class="symbol">:+UseConcMarkSweepGC</span>：设置年老代为并发收集。测试中配置这个以后，-<span class="constant">XX</span><span class="symbol">:NewRatio=</span><span class="number">4</span>                          </span><br><span class="line"></span>                         的配置失效了，原因不明。所以，此时年轻代大小最好用-Xmn设置。</span><br><span class="line">-<span class="ruby"><span class="constant">XX</span><span class="symbol">:+UseParNewGC</span><span class="symbol">:</span> 设置年轻代为并行收集。可与<span class="constant">CMS</span>收集同时使用。<span class="constant">JDK5</span>.<span class="number">0</span>以上，</span><br><span class="line"></span>                  JVM会根据系统配置自行设置，所以无需再设置此值。</span><br><span class="line"></span><br><span class="line">java -Xmx3550m -Xms3550m -Xmn2g -Xss128k -XX:+UseConcMarkSweepGC -XX:CMSFullGCsBeforeCompaction=5 -XX:+UseCMSCompactAtFullCollection</span><br><span class="line">-<span class="ruby"><span class="constant">XX</span><span class="symbol">:CMSFullGCsBeforeCompaction</span>：由于并发收集器不对内存空间进行压缩、整理，所以运行一段时间以后会产生“碎片”，</span><br><span class="line"></span>                                使得运行效率降低。此值设置运行多少次GC以后对内存空间进行压缩、整理。</span><br><span class="line">-<span class="ruby"><span class="constant">XX</span><span class="symbol">:+UseCMSCompactAtFullCollection</span>：打开对年老代的压缩。可能会影响性能，但是可以消除 碎片</span></span><br></pre></td></tr></table></figure></p>
+<h3 id="常见配置汇总"><a href="#常见配置汇总" class="headerlink" title="常见配置汇总"></a>常见配置汇总</h3><h4 id="堆设置"><a href="#堆设置" class="headerlink" title="堆设置"></a>堆设置</h4><p>-Xms:初始堆大小<br>-Xmx:最大堆大小<br>-XX:NewSize=n:设置年轻代大小<br>-XX:NewRatio=n:设置年轻代和年老代的比值。如:为3，表示年轻代与年老代比值为1：3，年轻代占整个年 轻代年老代和的1/4<br>-XX:SurvivorRatio=n:年轻代中Eden区与两个Survivor区的比值。注意Survivor区有两个。如：3，表示 Eden：Survivor=3：2，一个Survivor区占整个年轻代的1/5<br>-XX:MaxPermSize=n:设置持久代大小</p>
+<h4 id="收集器设置"><a href="#收集器设置" class="headerlink" title="收集器设置"></a>收集器设置</h4><p>-XX:+UseSerialGC:设置串行收集器<br>-XX:+UseParallelGC:设置并行收集器<br>-XX:+UseParalledlOldGC:设置并行年老代收集器<br>-XX:+UseConcMarkSweepGC:设置并发收集器</p>
+<h4 id="垃圾回收统计信息"><a href="#垃圾回收统计信息" class="headerlink" title="垃圾回收统计信息"></a>垃圾回收统计信息</h4><p>-XX:+PrintGC<br>-XX:+PrintGCDetails<br>-XX:+PrintGCTimeStamps<br>-Xloggc:filename</p>
+<h4 id="并行收集器设置"><a href="#并行收集器设置" class="headerlink" title="并行收集器设置"></a>并行收集器设置</h4><p>-XX:ParallelGCThreads=n:设置并行收集器收集时使用的CPU数。并行收集线程数。<br>-XX:MaxGCPauseMillis=n:设置并行收集最大暂停时间<br>-XX:GCTimeRatio=n:设置垃圾回收时间占程序运行时间的百分比。公式为1/(1+n)</p>
+<h4 id="并发收集器设置"><a href="#并发收集器设置" class="headerlink" title="并发收集器设置"></a>并发收集器设置</h4><p>-XX:+CMSIncrementalMode:设置为增量模式。适用于单CPU情况。<br>-XX:ParallelGCThreads=n:设置并发收集器年轻代收集方式为并行收集时，使用的CPU数。并行收集线程数。</p>
+<h3 id="异常分析"><a href="#异常分析" class="headerlink" title="异常分析"></a>异常分析</h3><h4 id="持久代被占满"><a href="#持久代被占满" class="headerlink" title="持久代被占满"></a>持久代被占满</h4><h5 id="异常：java-lang-OutOfMemoryError-PermGen-space"><a href="#异常：java-lang-OutOfMemoryError-PermGen-space" class="headerlink" title="异常：java.lang.OutOfMemoryError: PermGen space"></a>异常：java.lang.OutOfMemoryError: PermGen space</h5><h5 id="说明："><a href="#说明：" class="headerlink" title="说明："></a>说明：</h5><p>Perm空间被占满。无法为新的class分配存储空间而引发的异常。这个异常以前是没有的，但是在Java反射 大量使用的今天这个异常比较常见了。主要原因就是大量动态反射生成的类不断被加载，最终导致Perm区被占 满。<br>更可怕的是，不同的classLoader即便使用了相同的类，但是都会对其进行加载，相当于同一个东西，如果有 N个classLoader那么他将会被加载N次。因此，某些情况下，这个问题基本视为无解。当然，存在大量 classLoader和大量反射类的情况其实也不多。</p>
+<h5 id="解决："><a href="#解决：" class="headerlink" title="解决："></a>解决：</h5><ol>
+<li>-XX:MaxPermSize=16m</li>
+<li>换用JDK。比如JRocket。</li>
+</ol>
+<h4 id="堆栈溢出"><a href="#堆栈溢出" class="headerlink" title="堆栈溢出"></a>堆栈溢出</h4><h5 id="异常：java-lang-StackOverflowError"><a href="#异常：java-lang-StackOverflowError" class="headerlink" title="异常：java.lang.StackOverflowError"></a>异常：java.lang.StackOverflowError</h5><h5 id="说明：-1"><a href="#说明：-1" class="headerlink" title="说明："></a>说明：</h5><p>这个就不多说了，一般就是递归没返回，或者循环调用造成线程堆栈满</p>
+<h4 id="异常：Fatal-Stack-size-too-small"><a href="#异常：Fatal-Stack-size-too-small" class="headerlink" title="异常：Fatal: Stack size too small"></a>异常：Fatal: Stack size too small</h4><h5 id="说明：-2"><a href="#说明：-2" class="headerlink" title="说明："></a>说明：</h5><p>java中一个线程的空间大小是有限制的。JDK5.0以后这个值是1M。与这个线程相关的数据将会保存在其 中。但是当线程空间满了以后，将会出现上面异常。</p>
+<h5 id="解决：-1"><a href="#解决：-1" class="headerlink" title="解决："></a>解决：</h5><p>增加线程栈大小。-Xss2m。但这个配置无法解决根本问题，还要看代码部分是否有造成泄漏的部分。</p>
+<h4 id="系统内存被占满"><a href="#系统内存被占满" class="headerlink" title="系统内存被占满"></a>系统内存被占满</h4><h5 id="异常：java-lang-OutOfMemoryError-unable-to-create-new-native-thread"><a href="#异常：java-lang-OutOfMemoryError-unable-to-create-new-native-thread" class="headerlink" title="异常：java.lang.OutOfMemoryError: unable to create new native thread"></a>异常：java.lang.OutOfMemoryError: unable to create new native thread</h5><h5 id="说明：-3"><a href="#说明：-3" class="headerlink" title="说明："></a>说明：</h5><p>这个异常是由于操作系统没有足够的资源来产生这个线程造成的。系统创建线程时，除了要在Java堆中分配 内存外，操作系统本身也需要分配资源来创建线程。因此，当线程数量大到一定程度以后，堆中或许还有空 间，但是操作系统分配不出资源来了，就出现这个异常了。<br>分配给Java虚拟机的内存愈多，系统剩余的资源就越少，因此，当系统内存固定时，分配给Java虚拟机的内存 越多，那么，系统总共能够产生的线程也就越少，两者成反比的关系。同时，可以通过修改-Xss来减少分配给 单个线程的空间，也可以增加系统总共内生产的线程数。</p>
+<h5 id="解决：-2"><a href="#解决：-2" class="headerlink" title="解决："></a>解决：</h5><ol>
+<li>重新设计系统减少线程数量。</li>
+<li>线程数量不能减少的情况下，通过-Xss减小单个线程大小。以便能生产更多的线程。</li>
+</ol>
+<p>以上的内容转载自<a href=" http://pengjiaheng.javaeye.com" target="_blank" rel="external">JavaEye</a>上的文章,感谢作者的总结，下面的链接是该作者在JVM调优上的一系列文章，个人觉得写的很好，于是在这里也转载一下。<br>JVM调优总结.pdf</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/07/08/Java之JVM调优/" data-id="ciqdiqn8b0053u0qyuk6fgaa5" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java底层机制/">Java底层机制</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-Java之垃圾回收" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2016/07/07/Java之垃圾回收/" class="article-date">
@@ -122,7 +195,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/07/Java之垃圾回收/" data-id="ciqcg7fvl004xvkqydx84jc34" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/07/Java之垃圾回收/" data-id="ciqdiqn86004xu0qyek6jkz9l" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java底层机制/">Java底层机制</a></li></ul>
@@ -194,7 +267,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/07/Java之内存管理/" data-id="ciqcg7fvm0050vkqy72nld68f" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/07/Java之内存管理/" data-id="ciqdiqn890050u0qyjcr0ksci" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java底层机制/">Java底层机制</a></li></ul>
@@ -249,7 +322,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/07/Java之类的反射机制/" data-id="ciqcg7fvh004pvkqy1a6isjkp" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/07/Java之类的反射机制/" data-id="ciqdiqn81004pu0qy9x43vz8i" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java底层机制/">Java底层机制</a></li></ul>
@@ -311,7 +384,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/07/Java之类的加载到执行/" data-id="ciqcg7fvj004uvkqy36jux5mu" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/07/Java之类的加载到执行/" data-id="ciqdiqn84004uu0qyxhk6aotd" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java底层机制/">Java底层机制</a></li></ul>
@@ -356,7 +429,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/07/设计模式之单例模式/" data-id="ciqcg7fsg000pvkqynr6lbyei" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/07/设计模式之单例模式/" data-id="ciqdiqn44000pu0qykgj9dx0o" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/设计模式/">设计模式</a></li></ul>
@@ -401,7 +474,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/06/设计模式之观察者模式/" data-id="ciqcg7fsd000kvkqyg85pvjiw" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/06/设计模式之观察者模式/" data-id="ciqdiqn41000ku0qyh0ypmc2s" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/设计模式/">设计模式</a></li></ul>
@@ -443,7 +516,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/06/设计模式之工厂模式/" data-id="ciqcg7fsf000nvkqybzyn6xrx" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/06/设计模式之工厂模式/" data-id="ciqdiqn42000nu0qyeop01swp" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/设计模式/">设计模式</a></li></ul>
@@ -491,7 +564,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/06/C-11常规特性之auto和decltype/" data-id="ciqcg7fw5005wvkqyf9t18052" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/06/C-11常规特性之auto和decltype/" data-id="ciqdiqn8v005zu0qynyzpzyd6" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a></li></ul>
@@ -539,59 +612,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/06/C-11常规特性之统一初始化和初始化器列表/" data-id="ciqcg7fvv005gvkqyo0r5hohw" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="new-C-11常规特性之右值引用和move语义" class="article article-type-new" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/07/06/C-11常规特性之右值引用和move语义/" class="article-date">
-  <time datetime="2016-07-06T10:43:33.000Z" itemprop="datePublished">2016-07-06</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/C与C/">C与C++</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/07/06/C-11常规特性之右值引用和move语义/">C++11常规特性之右值引用和move语义</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>C++11加入了右值引用(rvalue reference)的概念（用&amp;&amp;标识），用来区分对左值和右值的引用。左值就是一个有名字的对象，而右值则是一个无名对象（临时对象）。move语义允许修改右值（以前右值被看作是不可修改的，等同于const T&amp;类型）。<br>C++的class或者struct以前都有一些隐含的成员函数：默认构造函数（仅当没有显示定义任何其他构造函数时才存在），拷贝构造函数，析构函数还有拷贝赋值操作符。拷贝构造函数和拷贝赋值操作符提供bit-wise的拷贝（浅拷贝），也就是逐个bit拷贝对象。也就是说，如果你有一个类包含指向其他对象的指针，拷贝时只会拷贝指针的值而不会管指向的对象。在某些情况下这种做法是没问题的，但在很多情况下，实际上你需要的是深拷贝，也就是说你希望拷贝指针所指向的对象。而不是拷贝指针的值。这种情况下，你需要显示地提供拷贝构造函数与拷贝赋值操作符来进行深拷贝。</p>
-<p>如果你用来初始化或拷贝的源对象是个右值（临时对象）会怎么样呢？你仍然需要拷贝它的值，但随后很快右值就会被释放。这意味着产生了额外的操作开销，包括原本并不需要的空间分配以及内存拷贝。</p>
-<p>现在说说move constructor和move assignment operator。这两个函数接收T&amp;&amp;类型的参数，也就是一个右值。在这种情况下，它们可以修改右值对象，例如“偷走”它们内部指针所指向的对象。举个例子，一个容器的实现（例如vector或者queue）可能包含一个指向元素数组的指针。当用一个临时对象初始化一个对象时，我们不需要分配另一个数组，从临时对象中把值复制过来，然后在临时对象析构时释放它的内存。我们只需要将指向数组内存的指针值复制过来，由此节约了一次内存分配，一次元数组的复制以及后来的内存释放。</p>
-<p>以下代码实现了一个简易的buffer。这个buffer有一个成员记录buffer名称（为了便于以下的说明），一个指针（封装在unique_ptr中）指向元素为T类型的数组，还有一个记录数组长度的变量。</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="keyword">class</span> Buffer</span><br><span class="line">&#123;</span><br><span class="line">   <span class="built_in">std</span>::<span class="built_in">string</span>          _name;</span><br><span class="line">   <span class="keyword">size_t</span>               _size;</span><br><span class="line">   <span class="built_in">std</span>::unique_ptr&lt;T[]&gt; _buffer;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">   <span class="comment">// default constructor</span></span><br><span class="line">   Buffer():</span><br><span class="line">      _size(<span class="number">16</span>),</span><br><span class="line">      _buffer(<span class="keyword">new</span> T[<span class="number">16</span>])</span><br><span class="line">   &#123;&#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">// constructor</span></span><br><span class="line">   Buffer(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; name, <span class="keyword">size_t</span> size):</span><br><span class="line">      _name(name),</span><br><span class="line">      _size(size),</span><br><span class="line">      _buffer(<span class="keyword">new</span> T[size])</span><br><span class="line">   &#123;&#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">// copy constructor</span></span><br><span class="line">   Buffer(<span class="keyword">const</span> Buffer&amp; copy):</span><br><span class="line">      _name(copy._name),</span><br><span class="line">      _size(copy._size),</span><br><span class="line">      _buffer(<span class="keyword">new</span> T[copy._size])</span><br><span class="line">   &#123;</span><br><span class="line">      T* source = copy._buffer.get();</span><br><span class="line">      T* dest = _buffer.get();</span><br><span class="line">      <span class="built_in">std</span>::copy(source, source + copy._size, dest);</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">// copy assignment operator</span></span><br><span class="line">   Buffer&amp; <span class="keyword">operator</span>=(<span class="keyword">const</span> Buffer&amp; copy)</span><br><span class="line">   &#123;</span><br><span class="line">      <span class="keyword">if</span>(<span class="keyword">this</span> != ©)</span><br><span class="line">      &#123;</span><br><span class="line">         _name = copy._name;</span><br><span class="line"></span><br><span class="line">         <span class="keyword">if</span>(_size != copy._size)</span><br><span class="line">         &#123;</span><br><span class="line">            _buffer = <span class="literal">nullptr</span>;</span><br><span class="line">            _size = copy._size;</span><br><span class="line">            _buffer = _size &gt; <span class="number">0</span> &gt; <span class="keyword">new</span> T[_size] : <span class="literal">nullptr</span>;</span><br><span class="line">         &#125;</span><br><span class="line"></span><br><span class="line">         T* source = copy._buffer.get();</span><br><span class="line">         T* dest = _buffer.get();</span><br><span class="line">         <span class="built_in">std</span>::copy(source, source + copy._size, dest);</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">return</span> *<span class="keyword">this</span>;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">// move constructor</span></span><br><span class="line">   Buffer(Buffer&amp;&amp; temp):</span><br><span class="line">      _name(<span class="built_in">std</span>::move(temp._name)),</span><br><span class="line">      _size(temp._size),</span><br><span class="line">      _buffer(<span class="built_in">std</span>::move(temp._buffer))</span><br><span class="line">   &#123;</span><br><span class="line">      temp._buffer = <span class="literal">nullptr</span>;</span><br><span class="line">      temp._size = <span class="number">0</span>;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">// move assignment operator</span></span><br><span class="line">   Buffer&amp; <span class="keyword">operator</span>=(Buffer&amp;&amp; temp)</span><br><span class="line">   &#123;</span><br><span class="line">      assert(<span class="keyword">this</span> != &amp;temp); <span class="comment">// assert if this is not a temporary</span></span><br><span class="line"></span><br><span class="line">      _buffer = <span class="literal">nullptr</span>;</span><br><span class="line">      _size = temp._size;</span><br><span class="line">      _buffer = <span class="built_in">std</span>::move(temp._buffer);</span><br><span class="line"></span><br><span class="line">      _name = <span class="built_in">std</span>::move(temp._name);</span><br><span class="line"></span><br><span class="line">      temp._buffer = <span class="literal">nullptr</span>;</span><br><span class="line">      temp._size = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">return</span> *<span class="keyword">this</span>;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line">Buffer&lt;T&gt; getBuffer(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; name)</span><br><span class="line">&#123;</span><br><span class="line">   Buffer&lt;T&gt; b(name, <span class="number">128</span>);</span><br><span class="line">   <span class="keyword">return</span> b;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span><br><span class="line"></span>&#123;</span><br><span class="line">   Buffer&lt;<span class="keyword">int</span>&gt; b1;</span><br><span class="line">   Buffer&lt;<span class="keyword">int</span>&gt; b2(<span class="string">"buf2"</span>, <span class="number">64</span>);</span><br><span class="line">   Buffer&lt;<span class="keyword">int</span>&gt; b3 = b2;</span><br><span class="line">   Buffer&lt;<span class="keyword">int</span>&gt; b4 = getBuffer&lt;<span class="keyword">int</span>&gt;(<span class="string">"buf4"</span>);</span><br><span class="line">   b1 = getBuffer&lt;<span class="keyword">int</span>&gt;(<span class="string">"buf5"</span>);</span><br><span class="line">   <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>默认的copy constructor以及copy assignment operator大家应该很熟悉了。C++11中新增的是move constructor以及move assignment operator，这两个函数根据上文所描述的move语义实现。如果你运行这段代码，你就会发现b4构造时，move constructor会被调用。同样，对b1赋值时，move assignment operator会被调用。原因就在于getBuffer()的返回值是一个临时对象——也就是右值。</p>
-<p>你也许注意到了，move constuctor中当我们初始化变量name和指向buffer的指针时，我们使用了std::move。name实际上是一个string，std::string实现了move语义。std::unique_ptr也一样。但是如果我们写_name(temp._name)，那么copy constructor将会被调用。不过对于_buffer来说不能这么写，因为std::unique_ptr没有copy constructor。但为什么std::string的move constructor此时没有被调到呢？这是因为虽然我们使用一个右值调用了Buffer的move constructor，但在这个构造函数内，它实际上是个左值。为什么？因为它是有名字的——“temp”。一个有名字的对象就是左值。为了再把它变为右值（以便调用move constructor)必须使用std::move。这个函数仅仅是把一个左值引用变为一个右值引用。</p>
-<p>更新：虽然这个例子是为了说明如何实现move constructor以及move assignment operator，但具体的实现方式并不是唯一的。在本文的回复中Member 7805758同学提供了另一种可能的实现。为了方便查看，我把它也列在下面：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="keyword">class</span> Buffer</span><br><span class="line">&#123;</span><br><span class="line">   <span class="built_in">std</span>::<span class="built_in">string</span>          _name;</span><br><span class="line">   <span class="keyword">size_t</span>               _size;</span><br><span class="line">   <span class="built_in">std</span>::unique_ptr&lt;T[]&gt; _buffer;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">   <span class="comment">// constructor</span></span><br><span class="line">   Buffer(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; name = <span class="string">""</span>, <span class="keyword">size_t</span> size = <span class="number">16</span>):</span><br><span class="line">      _name(name),</span><br><span class="line">      _size(size),</span><br><span class="line">      _buffer(size? <span class="keyword">new</span> T[size] : <span class="literal">nullptr</span>)</span><br><span class="line">   &#123;&#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">// copy constructor</span></span><br><span class="line">   Buffer(<span class="keyword">const</span> Buffer&amp; copy):</span><br><span class="line">      _name(copy._name),</span><br><span class="line">      _size(copy._size),</span><br><span class="line">      _buffer(copy._size? <span class="keyword">new</span> T[copy._size] : <span class="literal">nullptr</span>)</span><br><span class="line">   &#123;</span><br><span class="line">      T* source = copy._buffer.get();</span><br><span class="line">      T* dest = _buffer.get();</span><br><span class="line">      <span class="built_in">std</span>::copy(source, source + copy._size, dest);</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">// copy assignment operator</span></span><br><span class="line">   Buffer&amp; <span class="keyword">operator</span>=(Buffer copy)</span><br><span class="line">   &#123;</span><br><span class="line">       swap(*<span class="keyword">this</span>, copy);</span><br><span class="line">       <span class="keyword">return</span> *<span class="keyword">this</span>;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">// move constructor</span></span><br><span class="line">   Buffer(Buffer&amp;&amp; temp):Buffer()</span><br><span class="line">   &#123;</span><br><span class="line">      swap(*<span class="keyword">this</span>, temp);</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="function"><span class="keyword">friend</span> <span class="keyword">void</span> <span class="title">swap</span><span class="params">(Buffer&amp; first, Buffer&amp; second)</span> <span class="keyword">noexcept</span></span><br><span class="line">   </span>&#123;</span><br><span class="line">       <span class="keyword">using</span> <span class="built_in">std</span>::swap;</span><br><span class="line">       swap(first._name  , second._name);</span><br><span class="line">       swap(first._size  , second._size);</span><br><span class="line">       swap(first._buffer, second._buffer);</span><br><span class="line">   &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
-<p>move语义不仅仅用于右值，也用于左值。标准库提供了std::move方法，将左值转换成右值。因此，对于swap函数，我们可以这样实现<br><figure class="highlight dns"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">template&lt;class T&gt;</span><br><span class="line">void swap(T&amp; a, T&amp; b)</span><br><span class="line">&#123;</span><br><span class="line">    T temp(st<span class="number">d::</span>move(a))<span class="comment">;</span></span><br><span class="line">    a = st<span class="number">d::</span>move(b)<span class="comment">;</span></span><br><span class="line">    b = st<span class="number">d::</span>move(temp)<span class="comment">;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>以上内容转自<a href="http://blog.jobbole.com/44015/" target="_blank" rel="external">这里</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/06/C-11常规特性之右值引用和move语义/" data-id="ciqcg7fvx005kvkqy77wbnuog" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/06/C-11常规特性之统一初始化和初始化器列表/" data-id="ciqdiqn8m005ju0qy3ibjg6v7" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a></li></ul>
@@ -616,7 +637,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java/">Java</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">9</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java/">Java</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">9</span></li></ul>
     </div>
   </div>
 
@@ -625,7 +646,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java底层机制/">Java底层机制</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/设计模式/">设计模式</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java底层机制/">Java底层机制</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/设计模式/">设计模式</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
     </div>
   </div>
 
@@ -634,7 +655,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/C-11-常规新特性/" style="font-size: 18.33px;">C++11 常规新特性</a> <a href="/tags/Java底层机制/" style="font-size: 15px;">Java底层机制</a> <a href="/tags/Linux-网络编程/" style="font-size: 16.67px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 16.67px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 15px;">Linux用户管理</a> <a href="/tags/Linux进程间通信/" style="font-size: 16.67px;">Linux进程间通信</a> <a href="/tags/TCP-IP/" style="font-size: 20px;">TCP/IP</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/动态规划/" style="font-size: 13.33px;">动态规划</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/数组/" style="font-size: 10px;">数组</a> <a href="/tags/树结构/" style="font-size: 13.33px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 11.67px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 11.67px;">爬虫</a> <a href="/tags/设计模式/" style="font-size: 13.33px;">设计模式</a> <a href="/tags/随记/" style="font-size: 11.67px;">随记</a>
+      <a href="/tags/C-11-常规新特性/" style="font-size: 18.33px;">C++11 常规新特性</a> <a href="/tags/Java底层机制/" style="font-size: 16.67px;">Java底层机制</a> <a href="/tags/Linux-网络编程/" style="font-size: 16.67px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 16.67px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 15px;">Linux用户管理</a> <a href="/tags/Linux进程间通信/" style="font-size: 16.67px;">Linux进程间通信</a> <a href="/tags/TCP-IP/" style="font-size: 20px;">TCP/IP</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/动态规划/" style="font-size: 13.33px;">动态规划</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/数组/" style="font-size: 10px;">数组</a> <a href="/tags/树结构/" style="font-size: 13.33px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 11.67px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 11.67px;">爬虫</a> <a href="/tags/设计模式/" style="font-size: 13.33px;">设计模式</a> <a href="/tags/随记/" style="font-size: 11.67px;">随记</a>
     </div>
   </div>
 
@@ -643,7 +664,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a><span class="archive-list-count">18</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a><span class="archive-list-count">19</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
     </div>
   </div>
 
@@ -653,6 +674,10 @@
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2016/07/08/Java之JVM调优/">Java之JVM调优</a>
+          </li>
         
           <li>
             <a href="/2016/07/07/Java之垃圾回收/">垃圾回收</a>
@@ -668,10 +693,6 @@
         
           <li>
             <a href="/2016/07/07/Java之类的加载到执行/">类的加载到执行</a>
-          </li>
-        
-          <li>
-            <a href="/2016/07/07/设计模式之单例模式/">设计模式之单例模式</a>
           </li>
         
       </ul>

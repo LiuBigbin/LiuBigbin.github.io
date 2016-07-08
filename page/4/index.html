@@ -65,6 +65,122 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-Linux任务调度机制" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/03/21/Linux任务调度机制/" class="article-date">
+  <time datetime="2016-03-21T14:16:33.000Z" itemprop="datePublished">2016-03-21</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/03/21/Linux任务调度机制/">Linux任务调度机制</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>在Linux中，每一个CPU都会有一个队列来存储处于TASK_RUNNING状态的任务，任务调度就是从这些队列中取出优先级最高的任务作为下一个放入CPU执行的任务。</p>
+<p>任务的调度需要进过两个过程：上下文切换和选择算法</p>
+<h3 id="上下文切换"><a href="#上下文切换" class="headerlink" title="上下文切换"></a>上下文切换</h3><p>从一个进程的上下文切换到另一个进程的上下文，因为其发生频率很高，所以通常都是调度器效率高低的关键。schedule()函数中调用了switch_to宏，这个宏实现了进程之间的真正切换，其代码存放于include/i386/system.h。switch_to宏是用嵌入式汇编写成的，较难理解。由switch_to()实现，而它的代码段在schedule()过程中调用，以一个宏实现。switch_to()函数正常返回，栈上的返回地址是新进程的task_struct::thread::eip，即新进程上一次被挂起时设置的继续运行的位置（上一次执行switch_to()时的标号”1:”位置）。至此转入新进程的上下文中运行。这其中涉及到wakeup，sleepon等函数来对进程进行睡眠与唤醒操作。</p>
+<h3 id="选择算法"><a href="#选择算法" class="headerlink" title="选择算法"></a>选择算法</h3><p>Linux schedule()函数将遍历就绪队列中的所有进程，调用goodness()函数计算每一个进程的权值weight，从中选择权值最大的进程投入运行。Linux的调度器主要实现在schedule()函数中。</p>
+<p>调度步骤：</p>
+<p>Schedule函数工作流程如下：</p>
+<p>（1）清理当前运行中的进程<br>（2）选择下一个要运行的进程（pick_next_task）<br>（3）设置新进程的运行环境<br>（4） 进程上下文切换</p>
+<h3 id="Linux-调度器将进程分为三类"><a href="#Linux-调度器将进程分为三类" class="headerlink" title="Linux 调度器将进程分为三类"></a>Linux 调度器将进程分为三类</h3><p>进程调度是操作系统的核心功能。调度器只是调度过程中的一部分，进程调度是非常复杂的过程，需要多个系统协同工作完成。本文所关注的仅为调度器，它的主要工作是在所有RUNNING 进程中选择最合适的一个。作为一个通用操作系统，Linux 调度器将进程分为三类：</p>
+<ol>
+<li><p>交互式进程<br>此类进程有大量的人机交互，因此进程不断地处于睡眠状态，等待用户输入。典型的应用比如编辑器 vi。此类进程对系统响应时间要求比较高，否则用户会感觉系统反应迟缓。</p>
+</li>
+<li><p>批处理进程<br>此类进程不需要人机交互，在后台运行，需要占用大量的系统资源。但是能够忍受响应延迟。比如编译器。</p>
+</li>
+<li><p>实时进程<br>实时对调度延迟的要求最高，这些进程往往执行非常重要的操作，要求立即响应并执行。比如视频播放软件或飞机飞行控制系统，很明显这类程序不能容忍长时间的调度延迟，轻则影响电影放映效果，重则机毁人亡。</p>
+</li>
+</ol>
+<h3 id="调度时机：调度什么时候发生？即：schedule-函数什么时候被调用？"><a href="#调度时机：调度什么时候发生？即：schedule-函数什么时候被调用？" class="headerlink" title="调度时机：调度什么时候发生？即：schedule()函数什么时候被调用？"></a>调度时机：调度什么时候发生？即：schedule()函数什么时候被调用？</h3><p>调度的发生主要有两种方式：</p>
+<p>1：主动式调度(自愿调度)</p>
+<p>在内核中主动直接调用进程调度函数schedule()，当进程需要等待资源而暂时停止运行时，会把状态置于挂起（睡眠），并主动请求调度，让出cpu。</p>
+<p>2：被动式调度（抢占式调度、强制调度）</p>
+<p>用户抢占（2.4  2.6）<br>内核抢占（2.6）</p>
+<h4 id="1-用户抢占发生在：从系统调用返回用户空间；从中断处理程序返回用户空间。"><a href="#1-用户抢占发生在：从系统调用返回用户空间；从中断处理程序返回用户空间。" class="headerlink" title="(1)用户抢占发生在：从系统调用返回用户空间；从中断处理程序返回用户空间。"></a>(1)用户抢占发生在：从系统调用返回用户空间；从中断处理程序返回用户空间。</h4><p>内核即将返回用户空间的时候，如果need_resched标志被设置，会导致schedule()被调用，此时就会发生用户抢占。主动式调度是用户程序自己调度schedule，也许有人会觉得自己的代码中能引用schedule吗？也许不行吧，但大家知道wait4我们是可以调用的，前面我们没有给出wait4的代码，但我们知道在执行了wait4效果是父进程被挂起，所谓的挂起就是不运行了，放弃了CPU，这里发生了进程调度是显而易见的，其实在代码中有如下几行：<br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">current­&gt;state = TASK_INTERRUPIBLE;<span class="function"><span class="title">schedule</span><span class="params">()</span></span>;</span><br></pre></td></tr></table></figure></p>
+<p>还有exit也有<br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">current­&gt;state = TASK_ZOMBIE; <span class="function"><span class="title">schedule</span><span class="params">()</span></span>;</span><br></pre></td></tr></table></figure></p>
+<p>这2种发生了进程调度，从代码上也可以看出（状态被改成了睡眠和僵死，然后去调度可运行进程，当前进程自然不会再占有CPU运行了），从效果中也能看出。这说明用户程序自己可以执行进程调度。</p>
+<h4 id="2-内核抢占"><a href="#2-内核抢占" class="headerlink" title="(2)内核抢占"></a>(2)内核抢占</h4><p>在不支持内核抢占的系统中，进程/线程一旦运行于内核空间，就可以一直执行，直到它主动放弃或时间片耗尽为止。这样一些非常紧急的进程或线程将长时间得不到运行。在支持内核抢占的系统中，更高优先级的进程/线程可以抢占正在内核空间运行的低优先级的进程/线程。关于抢占式调度(强制调度），需要知道的是，CPU在执行了当前指令之后，在执行下一条指令之前，CPU要判断在当前指令执行之后是否发生了中断或异常，如果发生了，CPU将比较到来的中断优先级和当前进程的优先级（有硬件参与实现，如中断控制器8259A芯片；通过比较寄存器的值来判断优先级；中断服务程序的入口地址形成有硬件参与实现，等等，具体实现请见相关资料和书籍），如果新来任务的优先级更高，则执行中断服务程序，在返回中断时，将执行进程调度函数schedule。</p>
+<p>在支持内核抢占的系统中,某些特例下是不允许内核被抢占的：<br>（a）内核正在运行中断处理程序，进程调度函数schedule（）会对此作出判断，如果是在中断中调用，会打印出错误信息。</p>
+<p>（b） 内核正在进行中断上下文的bottom half（中断的底半部）处理，硬件中断返回前会执行软中断，此时仍然处于中断上下文。</p>
+<p>（c） 进程正持有spinlock自旋锁，writelock/readlock读写锁等，当持有这些锁时，不应该被抢占，否则由于抢占将导致其他cpu长时间不能获得锁而死锁。</p>
+<p>（d） 内核正在执行调度程序scheduler</p>
+<p>为了保证linux内核在以上情况下不会被抢占，抢占式内核使用了一个变量preempt_count,称为内核抢占计数。这一变量被设置在进程的thread_info结构体中，每当内核要进入以上几种状态时，变量preempt_count就加1，指示内核不允许抢占，反之减1。</p>
+<h3 id="Linux任务调度策略"><a href="#Linux任务调度策略" class="headerlink" title="Linux任务调度策略"></a>Linux任务调度策略</h3><h4 id="Linux支持SCHED-FIFO、SCHED-RR和SCHED-OTHER的调度策略。"><a href="#Linux支持SCHED-FIFO、SCHED-RR和SCHED-OTHER的调度策略。" class="headerlink" title="Linux支持SCHED_FIFO、SCHED_RR和SCHED_OTHER的调度策略。"></a>Linux支持SCHED_FIFO、SCHED_RR和SCHED_OTHER的调度策略。</h4><p>linux用函数goodness（）统一计算进程（包括普通进程和实时进程）的优先级权值，该权值衡量一个处于可运行状态的进程值得运行的程度，权值越大，进程优先级越高。 每个进程的task_struct结构中，与goodness（）计算权值相关的域有以下四项：policy、nice(2.2版内核该项为priority)、counter、rt_priority。其中，policy是进程的调度策略，其可用来区分实时进程和普通进程，实时进程优先于普通进程运行。nice从最初的UNIX沿用而来，表示进程的静态负向优先级，其取值范围为19~-20，以-20优先级最高。counter表示进程剩余的时间片计数值，由于counter在计算goodness（）时起重要作用，因此，counter也可以看作是进程的动态优先级。rt_priority是实时进程特有的，表示实时优先级。</p>
+<p>首先，linux根据调度策略policy从整体上区分实时进程和普通进程。对于policy为SCHED_OTHER的普通进程，linux采用动态优先级调，其优先级权值取决于(20-nice)和进程当前的剩余时间片计数counter之和。进程创建时，子进程继承父进程的nice值，而父进程的counter值则被分为二半，子进程和父进程各得一半。时间片计数器每次清零后由(20-nice)经过换算重新赋值。字面上看，nice是“优先级”、counter是“计数器”的意思，然而实际上，它们表达的是同个意思：nice决定了分配给该进程的时间片计数，nice优先级越高的进程分到的时间片越长，用户通过系统调用nice（）或setpriority（）改变进程静态优先级nice值的同时，也改变了该进程的时间片长度；counter表示该进程剩余的时间片计数值，而nice和counter综合起来又决定进程可运行的优先级权值。在进程运行过程中，counter不断减少，而nice保持相对不变；当一个普通进程的时间片用完以后，并不马上根据nice对counter进行重新赋值，只有所有处于可运行状态的普通进程的时间片都用完了以后（counter等于0），才根据nice对counter重新赋值，这个普通进程才有了再次被调度的机会。这说明，普通进程运行过程中，counter的减小给了其它进程得以运行的机会，直至counter减为0时才完全放弃对CPU的使用，这就相当于优先级在动态变化，所以称之为动态优先调度。</p>
+<p>对于实时进程，linux采用了两种调度策略，即SCHED_FIFO(先来先服务调度)和SCHED_RR（时间片轮转调度）。因为实时进程具有一定程度的紧迫性，所以衡量一个实时进程是否应该运行，采用了一个比较固定的标准，即参考rt_priority的值。用函数goodness（）计算进程的优先级权值时，对实时进程是在1000的基础上加上rt_priority的值，而非实时进程的动态优先级综合起来的调度权值始终在以下，所以goodness（）的优先级权值计算方法确保实时进程的调度权值始终比所有的非实时进程都要大，这就保证了实时进程的优先运行。实时进程的counter与nice都与其优先级权值无关，这和普通进程是有区别的，实时进程task_struct中的counter和nice只与SCHED_RR调度策略进程的时间片计数相关；而对于SCHED_FIFO调度策略的实时进程没有调度的参考意义。</p>
+<h2 id="进程状态说明"><a href="#进程状态说明" class="headerlink" title="进程状态说明"></a>进程状态说明</h2><h4 id="R-task-running-可执行状态"><a href="#R-task-running-可执行状态" class="headerlink" title="R (task_running) : 可执行状态"></a>R (task_running) : 可执行状态</h4><p>只有在该状态的进程才可能在CPU上运行。而同一时刻可能有多个进程处于可执行状态，这些进程的task_struct结构（进程控制块）被放入对应CPU的可执行队列中（一个进程最多只能出现在一个CPU的可执行队列中）。进程调度器的任务就是从各个CPU的可执行队列中分别选择一个进程在该CPU上运行。</p>
+<p>很多操作系统教科书将正在CPU上执行的进程定义为RUNNING状态、而将可执行但是尚未被调度执行的进程定义为READY状态，这两种状态在linux下统一为 TASK_RUNNING状态。</p>
+<h4 id="S-task-interruptible-可中断的睡眠状态"><a href="#S-task-interruptible-可中断的睡眠状态" class="headerlink" title="S (task_interruptible): 可中断的睡眠状态"></a>S (task_interruptible): 可中断的睡眠状态</h4><p>处于这个状态的进程因为等待某某事件的发生（比如等待socket连接、等待信号量），而被挂起。这些进程的task_struct结构被放入对应事件的等待队列中。当这些事件发生时（由外部中断触发、或由其他进程触发），对应的等待队列中的一个或多个进程将被唤醒。</p>
+<p>通过ps命令我们会看到，一般情况下，进程列表中的绝大多数进程都处于task_interruptible状态（除非机器的负载很高）。毕竟CPU就这么一两个，进程动辄几十上百个，如果不是绝大多数进程都在睡眠，CPU又怎么响应得过来。</p>
+<h4 id="D-task-uninterruptible-不可中断的睡眠状态"><a href="#D-task-uninterruptible-不可中断的睡眠状态" class="headerlink" title="D (task_uninterruptible): 不可中断的睡眠状态"></a>D (task_uninterruptible): 不可中断的睡眠状态</h4><p>与task_interruptible状态类似，进程处于睡眠状态，但是此刻进程是不可中断的。不可中断，指的并不是CPU不响应外部硬件的中断，而是指进程不响应异步信号。</p>
+<p>绝大多数情况下，进程处在睡眠状态时，总是应该能够响应异步信号的。但是uninterruptible sleep 状态的进程不接受外来的任何信号，因此无法用kill杀掉这些处于D状态的进程，无论是”kill”, “kill -9″还是”kill -15″，这种情况下，一个可选的方法就是reboot。</p>
+<p>处于uninterruptible sleep状态的进程通常是在等待IO，比如磁盘IO，网络IO，其他外设IO，如果进程正在等待的IO在较长的时间内都没有响应，那么就被ps看到了，同时也就意味着很有可能有IO出了问题，可能是外设本身出了故障，也可能是比如挂载的远程文件系统已经不可访问了.</p>
+<p>而task_uninterruptible状态存在的意义就在于，内核的某些处理流程是不能被打断的。如果响应异步信号，程序的执行流程中就会被插入一段用于处理异步信号的流程（这个插入的流程可能只存在于内核态，也可能延伸到用户态），于是原有的流程就被中断了。</p>
+<p>在进程对某些硬件进行操作时（比如进程调用read系统调用对某个设备文件进行读操作，而read系统调用最终执行到对应设备驱动的代码，并与对应的物理设备进行交互），可能需要使用task_uninterruptible状态对进程进行保护，以避免进程与设备交互的过程被打断，造成设备陷入不可控的状态。这种情况下的task_uninterruptible状态总是非常短暂的，通过ps命令基本上不可能捕捉到。</p>
+<p>我们通过vmstat 命令中procs下的b 可以来查看是否有处于uninterruptible 状态的进程。 该命令只能显示数量。</p>
+<p>In computer operating systems terminology, a sleeping process can either be interruptible (woken via signals) or uninterruptible (woken explicitly). An uninterruptible sleep state is a sleep state that cannot handle a signal (such as waiting for disk or network IO (input/output)).</p>
+<p>When the process is sleeping uninterruptibly, the signal will be noticed when the process returns from the system call or trap.<br> – 这句是关键。 当处于uninterruptibly sleep 状态时，只有当进程从system 调用返回时，才通知signal。</p>
+<p>A process which ends up in “D” state for any measurable length of time is trapped in the midst of a system call (usually an I/O operation on a device — thus the initial in the ps output).</p>
+<p>Such a process cannot be killed — it would risk leaving the kernel in an inconsistent state, leading to a panic. In general you can consider this to be a bug in the device driver that the process is accessing.</p>
+<h4 id="T-task-stopped-or-task-traced-：暂停状态或跟踪状态"><a href="#T-task-stopped-or-task-traced-：暂停状态或跟踪状态" class="headerlink" title="T(task_stopped or task_traced)：暂停状态或跟踪状态"></a>T(task_stopped or task_traced)：暂停状态或跟踪状态</h4><p>向进程发送一个sigstop信号，它就会因响应该信号而进入task_stopped状态（除非该进程本身处于task_uninterruptible状态而不响应信号）。（sigstop与sigkill信号一样，是非常强制的。不允许用户进程通过signal系列的系统调用重新设置对应的信号处理函数。）</p>
+<p>向进程发送一个sigcont信号，可以让其从task_stopped状态恢复到task_running状态。</p>
+<p>当进程正在被跟踪时，它处于task_traced这个特殊的状态。“正在被跟踪”指的是进程暂停下来，等待跟踪它的进程对它进行操作。比如在gdb中对被跟踪的进程下一个断点，进程在断点处停下来的时候就处于task_traced状态。而在其他时候，被跟踪的进程还是处于前面提到的那些状态。</p>
+<p>对于进程本身来说，task_stopped和task_traced状态很类似，都是表示进程暂停下来。</p>
+<p>而task_traced状态相当于在task_stopped之上多了一层保护，处于task_traced状态的进程不能响应sigcont信号而被唤醒。只能等到调试进程通过ptrace系统调用执行ptrace_cont、ptrace_detach等操作（通过ptrace系统调用的参数指定操作），或调试进程退出，被调试的进程才能恢复task_running状态。</p>
+<h4 id="Z-task-dead-exit-zombie-：退出状态，进程成为僵尸进程"><a href="#Z-task-dead-exit-zombie-：退出状态，进程成为僵尸进程" class="headerlink" title="Z (task_dead - exit_zombie)：退出状态，进程成为僵尸进程"></a>Z (task_dead - exit_zombie)：退出状态，进程成为僵尸进程</h4><p>在Linux进程的状态中，僵尸进程是非常特殊的一种，它是已经结束了的进程，但是没有从进程表中删除。太多了会导致进程表里面条目满了，进而导致系统崩溃，倒是不占用其他系统资源。    </p>
+<p>它已经放弃了几乎所有内存空间，没有任何可执行代码，也不能被调度，仅仅在进程列表中保留一个位置，记载该进程的退出状态等信息供其他进程收集，除此之外，僵尸进程不再占有任何内存空间。</p>
+<p>进程在退出的过程中，处于TASK_DEAD状态。在这个退出过程中，进程占有的所有资源将被回收，除了task_struct结构（以及少数资源）以外。于是进程就只剩下task_struct这么个空壳，故称为僵尸。</p>
+<p>之所以保留task_struct，是因为task_struct里面保存了进程的退出码、以及一些统计信息。而其父进程很可能会关心这些信息。比如在shell中，$?变量就保存了最后一个退出的前台进程的退出码，而这个退出码往往被作为if语句的判断条件。</p>
+<p>当然，内核也可以将这些信息保存在别的地方，而将task_struct结构释放掉，以节省一些空间。但是使用task_struct结构更为方便，因为在内核中已经建立了从pid到task_struct查找关系，还有进程间的父子关系。释放掉task_struct，则需要建立一些新的数据结构，以便让父进程找到它的子进程的退出信息。</p>
+<p>子进程在退出的过程中，内核会给其父进程发送一个信号，通知父进程来“收尸”。 父进程可以通过wait系列的系统调用（如wait4、waitid）来等待某个或某些子进程的退出，并获取它的退出信息。然后wait系列的系统调用会顺便将子进程的尸体（task_struct）也释放掉。</p>
+<p>这个信号默认是SIGCHLD，但是在通过clone系统调用创建子进程时，可以设置这个信号。</p>
+<p>如果他的父进程没安装SIGCHLD信号处理函数调用wait或waitpid()等待子进程结束，又没有显式忽略该信号，那么它就一直保持僵尸状态，子进程的尸体（task_struct）也就无法释放掉。</p>
+<p>如果这时父进程结束了，那么init进程自动会接手这个子进程，为它收尸，它还是能被清除的。但是如果如果父进程是一个循环，不会结束，那么子进程就会一直保持僵尸状态，这就是为什么系统中有时会有很多的僵尸进程。</p>
+<p>当进程退出的时候，会将它的所有子进程都托管给别的进程（使之成为别的进程的子进程）。托管的进程可能是退出进程所在进程组的下一个进程（如果存在的话），或者是1号进程。所以每个进程、每时每刻都有父进程存在。除非它是1号进程。1号进程，pid为1的进程，又称init进程。</p>
+<p>linux系统启动后，第一个被创建的用户态进程就是init进程。它有两项使命：</p>
+<p>1、执行系统初始化脚本，创建一系列的进程（它们都是init进程的子孙）；<br>2、在一个死循环中等待其子进程的退出事件，并调用waitid系统调用来完成“收尸”工作；</p>
+<p>init进程不会被暂停、也不会被杀死（这是由内核来保证的）。它在等待子进程退出的过程中处于task_interruptible状态，“收尸”过程中则处于task_running状态。</p>
+<h4 id="X-task-dead-exit-dead-：退出状态，进程即将被销毁"><a href="#X-task-dead-exit-dead-：退出状态，进程即将被销毁" class="headerlink" title="X (task_dead - exit_dead)：退出状态，进程即将被销毁"></a>X (task_dead - exit_dead)：退出状态，进程即将被销毁</h4><p>进程在退出过程中也可能不会保留它的task_struct。比如这个进程是多线程程序中被detach过的进程。或者父进程通过设置sigchld信号的handler为sig_ign，显式的忽略了sigchld信号。（这是posix的规定，尽管子进程的退出信号可以被设置为sigchld以外的其他信号。）</p>
+<p>此时，进程将被置于exit_dead退出状态，这意味着接下来的代码立即就会将该进程彻底释放。所以exit_dead状态是非常短暂的，几乎不可能通过ps命令捕捉到。</p>
+<h2 id="进程状态变化说明"><a href="#进程状态变化说明" class="headerlink" title="进程状态变化说明"></a>进程状态变化说明</h2><h4 id="进程的初始状态"><a href="#进程的初始状态" class="headerlink" title="进程的初始状态"></a>进程的初始状态</h4><p>进程是通过fork系列的系统调用（fork、clone、vfork）来创建的，内核（或内核模块）也可以通过kernel_thread函数创建内核进程。这些创建子进程的函数本质上都完成了相同的功能——将调用进程复制一份，得到子进程。（可以通过选项参数来决定各种资源是共享、还是私有。）</p>
+<p>那么既然调用进程处于task_running状态（否则，它若不是正在运行，又怎么进行调用？），则子进程默认也处于task_running状态。<br>另外，在系统调用调用clone和内核函数kernel_thread也接受clone_stopped选项，从而将子进程的初始状态置为 task_stopped。</p>
+<h4 id="进程状态变迁"><a href="#进程状态变迁" class="headerlink" title="进程状态变迁"></a>进程状态变迁</h4><p>进程自创建以后，状态可能发生一系列的变化，直到进程退出。而尽管进程状态有好几种，但是进程状态的变迁却只有两个方向——从task_running状态变为非task_running状态、或者从非task_running状态变为task_running状态。</p>
+<p>也就是说，如果给一个task_interruptible状态的进程发送sigkill信号，这个进程将先被唤醒（进入task_running状态），然后再响应sigkill信号而退出（变为task_dead状态）。并不会从task_interruptible状态直接退出。</p>
+<p>进程从非task_running状态变为task_running状态，是由别的进程（也可能是中断处理程序）执行唤醒操作来实现的。执行唤醒的进程设置被唤醒进程的状态为task_running，然后将其task_struct结构加入到某个cpu的可执行队列中。于是被唤醒的进程将有机会被调度执行。</p>
+<p>而进程从task_running状态变为非task_running状态，则有两种途径：</p>
+<p>1、响应信号而进入task_stoped状态、或task_dead状态；</p>
+<p>2、执行系统调用主动进入task_interruptible状态（如nanosleep系统调用）、或task_dead状态（如exit系统调用）；或由于执行系统调用需要的资源得不到满足，而进入task_interruptible状态或task_uninterruptible状态（如select系统调用）。</p>
+<p>显然，这两种情况都只能发生在进程正在cpu上执行的情况下。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/03/21/Linux任务调度机制/" data-id="ciqdiqn7m0040u0qywo3c3c7x" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-链接库以及编译过程" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2016/03/20/链接库以及编译过程/" class="article-date">
@@ -141,7 +257,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/20/链接库以及编译过程/" data-id="ciqcg7fs50003vkqys0pab4q1" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/20/链接库以及编译过程/" data-id="ciqdiqn3r0003u0qyhhreac32" class="article-share-link">Share</a>
       
       
     </footer>
@@ -255,7 +371,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/19/malloc函数的实现原理/" data-id="ciqcg7fuc002xvkqymkokn2np" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/19/malloc函数的实现原理/" data-id="ciqdiqn6t002xu0qywpm6iaxq" class="article-share-link">Share</a>
       
       
     </footer>
@@ -307,7 +423,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/19/Linux-内存管理/" data-id="ciqcg7fv70045vkqygkyp1bso" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/19/Linux-内存管理/" data-id="ciqdiqn7q0045u0qygyndsqh3" class="article-share-link">Share</a>
       
       
     </footer>
@@ -414,7 +530,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/18/MySQL索引算法原理/" data-id="ciqcg7fut003mvkqye2blamw6" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/18/MySQL索引算法原理/" data-id="ciqdiqn7d003mu0qyzs7pf735" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/树结构/">树结构</a></li></ul>
@@ -492,7 +608,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/18/那家姓B的树/" data-id="ciqcg7fs70005vkqymz8ae1mu" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/18/那家姓B的树/" data-id="ciqdiqn3u0005u0qyv8ro62t2" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/树结构/">树结构</a></li></ul>
@@ -555,7 +671,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/17/第K小元素选择算法/" data-id="ciqcg7fsl000wvkqymaauufam" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/17/第K小元素选择算法/" data-id="ciqdiqn48000wu0qymis071mt" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/数组/">数组</a></li></ul>
@@ -613,7 +729,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/17/C语言之static/" data-id="ciqcg7fvs005cvkqy58agz1gb" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/17/C语言之static/" data-id="ciqdiqn8j005fu0qy8j7whhli" class="article-share-link">Share</a>
       
       
     </footer>
@@ -663,7 +779,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/16/从整数的补码到用位运算实现任何两个数的加减法/" data-id="ciqcg7fu2002jvkqykow089ra" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/16/从整数的补码到用位运算实现任何两个数的加减法/" data-id="ciqdiqn5f002ju0qyarnserg7" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/位运算/">位运算</a></li></ul>
@@ -712,75 +828,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/15/域名污染/" data-id="ciqcg7ftk001rvkqyn4xd8jhn" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TCP-IP/">TCP/IP</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-NAT以及内网穿透" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/03/15/NAT以及内网穿透/" class="article-date">
-  <time datetime="2016-03-15T07:21:42.000Z" itemprop="datePublished">2016-03-15</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/计算机网络/">计算机网络</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/03/15/NAT以及内网穿透/">NAT以及内网穿透</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="NAT"><a href="#NAT" class="headerlink" title="NAT"></a>NAT</h2><p>NAT分两种类型：NAT和NAPT。</p>
-<h3 id="NAT-Network-Address-Translation-网络地址转换"><a href="#NAT-Network-Address-Translation-网络地址转换" class="headerlink" title="NAT(Network Address Translation)网络地址转换"></a>NAT(Network Address Translation)网络地址转换</h3><p>NAT属接入广域网(WAN)技术，是一种将私有（保留）地址转化为合法IP地址的转换技术，它被广泛应用于各种类型Internet接入方式和各种类型的网络中。原因很简单，NAT不仅完美地解决了lP地址不足的问题，而且还能够有效地避免来自网络外部的攻击，隐藏并保护网络内部的计算机。NAT（Network Address Translation，网络地址转换）是将IP数据包头中的IP地址转换为另一个IP 地址的过程。在实际应用中，NAT 主要用于实现私有网络访问公共网络的功能。这种通过使用少量的公有IP 地址代表较多的私有IP地址的方式，将有助于减缓可用IP 地址空间的枯竭。</p>
-<h3 id="NAPT-Network-Address-Port-Translation-网络地址端口转换"><a href="#NAPT-Network-Address-Port-Translation-网络地址端口转换" class="headerlink" title="NAPT(Network Address Port Translation)网络地址端口转换"></a>NAPT(Network Address Port Translation)网络地址端口转换</h3><p>NAPT是人们比较熟悉的一种转换方式。NAPT普遍应用于接入设备中，它可以将中小型的网络隐藏在一个合法的IP地址后面。NAPT与动态地址NAT不同，它将内部连接映射到外部网络中的一个单独的IP地址上，同时在该地址上加上一个由NAT设备选定的TCP端口号。NAPT是一种较流行的NAT的变体通过转换TCP或UDP协议端口号以及地址来提供并发性。除了一对源和目的IP地址以外，这个表还包括一对源和目的协议端口号，以及NAT盒使用的一个协议端口号。NAPT的主要优势在于，能够使用一个全球有效IP地址获得通用性。主要缺点在于其通信仅限于TCP或UDP。只要所有通信都采用TCP或UDP，NAPT就允许一台内部计算机访问多台外部计算机，并允许多台内部主机访问同一台外部计算机，相互之间不会发生冲突。</p>
-<h4 id="NAPT的四种类型"><a href="#NAPT的四种类型" class="headerlink" title="NAPT的四种类型"></a>NAPT的四种类型</h4><ol>
-<li><p>Full Cone NAT：所有来自同一个内部Tuple X的请求均被NAT转换至同一个外部Tuple Y，而不管这些请求是不是属于同一个应用或者是多个应用的。除此之外，当X-Y的转换关系建立之后，任意外部主机均可随时将Y中的地址和端口作为目标地址和目标端口，向内部主机发送UDP报文，由于对外部请求的来源无任何限制，因此这种方式虽然足够简单，但却不那么安全</p>
-</li>
-<li><p>Restricted Cone NAT：它是Full Cone的受限版本：所有来自同一个内部Tuple X的请求均被NAT转换至同一个外部Tuple Y，这与Full Cone相同，但不同的是，只有当内部主机曾经发送过报文给外部主机（假设其IP地址为Z）后，外部主机才能以Y中的信息作为目标地址和目标端口，向内部主机发送UDP请求报文，这意味着，NAT设备只向内转发（目标地址/端口转换）那些来自于当前已知的外部主机的UDP报文，从而保障了外部请求来源的安全性</p>
-</li>
-<li><p>Port Restricted Cone NAT：它是Restricted Cone NAT的进一步受限版。只有当内部主机曾经发送过报文给外部主机（假设其IP地址为Z且端口为P）之后，外部主机才能以Y中的信息作为目标地址和目标端口，向内部主机发送UDP报文，同时，其请求报文的源端口必须为P，这一要求进一步强化了对外部报文请求来源的限制，从而较Restrictd Cone更具安全性</p>
-</li>
-<li><p>Symmetric NAT：这是一种比所有Cone NAT都要更为灵活的转换方式：在Cone NAT中，内部主机的内部Tuple与外部Tuple的转换映射关系是独立于内部主机所发出的UDP报文中的目标地址及端口的，即与目标Tuple无关；在Symmetric NAT中，目标Tuple则成为了NAT设备建立转换关系的一个重要考量：只有来自于同一个内部Tuple 、且针对同一目标Tuple的请求才被NAT转换至同一个外部Tuple，否则的话，NAT将为之分配一个新的外部Tuple；打个比方，当内部主机以相同的内部Tuple对2个不同的目标Tuple发送UDP报文时，此时NAT将会为内部主机分配两个不同的外部Tuple，并且建立起两个不同的内、外部Tuple转换关系。与此同时，只有接收到了内部主机所发送的数据包的外部主机才能向内部主机返回UDP报文，这里对外部返回报文来源的限制是与Port Restricted Cone一致的。不难看出，如果说Full Cone是要求最宽松NAT UDP转换方式，那么，Symmetric NAT则是要求最严格的NAT方式，其不仅体现在转换关系的建立上，而且还体现在对外部报文来源的限制方面。</p>
-</li>
-</ol>
-<h2 id="内网穿透"><a href="#内网穿透" class="headerlink" title="内网穿透"></a>内网穿透</h2><p>内网穿透是一个比较大的研究问题，这里只是根据自己的理解对其进行简答的原理描述而已。</p>
-<p>内网穿透的实现方法根据不同A、B双方不同的NAPT类型而不同，一般如果两侧的NAT类型都是Cone NAT类型，那么就可以实现双向的通讯。如果两侧都是Symmetric NAT，或是一侧是Symmetric NAT另一侧是Port Restricted Cone，那么将不能实现双向通讯。</p>
-<p>由于内网机器可以访问外网的机器，而外网的机器不能访问内网的机器，之所以不能访问，那是因为在内网端的NAT上没有对应的内网机器IP端口转换记录，所以NAT找不到对应的内部机器，所以直接的把数据包给丢掉。所以，如果想要实现内网穿透，那么就必须要先知道内网机器在NAT上的所对应的公网IP：Port信息，而且必须让NAT产生这条信息。那么怎么才可以使得内网的NAT产生该信息，而且另一端能获得这条转换后的公网IP：Port信息呢？此时需要第三方公网服务器S的支持。</p>
-<p>内网机器A发送一条信息给公网服务器S，公网服务器得到了A经过NAT转换后的公网IP：port信息，并记录下来，另一侧的内网机器B同样发送信息给公网服务器S，S得到了B的转换后的公网IP：Port信息，此时在A的NAT和B的NAT都分别产生了A和B的内网IP：Port转换为公网IP：Port的映射信息，在S把对方的转换后的公网IP：Port信息分别告诉给A、B后，就可以根据不同的NAT类型来实现内网的穿透了。</p>
-<ol>
-<li><p>Full Cone NAT类型的最容易，因为不会对外网的请求来源进行限制，所以可以直接进行双向通讯了。</p>
-</li>
-<li><p>Restricted Cone NAT类型和Port Restricted Cone NAT类型需要有一侧发起第一次注定失败的请求，例如：B发起对A的请求，此时在B的NAT上就会有B对A的请求记录，但是在A的NAT上面并没有对应的A请求B的记录，所以B发起的请求会被A的NAT给丢弃，但是此时的B已经对A打好洞了，所以如果此时A发起请求，或是数据给B（A侧打洞），那么由于B的NAT有对应的B请求过A的记录，所以数据包能以顺利的到达B。那么在数据顺利到达B后，由于A给B发送了数据（不管成功或失败），才是在A的NAT上也有对应的A请求过B的记录，所以此时如果有新的B的数据包发给A，那么A的NAT就会直接的根据映射将数据包转给A，实现了B与A的通信。</p>
-</li>
-<li><p>Symmetric NAT，由于该类型的NAT的映射对象不是内网的IP：Port，而是外网的IP：Port信息，所以对不同的外网IP：Port请求会得到不同的IP：port转换，请求服务器S会得到一条IP：Port转换，请求对侧也会得到一条不同的IP：Port转换，又由于ymmetric NAT对外部返回报文来源的限制是与Port Restricted Cone一致的，所以这种类型不能实现双方的通讯。</p>
-</li>
-</ol>
-<p>对于内网穿透，网上一般都是UDP实现的，而且该技术已经很成熟了，对于TCP的实现，有说可以实现的，有说不可以实现的，由于自己没有具体的写代码实现过，不过感觉根据UDP的实现思路，TCP应该也是可以实现内网穿透的！</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/15/NAT以及内网穿透/" data-id="ciqcg7fuq003jvkqy4tizea6v" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/15/域名污染/" data-id="ciqdiqn4x001ru0qy50dd4ba6" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TCP-IP/">TCP/IP</a></li></ul>
@@ -805,7 +853,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java/">Java</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">9</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java/">Java</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">9</span></li></ul>
     </div>
   </div>
 
@@ -814,7 +862,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java底层机制/">Java底层机制</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/设计模式/">设计模式</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java底层机制/">Java底层机制</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/设计模式/">设计模式</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
     </div>
   </div>
 
@@ -823,7 +871,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/C-11-常规新特性/" style="font-size: 18.33px;">C++11 常规新特性</a> <a href="/tags/Java底层机制/" style="font-size: 15px;">Java底层机制</a> <a href="/tags/Linux-网络编程/" style="font-size: 16.67px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 16.67px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 15px;">Linux用户管理</a> <a href="/tags/Linux进程间通信/" style="font-size: 16.67px;">Linux进程间通信</a> <a href="/tags/TCP-IP/" style="font-size: 20px;">TCP/IP</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/动态规划/" style="font-size: 13.33px;">动态规划</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/数组/" style="font-size: 10px;">数组</a> <a href="/tags/树结构/" style="font-size: 13.33px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 11.67px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 11.67px;">爬虫</a> <a href="/tags/设计模式/" style="font-size: 13.33px;">设计模式</a> <a href="/tags/随记/" style="font-size: 11.67px;">随记</a>
+      <a href="/tags/C-11-常规新特性/" style="font-size: 18.33px;">C++11 常规新特性</a> <a href="/tags/Java底层机制/" style="font-size: 16.67px;">Java底层机制</a> <a href="/tags/Linux-网络编程/" style="font-size: 16.67px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 16.67px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 15px;">Linux用户管理</a> <a href="/tags/Linux进程间通信/" style="font-size: 16.67px;">Linux进程间通信</a> <a href="/tags/TCP-IP/" style="font-size: 20px;">TCP/IP</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/动态规划/" style="font-size: 13.33px;">动态规划</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/数组/" style="font-size: 10px;">数组</a> <a href="/tags/树结构/" style="font-size: 13.33px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 11.67px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 11.67px;">爬虫</a> <a href="/tags/设计模式/" style="font-size: 13.33px;">设计模式</a> <a href="/tags/随记/" style="font-size: 11.67px;">随记</a>
     </div>
   </div>
 
@@ -832,7 +880,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a><span class="archive-list-count">18</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a><span class="archive-list-count">19</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
     </div>
   </div>
 
@@ -842,6 +890,10 @@
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2016/07/08/Java之JVM调优/">Java之JVM调优</a>
+          </li>
         
           <li>
             <a href="/2016/07/07/Java之垃圾回收/">垃圾回收</a>
@@ -857,10 +909,6 @@
         
           <li>
             <a href="/2016/07/07/Java之类的加载到执行/">类的加载到执行</a>
-          </li>
-        
-          <li>
-            <a href="/2016/07/07/设计模式之单例模式/">设计模式之单例模式</a>
           </li>
         
       </ul>

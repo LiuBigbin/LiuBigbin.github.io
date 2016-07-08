@@ -65,6 +65,58 @@
       <div class="outer">
         <section id="main">
   
+    <article id="new-C-11常规特性之右值引用和move语义" class="article article-type-new" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/07/06/C-11常规特性之右值引用和move语义/" class="article-date">
+  <time datetime="2016-07-06T10:43:33.000Z" itemprop="datePublished">2016-07-06</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C与C/">C与C++</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/07/06/C-11常规特性之右值引用和move语义/">C++11常规特性之右值引用和move语义</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>C++11加入了右值引用(rvalue reference)的概念（用&amp;&amp;标识），用来区分对左值和右值的引用。左值就是一个有名字的对象，而右值则是一个无名对象（临时对象）。move语义允许修改右值（以前右值被看作是不可修改的，等同于const T&amp;类型）。<br>C++的class或者struct以前都有一些隐含的成员函数：默认构造函数（仅当没有显示定义任何其他构造函数时才存在），拷贝构造函数，析构函数还有拷贝赋值操作符。拷贝构造函数和拷贝赋值操作符提供bit-wise的拷贝（浅拷贝），也就是逐个bit拷贝对象。也就是说，如果你有一个类包含指向其他对象的指针，拷贝时只会拷贝指针的值而不会管指向的对象。在某些情况下这种做法是没问题的，但在很多情况下，实际上你需要的是深拷贝，也就是说你希望拷贝指针所指向的对象。而不是拷贝指针的值。这种情况下，你需要显示地提供拷贝构造函数与拷贝赋值操作符来进行深拷贝。</p>
+<p>如果你用来初始化或拷贝的源对象是个右值（临时对象）会怎么样呢？你仍然需要拷贝它的值，但随后很快右值就会被释放。这意味着产生了额外的操作开销，包括原本并不需要的空间分配以及内存拷贝。</p>
+<p>现在说说move constructor和move assignment operator。这两个函数接收T&amp;&amp;类型的参数，也就是一个右值。在这种情况下，它们可以修改右值对象，例如“偷走”它们内部指针所指向的对象。举个例子，一个容器的实现（例如vector或者queue）可能包含一个指向元素数组的指针。当用一个临时对象初始化一个对象时，我们不需要分配另一个数组，从临时对象中把值复制过来，然后在临时对象析构时释放它的内存。我们只需要将指向数组内存的指针值复制过来，由此节约了一次内存分配，一次元数组的复制以及后来的内存释放。</p>
+<p>以下代码实现了一个简易的buffer。这个buffer有一个成员记录buffer名称（为了便于以下的说明），一个指针（封装在unique_ptr中）指向元素为T类型的数组，还有一个记录数组长度的变量。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="keyword">class</span> Buffer</span><br><span class="line">&#123;</span><br><span class="line">   <span class="built_in">std</span>::<span class="built_in">string</span>          _name;</span><br><span class="line">   <span class="keyword">size_t</span>               _size;</span><br><span class="line">   <span class="built_in">std</span>::unique_ptr&lt;T[]&gt; _buffer;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">   <span class="comment">// default constructor</span></span><br><span class="line">   Buffer():</span><br><span class="line">      _size(<span class="number">16</span>),</span><br><span class="line">      _buffer(<span class="keyword">new</span> T[<span class="number">16</span>])</span><br><span class="line">   &#123;&#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">// constructor</span></span><br><span class="line">   Buffer(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; name, <span class="keyword">size_t</span> size):</span><br><span class="line">      _name(name),</span><br><span class="line">      _size(size),</span><br><span class="line">      _buffer(<span class="keyword">new</span> T[size])</span><br><span class="line">   &#123;&#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">// copy constructor</span></span><br><span class="line">   Buffer(<span class="keyword">const</span> Buffer&amp; copy):</span><br><span class="line">      _name(copy._name),</span><br><span class="line">      _size(copy._size),</span><br><span class="line">      _buffer(<span class="keyword">new</span> T[copy._size])</span><br><span class="line">   &#123;</span><br><span class="line">      T* source = copy._buffer.get();</span><br><span class="line">      T* dest = _buffer.get();</span><br><span class="line">      <span class="built_in">std</span>::copy(source, source + copy._size, dest);</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">// copy assignment operator</span></span><br><span class="line">   Buffer&amp; <span class="keyword">operator</span>=(<span class="keyword">const</span> Buffer&amp; copy)</span><br><span class="line">   &#123;</span><br><span class="line">      <span class="keyword">if</span>(<span class="keyword">this</span> != ©)</span><br><span class="line">      &#123;</span><br><span class="line">         _name = copy._name;</span><br><span class="line"></span><br><span class="line">         <span class="keyword">if</span>(_size != copy._size)</span><br><span class="line">         &#123;</span><br><span class="line">            _buffer = <span class="literal">nullptr</span>;</span><br><span class="line">            _size = copy._size;</span><br><span class="line">            _buffer = _size &gt; <span class="number">0</span> &gt; <span class="keyword">new</span> T[_size] : <span class="literal">nullptr</span>;</span><br><span class="line">         &#125;</span><br><span class="line"></span><br><span class="line">         T* source = copy._buffer.get();</span><br><span class="line">         T* dest = _buffer.get();</span><br><span class="line">         <span class="built_in">std</span>::copy(source, source + copy._size, dest);</span><br><span class="line">      &#125;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">return</span> *<span class="keyword">this</span>;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">// move constructor</span></span><br><span class="line">   Buffer(Buffer&amp;&amp; temp):</span><br><span class="line">      _name(<span class="built_in">std</span>::move(temp._name)),</span><br><span class="line">      _size(temp._size),</span><br><span class="line">      _buffer(<span class="built_in">std</span>::move(temp._buffer))</span><br><span class="line">   &#123;</span><br><span class="line">      temp._buffer = <span class="literal">nullptr</span>;</span><br><span class="line">      temp._size = <span class="number">0</span>;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">// move assignment operator</span></span><br><span class="line">   Buffer&amp; <span class="keyword">operator</span>=(Buffer&amp;&amp; temp)</span><br><span class="line">   &#123;</span><br><span class="line">      assert(<span class="keyword">this</span> != &amp;temp); <span class="comment">// assert if this is not a temporary</span></span><br><span class="line"></span><br><span class="line">      _buffer = <span class="literal">nullptr</span>;</span><br><span class="line">      _size = temp._size;</span><br><span class="line">      _buffer = <span class="built_in">std</span>::move(temp._buffer);</span><br><span class="line"></span><br><span class="line">      _name = <span class="built_in">std</span>::move(temp._name);</span><br><span class="line"></span><br><span class="line">      temp._buffer = <span class="literal">nullptr</span>;</span><br><span class="line">      temp._size = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">      <span class="keyword">return</span> *<span class="keyword">this</span>;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line">Buffer&lt;T&gt; getBuffer(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; name)</span><br><span class="line">&#123;</span><br><span class="line">   Buffer&lt;T&gt; b(name, <span class="number">128</span>);</span><br><span class="line">   <span class="keyword">return</span> b;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span><br><span class="line"></span>&#123;</span><br><span class="line">   Buffer&lt;<span class="keyword">int</span>&gt; b1;</span><br><span class="line">   Buffer&lt;<span class="keyword">int</span>&gt; b2(<span class="string">"buf2"</span>, <span class="number">64</span>);</span><br><span class="line">   Buffer&lt;<span class="keyword">int</span>&gt; b3 = b2;</span><br><span class="line">   Buffer&lt;<span class="keyword">int</span>&gt; b4 = getBuffer&lt;<span class="keyword">int</span>&gt;(<span class="string">"buf4"</span>);</span><br><span class="line">   b1 = getBuffer&lt;<span class="keyword">int</span>&gt;(<span class="string">"buf5"</span>);</span><br><span class="line">   <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>默认的copy constructor以及copy assignment operator大家应该很熟悉了。C++11中新增的是move constructor以及move assignment operator，这两个函数根据上文所描述的move语义实现。如果你运行这段代码，你就会发现b4构造时，move constructor会被调用。同样，对b1赋值时，move assignment operator会被调用。原因就在于getBuffer()的返回值是一个临时对象——也就是右值。</p>
+<p>你也许注意到了，move constuctor中当我们初始化变量name和指向buffer的指针时，我们使用了std::move。name实际上是一个string，std::string实现了move语义。std::unique_ptr也一样。但是如果我们写_name(temp._name)，那么copy constructor将会被调用。不过对于_buffer来说不能这么写，因为std::unique_ptr没有copy constructor。但为什么std::string的move constructor此时没有被调到呢？这是因为虽然我们使用一个右值调用了Buffer的move constructor，但在这个构造函数内，它实际上是个左值。为什么？因为它是有名字的——“temp”。一个有名字的对象就是左值。为了再把它变为右值（以便调用move constructor)必须使用std::move。这个函数仅仅是把一个左值引用变为一个右值引用。</p>
+<p>更新：虽然这个例子是为了说明如何实现move constructor以及move assignment operator，但具体的实现方式并不是唯一的。在本文的回复中Member 7805758同学提供了另一种可能的实现。为了方便查看，我把它也列在下面：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="keyword">class</span> Buffer</span><br><span class="line">&#123;</span><br><span class="line">   <span class="built_in">std</span>::<span class="built_in">string</span>          _name;</span><br><span class="line">   <span class="keyword">size_t</span>               _size;</span><br><span class="line">   <span class="built_in">std</span>::unique_ptr&lt;T[]&gt; _buffer;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">   <span class="comment">// constructor</span></span><br><span class="line">   Buffer(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span>&amp; name = <span class="string">""</span>, <span class="keyword">size_t</span> size = <span class="number">16</span>):</span><br><span class="line">      _name(name),</span><br><span class="line">      _size(size),</span><br><span class="line">      _buffer(size? <span class="keyword">new</span> T[size] : <span class="literal">nullptr</span>)</span><br><span class="line">   &#123;&#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">// copy constructor</span></span><br><span class="line">   Buffer(<span class="keyword">const</span> Buffer&amp; copy):</span><br><span class="line">      _name(copy._name),</span><br><span class="line">      _size(copy._size),</span><br><span class="line">      _buffer(copy._size? <span class="keyword">new</span> T[copy._size] : <span class="literal">nullptr</span>)</span><br><span class="line">   &#123;</span><br><span class="line">      T* source = copy._buffer.get();</span><br><span class="line">      T* dest = _buffer.get();</span><br><span class="line">      <span class="built_in">std</span>::copy(source, source + copy._size, dest);</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">// copy assignment operator</span></span><br><span class="line">   Buffer&amp; <span class="keyword">operator</span>=(Buffer copy)</span><br><span class="line">   &#123;</span><br><span class="line">       swap(*<span class="keyword">this</span>, copy);</span><br><span class="line">       <span class="keyword">return</span> *<span class="keyword">this</span>;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">// move constructor</span></span><br><span class="line">   Buffer(Buffer&amp;&amp; temp):Buffer()</span><br><span class="line">   &#123;</span><br><span class="line">      swap(*<span class="keyword">this</span>, temp);</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="function"><span class="keyword">friend</span> <span class="keyword">void</span> <span class="title">swap</span><span class="params">(Buffer&amp; first, Buffer&amp; second)</span> <span class="keyword">noexcept</span></span><br><span class="line">   </span>&#123;</span><br><span class="line">       <span class="keyword">using</span> <span class="built_in">std</span>::swap;</span><br><span class="line">       swap(first._name  , second._name);</span><br><span class="line">       swap(first._size  , second._size);</span><br><span class="line">       swap(first._buffer, second._buffer);</span><br><span class="line">   &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>move语义不仅仅用于右值，也用于左值。标准库提供了std::move方法，将左值转换成右值。因此，对于swap函数，我们可以这样实现<br><figure class="highlight dns"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">template&lt;class T&gt;</span><br><span class="line">void swap(T&amp; a, T&amp; b)</span><br><span class="line">&#123;</span><br><span class="line">    T temp(st<span class="number">d::</span>move(a))<span class="comment">;</span></span><br><span class="line">    a = st<span class="number">d::</span>move(b)<span class="comment">;</span></span><br><span class="line">    b = st<span class="number">d::</span>move(temp)<span class="comment">;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>以上内容转自<a href="http://blog.jobbole.com/44015/" target="_blank" rel="external">这里</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/07/06/C-11常规特性之右值引用和move语义/" data-id="ciqdiqn8o005nu0qyvq6aax94" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="new-C-11常规特性之lambda" class="article article-type-new" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2016/07/06/C-11常规特性之lambda/" class="article-date">
@@ -97,7 +149,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/06/C-11常规特性之lambda/" data-id="ciqcg7fw3005tvkqysc4jda5a" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/06/C-11常规特性之lambda/" data-id="ciqdiqn8u005wu0qyl63nfzw9" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a></li></ul>
@@ -156,7 +208,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/06/C-11常规特性之noexcept/" data-id="ciqcg7fw1005qvkqyc1kuah9l" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/06/C-11常规特性之noexcept/" data-id="ciqdiqn8s005tu0qyipdfijoo" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a></li></ul>
@@ -240,7 +292,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/06/C-11常规特性之其他一些新特性/" data-id="ciqcg7fvz005nvkqy8laqoyq8" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/06/C-11常规特性之其他一些新特性/" data-id="ciqdiqn8q005qu0qy26tofk9x" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a></li></ul>
@@ -333,7 +385,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/02/套接字/" data-id="ciqcg7fte001jvkqynuxr1a5p" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/02/套接字/" data-id="ciqdiqn4t001ju0qy365d1nr8" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a></li></ul>
@@ -442,7 +494,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/02/信号灯/" data-id="ciqcg7fu1002gvkqynqy2kvxm" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/02/信号灯/" data-id="ciqdiqn5b002gu0qyvwmr7ibn" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a></li></ul>
@@ -550,7 +602,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/02/消息队列/" data-id="ciqcg7ft0001avkqymnh7wiwz" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/02/消息队列/" data-id="ciqdiqn4k001au0qyhktqossq" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a></li></ul>
@@ -649,7 +701,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/02/共享内存/" data-id="ciqcg7fty002dvkqyrfiorzj1" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/02/共享内存/" data-id="ciqdiqn5a002du0qyhbojuepj" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a></li></ul>
@@ -763,7 +815,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/02/管道/" data-id="ciqcg7fsj000rvkqyjxz6ig1e" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/02/管道/" data-id="ciqdiqn46000ru0qyiud06a83" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a></li></ul>
@@ -833,74 +885,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/05/10/TCP-Nagel算法/" data-id="ciqcg7fup003gvkqydse00hx8" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TCP-IP/">TCP/IP</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-连续发送多份小数据时40ms延迟问题" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/05/10/连续发送多份小数据时40ms延迟问题/" class="article-date">
-  <time datetime="2016-05-10T06:15:32.000Z" itemprop="datePublished">2016-05-10</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/计算机网络/">计算机网络</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/05/10/连续发送多份小数据时40ms延迟问题/">连续发送多份小数据时40ms延迟问题</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="连续发送多份小数据时40ms延迟问题"><a href="#连续发送多份小数据时40ms延迟问题" class="headerlink" title="连续发送多份小数据时40ms延迟问题"></a>连续发送多份小数据时40ms延迟问题</h2><h3 id="以及TCP-NODELAY、TCP-CORK失效问题的定位与解决"><a href="#以及TCP-NODELAY、TCP-CORK失效问题的定位与解决" class="headerlink" title="以及TCP_NODELAY、TCP_CORK失效问题的定位与解决"></a>以及TCP_NODELAY、TCP_CORK失效问题的定位与解决</h3><p>提到TCP_NODELAY和TCP_CORK，相信很多人都很熟悉。然而由于Linux实现上的问题，这两个参数在实际使用中，并不像书里介绍的那么简单。最近DTS在解决一个TCP超时问题时，对这两个参数和它们背后所隐藏的问题有了比较深刻的认识，在此与同学们分享一下我们的经验和教训。</p>
-<h4 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h4><p>和许多经典的分布式程序类似，DTS使用TCP长连接用于client和server的数据交互：client发送请求给server，然后等待server回应。有时候出于数据结构上的考虑，client需要先连续发送多份数据，再等待server的回应。测试发现这种情况下，server端有时会出现接收数据延迟。比如说某个case里，client会先发送275个字节，接着发送24个字节，然后再发送292字节数据等等；此时如果该TCP连接被复用过，则server端在收取24字节这批数据时会很容易出现40ms延迟。</p>
-<p>由于client每次发送的数据都很小，很自然想到是nagle算法延迟了client端的数据发送，于是在client端和server端都设置了TCP_NODELAY。然而测试发现，此时server虽然顺利接受了24字节数据，却在接受随后292字节数据时依然出现了40ms延迟。难道是数据太多导致TCP_NODELAY失效？因此又在client端添加了TCP_CORK选项：即如果client需要连续发送多次数据，则先关闭TCP_NODELAY，打开TCP_CORK；所有数据write完后，再关闭TCP_CORK，打开TCP_NODELAY。按照设想，client应该会把所有数据打包在一起发送，但测试结果依然和以前一样，server还是在收取第三份数据时出现了40ms的延迟。</p>
-<h4 id="不得已使用tcpdump进行分析，结果如下："><a href="#不得已使用tcpdump进行分析，结果如下：" class="headerlink" title="不得已使用tcpdump进行分析，结果如下："></a>不得已使用tcpdump进行分析，结果如下：</h4><figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">18<span class="pseudo">:18</span><span class="pseudo">:01</span><span class="class">.640134</span> <span class="tag">IP</span> <span class="tag">jx-dp-wk11</span><span class="class">.jx</span><span class="class">.baidu</span><span class="class">.com</span><span class="class">.36989</span> &gt; <span class="tag">tc-dpf-rd-in</span><span class="class">.tc</span><span class="class">.baidu</span><span class="class">.com</span><span class="class">.licensedaemon</span>: <span class="tag">P</span> 551<span class="pseudo">:826(275)</span> <span class="tag">ack</span> 141 <span class="tag">win</span> 1460 &lt;<span class="tag">nop</span>,<span class="tag">nop</span>,<span class="tag">timestamp</span> 2551499424 1712127318&gt;</span><br><span class="line">18<span class="pseudo">:18</span><span class="pseudo">:01</span><span class="class">.640151</span> <span class="tag">IP</span> <span class="tag">jx-dp-wk11</span><span class="class">.jx</span><span class="class">.baidu</span><span class="class">.com</span><span class="class">.36989</span> &gt; <span class="tag">tc-dpf-rd-in</span><span class="class">.tc</span><span class="class">.baidu</span><span class="class">.com</span><span class="class">.licensedaemon</span>: <span class="tag">P</span> 826<span class="pseudo">:850(24)</span> <span class="tag">ack</span> 141 <span class="tag">win</span> 1460 &lt;<span class="tag">nop</span>,<span class="tag">nop</span>,<span class="tag">timestamp</span> 2551499424 1712127318&gt;</span><br><span class="line">18<span class="pseudo">:18</span><span class="pseudo">:01</span><span class="class">.680812</span> <span class="tag">IP</span> <span class="tag">tc-dpf-rd-in</span><span class="class">.tc</span><span class="class">.baidu</span><span class="class">.com</span><span class="class">.licensedaemon</span> &gt; <span class="tag">jx-dp-wk11</span><span class="class">.jx</span><span class="class">.baidu</span><span class="class">.com</span><span class="class">.36989</span>: . <span class="tag">ack</span> 850 <span class="tag">win</span> 2252 &lt;<span class="tag">nop</span>,<span class="tag">nop</span>,<span class="tag">timestamp</span> 1712127359 2551499424&gt;</span><br><span class="line">18<span class="pseudo">:18</span><span class="pseudo">:01</span><span class="class">.680818</span> <span class="tag">IP</span> <span class="tag">jx-dp-wk11</span><span class="class">.jx</span><span class="class">.baidu</span><span class="class">.com</span><span class="class">.36989</span> &gt; <span class="tag">tc-dpf-rd-in</span><span class="class">.tc</span><span class="class">.baidu</span><span class="class">.com</span><span class="class">.licensedaemon</span>: <span class="tag">P</span> 850<span class="pseudo">:1142(292)</span> <span class="tag">ack</span> 141 <span class="tag">win</span> 1460 &lt;<span class="tag">nop</span>,<span class="tag">nop</span>,<span class="tag">timestamp</span> 2551499465 1712127359&gt;</span><br></pre></td></tr></table></figure>
-<p>注意红色的部分，可见client并没有将所有数据打成一个包，每次write的数据还是作为单独的包发送；此外，client在发送完24字节的数据后，一直等到server告知ack才接着发送剩下的292字节。由于server延迟了40ms才告知ack，因此导致了其接收292字节数据时也出现了40ms延迟。</p>
-<p>既然查出了延迟是server端delayed ack的原因，通过设置server端TCP_QUICKACK，40ms延迟的问题得到了解决。</p>
-<h4 id="原因定位"><a href="#原因定位" class="headerlink" title="原因定位"></a>原因定位</h4><p>虽然DTS的延时问题暂时得到了解决，但其内在原因却使人百思不得其解：为什么TCP_NODELAY会失效？为什么TCP_CORK无作为？…… 在STL同学的帮助下，我们逐渐对这些困惑有了答案。</p>
-<p>首先介绍下delayed ack算法：当协议栈接受到TCP数据时，并不一定会立刻发送ACK响应，而是倾向于等待一个超时或者满足特殊条件时再发送。对于Linux实现，这些特殊条件如下：</p>
-<p>1）收到的数据已经超过了full frame size</p>
-<p>2）或者处于快速回复模式</p>
-<p>3）或者出现了乱序的包</p>
-<p>4）或者接收窗口的数据足够多</p>
-<p>如果接收方有数据回写，则ACK也会搭车一起发送。当以上条件都不满足时，接收方会延迟40ms再回应ACK。</p>
-<h4 id="1-为什么TCP-NODELAY失效"><a href="#1-为什么TCP-NODELAY失效" class="headerlink" title="1.为什么TCP_NODELAY失效"></a>1.为什么TCP_NODELAY失效</h4><p>UNIX网络编程这本书介绍说，TCP_NODELAY同时禁止了nagle算法和delayed ACK算法，因此小块数据可以直接发送。然而Linux实现中，TCP_NODELAY只禁止了nagle算法。另一方面，协议栈在发送包的时候，不仅受到TCP_NODELAY的影响，还受到协议栈里面拥塞窗口的影响。由于server端delayed ack，client迟迟无法收到ack应答，拥塞窗口堵满，从而无法继续发送更多数据；一直到40ms后ack达到，才能继续发送（题外话： TCP_NODELAY在FREEBSD上性能优于Linux上，因为FREEBSD并不像Linux一样需要第一个包到达后就响应ACK）。</p>
-<p>这也解释了为什么延时现象在重用过的TCP连接上特别容易出现：目前使用的52bs内核中，连接刚建立时拥塞窗口默认是3，因此可以发送3个数据包，而后拥塞窗口变为2，就会导致第3个292字节的包发不出去。</p>
-<h4 id="2-为什么TCP-CORK失效"><a href="#2-为什么TCP-CORK失效" class="headerlink" title="2.为什么TCP_CORK失效"></a>2.为什么TCP_CORK失效</h4><p>TCP_CORK会将发送端多份数据打成一个包，待到TCP_CORK关闭后一起发送。Linux Man手册上也描述了TCP_CORK选项和TCP_NODELAY一起使用的情形。然而根据之前tcpdump的结果，client端设置TCP_CORK后并没有发挥效果。继续测试发现，只要设置过TCP_NODELAY选项，即使随后关闭也会导致TCP_CORK无效；如果从未设置过TCP_NODELAY，则TCP_CORK可以产生效果。</p>
-<p>根据STL同学对协议栈代码的调研，发现这个是Linux实现上的问题。在内核中，设置启动TCP_NODELAY选项后，内核会为socket增加两个标志位TCP_NAGLE_OFF和TCP_NAGLE_PUSH，关闭TCP_NODELAY的时候，内核只去掉了TCP_NAGLE_OFF标志位。而在发包的时候判断的却恰恰是TCP_NAGLE_PUSH标志位，如果该位置位设置，就直接把包发出去，从而导致TCP_CORK发挥不了作用。这很可能是这一版本Linux内核实现上的bug。</p>
-<h4 id="3-TCP-QUICKACK的作用和限制"><a href="#3-TCP-QUICKACK的作用和限制" class="headerlink" title="3.TCP_QUICKACK的作用和限制"></a>3.TCP_QUICKACK的作用和限制</h4><p>前面介绍delayed ack算法时，讲到协议栈迅速回复ack的情形之一就是进入到快速回复模式。而TCP_QUICKACK选项就是向内核建议进入快速回复模式。快速回复ack模式的判断条件如下：(tp-&gt;ack.quick &amp;&amp; tp-&gt;ack.pingpong)，其中设置QUICKACK选项会置pingpong=0。</p>
-<p>然而，随着TCP连接的重用和数据的不断收发，快速回复模式有可能失效。例如在后续的交互过程当中，pingpong变为1的条件就有：1.收到fin后；2. 发送方发送数据时，发现当前时间与上次接收数据的时间小于40ms。此外，发送方发现数据包带有ack标志位时，也会减小ack.quick值。这些都会导致快速回复模式的退出。因此，即使每次接受数据前都设置TCP_QUICKACK选项，也不能完全解决delayed ack问题。</p>
-<h4 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h4><p>经过上述的测试与分析，可以认识到当连续发送多个小数据时，TCP_NODELAY作用并不明显，TCP_CORK无法像宣传的那样和TCP_NODELAY混合使用，而TCP_QUICKACK也不能完全解决问题。因此，我们最终的解决方案如下：</p>
-<p>（1）在client端多次发送数据时，先打开TCP_CORK选项，发送完后再关闭TCP_CORK，将多份小数据打成一个包发送；此外，client端不能设置TCP_NODELAY选项，以避免TCP_CORK失效。</p>
-<p>（2）server端开启TCP_QUICKACK选项，尽量快速回复ack。</p>
-<p>通过这个延时问题的解决，可以看到由于Linux实现策略上的问题，TCP_NODELAY和TCP_CORK还是暗藏了不少陷阱。实际应用中，其实也可以绕过这些参数，在应用层将多份数据序列化到一个buffer中，或者使用writev系列函数。然而，这些方法需要额外的内存拷贝，或者让传输对象对外暴露过多的数据结构信息，并不一定容易实现，也会添加代码重构的代价。</p>
-<p>另一方面，考虑到那些使用TCP进行异步请求的应用，由于多个请求需要同时复用一个TCP连接，也很容易出现延时问题；而无论是通过TCP_CORK还是writev哪种方法，都不太适合这种异步场景。最近STL推出的新内核添加了一个禁止delayed ack的系统参数，使用该参数理论上讲可以彻底根除40ms的延迟问题。</p>
-<p>以上内容转自<a href="http://www.cnblogs.com/tangr206/articles/3284203.html" target="_blank" rel="external">这里</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/05/10/连续发送多份小数据时40ms延迟问题/" data-id="ciqcg7fsb000fvkqy2swerio6" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/05/10/TCP-Nagel算法/" data-id="ciqdiqn7b003gu0qyerxhwz5w" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TCP-IP/">TCP/IP</a></li></ul>
@@ -925,7 +910,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java/">Java</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">9</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java/">Java</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">9</span></li></ul>
     </div>
   </div>
 
@@ -934,7 +919,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java底层机制/">Java底层机制</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/设计模式/">设计模式</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java底层机制/">Java底层机制</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/设计模式/">设计模式</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
     </div>
   </div>
 
@@ -943,7 +928,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/C-11-常规新特性/" style="font-size: 18.33px;">C++11 常规新特性</a> <a href="/tags/Java底层机制/" style="font-size: 15px;">Java底层机制</a> <a href="/tags/Linux-网络编程/" style="font-size: 16.67px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 16.67px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 15px;">Linux用户管理</a> <a href="/tags/Linux进程间通信/" style="font-size: 16.67px;">Linux进程间通信</a> <a href="/tags/TCP-IP/" style="font-size: 20px;">TCP/IP</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/动态规划/" style="font-size: 13.33px;">动态规划</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/数组/" style="font-size: 10px;">数组</a> <a href="/tags/树结构/" style="font-size: 13.33px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 11.67px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 11.67px;">爬虫</a> <a href="/tags/设计模式/" style="font-size: 13.33px;">设计模式</a> <a href="/tags/随记/" style="font-size: 11.67px;">随记</a>
+      <a href="/tags/C-11-常规新特性/" style="font-size: 18.33px;">C++11 常规新特性</a> <a href="/tags/Java底层机制/" style="font-size: 16.67px;">Java底层机制</a> <a href="/tags/Linux-网络编程/" style="font-size: 16.67px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 16.67px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 15px;">Linux用户管理</a> <a href="/tags/Linux进程间通信/" style="font-size: 16.67px;">Linux进程间通信</a> <a href="/tags/TCP-IP/" style="font-size: 20px;">TCP/IP</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/动态规划/" style="font-size: 13.33px;">动态规划</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/数组/" style="font-size: 10px;">数组</a> <a href="/tags/树结构/" style="font-size: 13.33px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 11.67px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 11.67px;">爬虫</a> <a href="/tags/设计模式/" style="font-size: 13.33px;">设计模式</a> <a href="/tags/随记/" style="font-size: 11.67px;">随记</a>
     </div>
   </div>
 
@@ -952,7 +937,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a><span class="archive-list-count">18</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a><span class="archive-list-count">19</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
     </div>
   </div>
 
@@ -962,6 +947,10 @@
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2016/07/08/Java之JVM调优/">Java之JVM调优</a>
+          </li>
         
           <li>
             <a href="/2016/07/07/Java之垃圾回收/">垃圾回收</a>
@@ -977,10 +966,6 @@
         
           <li>
             <a href="/2016/07/07/Java之类的加载到执行/">类的加载到执行</a>
-          </li>
-        
-          <li>
-            <a href="/2016/07/07/设计模式之单例模式/">设计模式之单例模式</a>
           </li>
         
       </ul>

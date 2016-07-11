@@ -65,6 +65,54 @@
       <div class="outer">
         <section id="main">
   
+    <article id="new-C-11常规特性之统一初始化和初始化器列表" class="article article-type-new" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/07/06/C-11常规特性之统一初始化和初始化器列表/" class="article-date">
+  <time datetime="2016-07-06T10:43:47.000Z" itemprop="datePublished">2016-07-06</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C与C/">C与C++</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/07/06/C-11常规特性之统一初始化和初始化器列表/">C++11常规特性之统一初始化和初始化器列表</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>在c++11以前，程序员，或者初学者经常会感到疑惑关于怎样去初始化一个变量或者是一个对象。<br>初始化经常使用括号，或者是使用大括号，或者是复赋值操作。<br>因为这个原因，c++11提出了统一初始化，以为着使用这初始化列表，下面的做法都是正确的。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> value[] &#123;<span class="number">1</span> , <span class="number">2</span> , <span class="number">3</span>&#125;;</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; vi &#123;<span class="number">2</span> , <span class="number">3</span> , <span class="number">4</span> , <span class="number">56</span>, <span class="number">7</span>&#125;;</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="built_in">std</span>::<span class="built_in">string</span>&gt; cities &#123;<span class="string">"Berlin"</span> , <span class="string">"New York "</span> , <span class="string">"london "</span> , <span class="string">"cairo"</span>&#125;;</span><br><span class="line"><span class="built_in">std</span>::<span class="keyword">complex</span>&lt;<span class="keyword">double</span>&gt; c&#123;<span class="number">4.0</span> , <span class="number">3.0</span>&#125;;  <span class="comment">//相当于c（4.0 ， 3.0）；</span></span><br></pre></td></tr></table></figure></p>
+<p>一个初始化列表强制使用赋值操作， 也就是为每个变量设置一个默认的初始化值，被初始化为0（NULL 或者是 nullptr）<br>如下：<br><figure class="highlight aspectj"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> i; <span class="comment">//这是一个未定义的行为</span></span><br><span class="line"><span class="keyword">int</span> i&#123;&#125;； <span class="comment">//i调用默认的构造函数为i赋值为0</span></span><br><span class="line"><span class="keyword">int</span> *p； <span class="comment">//这是一个未定义的行为</span></span><br><span class="line"><span class="keyword">int</span> *p&#123;&#125; ;<span class="comment">// p被初始化为一个nullptr</span></span><br></pre></td></tr></table></figure></p>
+<p>初始化类表不会进行隐式转换<br>例如：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span>  x1（<span class="number">5.3</span>）； <span class="comment">// 5</span></span><br><span class="line"><span class="keyword">int</span> x2 = <span class="number">5.3</span> <span class="comment">//5</span></span><br><span class="line"><span class="keyword">int</span> xi&#123;<span class="number">5.0</span>&#125; <span class="comment">//精确地   所以会出现error</span></span><br><span class="line"><span class="keyword">int</span> x4 = &#123;<span class="number">5.3</span>&#125; <span class="comment">// 精确地   所以会出现error</span></span><br><span class="line"><span class="keyword">char</span> ci&#123;<span class="number">7</span>&#125;;</span><br><span class="line"><span class="keyword">char</span> c9&#123;<span class="number">9999</span>&#125;; <span class="comment">//error  9999不合适是一个char类型</span></span><br></pre></td></tr></table></figure></p>
+<p>如果是自己想实现初始化列表构造函数，拷贝函数，赋值函数，需要包含initializer_list 这个头文件。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> MyClass&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    MyClass(<span class="keyword">int</span> a):a_(a)&#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"normal initializer list\n"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    MyClass(<span class="built_in">std</span>::initializer_list&lt;<span class="keyword">int</span>&gt; a):b_(a) &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"initializer list constructor\n"</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    MyClass(MyClass&amp; my) &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"copy constructor\n"</span>;</span><br><span class="line">        <span class="keyword">this</span>-&gt;a_ = my.a_;</span><br><span class="line">        <span class="keyword">this</span>-&gt;b_ = my.b_;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    MyClass&amp; <span class="keyword">operator</span>=(MyClass&amp; my) &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"operator = constructor\n"</span>;</span><br><span class="line">        <span class="keyword">this</span>-&gt;a_ = my.a_;</span><br><span class="line">        <span class="keyword">this</span>-&gt;b_ = my.b_;</span><br><span class="line">        <span class="keyword">return</span> *<span class="keyword">this</span>;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="keyword">int</span> a_;</span><br><span class="line">    <span class="built_in">std</span>::initializer_list&lt;<span class="keyword">int</span>&gt; b_;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>下面是初始化以及输出结果：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">MyClass ma&#123;<span class="number">1</span>&#125;;               <span class="comment">// (a)</span></span><br><span class="line">MyClass mb = &#123;<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>&#125;;      <span class="comment">// (b)</span></span><br><span class="line"><span class="function">MyClass <span class="title">mc</span><span class="params">(<span class="number">2</span>)</span></span>;               <span class="comment">// (c)</span></span><br><span class="line">MyClass md = b;              <span class="comment">// (d)</span></span><br><span class="line"><span class="function">MyClass <span class="title">me</span><span class="params">(c)</span></span>;               <span class="comment">// (e)</span></span><br><span class="line">MyClass mf&#123;e&#125;;               <span class="comment">// (f)</span></span><br><span class="line"><span class="keyword">auto</span> l&#123;<span class="number">2</span>, <span class="number">2</span>, <span class="number">3</span>,<span class="number">3</span>&#125;;</span><br><span class="line">MyClass mh&#123;l&#125;;               <span class="comment">// (e)</span></span><br><span class="line">ma = mb;                     <span class="comment">// (h)</span></span><br></pre></td></tr></table></figure></p>
+<p>输出结果：<br><figure class="highlight delphi"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">initializer list <span class="function"><span class="keyword">constructor</span></span><br><span class="line"></span><br><span class="line"><span class="title">initializer</span> <span class="title">list</span> <span class="title">constructor</span></span><br><span class="line"></span><br><span class="line"><span class="title">normal</span> <span class="title">constructor</span> <span class="title">list</span></span><br><span class="line"></span><br><span class="line"><span class="title">copy</span> <span class="title">constructor</span></span><br><span class="line"></span><br><span class="line"><span class="title">copy</span> <span class="title">constructor</span></span><br><span class="line"></span><br><span class="line"><span class="title">copy</span> <span class="title">constructor</span></span><br><span class="line"></span><br><span class="line"><span class="title">initializer</span> <span class="title">list</span> <span class="title">constructor</span></span><br><span class="line"></span><br><span class="line"><span class="title">operator</span> = <span class="title">constructor</span></span></span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/07/06/C-11常规特性之统一初始化和初始化器列表/" data-id="ciqi40s6w005mvkqyiirzuody" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="new-C-11常规特性之右值引用和move语义" class="article article-type-new" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2016/07/06/C-11常规特性之右值引用和move语义/" class="article-date">
@@ -105,7 +153,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/06/C-11常规特性之右值引用和move语义/" data-id="ciqdm08ns005niwqytz2dkr63" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/06/C-11常规特性之右值引用和move语义/" data-id="ciqi40s6z005qvkqy0w6lz21t" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a></li></ul>
@@ -149,7 +197,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/06/C-11常规特性之lambda/" data-id="ciqdm08ny005wiwqy2iev3m6l" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/06/C-11常规特性之lambda/" data-id="ciqi40s74005zvkqydr5n2kkt" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a></li></ul>
@@ -208,7 +256,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/06/C-11常规特性之noexcept/" data-id="ciqdm08nx005tiwqyvshm2hgy" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/06/C-11常规特性之noexcept/" data-id="ciqi40s73005wvkqyuww3x0th" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a></li></ul>
@@ -292,7 +340,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/06/C-11常规特性之其他一些新特性/" data-id="ciqdm08nv005qiwqyea90akxc" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/06/C-11常规特性之其他一些新特性/" data-id="ciqi40s71005tvkqyuw3r0p4h" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a></li></ul>
@@ -385,7 +433,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/02/套接字/" data-id="ciqdm08lh001jiwqy7vuttg05" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/02/套接字/" data-id="ciqi40s3k001jvkqy6juzb0dz" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a></li></ul>
@@ -494,7 +542,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/02/信号灯/" data-id="ciqdm08lz002giwqyuikjjy2y" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/02/信号灯/" data-id="ciqi40s41002gvkqycbroxlir" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a></li></ul>
@@ -602,7 +650,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/02/消息队列/" data-id="ciqdm08la001aiwqytlwlov2w" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/02/消息队列/" data-id="ciqi40s3b001avkqygggacid5" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a></li></ul>
@@ -701,7 +749,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/02/共享内存/" data-id="ciqdm08lx002diwqyidukooq0" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/02/共享内存/" data-id="ciqi40s40002dvkqy1hzlytfh" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a></li></ul>
@@ -815,80 +863,10 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/02/管道/" data-id="ciqdm08l0000riwqyliubaq3a" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/02/管道/" data-id="ciqi40s30000rvkqyodk955yz" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-TCP-Nagel算法" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/05/10/TCP-Nagel算法/" class="article-date">
-  <time datetime="2016-05-10T06:24:13.000Z" itemprop="datePublished">2016-05-10</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/计算机网络/">计算机网络</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/05/10/TCP-Nagel算法/"> TCP Nagel算法</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <ol>
-<li>Nagel算法</li>
-</ol>
-<p>TCP/IP协议中，无论发送多少数据，总是要在数据前面加上协议头，同时，对方接收到数据，也需要发送ACK表示确认。为了尽可能的利用网络带宽，TCP总是希望尽可能的发送足够大的数据。（一个连接会设置MSS参数，因此，TCP/IP希望每次都能够以MSS尺寸的数据块来发送数据）。Nagle算法就是为了尽可能发送大块数据，避免网络中充斥着许多小数据块。</p>
-  <font color="blue">Nagle算法的基本定义是任意时刻，最多只能有一个未被确认的小段。 所谓“小段”，指的是小于MSS尺寸的数据块，所谓“未被确认”，是指一个数据块发送出去后，没有收到对方发送的ACK确认该数据已收到。</font>
-
-<p>Nagle算法的规则（可参考tcp_output.c文件里tcp_nagle_check函数注释）：</p>
-<pre><code>（1）如果包长度达到MSS，则允许发送；
-
-（2）如果该包含有FIN，则允许发送；
-
-（3）设置了TCP_NODELAY选项，则允许发送；
-
-（4）未设置TCP_CORK选项时，若所有发出去的小数据包（包长度小于MSS）均被确认，则允许发送；
-（5）上述条件都未满足，但发生了超时（一般为200ms），则立即发送。
-</code></pre><p>Nagle算法只允许一个未被ACK的包存在于网络，它并不管包的大小，因此它事实上就是一个扩展的停-等协议，只不过它是基于包停-等的，而不是基于字节停-等的。Nagle算法完全由TCP协议的ACK机制决定，这会带来一些问题，比如如果对端ACK回复很快的话，Nagle事实上不会拼接太多的数据包，虽然避免了网络拥塞，网络总体的利用率依然很低。</p>
-<p>Nagle算法是silly window syndrome(SWS)预防算法的一个半集。SWS算法预防发送少量的数据，Nagle算法是其在发送方的实现，而接收方要做的时不要通告缓冲空间的很小增长，不通知小窗口，除非缓冲区空间有显著的增长。这里显著的增长定义为完全大小的段（MSS）或增长到大于最大窗口的一半。</p>
-<font color="red">注意：BSD的实现是允许在空闲链接上发送大的写操作剩下的最后的小段，也就是说，当超过1个MSS数据发送时，内核先依次发送完n个MSS的数据包，然后再发送尾部的小数据包，其间不再延时等待。（假设网络不阻塞且接收窗口足够大）</font>
-
-
-<p>举个例子，比如之前的blog中的实验，一开始client端调用socket的write操作将一个int型数据（称为A块）写入到网络中，由于此时连接是空闲的（也就是说还没有未被确认的小段），因此这个int型数据会被马上发送到server端，接着，client端又调用write操作写入‘\r\n’（简称B块），这个时候，A块的ACK没有返回，所以可以认为已经存在了一个未被确认的小段，所以B块没有立即被发送，一直等待A块的ACK收到（大概40ms之后），B块才被发送。</p>
-<p>这里还隐藏了一个问题，就是A块数据的ACK为什么40ms之后才收到？这是因为TCP/IP中不仅仅有nagle算法，还有一个TCP确认延迟机制 。当Server端收到数据之后，它并不会马上向client端发送ACK，而是会将ACK的发送延迟一段时间（假设为t），它希望在t时间内server端会向client端发送应答数据，这样ACK就能够和应答数据一起发送，就像是应答数据捎带着ACK过去。在我之前的时间中，t大概就是40ms。这就解释了为什么’\r\n’（B块）总是在A块之后40ms才发出。<br>当然，TCP确认延迟40ms并不是一直不变的，TCP连接的延迟确认时间一般初始化为最小值40ms，随后根据连接的重传超时时间（RTO）、上次收到数据包与本次接收数据包的时间间隔等参数进行不断调整。另外可以通过设置TCP_QUICKACK选项来取消确认延迟。</p>
-<h4 id="TCP-NODELAY-选项"><a href="#TCP-NODELAY-选项" class="headerlink" title="TCP_NODELAY 选项"></a>TCP_NODELAY 选项</h4><p>默认情况下，发送数据采用Negale 算法。这样虽然提高了网络吞吐量，但是实时性却降低了，在一些交互性很强的应用程序来说是不允许的，使用TCP_NODELAY选项可以禁止Negale 算法。</p>
-<p>此时，应用程序向内核递交的每个数据包都会立即发送出去。需要注意的是，虽然禁止了Negale 算法，但网络的传输仍然受到TCP确认延迟机制的影响。</p>
-<h4 id="TCP-CORK-选项"><a href="#TCP-CORK-选项" class="headerlink" title="TCP_CORK 选项"></a>TCP_CORK 选项</h4><p>所谓的CORK就是塞子的意思，形象地理解就是用CORK将连接塞住，使得数据先不发出去，等到拔去塞子后再发出去。设置该选项后，内核会尽力把小数据包拼接成一个大的数据包（一个MTU）再发送出去，当然若一定时间后（一般为200ms，该值尚待确认），内核仍然没有组合成一个MTU时也必须发送现有的数据（不可能让数据一直等待吧）。</p>
-<p>然而，TCP_CORK的实现可能并不像你想象的那么完美，CORK并不会将连接完全塞住。内核其实并不知道应用层到底什么时候会发送第二批数据用于和第一批数据拼接以达到MTU的大小，因此内核会给出一个时间限制，在该时间内没有拼接成一个大包（努力接近MTU）的话，内核就会无条件发送。也就是说若应用层程序发送小包数据的间隔不够短时，TCP_CORK就没有一点作用，反而失去了数据的实时性（每个小包数据都会延时一定时间再发送）。</p>
-<h4 id="Nagle算法与CORK算法区别"><a href="#Nagle算法与CORK算法区别" class="headerlink" title="Nagle算法与CORK算法区别"></a>Nagle算法与CORK算法区别</h4><p>Nagle算法和CORK算法非常类似，但是它们的着眼点不一样，Nagle算法主要避免网络因为太多的小包（协议头的比例非常之大）而拥塞，而CORK算法则是为了提高网络的利用率，使得总体上协议头占用的比例尽可能的小。如此看来这二者在避免发送小包上是一致的，在用户控制的层面上，Nagle算法完全不受用户socket的控制，你只能简单的设置TCP_NODELAY而禁用它，CORK算法同样也是通过设置或者清除TCP_CORK使能或者禁用之，然而Nagle算法关心的是网络拥塞问题，只要所有的ACK回来则发包，而CORK算法却可以关心内容，在前后数据包发送间隔很短的前提下（很重要，否则内核会帮你将分散的包发出），即使你是分散发送多个小数据包，你也可以通过使能CORK算法将这些内容拼接在一个包内，如果此时用Nagle算法的话，则可能做不到这一点。</p>
-<p>以上内容转自<a href="http://blog.163.com/li_xiang1102/blog/static/607140762011111103213616/" target="_blank" rel="external">这里</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/05/10/TCP-Nagel算法/" data-id="ciqdm08mk003giwqyn1t6whn8" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TCP-IP/">TCP/IP</a></li></ul>
 
     </footer>
   </div>
@@ -910,7 +888,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java/">Java</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">9</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java/">Java</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">10</span></li></ul>
     </div>
   </div>
 
@@ -919,7 +897,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java底层机制/">Java底层机制</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/设计模式/">设计模式</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java底层机制/">Java底层机制</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/设计模式/">设计模式</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
     </div>
   </div>
 
@@ -937,7 +915,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a><span class="archive-list-count">19</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a><span class="archive-list-count">20</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
     </div>
   </div>
 
@@ -947,6 +925,10 @@
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2016/07/11/UDP之connect/">UDP之connect</a>
+          </li>
         
           <li>
             <a href="/2016/07/08/Java之JVM调优/">JVM调优</a>
@@ -962,10 +944,6 @@
         
           <li>
             <a href="/2016/07/07/Java之类的反射机制/">类的反射机制</a>
-          </li>
-        
-          <li>
-            <a href="/2016/07/07/Java之类的加载到执行/">类的加载到执行</a>
           </li>
         
       </ul>

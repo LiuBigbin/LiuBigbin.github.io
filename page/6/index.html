@@ -65,6 +65,92 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-Linux-User、Group切换" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/02/29/Linux-User、Group切换/" class="article-date">
+  <time datetime="2016-02-29T04:11:54.000Z" itemprop="datePublished">2016-02-29</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/02/29/Linux-User、Group切换/">Linux User、Group切换</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="Linux用户切换涉及到两个指令：su-和-sudo"><a href="#Linux用户切换涉及到两个指令：su-和-sudo" class="headerlink" title="Linux用户切换涉及到两个指令：su 和 sudo"></a>Linux用户切换涉及到两个指令：su 和 sudo</h3><h4 id="su"><a href="#su" class="headerlink" title="su"></a>su</h4><p>su有两种切换的方式：</p>
+<li>su - username, 以login-shell的方式切换到新的用户，更改了环境变量</li><br><li>su username, 以no-login-shell的方式切换到新的用户，环境变量不变</li>
+
+<p>如果想要离开当期的shell，回到切换前的shell，只需要执行<code>exit</code>命令就好。如果只是需要拥有新的用户的权限来执行某条命令，然后就自动回到当前的shell的话，那么可以使用-c参数如<br><code>su - -c &quot;command&quot;</code>,就会在执行完命令后回到当前的用户shell。</p>
+<p>root执行此命令时，不需要输入任何的密码！！！</p>
+<p>由于su在切换新用户的时候，需要知道新用户的密码才可以执行，这样的话比较麻烦，所以出现了sudo。</p>
+<h4 id="sudo"><a href="#sudo" class="headerlink" title="sudo"></a>sudo</h4><p>sudo可以获取新用户的权限来执行后面的命令（以no-login-shell方式实现），在执行后回到当前的用户状态，需要输入的只是当前用户的密码，不需要新用户的密码！</p>
+<p><img src="/pictures/Linux-User、Group切换-sudo命令1.png" alt=""><br><img src="/pictures/Linux-User、Group切换-sudo命令2.png" alt=""></p>
+<p>sudo默认只是root可以执行，如果需要加入新的用户，那么需要知道/etc/sudoers文件。该文件存放的是那些用户可以执行sudo，以及可以利用sudo来执行的具体指令。编辑该文件可以直接vim，也可以使用visudo命令，由于该文件是具有语法的，所以还是建议使用visudo来修改，因为该命令在执行的时候会检查文件的新增内容的语法是否正确。</p>
+<p><img src="/pictures/Linux-User、Group切换-visudo命令1.png" alt=""><br><img src="/pictures/Linux-User、Group切换-visudo命令2.png" alt=""></p>
+<p>上面这一行的四个组件意义是：</p>
+<ol>
+<li>系统的哪个账号可以使用 sudo 这个指令的意思，默认为 root 这个账号；</li>
+<li>当这个账号由哪部主机联机到本 Linux 主机，意思是这个账号可能是由哪一部网络主机联机过来的， 这个设定值可以指定客户端计算机(信任用户的意思)。默认值 root 可来自任何一部网络主机</li>
+<li>这个账号可以切换成什么身份来下达后续的指令，默认 root 可以切换成任何人；</li>
+<li>可用该身份下达什么指令？这个指令请务必使用绝对路径撰写。 预设 root 可以切换任何身份与进行任何指令之意。</li>
+</ol>
+<h4 id="利用群组以及免密码功能处理visudo"><a href="#利用群组以及免密码功能处理visudo" class="headerlink" title="利用群组以及免密码功能处理visudo"></a>利用群组以及免密码功能处理visudo</h4><p><img src="/pictures/Linux-User、Group切换-visudo群组1.png" alt=""></p>
+<p>上面的设定值会造成『任何加入 wheel 这个群组的使用者，就能够使用 sudo 切换任何身份来操作任何指令』的意思。 你当然可以将 wheel 换成你自己想要的群组名。接下来，请分别切换身份成为 pro1 及 pro2 试看看 sudo 的运作。</p>
+<p><img src="/pictures/Linux-User、Group切换-visudo群组2.png" alt=""></p>
+<p>如果你想要让 pro3 也支持这个 sudo 的话，不需要重新使用 visudo ，只要利用 usermod 去修改 pro3 的群组支持，让 wheel 也支持 pro3 的话，那他就能够进行 sudo 啰！ 简单吧！不过，既然我们都信任这些 sudo 的用户了，能否提供『不需要密码即可使用 sudo 』呢？ 就透过如下的方式：</p>
+<p><img src="/pictures/Linux-User、Group切换-visudo不需要密码.png" alt=""></p>
+<h4 id="有限制的指令操作"><a href="#有限制的指令操作" class="headerlink" title="有限制的指令操作"></a>有限制的指令操作</h4><p>上面两点都会让使用者能够利用 root 的身份进行任何事情！这样总是不太好～如果我想要让用户仅能够进行部分系统任务， 比方说，系统上面的 myuser1 仅能够帮 root 修改其他用户的密码时，亦即『让使用者仅能使用 passwd 这个指令帮忙 root 修改其他用户的密码』时，你该如何撰写呢？可以这样做：</p>
+<figure class="highlight scheme"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="list">[<span class="keyword">root@www</span> ~]# visudo &lt;==注意是 root 身份 myuser1 ALL=<span class="list">(<span class="keyword">root</span>)</span> /usr/bin/passwd &lt;==最后指令务必用绝对路径</span></span><br></pre></td></tr></table></figure>
+<p>但是上面有一个很不好的就是，当用户使用如下指令时，会直接的修改root密码：</p>
+<figure class="highlight crmsh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[myuser1@www ~]$ sudo passwd</span><br><span class="line">Changing password for <span class="keyword">user</span> <span class="title">root</span>. <span class="tag">&lt;==见鬼！怎么会去改 root 的密码？</span></span><br></pre></td></tr></table></figure>
+<p>所以我们要限制用户的指令参数，修改的方法为将上述的那一行修改为</p>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[root<span class="variable">@www</span> ~]<span class="comment"># visudo &lt;==注意是 root 身份</span></span><br><span class="line">myuser1 <span class="constant">ALL=</span>(root) !<span class="regexp">/usr/bin</span><span class="regexp">/passwd, /usr</span><span class="regexp">/bin/passwd</span> [<span class="constant">A-Za-</span>z]*, !<span class="regexp">/usr/bin</span><span class="regexp">/passwd root</span></span><br></pre></td></tr></table></figure>
+<h4 id="透过别名设置visuo"><a href="#透过别名设置visuo" class="headerlink" title="透过别名设置visuo"></a>透过别名设置visuo</h4><p>假设我的 pro1, pro2, pro3 和 myuser1, myuser2 要加入上述的密码管理员的 sudo 列表中， 那我可以创立一个帐户删名称为 ADMPW 的名称，然后将这个名称处理一下即可。处理的方式如下：</p>
+<figure class="highlight crystal"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[root<span class="variable">@www</span> ~]<span class="comment"># visudo &lt;==注意是 root 身份</span></span><br><span class="line"><span class="constant">User_Alias</span> <span class="constant">ADMPW</span> = pro1, pro2, pro3, myuser1, myuser2</span><br><span class="line"><span class="constant">Cmnd_Alias</span> <span class="constant">ADMPWCOM</span> = !/usr/bin/passwd, <span class="regexp">/usr/bin</span><span class="regexp">/passwd [A-Za-z]*, !/usr</span><span class="regexp">/bin/passwd</span> root</span><br><span class="line"><span class="constant">ADMPW</span> <span class="constant">ALL</span>=(root) <span class="constant">ADMPWCOM</span></span><br></pre></td></tr></table></figure>
+<p>我透过 User_Alias 建立出一个新账号，这个账号名称一定要使用大写字符来处理，包括 Cmnd_Alias(命令别名)、Host_Alias(来源主机名别名) 都需要使用大写字符的！</p>
+<h4 id="sudo的时间间隔"><a href="#sudo的时间间隔" class="headerlink" title="sudo的时间间隔"></a>sudo的时间间隔</h4><p>sudo的默认时间间隔为5分钟，在这5分钟里面，多次执行sudo可以不需要输入当前用户的密码。</p>
+<p>另外需要注意的是，因为使用一般用户是不会用到/sbin, /usr/sbin等目录内的指令，所以$PATH变量不会含有这些目录，因此很多管理指令需要使用绝对路径来下达比较妥当！</p>
+<h4 id="sudo搭配su的使用方式"><a href="#sudo搭配su的使用方式" class="headerlink" title="sudo搭配su的使用方式"></a>sudo搭配su的使用方式</h4><p>利用sudo和su可以在不需要root密码的情况下直接把身份变为root。只需要输入<code>sudo su -</code>,此时只需要输入自己的密码，就可以成功的切换到root身份了。</p>
+<h3 id="Linux中群组的切换"><a href="#Linux中群组的切换" class="headerlink" title="Linux中群组的切换"></a>Linux中群组的切换</h3><h4 id="groups-有效与支持群组的观察"><a href="#groups-有效与支持群组的观察" class="headerlink" title="groups 有效与支持群组的观察"></a>groups 有效与支持群组的观察</h4><p>如果想要查看当前用户所能支持的群组，那么可以使用该命令：</p>
+<figure class="highlight crystal"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[dmtsai<span class="variable">@www</span> ~]<span class="variable">$ </span>groups</span><br><span class="line">dmtsai users</span><br></pre></td></tr></table></figure>
+<p>在这个输出的信息中，可知道 dmtsai 这个用户同时属于 dmtsai 及 users 这个两个群组，而且， 第一个输出的群组即为有效群组 (effective group) 了。 也就是说，我的有效群组为 dmtsai 啦～此时，如果我以 touch 去建立一个新档，例如： 『 touch test 』，那么这个档案的拥有者为 dmtsai ，而且群组也是 dmtsai 的啦。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[dmtsai@www ~]$ touch test</span><br><span class="line">[dmtsai@www ~]$ ll -rw-rw-r-- <span class="number">1</span> dmtsai dmtsai <span class="number">0</span> Feb <span class="number">24</span> <span class="number">17</span>:<span class="number">26</span> test</span><br></pre></td></tr></table></figure>
+<p>这样是否可以了解什么是有效群组了？通常有效群组的作用是在新建档案啦！那么有效群组是否能够变换？当然可以，这个时候需要用到<code>newgrp</code>命令。</p>
+<h3 id="newgrp-有效群组的切换"><a href="#newgrp-有效群组的切换" class="headerlink" title="newgrp: 有效群组的切换"></a>newgrp: 有效群组的切换</h3><p>使用 newgrp 是有限制的，那就是你想要切换的群组必须是你已经有支持的群组。举例来说， dmtsai 可以在 dmtsai/users 这两个群组间切换有效群组，但是 dmtsai 无法切换有效群组成为 sshd 啦！使用的方式如下：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[dmtsai@www ~]$ newgrp users</span><br><span class="line">[dmtsai@www ~]$ groups users dmtsai</span><br><span class="line">[dmtsai@www ~]$ touch test2</span><br><span class="line">[dmtsai@www ~]$ ll</span><br><span class="line">-rw-rw-r-- <span class="number">1</span> dmtsai dmtsai <span class="number">0</span> Feb <span class="number">24</span> <span class="number">17</span>:<span class="number">26</span> test</span><br><span class="line">-rw-r--r-- <span class="number">1</span> dmtsai users <span class="number">0</span> Feb <span class="number">24</span> <span class="number">17</span>:<span class="number">33</span> test2</span><br></pre></td></tr></table></figure>
+<p>newgrp这个指令可以变更目前用户的有效群组， 而且是另外以一个 shell 来提供这个功能的，所以，以上面的例子来说， dmtsai 这个使用者目前是以另一个 shell 登入的，而且新的 shell 给予 dmtsai 有效 GID 为 users 就是了。如果以图示来看就是如下所示：</p>
+<p><img src="/pictures/Linux-User、Group切换-newgrp运行示意图.png" alt="newgrp运作示意图"></p>
+<p>虽然用户的环境设定(例如环境变量等等其他数据)不会有影响，但是使用者的『群组权限』将会重新被计算。 但是需要注意，由于是新取得一个 shell ，因此如果你想要回到原本的环境中，请输入 exit 回到原本的 shell ！</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/02/29/Linux-User、Group切换/" data-id="ciqi40s6a004gvkqya14v40ur" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-Linux用户管理实例" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2016/02/29/Linux用户管理实例/" class="article-date">
@@ -138,7 +224,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/29/Linux用户管理实例/" data-id="ciqdm08ms003riwqyz6bvlbx1" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/29/Linux用户管理实例/" data-id="ciqi40s5u003uvkqyafuubvfv" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a></li></ul>
@@ -194,7 +280,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/29/Linux-Group-管理/" data-id="ciqdm08na004miwqy716d23c4" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/29/Linux-Group-管理/" data-id="ciqi40s6f004pvkqyac53pctj" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a></li></ul>
@@ -267,7 +353,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/Linux-User-管理/" data-id="ciqdm08n7004giwqylq6il14o" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/28/Linux-User-管理/" data-id="ciqi40s6c004jvkqyirz57f9u" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a></li></ul>
@@ -324,7 +410,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/Linux-中SUID、SGID和SBIT的用途/" data-id="ciqdm08n40049iwqy1y649y9y" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/28/Linux-中SUID、SGID和SBIT的用途/" data-id="ciqi40s68004cvkqymvbe2tjg" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a></li></ul>
@@ -397,7 +483,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/基于用户的协同过滤算法/" data-id="ciqdm08lj001miwqyz5y1oxnn" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/28/基于用户的协同过滤算法/" data-id="ciqi40s3m001mvkqy7ll8o8pn" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/推荐算法/">推荐算法</a></li></ul>
@@ -469,7 +555,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/at命令详解/" data-id="ciqdm08mh003aiwqygautqg38" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/28/at命令详解/" data-id="ciqi40s4k003avkqykfu0m1av" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux命令/">Linux命令</a></li></ul>
@@ -569,7 +655,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/awk命令详解/" data-id="ciqdm08mg0037iwqyaurs5s9z" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/28/awk命令详解/" data-id="ciqi40s4j0037vkqynpjp8ml1" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux命令/">Linux命令</a></li></ul>
@@ -632,7 +718,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/tee命令详解/" data-id="ciqdm08m6002piwqya7id1g2l" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/28/tee命令详解/" data-id="ciqi40s48002pvkqy7q6ysslq" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux命令/">Linux命令</a></li></ul>
@@ -709,89 +795,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/cpio命令详解/" data-id="ciqdm08me0034iwqyxp763d2l" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux命令/">Linux命令</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Linux命令面试问答" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/02/28/Linux命令面试问答/" class="article-date">
-  <time datetime="2016-02-28T12:03:10.000Z" itemprop="datePublished">2016-02-28</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Linux/">Linux</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/02/28/Linux命令面试问答/">Linux命令面试问答</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h4 id="问1：如何查看当前的Linux服务器运行级别？"><a href="#问1：如何查看当前的Linux服务器运行级别？" class="headerlink" title="问1：如何查看当前的Linux服务器运行级别？"></a>问1：如何查看当前的Linux服务器运行级别？</h4><p>答：<code>who -r</code> 和 <code>runlevel</code> 命令可以用来查看当前的Linux服务器的运行级别。Linux的运行级别有7种：</p>
-<pre><code>0 所有进程将被终止，机器将有序的停止，关机时系统处于这个运行级别   
-1 单用户模式。用于系统维护，只有少数进程运行，同时所有服务也不启动   
-2 多用户模式。和运行级别3一样，只是网络文件系统（NFS）服务没被启动   
-3 多用户模式。允许多用户登录系统，是系统默认的启动级别 
-4 留给用户自定义的运行级别  
-5 多用户模式，并且在系统启动后运行X-Window，给出一个图形化的登录窗口  
-6 所有进程被终止，系统重新启动 
-</code></pre><p>如果想要切换运行级别，可以利用init命令，输入 <code>init n</code> 就可以切换到运行级别n（0-6），如果系统支持图形界面（init5 级别需要安装X-WINDOWS），可以输入startx 直接进入init5 图形模式。</p>
-<p>刚刚输入init级别号，只是临时更改。如果需要修改系统默认的运行级别，可以用VI编辑 /etc/inittab 文件设置。如下图 default 后面的数字就是默认的运行级别，改好之后，重启Linux系统之后生效。</p>
-<p><img src="/pictures/Linux命令面试问答-修改系统默认运行级别.jpg" alt="/etc/inittab文件"></p>
-<h4 id="问2：如何查看Linux的默认网关？"><a href="#问2：如何查看Linux的默认网关？" class="headerlink" title="问2：如何查看Linux的默认网关？"></a>问2：如何查看Linux的默认网关？</h4><p>答：用<code>route -n</code> 或 <code>netstat -nr</code>命令，我们可以查看默认网关，除了默认网关信息，这两个命令还可以显示当前的路由表。</p>
-<h4 id="问3：cpio-命令是什么？"><a href="#问3：cpio-命令是什么？" class="headerlink" title="问3：cpio 命令是什么？"></a>问3：cpio 命令是什么？</h4><p>答：cpio命令是通过重定向的方式将文件进行打包备份，还原恢复的工具，它可以解压以“.cpio”或者“.tar”结尾的文件。</p>
-<p>详细请查看<a href="http://liubigbin.github.io/2016/02/28/cpio%E5%91%BD%E4%BB%A4%E8%AF%A6%E8%A7%A3/">cpio命令详解</a></p>
-<h3 id="问4：patch命令是什么，如何使用？"><a href="#问4：patch命令是什么，如何使用？" class="headerlink" title="问4：patch命令是什么，如何使用？"></a>问4：patch命令是什么，如何使用？</h3><p>答：顾名思义，patch命令用来用来将补丁写进文本文件里面。patch命令通常是接受diff的输出，并把文件的旧版本转换为新版本。</p>
-<p>举个例子：</p>
-<figure class="highlight vala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor"># diff -Naur old_file new _file &gt; diff_file</span></span><br></pre></td></tr></table></figure>
-<p>旧文件和新文件要么都是单个的文件要么就是包含文件的目录，-r参数支持目录树递归。一旦diff文件创建好，我们就可以在旧文件上打上补丁，把他变成新文件：</p>
-<figure class="highlight vala"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor"># patch &lt; diff_file</span></span><br></pre></td></tr></table></figure>
-<h3 id="问题5：如何识别Linux系统中指定文件（-etc-fstab）的关联包（即查询一个已经安装的文件属于哪个软件包）？"><a href="#问题5：如何识别Linux系统中指定文件（-etc-fstab）的关联包（即查询一个已经安装的文件属于哪个软件包）？" class="headerlink" title="问题5：如何识别Linux系统中指定文件（/etc/fstab）的关联包（即查询一个已经安装的文件属于哪个软件包）？"></a>问题5：如何识别Linux系统中指定文件（/etc/fstab）的关联包（即查询一个已经安装的文件属于哪个软件包）？</h3><p>答：命令<code>rmp -qf /etc/fstab</code>可以列出提供”/etc/fstab”这个文件的包。</p>
-<p>RPM是RedHat Package Manager（RedHat软件包管理工具）类似Windows里面的“添加/删除程序”</p>
-<p>rpm 执行安装包，二进制包（Binary）以及源代码包（Source）两种。二进制包可以直接安装在计算机中，而源代码包将会由RPM自动编译、安装。源代码包经常以src.rpm作为后缀名。</p>
-<p>常用命令组合：</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">－ivh：安装显示安装进度<span class="comment">--install--verbose--hash</span></span><br><span class="line">－Uvh：升级软件包<span class="comment">--Update；</span></span><br><span class="line">－qpl：列出RPM软件包内的文件信息[Query Package list]；</span><br><span class="line">－qpi：列出RPM软件包的描述信息[Query Package <span class="operator"><span class="keyword">install</span> <span class="keyword">package</span>(s)]；</span><br><span class="line">－qf：查找指定文件属于哪个RPM软件包[<span class="keyword">Query</span> <span class="keyword">File</span>]；</span><br><span class="line">－Va：校验所有的RPM软件包，查找丢失的文件[<span class="keyword">View</span> Lost]；</span><br><span class="line">－<span class="keyword">e</span>：删除包</span></span><br></pre></td></tr></table></figure>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">rpm -q samba <span class="comment">//查询程序是否安装</span></span><br><span class="line"></span><br><span class="line">rpm -ivh  /media/cdrom/RedHat/RPMS/samba-<span class="number">3.0</span><span class="number">.10</span>-<span class="number">1.4</span>E.i386.rpm <span class="comment">//按路径安装并显示进度</span></span><br><span class="line">rpm -ivh --relocate /=/opt/gaim gaim-<span class="number">1.3</span><span class="number">.0</span>-<span class="number">1.f</span>c4.i386.rpm    <span class="comment">//指定安装目录</span></span><br><span class="line"></span><br><span class="line">rpm -ivh --test gaim-<span class="number">1.3</span><span class="number">.0</span>-<span class="number">1.f</span>c4.i386.rpm　　　 <span class="comment">//用来检查依赖关系；并不是真正的安装；</span></span><br><span class="line">rpm -Uvh --oldpackage gaim-<span class="number">1.3</span><span class="number">.0</span>-<span class="number">1.f</span>c4.i386.rpm <span class="comment">//新版本降级为旧版本</span></span><br><span class="line"></span><br><span class="line">rpm -qa | grep httpd　　　　　 ＃[搜索指定rpm包是否安装]--all搜索*httpd*</span><br><span class="line">rpm -ql httpd　　　　　　　　　＃[搜索rpm包]--<span class="built_in">list</span>所有文件安装目录</span><br><span class="line"></span><br><span class="line">rpm -qpi Linux-<span class="number">1.4</span>-<span class="number">6.</span>i368.rpm　＃[查看rpm包]--query--package--install package信息</span><br><span class="line">rpm -qpf Linux-<span class="number">1.4</span>-<span class="number">6.</span>i368.rpm　＃[查看rpm包]--file</span><br><span class="line">rpm -qpR file.rpm　　　　　　　＃[查看包]依赖关系</span><br><span class="line">rpm2cpio file.rpm |cpio -div    ＃[抽出文件]</span><br><span class="line"></span><br><span class="line">rpm -ivh file.rpm 　＃[安装新的rpm]--install--verbose--hash</span><br><span class="line">rpm -ivh</span><br><span class="line"></span><br><span class="line">rpm -Uvh file.rpm    ＃[升级一个rpm]--upgrade</span><br><span class="line">rpm -e file.rpm      ＃[删除一个rpm包]--erase</span><br></pre></td></tr></table></figure>
-<p>常用参数：</p>
-<figure class="highlight haml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">Install/Upgrade/Erase options:</span><br><span class="line"></span><br><span class="line">-<span class="ruby">i, --install                     install package(s)</span><br><span class="line"></span>-<span class="ruby">v, --verbose                     provide more detailed output</span><br><span class="line"></span>-<span class="ruby">h, --hash                        print hash marks as package installs (good with -v)</span><br><span class="line"></span>-<span class="ruby">e, --erase                       erase (uninstall) package</span><br><span class="line"></span>-<span class="ruby"><span class="constant">U</span>, --upgrade=&lt;packagefile&gt;+      upgrade package(s)</span><br><span class="line"></span>－-replacepkge                    无论软件包是否已被安装，都强行安装软件包</span><br><span class="line">-<span class="ruby">-test                            安装测试，并不实际安装</span><br><span class="line"></span>-<span class="ruby">-nodeps                          忽略软件包的依赖关系强行安装</span><br><span class="line"></span>-<span class="ruby">-force                           忽略软件包及文件的冲突</span><br><span class="line"></span></span><br><span class="line">Query options (with -q or --query):</span><br><span class="line">-<span class="ruby">a, --all                         query/verify all packages</span><br><span class="line"></span>-<span class="ruby">p, --package                     query/verify a package file</span><br><span class="line"></span>-<span class="ruby">l, --list                        list files <span class="keyword">in</span> package</span><br><span class="line"></span>-<span class="ruby">d, --docfiles                    list all documentation files</span><br><span class="line"></span>-<span class="ruby">f, --file                        query/verify package(s) owning file</span></span><br></pre></td></tr></table></figure>
-<h3 id="问题6：Linux系统中的-proc文件系统有什么用？"><a href="#问题6：Linux系统中的-proc文件系统有什么用？" class="headerlink" title="问题6：Linux系统中的/proc文件系统有什么用？"></a>问题6：Linux系统中的/proc文件系统有什么用？</h3><p>答：/proc文件系统是一个基于内存的文件系统，维护着有关于当前正在运行的内核状态信息，其中包括CPU、内存、分区划分、<br>I/O地址、直接内存访问通道和正在运行的进程。这个文件系统所代表的并不是各种实际存储信息的文件，他们指向的是内存里的信息。<br>/proc文件系统是由系统自动维护的。</p>
-<h3 id="问题7-如何在-usr目录下找出大小超过10MB的文件？"><a href="#问题7-如何在-usr目录下找出大小超过10MB的文件？" class="headerlink" title="问题7: 如何在/usr目录下找出大小超过10MB的文件？"></a>问题7: 如何在/usr目录下找出大小超过10MB的文件？</h3><p>答：<code>find /usr -size +10M</code></p>
-<h3 id="问题8：如何在-home目录下找出120天之前被修改过的文件？"><a href="#问题8：如何在-home目录下找出120天之前被修改过的文件？" class="headerlink" title="问题8：如何在/home目录下找出120天之前被修改过的文件？"></a>问题8：如何在/home目录下找出120天之前被修改过的文件？</h3><p>答：<code>find /home -mtime +120</code></p>
-<h3 id="问题9：如何在-var目录下找出90天之内未被访问过的文件？"><a href="#问题9：如何在-var目录下找出90天之内未被访问过的文件？" class="headerlink" title="问题9：如何在/var目录下找出90天之内未被访问过的文件？"></a>问题9：如何在/var目录下找出90天之内未被访问过的文件？</h3><p>答：<code>find /var \! -atime -90</code></p>
-<h3 id="问题10：在整个目录树下查找文件“core”，如果发现则无需提示，直接删除他们？"><a href="#问题10：在整个目录树下查找文件“core”，如果发现则无需提示，直接删除他们？" class="headerlink" title="问题10：在整个目录树下查找文件“core”，如果发现则无需提示，直接删除他们？"></a>问题10：在整个目录树下查找文件“core”，如果发现则无需提示，直接删除他们？</h3><p>答：<code>find / -name core -exec rm {} \;</code> , -exec  参数后面跟的是command命令，它的终止是以;为结束标志的，所以这句命令后面的分号是不可缺少的，考虑到各个系统中分号会有不同的意义，所以前面加反斜杠。</p>
-<h3 id="问题11：strings命令有什么作用？"><a href="#问题11：strings命令有什么作用？" class="headerlink" title="问题11：strings命令有什么作用？"></a>问题11：strings命令有什么作用？</h3><p>答：strings命令用来提取和显示非文本文件中的文本字符串。</p>
-<h3 id="问题12：tee过滤器有什么作用？"><a href="#问题12：tee过滤器有什么作用？" class="headerlink" title="问题12：tee过滤器有什么作用？"></a>问题12：tee过滤器有什么作用？</h3><p>答：tee过滤器用来想多个目标发送输出的内容。如果用于管道的话，他可以将输出复制一份到文件，兵复制另外一份到屏幕上（或一些其他的程序）。</p>
-<p>详细请查看<a href="http://liubigbin.github.io/2016/02/28/tee%E5%91%BD%E4%BB%A4%E8%AF%A6%E8%A7%A3/">tee命令详解</a></p>
-<h3 id="问题13：export-PS1-quot-LOGNAME-hostname-PWD-quot-这条指令是在做什么？"><a href="#问题13：export-PS1-quot-LOGNAME-hostname-PWD-quot-这条指令是在做什么？" class="headerlink" title="问题13：export PS1=&quot;$LOGNAME@hostname:\:$PWD:&quot; 这条指令是在做什么？"></a>问题13：<code>export PS1=&quot;$LOGNAME@hostname:\:$PWD:&quot;</code> 这条指令是在做什么？</h3><p>答：这条export命令会更改登录提示符来显示用户名、本机名、和当前的工作目录。</p>
-<h3 id="问题14：ll-awk-‘-print-3-“owns”-9-’这条命令是在做什么？"><a href="#问题14：ll-awk-‘-print-3-“owns”-9-’这条命令是在做什么？" class="headerlink" title="问题14：ll | awk ‘{print $3, “owns”, $9}’这条命令是在做什么？"></a>问题14：ll | awk ‘{print $3, “owns”, $9}’这条命令是在做什么？</h3><p>答：会显示这些文件的名称和他们的拥有者。</p>
-<p>详细请看<a href="http://liubigbin.github.io/2016/02/28/awk%E5%91%BD%E4%BB%A4%E8%AF%A6%E8%A7%A3/">awk命令详解</a></p>
-<h3 id="问题15：Linux中at命令有什么用？"><a href="#问题15：Linux中at命令有什么用？" class="headerlink" title="问题15：Linux中at命令有什么用？"></a>问题15：Linux中at命令有什么用？</h3><p>答：at命令用来安排一个程序在未来的做一次性执行。所以有提交的任务都会被放在/var/spool/at目录下，并且到了执行时间的时候通过atd守护进程来执行。</p>
-<p>详细请看<a href="http://liubigbin.github.io/2016/02/28/at%E5%91%BD%E4%BB%A4%E8%AF%A6%E8%A7%A3/">at命令详解</a></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/Linux命令面试问答/" data-id="ciqdm08mw003xiwqyiovky5ly" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/28/cpio命令详解/" data-id="ciqi40s4h0034vkqypwz2hhku" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux命令/">Linux命令</a></li></ul>
@@ -816,7 +820,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java/">Java</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">9</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java/">Java</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">10</span></li></ul>
     </div>
   </div>
 
@@ -825,7 +829,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java底层机制/">Java底层机制</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/设计模式/">设计模式</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java底层机制/">Java底层机制</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/设计模式/">设计模式</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
     </div>
   </div>
 
@@ -843,7 +847,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a><span class="archive-list-count">19</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a><span class="archive-list-count">20</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
     </div>
   </div>
 
@@ -853,6 +857,10 @@
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2016/07/11/UDP之connect/">UDP之connect</a>
+          </li>
         
           <li>
             <a href="/2016/07/08/Java之JVM调优/">JVM调优</a>
@@ -868,10 +876,6 @@
         
           <li>
             <a href="/2016/07/07/Java之类的反射机制/">类的反射机制</a>
-          </li>
-        
-          <li>
-            <a href="/2016/07/07/Java之类的加载到执行/">类的加载到执行</a>
           </li>
         
       </ul>

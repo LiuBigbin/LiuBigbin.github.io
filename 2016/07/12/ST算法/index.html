@@ -3,17 +3,24 @@
 <head>
   <meta charset="utf-8">
   
-  <title>Tag: Linux进程间通信 | LiuYongbin</title>
+  <title>ST算法 | LiuYongbin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description">
-<meta property="og:type" content="website">
-<meta property="og:title" content="LiuYongbin">
-<meta property="og:url" content="http://liubigbin.github.io/tags/Linux进程间通信/index.html">
+  <meta name="description" content="ST（Sparse Table）算法是一个非常有名的在线处理RMQ问题的算法，它可以在O(nlogn)时间内进行预处理，然后在O(1)时间内回答每个查询。   
+ST（Sparse Table）算法是基于动态规划的，用f[i][j]表示区间起点为j长度为2^i的区间内的最小值所在下标，通俗的说，就是区间[j, j + 2^i)的区间内的最小值的下标。
+从定义可知，这种表示法的区间长度一定是2的幂，">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ST算法">
+<meta property="og:url" content="http://liubigbin.github.io/2016/07/12/ST算法/index.html">
 <meta property="og:site_name" content="LiuYongbin">
-<meta property="og:description">
+<meta property="og:description" content="ST（Sparse Table）算法是一个非常有名的在线处理RMQ问题的算法，它可以在O(nlogn)时间内进行预处理，然后在O(1)时间内回答每个查询。   
+ST（Sparse Table）算法是基于动态规划的，用f[i][j]表示区间起点为j长度为2^i的区间内的最小值所在下标，通俗的说，就是区间[j, j + 2^i)的区间内的最小值的下标。
+从定义可知，这种表示法的区间长度一定是2的幂，">
+<meta property="og:updated_time" content="2016-07-12T15:39:05.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="LiuYongbin">
-<meta name="twitter:description">
+<meta name="twitter:title" content="ST算法">
+<meta name="twitter:description" content="ST（Sparse Table）算法是一个非常有名的在线处理RMQ问题的算法，它可以在O(nlogn)时间内进行预处理，然后在O(1)时间内回答每个查询。   
+ST（Sparse Table）算法是基于动态规划的，用f[i][j]表示区间起点为j长度为2^i的区间内的最小值所在下标，通俗的说，就是区间[j, j + 2^i)的区间内的最小值的下标。
+从定义可知，这种表示法的区间长度一定是2的幂，">
   
     <link rel="alternative" href="/atom.xml" title="LiuYongbin" type="application/atom+xml">
   
@@ -63,115 +70,66 @@
   </div>
 </header>
       <div class="outer">
-        <section id="main">
-  
-  
-    
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2016" class="archive-year">2016</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2016/07/02/套接字/" class="archive-article-date">
-  <time datetime="2016-07-02T06:37:39.000Z" itemprop="datePublished">7月 2</time>
+        <section id="main"><article id="post-ST算法" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/07/12/ST算法/" class="article-date">
+  <time datetime="2016-07-12T15:24:54.000Z" itemprop="datePublished">2016-07-12</time>
 </a>
-      
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/算法/">算法</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2016/07/02/套接字/">套接字</a>
+    <h1 class="article-title" itemprop="name">
+      ST算法
     </h1>
   
 
-    </header>
-  </div>
-</article>
-  
+      </header>
     
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2016/07/02/信号灯/" class="archive-article-date">
-  <time datetime="2016-07-02T04:57:06.000Z" itemprop="datePublished">7月 2</time>
-</a>
+    <div class="article-entry" itemprop="articleBody">
       
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2016/07/02/信号灯/">信号灯</a>
-    </h1>
-  
+        <p>ST（Sparse Table）算法是一个非常有名的在线处理RMQ问题的算法，它可以在O(nlogn)时间内进行预处理，然后在O(1)时间内回答每个查询。   </p>
+<p>ST（Sparse Table）算法是基于动态规划的，用f[i][j]表示区间起点为j长度为2^i的区间内的最小值所在下标，通俗的说，就是区间[j, j + 2^i)的区间内的最小值的下标。</p>
+<p>从定义可知，这种表示法的区间长度一定是2的幂，所以除了单位区间(长度为1的区间)以外，任意一个区间都能够分成两份，并且同样可以用这种表示法进行表示，[j, j + 2^i)的区间可以分成[j, j+2^(i-1))和[j + 2^i)，于是可以列出状态转移方程为： f[i][j] = RMQ( f[i-1][j], f[i-1][j+2^(i-1)] )。    </p>
+<p>f数组记录的是长度为偶数的子串的最值，对于正常的查询的话，并不可能每一次都是查询偶数长的区间，所以还需要在进一步的处理一下。对于查询区间[a, b], 可以将其划分为两个长度相等的偶数的子区间[a, a+2^k],[b-2^k, b],这两个区间有可能是相交的，但是不影响对区间最值的求解。现在只要根据a、b求出k，就可以知道[a, b]区间的最值了，为：min/max{f[k][a], f[k][b-(1&lt;&lt;k)+1]}.</p>
+<p>对于K，需要满足a+2^k-1 &gt;= b-2^k，则2^(k+1) &gt;= (b-a+1), 两边取对数（以2为底），得 k+1 &gt;= lg(b-a+1)，则k &gt;= lg(b-a+1) - 1，k只要需要取最小的满足条件的整数即可。</p>
+<p>初始化：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//n为元数的个数</span></span><br><span class="line"><span class="comment">//bitn为n的二进制位数，取下整(int)(log(n)/log(2))</span></span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i=<span class="number">0</span>; i&lt;n; ++i)</span><br><span class="line">   f[i][<span class="number">0</span>]=input[i];</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> j=<span class="number">1</span>; j&lt;bitn; ++j)</span><br><span class="line">   <span class="keyword">for</span> (<span class="keyword">int</span> i=<span class="number">0</span>; i&lt;n; ++i)</span><br><span class="line">   &#123;</span><br><span class="line">       <span class="keyword">if</span> (i+(<span class="number">1</span>&lt;&lt;(j-<span class="number">1</span>))&gt;=n) <span class="keyword">break</span>;</span><br><span class="line">       f[i][j]=max(f[i][j-<span class="number">1</span>],f[i+(<span class="number">1</span>&lt;&lt;(j-<span class="number">1</span>))][j-<span class="number">1</span>]);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></p>
+<p>查询：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">int query(int s,int e)  //查询区间[s,e]的最值</span><br><span class="line">&#123;</span><br><span class="line">  int k=(int)((log(e-s+1.0)/log(2.0)));</span><br><span class="line">  return max(f[<span class="link_label">s</span>][<span class="link_reference">k</span>],f[<span class="link_label">e-(1&lt;&lt;k)+1</span>][<span class="link_reference">k</span>]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2016/07/02/消息队列/" class="archive-article-date">
-  <time datetime="2016-07-02T04:38:11.000Z" itemprop="datePublished">7月 2</time>
-</a>
       
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2016/07/02/消息队列/">消息队列</a>
-    </h1>
-  
-
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2016/07/02/共享内存/" class="archive-article-date">
-  <time datetime="2016-07-02T04:09:19.000Z" itemprop="datePublished">7月 2</time>
-</a>
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/07/12/ST算法/" data-id="ciqjmii15003txsqyxiill65p" class="article-share-link">Share</a>
       
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2016/07/02/共享内存/">共享内存</a>
-    </h1>
-  
-
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      <a href="/2016/07/02/管道/" class="archive-article-date">
-  <time datetime="2016-07-02T02:33:05.000Z" itemprop="datePublished">7月 2</time>
-</a>
       
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2016/07/02/管道/">管道</a>
-    </h1>
-  
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/图与树/">图与树</a></li></ul>
 
-    </header>
+    </footer>
   </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2016/07/12/线段树/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">线段树</div>
+    </a>
+  
+</nav>
+
+  
 </article>
-  
-  
-    </div></section>
-  
+
 </section>
         
           <aside id="sidebar">

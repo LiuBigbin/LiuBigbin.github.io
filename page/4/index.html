@@ -65,6 +65,64 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-epoll之ET和LT编程" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/04/07/epoll之ET和LT编程/" class="article-date">
+  <time datetime="2016-04-07T07:45:11.000Z" itemprop="datePublished">2016-04-07</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/04/07/epoll之ET和LT编程/">epoll之ET和LT编程</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>在一个非阻塞的socket上调用read/write函数, 返回EAGAIN或者EWOULDBLOCK(注: EAGAIN就是EWOULDBLOCK)<br>从字面上看, 意思是:EAGAIN: 再试一次，EWOULDBLOCK: 如果这是一个阻塞socket, 操作将被block，perror输出: Resource temporarily unavailable</p>
+<p>总结:<br>这个错误表示资源暂时不够，能read时，读缓冲区没有数据，或者write时，写缓冲区满了。遇到这种情况，如果是阻塞socket，read/write就要阻塞掉。而如果是非阻塞socket，read/write立即返回-1， 同时errno设置为EAGAIN。<br>所以，对于阻塞socket，read/write返回-1代表网络出错了。但对于非阻塞socket，read/write返回-1不一定网络真的出错了。可能是Resource temporarily unavailable。这时你应该再试，直到Resource available。</p>
+<p>综上，对于non-blocking的socket，正确的读写操作为:<br>读：忽略掉errno = EAGAIN的错误，下次继续读<br>写：忽略掉errno = EAGAIN的错误，下次继续写</p>
+<p>对于select和epoll的LT模式，这种读写方式是没有问题的。但对于epoll的ET模式，这种方式还有漏洞。</p>
+<p>epoll的两种模式LT和ET<br>二者的差异在于level-trigger模式下只要某个socket处于readable/writable状态，无论什么时候进行epoll_wait都会返回该socket；而edge-trigger模式下只有某个socket从unreadable变为readable或从unwritable变为writable时，epoll_wait才会返回该socket。</p>
+<p>所以，在epoll的ET模式下，正确的读写方式为:<br>读：只要可读，就一直读，直到返回0，或者 errno = EAGAIN<br>写:只要可写，就一直写，直到数据发送完，或者 errno = EAGAIN</p>
+<p>正确的读<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">n = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">while</span> ((nread = read(fd, buf + n, BUFSIZ-<span class="number">1</span>)) &gt; <span class="number">0</span>) &#123;</span><br><span class="line">    n += nread;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span> (nread == -<span class="number">1</span> &amp;&amp; errno != EAGAIN) &#123;</span><br><span class="line">    perror(<span class="string">"read error"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>正确的写</p>
+<figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">int nwrite, data_size = <span class="literal">strlen</span>(buf);</span><br><span class="line"><span class="keyword">n</span> = data_size;</span><br><span class="line"><span class="keyword">while</span> (<span class="keyword">n</span> &gt; 0) &#123;</span><br><span class="line">    nwrite = write(fd, buf + data_size - <span class="keyword">n</span>, <span class="keyword">n</span>);</span><br><span class="line">    <span class="keyword">if</span> (nwrite &lt; <span class="keyword">n</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span> (nwrite == -1 &amp;&amp; errno != EAGAIN) &#123;</span><br><span class="line">            perror(<span class="string">"write error"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">n</span> -= nwrite;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="正确的accept，accept-要考虑-2-个问题"><a href="#正确的accept，accept-要考虑-2-个问题" class="headerlink" title="正确的accept，accept 要考虑 2 个问题"></a>正确的accept，accept 要考虑 2 个问题</h3><h4 id="1-阻塞模式-accept-存在的问题"><a href="#1-阻塞模式-accept-存在的问题" class="headerlink" title="(1) 阻塞模式 accept 存在的问题"></a>(1) 阻塞模式 accept 存在的问题</h4><p>考虑这种情况：TCP连接被客户端夭折，即在服务器调用accept之前，客户端主动发送RST终止连接，导致刚刚建立的连接从就绪队列中移出，如果套接口被设置成阻塞模式，服务器就会一直阻塞在accept调用上，直到其他某个客户建立一个新的连接为止。但是在此期间，服务器单纯地阻塞在accept调用上，就绪队列中的其他描述符都得不到处理。</p>
+<p>解决办法是把监听套接口设置为非阻塞，当客户在服务器调用accept之前中止某个连接时，accept调用可以立即返回-1，这时源自Berkeley的实现会在内核中处理该事件，并不会将该事件通知给epool，而其他实现把errno设置为ECONNABORTED或者EPROTO错误，我们应该忽略这两个错误。</p>
+<h4 id="2-ET模式下accept存在的问题"><a href="#2-ET模式下accept存在的问题" class="headerlink" title="(2)ET模式下accept存在的问题"></a>(2)ET模式下accept存在的问题</h4><p>考虑这种情况：多个连接同时到达，服务器的TCP就绪队列瞬间积累多个就绪连接，由于是边缘触发模式，epoll只会通知一次，accept只处理一个连接，导致TCP就绪队列中剩下的连接都得不到处理。</p>
+<p>解决办法是用while循环抱住accept调用，处理完TCP就绪队列中的所有连接后再退出循环。如何知道是否处理完就绪队列中的所有连接呢？accept返回-1并且errno设置为EAGAIN就表示所有连接都处理完。</p>
+<p>综合以上两种情况，服务器应该使用非阻塞地accept，accept在ET模式下的正确使用方式为：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> ((conn_sock = accept(listenfd,(<span class="keyword">struct</span> sockaddr *) &amp;remote, (<span class="keyword">size_t</span> *)&amp;addrlen)) &gt; <span class="number">0</span>) &#123;</span><br><span class="line">    handle_client(conn_sock);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span> (conn_sock == -<span class="number">1</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (errno != EAGAIN &amp;&amp; errno != ECONNABORTED &amp;&amp; errno != EPROTO &amp;&amp; errno != EINTR)</span><br><span class="line">    perror(<span class="string">"accept"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>epoll ET 模式简单HTTP服务器代码：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;sys/socket.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;sys/wait.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;netinet/in.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;netinet/tcp.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;sys/epoll.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;sys/sendfile.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;sys/stat.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;strings.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;fcntl.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;errno.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#<span class="keyword">define</span> MAX_EVENTS <span class="number">10</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">define</span> PORT <span class="number">8080</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">//设置socket连接为非阻塞模式</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">setnonblocking</span><span class="params">(<span class="keyword">int</span> sockfd)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> opts;</span><br><span class="line"></span><br><span class="line">    opts = fcntl(sockfd, F_GETFL);</span><br><span class="line">    <span class="keyword">if</span>(opts &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        perror(<span class="string">"fcntl(F_GETFL)\n"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    opts = (opts | O_NONBLOCK);</span><br><span class="line">    <span class="keyword">if</span>(fcntl(sockfd, F_SETFL, opts) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        perror(<span class="string">"fcntl(F_SETFL)\n"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="keyword">struct</span> epoll_event ev, events[MAX_EVENTS];</span><br><span class="line">    <span class="keyword">int</span> addrlen, listenfd, conn_sock, nfds, epfd, fd, i, nread, n;</span><br><span class="line">    <span class="keyword">struct</span> sockaddr_in local, remote;</span><br><span class="line">    <span class="keyword">char</span> buf[BUFSIZ];</span><br><span class="line"></span><br><span class="line">    <span class="comment">//创建listen socket</span></span><br><span class="line">    <span class="keyword">if</span>( (listenfd = socket(AF_INET, SOCK_STREAM, <span class="number">0</span>)) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        perror(<span class="string">"sockfd\n"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    setnonblocking(listenfd);</span><br><span class="line">    bzero(&amp;local, <span class="keyword">sizeof</span>(local));</span><br><span class="line">    local.sin_family = AF_INET;</span><br><span class="line">    local.sin_addr.s_addr = htonl(INADDR_ANY);;</span><br><span class="line">    local.sin_port = htons(PORT);</span><br><span class="line">    <span class="keyword">if</span>( bind(listenfd, (<span class="keyword">struct</span> sockaddr *) &amp;local, <span class="keyword">sizeof</span>(local)) &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        perror(<span class="string">"bind\n"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    listen(listenfd, <span class="number">20</span>);</span><br><span class="line"></span><br><span class="line">    epfd = epoll_create(MAX_EVENTS);</span><br><span class="line">    <span class="keyword">if</span> (epfd == -<span class="number">1</span>) &#123;</span><br><span class="line">        perror(<span class="string">"epoll_create"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(EXIT_FAILURE);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ev.events = EPOLLIN;</span><br><span class="line">    ev.data.fd = listenfd;</span><br><span class="line">    <span class="keyword">if</span> (epoll_ctl(epfd, EPOLL_CTL_ADD, listenfd, &amp;ev) == -<span class="number">1</span>) &#123;</span><br><span class="line">        perror(<span class="string">"epoll_ctl: listen_sock"</span>);</span><br><span class="line">        <span class="built_in">exit</span>(EXIT_FAILURE);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (;;) &#123;</span><br><span class="line">        nfds = epoll_wait(epfd, events, MAX_EVENTS, -<span class="number">1</span>);</span><br><span class="line">        <span class="keyword">if</span> (nfds == -<span class="number">1</span>) &#123;</span><br><span class="line">            perror(<span class="string">"epoll_pwait"</span>);</span><br><span class="line">            <span class="built_in">exit</span>(EXIT_FAILURE);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; nfds; ++i) &#123;</span><br><span class="line">            fd = events[i].data.fd;</span><br><span class="line">            <span class="keyword">if</span> (fd == listenfd) &#123;</span><br><span class="line">                <span class="keyword">while</span> ((conn_sock = accept(listenfd,(<span class="keyword">struct</span> sockaddr *) &amp;remote,</span><br><span class="line">                                (<span class="keyword">size_t</span> *)&amp;addrlen)) &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                    setnonblocking(conn_sock);</span><br><span class="line">                    ev.events = EPOLLIN | EPOLLET;</span><br><span class="line">                    ev.data.fd = conn_sock;</span><br><span class="line">                    <span class="keyword">if</span> (epoll_ctl(epfd, EPOLL_CTL_ADD, conn_sock,</span><br><span class="line">                                &amp;ev) == -<span class="number">1</span>) &#123;</span><br><span class="line">                        perror(<span class="string">"epoll_ctl: add"</span>);</span><br><span class="line">                        <span class="built_in">exit</span>(EXIT_FAILURE);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span> (conn_sock == -<span class="number">1</span>) &#123;</span><br><span class="line">                    <span class="keyword">if</span> (errno != EAGAIN &amp;&amp; errno != ECONNABORTED</span><br><span class="line">                            &amp;&amp; errno != EPROTO &amp;&amp; errno != EINTR)</span><br><span class="line">                        perror(<span class="string">"accept"</span>);</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">continue</span>;</span><br><span class="line">            &#125;  </span><br><span class="line">            <span class="keyword">if</span> (events[i].events &amp; EPOLLIN) &#123;</span><br><span class="line">                n = <span class="number">0</span>;</span><br><span class="line">                <span class="keyword">while</span> ((nread = read(fd, buf + n, BUFSIZ-<span class="number">1</span>)) &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                    n += nread;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span> (nread == -<span class="number">1</span> &amp;&amp; errno != EAGAIN) &#123;</span><br><span class="line">                    perror(<span class="string">"read error"</span>);</span><br><span class="line">                &#125;</span><br><span class="line">                ev.data.fd = fd;</span><br><span class="line">                ev.events = events[i].events | EPOLLOUT;</span><br><span class="line">                <span class="keyword">if</span> (epoll_ctl(epfd, EPOLL_CTL_MOD, fd, &amp;ev) == -<span class="number">1</span>) &#123;</span><br><span class="line">                    perror(<span class="string">"epoll_ctl: mod"</span>);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (events[i].events &amp; EPOLLOUT) &#123;</span><br><span class="line">                <span class="built_in">sprintf</span>(buf, <span class="string">"HTTP/1.1 200 OK\r\nContent-Length: %d\r\n\r\nHello World"</span>, <span class="number">11</span>);</span><br><span class="line">                <span class="keyword">int</span> nwrite, data_size = <span class="built_in">strlen</span>(buf);</span><br><span class="line">                n = data_size;</span><br><span class="line">                <span class="keyword">while</span> (n &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                    nwrite = write(fd, buf + data_size - n, n);</span><br><span class="line">                    <span class="keyword">if</span> (nwrite &lt; n) &#123;</span><br><span class="line">                        <span class="keyword">if</span> (nwrite == -<span class="number">1</span> &amp;&amp; errno != EAGAIN) &#123;</span><br><span class="line">                            perror(<span class="string">"write error"</span>);</span><br><span class="line">                        &#125;</span><br><span class="line">                        <span class="keyword">break</span>;</span><br><span class="line">                    &#125;</span><br><span class="line">                    n -= nwrite;</span><br><span class="line">                &#125;</span><br><span class="line">                close(fd);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>以上内容转自<a href="http://www.ccvita.com/515.html" target="_blank" rel="external">这里</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/04/07/epoll之ET和LT编程/" data-id="ciqkep7xi0038o0qyjsid5zew" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-socket非阻塞读写" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2016/04/07/socket非阻塞读写/" class="article-date">
@@ -98,7 +156,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/04/07/socket非阻塞读写/" data-id="ciqjmihzn0030xsqy5e44icxc" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/04/07/socket非阻塞读写/" data-id="ciqkep7xc0030o0qykn4j8ksk" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a></li></ul>
@@ -154,7 +212,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/04/07/C-之auto、static、extern、register/" data-id="ciqjmii2c005uxsqyunlxbe8l" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/04/07/C-之auto、static、extern、register/" data-id="ciqkep7z1005xo0qy9j88vrma" class="article-share-link">Share</a>
       
       
     </footer>
@@ -240,7 +298,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/04/06/LinuxIO读取函数/" data-id="ciqjmii1j004fxsqyew5yaosq" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/04/06/LinuxIO读取函数/" data-id="ciqkep7y9004fo0qy55983vpf" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a></li></ul>
@@ -334,7 +392,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/23/Boost智能指针/" data-id="ciqjmihxa0000xsqyllpestyn" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/23/Boost智能指针/" data-id="ciqkep7sr0000o0qytj1160tp" class="article-share-link">Share</a>
       
       
     </footer>
@@ -450,7 +508,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/21/Linux任务调度机制/" data-id="ciqjmii1i004dxsqygjf8w3c1" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/21/Linux任务调度机制/" data-id="ciqkep7y8004do0qyjnotists" class="article-share-link">Share</a>
       
       
     </footer>
@@ -536,7 +594,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/20/链接库以及编译过程/" data-id="ciqjmihxs0003xsqy22swolpk" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/20/链接库以及编译过程/" data-id="ciqkep7tu0003o0qyr036xme5" class="article-share-link">Share</a>
       
       
     </footer>
@@ -650,7 +708,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/19/malloc函数的实现原理/" data-id="ciqjmihzp0034xsqyqt3hox0j" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/19/malloc函数的实现原理/" data-id="ciqkep7xf0034o0qy9w467n6n" class="article-share-link">Share</a>
       
       
     </footer>
@@ -702,7 +760,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/19/Linux-内存管理/" data-id="ciqjmii1l004ixsqy0mnwzddx" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/19/Linux-内存管理/" data-id="ciqkep7ya004io0qymz45o8os" class="article-share-link">Share</a>
       
       
     </footer>
@@ -809,85 +867,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/18/MySQL索引算法原理/" data-id="ciqjmii18003zxsqyno438n79" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/树结构/">树结构</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-那家姓B的树" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/03/18/那家姓B的树/" class="article-date">
-  <time datetime="2016-03-18T07:23:13.000Z" itemprop="datePublished">2016-03-18</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/数据结构/">数据结构</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/03/18/那家姓B的树/">那家姓B的树</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>姓B的树主要有三种：B-树（也就是B树），B+树以及B*树。</p>
-<h2 id="B-树（B树）"><a href="#B-树（B树）" class="headerlink" title="B-树（B树）"></a>B-树（B树）</h2><p> B 树又叫平衡多路查找树。一棵M阶的B树定义如下：</p>
-<ol>
-<li>M阶树，指的是每一个节点最多有M个子节点</li>
-<li>除了根节点可以有2&lt;= K &lt;=M个子节点之外，其他中间节点的子节点数目必须在M/2(取上限)&lt;= K &lt;=M之间</li>
-<li>所有叶子节点都出现在同一层，实际上所有的叶子节点都是空指针</li>
-<li>每一个节点中关键字的个数不其所拥有的子节点少一个，且升序排序</li>
-<li>2和4的限制导致了对于每一个中间节点，其所有的关键节点的数量为M/2(取上限)-1 &lt;= K &lt;= M-1</li>
-</ol>
-<p>B树中的每个结点根据实际情况可以包含大量的关键字信息和分支(当然是不能超过磁盘块的大小，根据磁盘驱动(disk drives)的不同，一般块的大小在1k~4k左右)；这样树的深度降低了，这就意味着查找一个元素只要很少结点从外存磁盘中读入内存，很快访问到要查找的数据.</p>
-<h4 id="B树的高度"><a href="#B树的高度" class="headerlink" title="B树的高度"></a>B树的高度</h4><p>如果一颗B树所包含的关键字为N，那么怎样求该树的高度呢？<br>这里先设每一个节点的最小子节点的数量<code>M/2(取上限)</code>为t，那么在第一层，也就是根节点，节点数量为1，第二层的节点数量至少为2，接下来每一层，由于每一个节点的子节点数量为t，于是第三层的节点数为2*t，第四层为<code>2·t·t</code>，一直下去。所以第L层的节点数为<code>2·t^(L-2)</code>; 对于B树来说，叶节点的数量为B树的所有关键字N+1，所以对于有N个关键字的B树来说，其叶子节点的层数如果为h的话，那么有<code>2·t^(h-2) = N+1</code>; 这样的话，<code>h = log_t((N+1)/2)+2</code>;由于B树的叶子节点只是一个空指针，在B树中没有表示出来，所以B树的层数为<code>H = log_t((N+1)/2)+1</code>，如果高度从根节点为0算起的话，就是<code>log_t((N+1)/2)</code>，因为上面所有的推导都是在节点的子节点最小的情况下得到的，所以实际上B树的高度要比得到的<code>log_t((N+1)/2)</code>小。</p>
-<h3 id="B树的插入删除操作"><a href="#B树的插入删除操作" class="headerlink" title="B树的插入删除操作"></a>B树的插入删除操作</h3><p>对于会修改B树结构的操作：插入、删除，在处理的过程中必须保证B树的特征，所以对于插入和删除，需要一些比较复制的处理流程：</p>
-<h4 id="插入"><a href="#插入" class="headerlink" title="插入"></a>插入</h4><p>插入一个值时，如果对应的节点的关键字恰好为M-1个，那么需要将该节点的关键字的中位数上移到其父节点中，然后该节点剩下的关键字平均分裂为两个新的节点，上移的中位数对于父节点来说其实也是一个插入操作，所以对父节点进行同样的插入造作，这样递归知道没有冲突为止。如果插入的节点的关键字小于M-1，那么直接在该节点中按照关键字的值顺序插入新的关键字。<br>下面是插入的演示：</p>
-<p>1、B树的初始结构：<br><img src="/pictures/数据结构/树结构/B树插入-初始结构.jpg" alt=""></p>
-<p>2、插入H时，结点发现空间不够，以致将其分裂成2个结点，移动中间元素G上移到新的根结点中，在实现过程中，把A和C留在当前结点中，而H和N放置新的其右邻居结点中。如下图：</p>
-<p><img src="/pictures/数据结构/树结构/B树插入-1.jpg" alt=""></p>
-<p>3、当插入E,K,Q时，不需要任何分裂操作：<br><img src="/pictures/数据结构/树结构/B树插入-2.jpg" alt=""></p>
-<p>4、插入M需要一次分裂，注意M恰好是中间关键字元素，以致向上移到父节点中<br><img src="/pictures/数据结构/树结构/B树插入-3.jpg" alt=""></p>
-<p>5、当B树的结构如下所示时：<br><img src="/pictures/数据结构/树结构/B树插入-4.jpg" alt=""></p>
-<p>6、当插入S时，含有N,P,Q,R的结点需要分裂，把中间元素Q上移到父节点中，但是情况来了，父节点中空间已经满了，所以也要进行分裂，将父节点中的中间元素M上移到新形成的根结点中，<font color="red">注意以前在父节点中的第三个指针在修改后包括D和G节点中。</font><br><img src="/pictures/数据结构/树结构/B树插入-5.jpg" alt=""></p>
-<h3 id="B树的删除"><a href="#B树的删除" class="headerlink" title="B树的删除"></a>B树的删除</h3><p>首先查找B树中需删除的元素,如果该元素在B树中存在，则将该元素在其结点中进行删除，接下来判断该元素是否有左右孩子结点，如果有，则上移孩子结点中的某相近元素(“左孩子最右边的节点”或“右孩子最左边的节点”)到父节点中，然后是移动之后的情况；如果没有，直接进入移动之后的情况。</p>
-<h4 id="移动之后的情况："><a href="#移动之后的情况：" class="headerlink" title="移动之后的情况："></a>移动之后的情况：</h4><ol>
-<li>如果当前所在的节点没有子节点，那么在删除后，需要看当前的节点的关键字是个数是否为：<code>M/2(取上限)-1 &lt;= K &lt;= M-1</code>,如果是的话，删除完成，否则的话，进入向相邻兄弟节点求借关键字步骤。</li>
-<li>如果的当前的所在节点具有子节点，那么删除后，向该关键字所对应的左或右子节点接一个关键字上移到当前节点中，先借丰满的子节点，移动后不需要修改其他，删除直接完成。如果左右子节点都不是丰满的，那么在上移一个关键字后，需要对被借关键子的子节点进入向相邻兄弟节点求借关键字步骤。</li>
-</ol>
-<h4 id="进入向相邻兄弟节点求借关键字步骤"><a href="#进入向相邻兄弟节点求借关键字步骤" class="headerlink" title="进入向相邻兄弟节点求借关键字步骤"></a>进入向相邻兄弟节点求借关键字步骤</h4><p>向相邻兄弟节点求借关键字步骤是因为当前的节点的关键子个数不符合<code>M/2(取上限)-1 &lt;= K &lt;= M-1</code>，此时可以看看与当前节点相邻的左右兄弟节点有没有丰满的，有的话，当前节点所对应的父节点的关键子下移到当前节点中，然后丰满兄弟节点的相应的关键子上移到父节点中，放在那个刚下移的关键子的位置上，结束！，如果左右兄弟节点都没有丰满的话，就只能进行节点合并了。节点合并先找出需要合并的左右兄弟节点，二选一，然后将父节点所对应的关键子下移与需要合并的两个节点组成新的节点，此时，父节点相当于删除了一个关键字，那么就需要对父节点进行进入向相邻兄弟节点求借关键字步骤了，一直递归知道B树结构平衡为止！</p>
-<p>删除演示：<br>1、B树的初始结构：<br><img src="/pictures/数据结构/树结构/B树删除-初始结构.jpg" alt=""></p>
-<p>2、首先删除元素H，当然首先查找H，H在一个叶子结点中，且该叶子结点元素数目3大于最小元素数目ceil(m/2)-1=2，则操作很简单，只需要移动K至原来H的位置，移动L至K的位置（也就是结点中删除元素后面的元素向前移动）<br><img src="/pictures/数据结构/树结构/B树删除-1.jpg" alt=""></p>
-<p>3、下一步，删除T,因为T没有在叶子结点中，而是在中间结点中找到，发现他的继承者W(字母升序的下个元素)，将W上移到T的位置，然后将原包含W的孩子结点中的W进行删除，这里恰好删除W后，该孩子结点中元素个数大于2，无需进行合并操作。<br><img src="/pictures/数据结构/树结构/B树删除-2.jpg" alt=""></p>
-<p>4、下一步删除R，R在叶子结点中,但是该结点中元素数目为2，删除导致只有1个元素，已经小于最小元素数目ceil(5/2)-1=2，此时进入进入向相邻兄弟节点求借关键字步骤<br><img src="/pictures/数据结构/树结构/B树删除-3.jpg" alt=""></p>
-<p>5、最后一步删除E，因为没有左右相邻兄弟节点是丰满的，所以进入节点合并步骤：<br><img src="/pictures/数据结构/树结构/B树删除-4.jpg" alt=""></p>
-<p>但是，由于此时的父节点不符合要求，所以需要对父节点在进入进入向相邻兄弟节点求借关键字步骤，很明显，父节点G没有对应可借的兄弟节点，所以进行节点合并<br><img src="/pictures/数据结构/树结构/B树删除-4.jpg" alt=""></p>
-<h2 id="B-树"><a href="#B-树" class="headerlink" title="B+树"></a>B+树</h2><p>谈完了B树，我们再来讨论一下B+tree，B+tree是B树的一个变种，在实际应用中，B+tree更加常见。B+树与B树的区别在于这么几点：<br>1、B+树的内部节点（也就是非叶子节点）有n个关键字，同时有n个儿子。这和B树不同，B树的内部节点有n个儿子，但只有n-1个关键字。<br>2、B+树只有叶子节点才包含行数据，而内部节点仅仅只有关键字信息和儿子的指针（这里的指针实际上就是磁盘块的文件偏移量），也就是说内部节点仅仅包含索引信息。<br>3、B+树中的数据都存在于叶子节点中，因此所有叶子节点加在一起所组成的集合包含了所有关键字的信息以及关键字对应的行数据，而B树所有叶子节点加在一起所组成的集合并未包含所有的关键字，因为有些关键字处在内部节点中。<br><img src="/pictures/数据结构/树结构/B+树.png" alt=""></p>
-<p>上图就是B+树的一个实例。可以看到叶子节点中，蓝色部分包含了所有关键字信息，一个也不少。图中叶子节点把关键字信息（蓝色）和实际数据（Q）分开了，实际上为了便于理解，你可以认为叶子节点就是一行一行顺序排列的行数据，行数据本身就包含了关键字信息。需要注意的是，中间节点的每一个关键字的值都是其对应的子节点的关键字中的那个最小的值。每一个节点之所以有一个指向其相邻兄弟的指针，是因为可以方便顺序访问，提高区间访问的性能。相比于B树，B+树更适合外存索引，原因和内节点的出度有关，因为B+树的内节点只存储索引信息和子节点的指针信息，少去了B树对应的data信息，所以一个节点所存储的索引信息比B树大很多，这样的话，节点的出度就越高。因为一般在实现B+树的时候，会是将一个节点设置成为一个页的大小，每次新建节点时，直接申请一个页的空间，这样就保证一个节点物理上也存储在一个页里，加之计算机存储分配都是按页对齐的，就实现了一个node只需一次I/O，所以一个节点的出度就取决于存储的key+data+pointer的大小，B+少了data，所以存的索引信息也就越多。</p>
-<h2 id="B-树-1"><a href="#B-树-1" class="headerlink" title="B*树"></a>B*树</h2><p>B<em>-tree是B+-tree的变体，在B+树的基础上(所有的叶子结点中包含了全部关键字的信息，及指向含有这些关键字记录的指针)，B</em>树中非根和非叶子结点再增加指向兄弟的指针；B*树定义了非叶子结点关键字个数至少为(2/3)·M，即块的最低使用率为2/3（代替B+树的1/2）。给出了一个简单实例，如下图所示：<br><img src="/pictures/数据结构/树结构/B星树.jpg" alt=""></p>
-<p>B+树的分裂：当一个结点满时，分配一个新的结点，并将原结点中1/2的数据复制到新结点，最后在父结点中增加新结点的指针；B+树的分裂只影响原结点和父结点，而不会影响兄弟结点，所以它不需要指向兄弟的指针。<br>B*树的分裂：当一个结点满时，如果它的下一个兄弟结点未满，那么将一部分数据移到兄弟结点中，再在原结点插入关键字，最后修改父结点中兄弟结点的关键字（因为兄弟结点的关键字范围改变了）；如果兄弟也满了，则在原结点与兄弟结点之间增加新结点，并各复制1/3的数据到新结点，最后在父结点增加新结点的指针。<br>所以，B*树分配新结点的概率比B+树要低，空间使用率更高；</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/18/那家姓B的树/" data-id="ciqjmihxu0005xsqyntfiso83" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/18/MySQL索引算法原理/" data-id="ciqkep7xy003zo0qy8851l6tx" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/树结构/">树结构</a></li></ul>
@@ -912,7 +892,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java/">Java</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">10</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java/">Java</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">10</span></li></ul>
     </div>
   </div>
 
@@ -921,7 +901,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java底层机制/">Java底层机制</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图与树/">图与树</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/设计模式/">设计模式</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java底层机制/">Java底层机制</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图与树/">图与树</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/设计模式/">设计模式</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
     </div>
   </div>
 
@@ -930,7 +910,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/C-11-常规新特性/" style="font-size: 18.33px;">C++11 常规新特性</a> <a href="/tags/Java底层机制/" style="font-size: 16.67px;">Java底层机制</a> <a href="/tags/Linux-网络编程/" style="font-size: 16.67px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 16.67px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 15px;">Linux用户管理</a> <a href="/tags/Linux进程间通信/" style="font-size: 16.67px;">Linux进程间通信</a> <a href="/tags/TCP-IP/" style="font-size: 20px;">TCP/IP</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/动态规划/" style="font-size: 13.33px;">动态规划</a> <a href="/tags/图与树/" style="font-size: 13.33px;">图与树</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/数组/" style="font-size: 10px;">数组</a> <a href="/tags/树结构/" style="font-size: 13.33px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 11.67px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 11.67px;">爬虫</a> <a href="/tags/设计模式/" style="font-size: 13.33px;">设计模式</a> <a href="/tags/随记/" style="font-size: 11.67px;">随记</a>
+      <a href="/tags/C-11-常规新特性/" style="font-size: 18.33px;">C++11 常规新特性</a> <a href="/tags/Java底层机制/" style="font-size: 16.67px;">Java底层机制</a> <a href="/tags/Linux-网络编程/" style="font-size: 16.67px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 16.67px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 15px;">Linux用户管理</a> <a href="/tags/Linux进程间通信/" style="font-size: 16.67px;">Linux进程间通信</a> <a href="/tags/TCP-IP/" style="font-size: 20px;">TCP/IP</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/动态规划/" style="font-size: 13.33px;">动态规划</a> <a href="/tags/图与树/" style="font-size: 15px;">图与树</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/数组/" style="font-size: 10px;">数组</a> <a href="/tags/树结构/" style="font-size: 13.33px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 11.67px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 11.67px;">爬虫</a> <a href="/tags/设计模式/" style="font-size: 13.33px;">设计模式</a> <a href="/tags/随记/" style="font-size: 11.67px;">随记</a>
     </div>
   </div>
 
@@ -939,7 +919,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a><span class="archive-list-count">23</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a><span class="archive-list-count">24</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
     </div>
   </div>
 
@@ -949,6 +929,10 @@
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2016/07/13/LCA之Tarjan算法/">LCA之Tarjan算法</a>
+          </li>
         
           <li>
             <a href="/2016/07/12/ST算法/">ST算法</a>
@@ -964,10 +948,6 @@
         
           <li>
             <a href="/2016/07/11/UDP之connect/">UDP之connect</a>
-          </li>
-        
-          <li>
-            <a href="/2016/07/08/Java之JVM调优/">JVM调优</a>
           </li>
         
       </ul>

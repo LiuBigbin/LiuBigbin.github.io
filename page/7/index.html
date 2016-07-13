@@ -65,6 +65,79 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-基于用户的协同过滤算法" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/02/28/基于用户的协同过滤算法/" class="article-date">
+  <time datetime="2016-02-28T12:43:10.000Z" itemprop="datePublished">2016-02-28</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/机器学习/">机器学习</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/02/28/基于用户的协同过滤算法/">基于用户的协同过滤算法</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="什么是推荐算法"><a href="#什么是推荐算法" class="headerlink" title="什么是推荐算法"></a>什么是推荐算法</h3><p>&#160; &#160; &#160; &#160;推荐算法最早在1992年就提出来了，但是火起来实际上是最近这些年的事情，因为互联网的爆发，有了更大的数据量可以供我们使用，推荐算法才有了很大的用武之地。</p>
+<p>&#160; &#160; &#160; &#160;最开始，所以我们在网上找资料，都是进yahoo，然后分门别类的点进去，找到你想要的东西，这是一个人工过程，到后来，我们用google，直接搜索自己需要的内容，这些都可以比较精准的找到你想要的东西，但是，如果我自己都不知道自己要找什么肿么办？最典型的例子就是，如果我打开豆瓣找电影，或者我去买说，我实际上不知道我想要买什么或者看什么，这时候推荐系统就可以派上用场了。</p>
+<h4 id="推荐算法的条件"><a href="#推荐算法的条件" class="headerlink" title="推荐算法的条件"></a>推荐算法的条件</h4><p>&#160; &#160; &#160; &#160;推荐算法从92年开始，发展到现在也有20年了，当然，也出了各种各样的推荐算法，但是不管怎么样，都绕不开几个条件，这是推荐的基本条件</p>
+<li>根据和你共同喜好的人来给你推荐</li><br><li>根据你喜欢的物品找出和它相似的来给你推荐</li><br><li>根据你给出的关键字来给你推荐，这实际上就退化成搜索算法了</li><br><li>根据上面的几种条件组合起来给你推荐</li>
+
+<p>&#160; &#160; &#160; &#160;实际上，现有的条件就这些啦，至于怎么发挥这些条件就是八仙过海各显神通了，这么多年沉淀了一些好的算法，今天这篇文章要讲的基于用户的协同过滤算法就是其中的一个，这也是最早出现的推荐算法，并且发展到今天，基本思想没有什么变化，无非就是在处理速度上，计算相似度的算法上出现了一些差别而已。</p>
+<h4 id="基于用户的协同过滤算法"><a href="#基于用户的协同过滤算法" class="headerlink" title="基于用户的协同过滤算法"></a>基于用户的协同过滤算法</h4><p>&#160; &#160; &#160; &#160;我们先做个词法分析基于用户说明这个算法是以用户为主体的算法，这种以用户为主体的算法比较强调的是社会性的属性，也就是说这类算法更加强调把和你有相似爱好的其他的用户的物品推荐给你，与之对应的是基于物品的推荐算法，这种更加强调把和你你喜欢的物品相似的物品推荐给你。然后就是协同过滤了，所谓协同就是大家一起帮助你啦，然后后面跟个过滤，就是大家是商量过后才把结果告诉你的，不然信息量太大了。</p>
+<p>&#160; &#160; &#160; &#160;所以，综合起来说就是这么一个算法，那些和你有相似爱好的小伙伴们一起来商量一下，然后告诉你什么东西你会喜欢。</p>
+<h3 id="算法描述"><a href="#算法描述" class="headerlink" title="算法描述"></a>算法描述</h3><h4 id="相似性计算"><a href="#相似性计算" class="headerlink" title="相似性计算"></a>相似性计算</h4><p>&#160; &#160; &#160; &#160;我们尽量不使用复杂的数学公式，一是怕大家看不懂，难理解，二是我是用mac写的blog,公式不好画，太麻烦了。。</p>
+<p>&#160; &#160; &#160; &#160;所谓计算相似度，有两个比较经典的算法</p>
+<li>Jaccard算法，就是交集除以并集，详细可以看看我这篇文章。</li><br><li>余弦距离相似性算法，这个算法应用很广，一般用来计算向量间的相似度，具体公式大家google一下吧，或者看看这里</li><br><li>各种其他算法，比如欧氏距离算法等等。</li>
+
+<p>&#160; &#160; &#160; &#160;不管使用Jaccard还是用余弦算法，本质上需要做的还是求两个向量的相似程度，使用哪种算法完全取决于现实情况。</p>
+<p>&#160; &#160; &#160; &#160;我们在本文中用的是余弦距离相似性来计算两个用户之间的相似度。</p>
+<h5 id="与目标用户最相邻的K个用户"><a href="#与目标用户最相邻的K个用户" class="headerlink" title="与目标用户最相邻的K个用户"></a>与目标用户最相邻的K个用户</h5><p>&#160; &#160; &#160; &#160;我们知道，在找和你兴趣爱好相似的小伙伴的时候，我们可能可以找到几百个，但是有些是好基友，但有些只是普通朋友，那么一般的，我们会定一个数K，和你最相似的K个小伙伴就是你的好基友了，他们的爱好可能和你的爱好相差不大，让他们来推荐东西给你（比如肥皂）是最好不过了。</p>
+<p>&#160; &#160; &#160; &#160;何为和你相似呢？简单的说就是，比如你喜欢macbook,iphone,ipad，A小伙伴喜欢macbook,iphone,note2,小米盒子,肥皂，蜡烛,B小伙伴喜欢macbook,iphone,ipad,肥皂,润肤霜,C女神喜欢雅诗兰黛,SK2,香奈儿，D屌丝喜欢ipad,诺基亚8250，小霸王学习机那么很明显，B小伙伴和你更加相似，而C女神完全和你不在一个档次上，那我们推荐的时候会把肥皂推荐给你，因为我们觉得肥皂可能最适合你。</p>
+<p>&#160; &#160; &#160; &#160;那么，如何找出这K个基友呢？最直接的办法就是把目标用户和数据库中的所有用户进行比较，找出和目标用户最相似的K个用户，这就是好基友了。</p>
+<p>&#160; &#160; &#160; &#160;这么做理论上是没什么问题的，但是当数据量巨大的时候，计算K个基友的时间将会非常长，而且你想想就知道，数据库中的大部分用户其实和你是没有什么交集的，所没必要计算所有用户了，只需要计算和你有交集的用户就行了。要计算和你有交集的用户，就要用到物品到用户的反查表，什么是反查表呢？很简单，还是是上面那个AB小伙伴和C女神的例子，反查表就是喜欢macbook的有你，A，B，喜欢iphone的有你，B。。。就是喜欢某些物品的用户，有了这个表，我们就可以看出来，和你有关系的用户就只有A和B，D了，而C女神和你没有任何交集，所以不用去想C了。</p>
+<p>&#160; &#160; &#160; &#160;这样，我们有了A和B,D，然后就分别计算A和B,D与你的相似度，不管用哪个相似性公式，我们算出来都是B和你更相似(在这个例子中，一般会用Jaccard来计算，因为这些向量不是特别好余弦化)，但如果此时我们的K设定为2，那么我们就得出了与你最相邻的基友是B和A。</p>
+<p>&#160; &#160; &#160; &#160;这就是与目标用户最相邻的K个用户的计算。</p>
+<h5 id="通过这K个用户来推荐商品了"><a href="#通过这K个用户来推荐商品了" class="headerlink" title="通过这K个用户来推荐商品了"></a>通过这K个用户来推荐商品了</h5><p>&#160; &#160; &#160; &#160;好了，你的好基友我们也算出来了，接下来要向你推荐商品了。但是我们可推荐的商品有小米盒子，note2，蜡烛，润肤霜，肥皂这么四种，到底哪种才是你需要的呢？这里的算法就比较广泛了，我们可以不排序，都一股脑推荐给你，但这明显可能有些你不怎么感兴趣，我们也可以做一些处理，假如我们算出来A和你的相似度是25%，B和你的相似度是80%，那么对于上面这些产品，我们的推荐度可以这么来算</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">小米盒子: <span class="number">1</span>*<span class="number">0.25</span> = <span class="number">0.25</span></span><br><span class="line">note2: <span class="number">1</span>*<span class="number">0.25</span> = <span class="number">0.25</span></span><br><span class="line">蜡烛: <span class="number">1</span>*<span class="number">0.25</span> = <span class="number">0.25</span></span><br><span class="line">润肤霜: <span class="number">1</span>*<span class="number">0.8</span> = <span class="number">0.8</span></span><br><span class="line">肥皂: <span class="number">1</span>*<span class="number">0.8</span>+<span class="number">1</span>*<span class="number">0.25</span>=<span class="number">1.05</span></span><br></pre></td></tr></table></figure>
+<p>&#160; &#160; &#160; &#160;这样就一目了然了，很明显，我们会首先把肥皂推荐给你，这个可能是你最需要的，其次是润肤霜，然后才是蜡烛，小米盒子和note2。</p>
+<p>当然，你可以把上述结果归一化或者用其他你觉得合适的方式来计算推荐度，不管怎么算，推荐度还是得和基友与你相似度有关系，就是那个0.8和0.25一定要用上，不然前面白算了。</p>
+<h3 id="算法总结"><a href="#算法总结" class="headerlink" title="算法总结"></a>算法总结</h3><p>&#160; &#160; &#160; &#160;好了，通过这个例子，你大概知道了为什么会推荐肥皂给你了吧，这就是基于用户的协同推荐算法的描述，总结起来就是这么几步</p>
+<li>计算其他用户和你的相似度，可以使用反差表忽略一部分用户</li><br><li>根据相似度的高低找出K个与你最相似的邻居</li><br><li>在这些邻居喜欢的物品中，根据邻居与你的远近程度算出每一件物品的推荐度</li><br><li>根据每一件物品的推荐度高低给你推荐物品。</li>
+
+<p>&#160; &#160; &#160; &#160;比如上面那个例子，首先，我们通过反查表忽略掉了C女神，然后计算出A和B,D与你的相似度，然后根据K=2找出最相似的邻居A和B，接着根据A,B与你相似度计算出每件物品的推荐度并排序，最后根据排好序的推荐度给你推荐商品。</p>
+<p>怎么样，是不是很简单啊。</p>
+<h3 id="算法存在的问题"><a href="#算法存在的问题" class="headerlink" title="算法存在的问题"></a>算法存在的问题</h3><p>&#160; &#160; &#160; &#160;这个算法实现起来也比较简单，但是在实际应用中有时候也会有问题的。比如一些非常流行的商品可能很多人都喜欢，这种商品推荐给你就没什么意义了，所以计算的时候需要对这种商品加一个权重或者把这种商品完全去掉也行。再有，对于一些通用的东西，比如买书的时候的工具书，如现代汉语词典，新华字典神马的，通用性太强了，推荐也没什么必要了。这些都是推荐系统的脏数据，如何去掉脏数据，这是数据预处理的时候事情了，这里就不多说了。</p>
+<p>本文来自<a href="http://blog.csdn.net/ygrx/article/details/15501679" target="_blank" rel="external">这里</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/02/28/基于用户的协同过滤算法/" data-id="ciqklv21k001troqysdbuxzmq" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/推荐算法/">推荐算法</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-at命令详解" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2016/02/28/at命令详解/" class="article-date">
@@ -125,7 +198,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/at命令详解/" data-id="ciqkep7xo003ho0qyd01cvcsm" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/28/at命令详解/" data-id="ciqklv22h003hroqygt210i2j" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux命令/">Linux命令</a></li></ul>
@@ -225,7 +298,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/awk命令详解/" data-id="ciqkep7xl003eo0qy0a15f5vt" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/28/awk命令详解/" data-id="ciqklv22f003eroqyxv8bous0" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux命令/">Linux命令</a></li></ul>
@@ -288,7 +361,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/tee命令详解/" data-id="ciqkep7xa002wo0qym9229s8x" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/28/tee命令详解/" data-id="ciqklv225002wroqyiqs17bw3" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux命令/">Linux命令</a></li></ul>
@@ -365,7 +438,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/cpio命令详解/" data-id="ciqkep7xj003bo0qybaqvmsux" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/28/cpio命令详解/" data-id="ciqklv22e003broqy0d6iy0t2" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux命令/">Linux命令</a></li></ul>
@@ -447,7 +520,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/Linux命令面试问答/" data-id="ciqkep7y5004ao0qyxjsgguil" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/28/Linux命令面试问答/" data-id="ciqklv23v004aroqyir9zf5u2" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux命令/">Linux命令</a></li></ul>
@@ -567,7 +640,7 @@ sshthresh = cwnd
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/26/图解TCP-IP协议/" data-id="ciqkep7vw0021o0qydi1duh9m" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/26/图解TCP-IP协议/" data-id="ciqklv21o0021roqyqscbc65y" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TCP-IP/">TCP/IP</a></li></ul>
@@ -615,7 +688,7 @@ sshthresh = cwnd
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/26/动态规划之整数划分/" data-id="ciqkep7w1002eo0qy0pdklefx" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/26/动态规划之整数划分/" data-id="ciqklv21t002eroqy7uneuqlz" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/动态规划/">动态规划</a></li></ul>
@@ -671,7 +744,7 @@ sshthresh = cwnd
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/26/双线程动态规划之探寻宝藏/" data-id="ciqkep7vx0024o0qygwoiv1fq" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/26/双线程动态规划之探寻宝藏/" data-id="ciqklv21q0024roqy5rjfmnhd" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/动态规划/">动态规划</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a></li></ul>
@@ -746,74 +819,10 @@ sshthresh = cwnd
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/26/双线程动态规划之传纸条/" data-id="ciqkep7vz002ao0qyuy27iq2u" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/26/双线程动态规划之传纸条/" data-id="ciqklv21r002aroqycjr3bs4n" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/动态规划/">动态规划</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-通过git提交或更新代码到github" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/02/25/通过git提交或更新代码到github/" class="article-date">
-  <time datetime="2016-02-25T07:48:06.000Z" itemprop="datePublished">2016-02-25</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/日志/">日志</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/02/25/通过git提交或更新代码到github/">通过git提交或更新代码到github</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>&#160; &#160; &#160; &#160; Git是用C语言开发的分布版本控制系统。版本控制系统可以保留一个文件集合的历史记录，并能回滚文件集合到另一个状态（历史记录状态）。另一个状态可以是不同的文件，也可以是不同的文件内容。举个例子，你可以将文件集合转换到两天之前的状态，或者你可以在生产代码和实验性质的代码之间进行切换。文件集合往往被称作是“源代码”。在一个分布版本控制系统中，每个人都有一份完整的源代码（包括源代码所有的历史记录信息），而且可以对这个本地的数据进行操作。分布版本控制系统不需要一个集中式的代码仓库。</p>
-<p>&#160; &#160; &#160; &#160; 如果想要将本地的代码提交到github上，先在github中创建新的仓库，在安装了<a href="http://git-scm.com/" target="_blank" rel="external">Git</a>的情况下，先进入到代码所在的目录下，然后右键选择git bash here，打开git命令行窗口，接下来执行一下命令：</p>
-<pre><code># git 仓库初始化
-$ git init
-# 添加索引文件, 也可以在add后面添加文件名，这里会直接的将目录下的文件以及文件夹添加到索引
-$ git add .
-# 提交到本地仓库
-$ git commit -m &quot;这里是本次提交的说明&quot;
-# 添加远程仓库, 这一步会在当前目录下的.git/config文件中记录远程仓库地址
-# 该命令将对应的远程仓库命名为 origin
-$ git remote add origin https://github.com/yourname/repositoryname.git
-# 提交到远程仓库中(也可以直接使用git push，origin 和 master都是默认的参数)
-# origin 为上一条命令命名的远程仓库，master 为仓库的分支
-$ git push origin master
-</code></pre><p>&#160; &#160; &#160; &#160; 这样代码就顺利的提交到了github对应的仓库中。如果本地跟新了代码（增加、删除或是修改文件），需要同步更新到github仓库中，那么需要执行以下的命令：</p>
-<pre><code>$ git add .
-$ git commit -m &quot;提交说明&quot;
-$ git push origin master
-</code></pre><p>&#160; &#160; &#160; &#160; 如果想要更正最后提交的信息，可以使用<code>git amend</code>：</p>
-<pre><code>git commit --amend -m &quot;新的提交信息&quot;
-</code></pre><p>&#160; &#160; &#160; &#160; 每个Git仓库都是放置在.git文件夹下.这个目录包含了仓库的所有历史记录，.git/config文件包含了仓库的本地配置。命令<code>git init</code>用来建立本地git仓库，并初始化所有必要文件。改命令会生成.git文件夹和.gitignore文件，.gitignore文件用来存放git忽略特定的文件或是文件夹的配置，这个文件可以存在于不同的文件夹中，可以包含不同的文件匹配模式。为了让Git忽略bin文件夹，在主目录下放置.gitignore文件，其中内容为bin。同时Git也提供了全局的配置，core.excludesfile</p>
-<p>&#160; &#160; &#160; &#160; Git会忽略空的文件夹。如果你想版本控制包括空文件夹，根据惯例会在空文件夹下放置.gitkeep文件。其实对文件名没有特定的要求。一旦一个空文件夹下有文件后，这个文件夹就会在版本控制范围内。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/25/通过git提交或更新代码到github/" data-id="ciqkep7u6000ao0qy9tbp3nm2" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/随记/">随记</a></li></ul>
 
     </footer>
   </div>
@@ -835,7 +844,7 @@ $ git push origin master
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java/">Java</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">10</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java/">Java</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">10</span></li></ul>
     </div>
   </div>
 
@@ -844,7 +853,7 @@ $ git push origin master
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java底层机制/">Java底层机制</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图与树/">图与树</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/设计模式/">设计模式</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java底层机制/">Java底层机制</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图与树/">图与树</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/设计模式/">设计模式</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
     </div>
   </div>
 
@@ -853,7 +862,7 @@ $ git push origin master
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/C-11-常规新特性/" style="font-size: 18.33px;">C++11 常规新特性</a> <a href="/tags/Java底层机制/" style="font-size: 16.67px;">Java底层机制</a> <a href="/tags/Linux-网络编程/" style="font-size: 16.67px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 16.67px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 15px;">Linux用户管理</a> <a href="/tags/Linux进程间通信/" style="font-size: 16.67px;">Linux进程间通信</a> <a href="/tags/TCP-IP/" style="font-size: 20px;">TCP/IP</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/动态规划/" style="font-size: 13.33px;">动态规划</a> <a href="/tags/图与树/" style="font-size: 15px;">图与树</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/数组/" style="font-size: 10px;">数组</a> <a href="/tags/树结构/" style="font-size: 13.33px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 11.67px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 11.67px;">爬虫</a> <a href="/tags/设计模式/" style="font-size: 13.33px;">设计模式</a> <a href="/tags/随记/" style="font-size: 11.67px;">随记</a>
+      <a href="/tags/C-11-常规新特性/" style="font-size: 18.33px;">C++11 常规新特性</a> <a href="/tags/Java底层机制/" style="font-size: 16.67px;">Java底层机制</a> <a href="/tags/Linux-网络编程/" style="font-size: 16.67px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 16.67px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 15px;">Linux用户管理</a> <a href="/tags/Linux进程间通信/" style="font-size: 16.67px;">Linux进程间通信</a> <a href="/tags/TCP-IP/" style="font-size: 20px;">TCP/IP</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/动态规划/" style="font-size: 13.33px;">动态规划</a> <a href="/tags/图与树/" style="font-size: 16.67px;">图与树</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/数组/" style="font-size: 10px;">数组</a> <a href="/tags/树结构/" style="font-size: 13.33px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 11.67px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 11.67px;">爬虫</a> <a href="/tags/设计模式/" style="font-size: 13.33px;">设计模式</a> <a href="/tags/随记/" style="font-size: 11.67px;">随记</a>
     </div>
   </div>
 
@@ -862,7 +871,7 @@ $ git push origin master
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a><span class="archive-list-count">24</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a><span class="archive-list-count">25</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
     </div>
   </div>
 
@@ -872,6 +881,10 @@ $ git push origin master
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2016/07/13/LCA之DFS-ST算法/">LCA之DFS+ST算法</a>
+          </li>
         
           <li>
             <a href="/2016/07/13/LCA之Tarjan算法/">LCA之Tarjan算法</a>
@@ -887,10 +900,6 @@ $ git push origin master
         
           <li>
             <a href="/2016/07/12/并查集/">并查集</a>
-          </li>
-        
-          <li>
-            <a href="/2016/07/11/UDP之connect/">UDP之connect</a>
           </li>
         
       </ul>

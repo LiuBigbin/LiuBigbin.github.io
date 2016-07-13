@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>LCA之DFS+ST算法 | LiuYongbin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="DFS+ST算法可以在线的查询两个节点的最近公共祖先。由于任意两点的最近公共祖先必定在这两点的最短路径上，所以也可以根据这个特性来查找任意两点的最近路径。DFS：深度优先遍历树的每一个节点，用数组deep按照遍历顺序记录下每一个节点的深度，另外需要记录每一个节点在数组中所对应的第一个出现的下标。ST：有了深度数组，利用ST算法计算每一个偶数段的区间的最小深度的下标。对于每一个查询(a, b), 先">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LCA之DFS+ST算法">
+<meta property="og:url" content="http://liubigbin.github.io/2016/07/13/LCA之DFS-ST算法/index.html">
+<meta property="og:site_name" content="LiuYongbin">
+<meta property="og:description" content="DFS+ST算法可以在线的查询两个节点的最近公共祖先。由于任意两点的最近公共祖先必定在这两点的最短路径上，所以也可以根据这个特性来查找任意两点的最近路径。DFS：深度优先遍历树的每一个节点，用数组deep按照遍历顺序记录下每一个节点的深度，另外需要记录每一个节点在数组中所对应的第一个出现的下标。ST：有了深度数组，利用ST算法计算每一个偶数段的区间的最小深度的下标。对于每一个查询(a, b), 先">
+<meta property="og:image" content="http://liubigbin.github.io/pictures/图与树/LCA之DEF+ST算法.png">
+<meta property="og:updated_time" content="2016-07-13T08:03:16.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="LCA之DFS+ST算法">
+<meta name="twitter:description" content="DFS+ST算法可以在线的查询两个节点的最近公共祖先。由于任意两点的最近公共祖先必定在这两点的最短路径上，所以也可以根据这个特性来查找任意两点的最近路径。DFS：深度优先遍历树的每一个节点，用数组deep按照遍历顺序记录下每一个节点的深度，另外需要记录每一个节点在数组中所对应的第一个出现的下标。ST：有了深度数组，利用ST算法计算每一个偶数段的区间的最小深度的下标。对于每一个查询(a, b), 先">
+  
+    <link rel="alternative" href="/atom.xml" title="LiuYongbin" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" type="text/css">
+  
+
+</head>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">LiuYongbin</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">Hey boy just do it!</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://liubigbin.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-LCA之DFS-ST算法" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/07/13/LCA之DFS-ST算法/" class="article-date">
+  <time datetime="2016-07-13T07:20:42.000Z" itemprop="datePublished">2016-07-13</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/算法/">算法</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      LCA之DFS+ST算法
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>DFS+ST算法可以在线的查询两个节点的最近公共祖先。由于任意两点的最近公共祖先必定在这两点的最短路径上，所以也可以根据这个特性来查找任意两点的最近路径。<br>DFS：深度优先遍历树的每一个节点，用数组deep按照遍历顺序记录下每一个节点的深度，另外需要记录每一个节点在数组中所对应的第一个出现的下标。<br>ST：有了深度数组，利用ST算法计算每一个偶数段的区间的最小深度的下标。<br>对于每一个查询(a, b), 先获得a和b在深度数组中第一次出现的下标firsta和firstb，接下来就是求出在深度数组中下标从firsta到firstb的最小值的下标，改下标对应的节点就是最近公共祖先。求最小值的下标ST算法可以在线的以常数的时间给出。如果需要求出两点之前的最短路径长度，那么可以直接的deep[a]+deep[b]-2*deep[最近公共祖先下标]。</p>
+<h4 id="例题："><a href="#例题：" class="headerlink" title="例题："></a>例题：</h4><p>  <img src="/pictures/图与树/LCA之DEF+ST算法.png" alt=""></p>
+<p>  采用DFS遍历整棵树，得到以下数据：</p>
+<p>  （1）遍历序列p：0　　1　　3　　1　　4　　7　　4　　8　　4　　1　　5　　1　　0　　2　　6　　2　　0</p>
+<p>  （2）各节点的深度序列　　　　　　　 depth: 0　　1　　 1　　 2　　 2　　2　　 2　　  3　　3</p>
+<p>  （3）各节点在序列p中首次出现的位置序列pos: 0　　1　　13　　2　　4　　10　　14　　5　　7</p>
+<p>  使用ST算法，假设现在我们要求节点7和5的最短路径，我们可以这样做：</p>
+<p>  （1）首先，从pos序列中获得节点7和节点5在p序列中第一次出现的位置分别为：pos[7] = 5, pos[5] = 10;</p>
+<p>  （2）得到p序列中[5, 10]这一段子序列s：7　　4　　8　　4　　1　　5</p>
+<p>  （3）s序列中深度最小的点即节点1就是我们要找的节点7和节点5的LCA。</p>
+<h4 id="例子：最近公共祖先·三"><a href="#例子：最近公共祖先·三" class="headerlink" title="例子：最近公共祖先·三"></a>例子：<a href="http://hihocoder.com/problemset/problem/1069" target="_blank" rel="external">最近公共祖先·三</a></h4><h6 id="描述"><a href="#描述" class="headerlink" title="描述"></a>描述</h6><p>  上上回说到，小Hi和小Ho使用了Tarjan算法来优化了他们的“最近公共祖先”网站，但是很快这样一个离线算法就出现了问题：如果只有一个人提出了询问，那么小Hi和小Ho很难决定到底是针对这个询问就直接进行计算还是等待一定数量的询问一起计算。毕竟无论是一个询问还是很多个询问，使用离线算法都是只需要做一次深度优先搜索就可以了的。</p>
+<p>  那么问题就来了，如果每次计算都只针对一个询问进行的话，那么这样的算法事实上还不如使用最开始的朴素算法呢！但是如果每次要等上很多人一起的话，因为说不准什么时候才能够凑够人——所以事实上有可能要等上很久很久才能够进行一次计算，实际上也是很慢的！</p>
+<p>  “那到底要怎么办呢？在等到10分钟，或者凑够一定数量的人两个条件满足一个时就进行运算？”小Ho想出了一个折衷的办法。</p>
+<p>  “哪有这么麻烦！别忘了和离线算法相对应的可是有一个叫做在线算法的东西呢！”小Hi笑道。</p>
+<p>  小Ho面临的问题还是和之前一样：假设现在小Ho现在知道了N对父子关系——父亲和儿子的名字，并且这N对父子关系中涉及的所有人都拥有一个共同的祖先（这个祖先出现在这N对父子关系中），他需要对于小Hi的若干次提问——每次提问为两个人的名字（这两个人的名字在之前的父子关系中出现过），告诉小Hi这两个人的所有共同祖先中辈分最低的一个是谁？</p>
+<p>  提示：最近公共祖先无非就是两点连通路径上高度最小的点嘛！</p>
+<h6 id="输入"><a href="#输入" class="headerlink" title="输入"></a>输入</h6><p>  每个测试点（输入文件）有且仅有一组测试数据。</p>
+<p>  每组测试数据的第1行为一个整数N，意义如前文所述。</p>
+<p>  每组测试数据的第2~N+1行，每行分别描述一对父子关系，其中第i+1行为两个由大小写字母组成的字符串Father_i, Son_i，分别表示父亲的名字和儿子的名字。</p>
+<p>  每组测试数据的第N+2行为一个整数M，表示小Hi总共询问的次数。</p>
+<p>  每组测试数据的第N+3~N+M+2行，每行分别描述一个询问，其中第N+i+2行为两个由大小写字母组成的字符串Name1_i, Name2_i，分别表示小Hi询问中的两个名字。</p>
+<p>  对于100%的数据，满足N&lt;=10^5，M&lt;=10^5, 且数据中所有涉及的人物中不存在两个名字相同的人（即姓名唯一的确定了一个人），所有询问中出现过的名字均在之前所描述的N对父子关系中出现过，且每个输入文件中第一个出现的名字所确定的人是其他所有人的公共祖先。</p>
+<h6 id="输出"><a href="#输出" class="headerlink" title="输出"></a>输出</h6><p>  对于每组测试数据，对于每个小Hi的询问，按照在输入中出现的顺序，各输出一行，表示查询的结果：他们的所有共同祖先中辈分最低的一个人的名字。</p>
+<h6 id="样例输入"><a href="#样例输入" class="headerlink" title="样例输入"></a>样例输入</h6><p>  4<br>  Adam Sam<br>  Sam Joey<br>  Sam Micheal<br>  Adam Kevin<br>  3<br>  Sam Sam<br>  Adam Sam<br>  Micheal Kevin</p>
+<h6 id="样例输出"><a href="#样例输出" class="headerlink" title="样例输出"></a>样例输出</h6><p>  Sam<br>  Adam<br>  Adam</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;string&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;queue&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;map&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;algorithm&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">int</span> maxn = <span class="number">200009</span>;</span><br><span class="line"><span class="keyword">const</span> <span class="keyword">int</span> maxl = <span class="number">21</span>;</span><br><span class="line"></span><br><span class="line"><span class="built_in">map</span> &lt;<span class="built_in">string</span>, <span class="keyword">int</span>&gt; rn;</span><br><span class="line"><span class="built_in">vector</span> &lt;<span class="keyword">int</span>&gt; e[maxn];</span><br><span class="line"><span class="built_in">string</span> name[maxn];</span><br><span class="line"><span class="keyword">int</span> n, m, tn, ath[maxn][maxl], d[maxn];</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">getNum</span><span class="params">(<span class="built_in">string</span> n)</span> </span>&#123;</span><br><span class="line">	<span class="built_in">map</span> &lt;<span class="built_in">string</span>, <span class="keyword">int</span>&gt; :: iterator i = rn. find(n);</span><br><span class="line">	<span class="keyword">if</span> (i == rn. end()) &#123;</span><br><span class="line">		name[++ tn] = n;</span><br><span class="line">		rn. insert(pair&lt;<span class="built_in">string</span>, <span class="keyword">int</span>&gt; (n, tn));</span><br><span class="line">		<span class="keyword">return</span> tn;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">else</span></span><br><span class="line">		<span class="keyword">return</span> i-&gt; second;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">buildTree</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	<span class="built_in">queue</span> &lt;<span class="keyword">int</span>&gt; q;</span><br><span class="line">	<span class="keyword">int</span> p0 = <span class="number">1</span>;</span><br><span class="line">	<span class="keyword">while</span> (ath[p0][<span class="number">0</span>])</span><br><span class="line">		p0 = ath[p0][<span class="number">0</span>];</span><br><span class="line">	d[p0] = <span class="number">1</span>;</span><br><span class="line">	q. push(p0);</span><br><span class="line">	<span class="keyword">while</span> (!q. empty()) &#123;</span><br><span class="line">		<span class="keyword">int</span> p = q. front();</span><br><span class="line">		q. pop();</span><br><span class="line">		<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt; maxl; ++ i)</span><br><span class="line">			ath[p][i] = ath[ath[p][i - <span class="number">1</span>]][i - <span class="number">1</span>];</span><br><span class="line">		<span class="keyword">for</span> (<span class="built_in">vector</span> &lt;<span class="keyword">int</span>&gt; :: iterator i = e[p]. begin(); i != e[p]. end(); ++ i) &#123;</span><br><span class="line">			q. push(*i);</span><br><span class="line">			d[*i] = d[p] + <span class="number">1</span>;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">LCA</span><span class="params">(<span class="keyword">int</span> p, <span class="keyword">int</span> q)</span> </span>&#123;</span><br><span class="line">	<span class="keyword">if</span> (d[p] &lt; d[q])</span><br><span class="line">		swap(p, q);</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = maxl - <span class="number">1</span>; i &gt;= <span class="number">0</span>; -- i)</span><br><span class="line">		<span class="keyword">if</span> (d[ath[p][i]] &gt;= d[q])</span><br><span class="line">			p = ath[p][i];</span><br><span class="line">	<span class="keyword">if</span> (p == q)</span><br><span class="line">		<span class="keyword">return</span> p;</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = maxl - <span class="number">1</span>; i &gt;= <span class="number">0</span>; -- i)</span><br><span class="line">		<span class="keyword">if</span> (ath[p][i] ^ ath[q][i])</span><br><span class="line">			p = ath[p][i], q = ath[q][i];</span><br><span class="line">	<span class="keyword">return</span> ath[p][<span class="number">0</span>];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	<span class="built_in">cin</span>. sync_with_stdio(<span class="number">0</span>);</span><br><span class="line">	<span class="built_in">cin</span> &gt;&gt; n;</span><br><span class="line">	tn = <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">while</span> (n --) &#123;</span><br><span class="line">		<span class="built_in">string</span> a, b;</span><br><span class="line">		<span class="built_in">cin</span> &gt;&gt; a &gt;&gt; b;</span><br><span class="line">		<span class="keyword">int</span> na = getNum(a), nb = getNum(b);</span><br><span class="line">		ath[nb][<span class="number">0</span>] = na;</span><br><span class="line">		e[na]. push_back(nb);</span><br><span class="line">	&#125;</span><br><span class="line">	buildTree();</span><br><span class="line">	<span class="built_in">cin</span> &gt;&gt; m;</span><br><span class="line">	<span class="keyword">while</span> (m --) &#123;</span><br><span class="line">		<span class="built_in">string</span> a, b;</span><br><span class="line">		<span class="built_in">cin</span> &gt;&gt; a &gt;&gt; b;</span><br><span class="line">		<span class="keyword">int</span> na = getNum(a), nb = getNum(b);</span><br><span class="line">		<span class="built_in">cout</span> &lt;&lt; name[LCA(na, nb)] &lt;&lt; endl;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>代码来自hiho一下 第十七周的排名第一参赛者<a href="http://hihocoder.com/contest/hiho17/solution/208240" target="_blank" rel="external">laekov</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/07/13/LCA之DFS-ST算法/" data-id="ciqklv24c0055roqyok2okdxb" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/图与树/">图与树</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2016/07/13/LCA之Tarjan算法/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">LCA之Tarjan算法</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java/">Java</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">10</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java底层机制/">Java底层机制</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图与树/">图与树</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/设计模式/">设计模式</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/C-11-常规新特性/" style="font-size: 18.33px;">C++11 常规新特性</a> <a href="/tags/Java底层机制/" style="font-size: 16.67px;">Java底层机制</a> <a href="/tags/Linux-网络编程/" style="font-size: 16.67px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 16.67px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 15px;">Linux用户管理</a> <a href="/tags/Linux进程间通信/" style="font-size: 16.67px;">Linux进程间通信</a> <a href="/tags/TCP-IP/" style="font-size: 20px;">TCP/IP</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/动态规划/" style="font-size: 13.33px;">动态规划</a> <a href="/tags/图与树/" style="font-size: 16.67px;">图与树</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/数组/" style="font-size: 10px;">数组</a> <a href="/tags/树结构/" style="font-size: 13.33px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 11.67px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 11.67px;">爬虫</a> <a href="/tags/设计模式/" style="font-size: 13.33px;">设计模式</a> <a href="/tags/随记/" style="font-size: 11.67px;">随记</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a><span class="archive-list-count">25</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/07/13/LCA之DFS-ST算法/">LCA之DFS+ST算法</a>
+          </li>
+        
+          <li>
+            <a href="/2016/07/13/LCA之Tarjan算法/">LCA之Tarjan算法</a>
+          </li>
+        
+          <li>
+            <a href="/2016/07/12/ST算法/">ST算法</a>
+          </li>
+        
+          <li>
+            <a href="/2016/07/12/线段树/">线段树</a>
+          </li>
+        
+          <li>
+            <a href="/2016/07/12/并查集/">并查集</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 LiuYongbin<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js" type="text/javascript"></script>
+
+
+<script src="/js/script.js" type="text/javascript"></script>
+
+  </div>
+</body>
+</html>

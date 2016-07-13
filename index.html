@@ -65,6 +65,75 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-LCA之DFS-ST算法" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/07/13/LCA之DFS-ST算法/" class="article-date">
+  <time datetime="2016-07-13T07:20:42.000Z" itemprop="datePublished">2016-07-13</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/算法/">算法</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/07/13/LCA之DFS-ST算法/">LCA之DFS+ST算法</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>DFS+ST算法可以在线的查询两个节点的最近公共祖先。由于任意两点的最近公共祖先必定在这两点的最短路径上，所以也可以根据这个特性来查找任意两点的最近路径。<br>DFS：深度优先遍历树的每一个节点，用数组deep按照遍历顺序记录下每一个节点的深度，另外需要记录每一个节点在数组中所对应的第一个出现的下标。<br>ST：有了深度数组，利用ST算法计算每一个偶数段的区间的最小深度的下标。<br>对于每一个查询(a, b), 先获得a和b在深度数组中第一次出现的下标firsta和firstb，接下来就是求出在深度数组中下标从firsta到firstb的最小值的下标，改下标对应的节点就是最近公共祖先。求最小值的下标ST算法可以在线的以常数的时间给出。如果需要求出两点之前的最短路径长度，那么可以直接的deep[a]+deep[b]-2*deep[最近公共祖先下标]。</p>
+<h4 id="例题："><a href="#例题：" class="headerlink" title="例题："></a>例题：</h4><p>  <img src="/pictures/图与树/LCA之DEF+ST算法.png" alt=""></p>
+<p>  采用DFS遍历整棵树，得到以下数据：</p>
+<p>  （1）遍历序列p：0　　1　　3　　1　　4　　7　　4　　8　　4　　1　　5　　1　　0　　2　　6　　2　　0</p>
+<p>  （2）各节点的深度序列　　　　　　　 depth: 0　　1　　 1　　 2　　 2　　2　　 2　　  3　　3</p>
+<p>  （3）各节点在序列p中首次出现的位置序列pos: 0　　1　　13　　2　　4　　10　　14　　5　　7</p>
+<p>  使用ST算法，假设现在我们要求节点7和5的最短路径，我们可以这样做：</p>
+<p>  （1）首先，从pos序列中获得节点7和节点5在p序列中第一次出现的位置分别为：pos[7] = 5, pos[5] = 10;</p>
+<p>  （2）得到p序列中[5, 10]这一段子序列s：7　　4　　8　　4　　1　　5</p>
+<p>  （3）s序列中深度最小的点即节点1就是我们要找的节点7和节点5的LCA。</p>
+<h4 id="例子：最近公共祖先·三"><a href="#例子：最近公共祖先·三" class="headerlink" title="例子：最近公共祖先·三"></a>例子：<a href="http://hihocoder.com/problemset/problem/1069" target="_blank" rel="external">最近公共祖先·三</a></h4><h6 id="描述"><a href="#描述" class="headerlink" title="描述"></a>描述</h6><p>  上上回说到，小Hi和小Ho使用了Tarjan算法来优化了他们的“最近公共祖先”网站，但是很快这样一个离线算法就出现了问题：如果只有一个人提出了询问，那么小Hi和小Ho很难决定到底是针对这个询问就直接进行计算还是等待一定数量的询问一起计算。毕竟无论是一个询问还是很多个询问，使用离线算法都是只需要做一次深度优先搜索就可以了的。</p>
+<p>  那么问题就来了，如果每次计算都只针对一个询问进行的话，那么这样的算法事实上还不如使用最开始的朴素算法呢！但是如果每次要等上很多人一起的话，因为说不准什么时候才能够凑够人——所以事实上有可能要等上很久很久才能够进行一次计算，实际上也是很慢的！</p>
+<p>  “那到底要怎么办呢？在等到10分钟，或者凑够一定数量的人两个条件满足一个时就进行运算？”小Ho想出了一个折衷的办法。</p>
+<p>  “哪有这么麻烦！别忘了和离线算法相对应的可是有一个叫做在线算法的东西呢！”小Hi笑道。</p>
+<p>  小Ho面临的问题还是和之前一样：假设现在小Ho现在知道了N对父子关系——父亲和儿子的名字，并且这N对父子关系中涉及的所有人都拥有一个共同的祖先（这个祖先出现在这N对父子关系中），他需要对于小Hi的若干次提问——每次提问为两个人的名字（这两个人的名字在之前的父子关系中出现过），告诉小Hi这两个人的所有共同祖先中辈分最低的一个是谁？</p>
+<p>  提示：最近公共祖先无非就是两点连通路径上高度最小的点嘛！</p>
+<h6 id="输入"><a href="#输入" class="headerlink" title="输入"></a>输入</h6><p>  每个测试点（输入文件）有且仅有一组测试数据。</p>
+<p>  每组测试数据的第1行为一个整数N，意义如前文所述。</p>
+<p>  每组测试数据的第2~N+1行，每行分别描述一对父子关系，其中第i+1行为两个由大小写字母组成的字符串Father_i, Son_i，分别表示父亲的名字和儿子的名字。</p>
+<p>  每组测试数据的第N+2行为一个整数M，表示小Hi总共询问的次数。</p>
+<p>  每组测试数据的第N+3~N+M+2行，每行分别描述一个询问，其中第N+i+2行为两个由大小写字母组成的字符串Name1_i, Name2_i，分别表示小Hi询问中的两个名字。</p>
+<p>  对于100%的数据，满足N&lt;=10^5，M&lt;=10^5, 且数据中所有涉及的人物中不存在两个名字相同的人（即姓名唯一的确定了一个人），所有询问中出现过的名字均在之前所描述的N对父子关系中出现过，且每个输入文件中第一个出现的名字所确定的人是其他所有人的公共祖先。</p>
+<h6 id="输出"><a href="#输出" class="headerlink" title="输出"></a>输出</h6><p>  对于每组测试数据，对于每个小Hi的询问，按照在输入中出现的顺序，各输出一行，表示查询的结果：他们的所有共同祖先中辈分最低的一个人的名字。</p>
+<h6 id="样例输入"><a href="#样例输入" class="headerlink" title="样例输入"></a>样例输入</h6><p>  4<br>  Adam Sam<br>  Sam Joey<br>  Sam Micheal<br>  Adam Kevin<br>  3<br>  Sam Sam<br>  Adam Sam<br>  Micheal Kevin</p>
+<h6 id="样例输出"><a href="#样例输出" class="headerlink" title="样例输出"></a>样例输出</h6><p>  Sam<br>  Adam<br>  Adam</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;string&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;queue&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;map&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;algorithm&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="keyword">int</span> maxn = <span class="number">200009</span>;</span><br><span class="line"><span class="keyword">const</span> <span class="keyword">int</span> maxl = <span class="number">21</span>;</span><br><span class="line"></span><br><span class="line"><span class="built_in">map</span> &lt;<span class="built_in">string</span>, <span class="keyword">int</span>&gt; rn;</span><br><span class="line"><span class="built_in">vector</span> &lt;<span class="keyword">int</span>&gt; e[maxn];</span><br><span class="line"><span class="built_in">string</span> name[maxn];</span><br><span class="line"><span class="keyword">int</span> n, m, tn, ath[maxn][maxl], d[maxn];</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">getNum</span><span class="params">(<span class="built_in">string</span> n)</span> </span>&#123;</span><br><span class="line">	<span class="built_in">map</span> &lt;<span class="built_in">string</span>, <span class="keyword">int</span>&gt; :: iterator i = rn. find(n);</span><br><span class="line">	<span class="keyword">if</span> (i == rn. end()) &#123;</span><br><span class="line">		name[++ tn] = n;</span><br><span class="line">		rn. insert(pair&lt;<span class="built_in">string</span>, <span class="keyword">int</span>&gt; (n, tn));</span><br><span class="line">		<span class="keyword">return</span> tn;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">else</span></span><br><span class="line">		<span class="keyword">return</span> i-&gt; second;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">buildTree</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	<span class="built_in">queue</span> &lt;<span class="keyword">int</span>&gt; q;</span><br><span class="line">	<span class="keyword">int</span> p0 = <span class="number">1</span>;</span><br><span class="line">	<span class="keyword">while</span> (ath[p0][<span class="number">0</span>])</span><br><span class="line">		p0 = ath[p0][<span class="number">0</span>];</span><br><span class="line">	d[p0] = <span class="number">1</span>;</span><br><span class="line">	q. push(p0);</span><br><span class="line">	<span class="keyword">while</span> (!q. empty()) &#123;</span><br><span class="line">		<span class="keyword">int</span> p = q. front();</span><br><span class="line">		q. pop();</span><br><span class="line">		<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt; maxl; ++ i)</span><br><span class="line">			ath[p][i] = ath[ath[p][i - <span class="number">1</span>]][i - <span class="number">1</span>];</span><br><span class="line">		<span class="keyword">for</span> (<span class="built_in">vector</span> &lt;<span class="keyword">int</span>&gt; :: iterator i = e[p]. begin(); i != e[p]. end(); ++ i) &#123;</span><br><span class="line">			q. push(*i);</span><br><span class="line">			d[*i] = d[p] + <span class="number">1</span>;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">LCA</span><span class="params">(<span class="keyword">int</span> p, <span class="keyword">int</span> q)</span> </span>&#123;</span><br><span class="line">	<span class="keyword">if</span> (d[p] &lt; d[q])</span><br><span class="line">		swap(p, q);</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = maxl - <span class="number">1</span>; i &gt;= <span class="number">0</span>; -- i)</span><br><span class="line">		<span class="keyword">if</span> (d[ath[p][i]] &gt;= d[q])</span><br><span class="line">			p = ath[p][i];</span><br><span class="line">	<span class="keyword">if</span> (p == q)</span><br><span class="line">		<span class="keyword">return</span> p;</span><br><span class="line">	<span class="keyword">for</span> (<span class="keyword">int</span> i = maxl - <span class="number">1</span>; i &gt;= <span class="number">0</span>; -- i)</span><br><span class="line">		<span class="keyword">if</span> (ath[p][i] ^ ath[q][i])</span><br><span class="line">			p = ath[p][i], q = ath[q][i];</span><br><span class="line">	<span class="keyword">return</span> ath[p][<span class="number">0</span>];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	<span class="built_in">cin</span>. sync_with_stdio(<span class="number">0</span>);</span><br><span class="line">	<span class="built_in">cin</span> &gt;&gt; n;</span><br><span class="line">	tn = <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">while</span> (n --) &#123;</span><br><span class="line">		<span class="built_in">string</span> a, b;</span><br><span class="line">		<span class="built_in">cin</span> &gt;&gt; a &gt;&gt; b;</span><br><span class="line">		<span class="keyword">int</span> na = getNum(a), nb = getNum(b);</span><br><span class="line">		ath[nb][<span class="number">0</span>] = na;</span><br><span class="line">		e[na]. push_back(nb);</span><br><span class="line">	&#125;</span><br><span class="line">	buildTree();</span><br><span class="line">	<span class="built_in">cin</span> &gt;&gt; m;</span><br><span class="line">	<span class="keyword">while</span> (m --) &#123;</span><br><span class="line">		<span class="built_in">string</span> a, b;</span><br><span class="line">		<span class="built_in">cin</span> &gt;&gt; a &gt;&gt; b;</span><br><span class="line">		<span class="keyword">int</span> na = getNum(a), nb = getNum(b);</span><br><span class="line">		<span class="built_in">cout</span> &lt;&lt; name[LCA(na, nb)] &lt;&lt; endl;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>代码来自hiho一下 第十七周的排名第一参赛者<a href="http://hihocoder.com/contest/hiho17/solution/208240" target="_blank" rel="external">laekov</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/07/13/LCA之DFS-ST算法/" data-id="ciqklv24c0055roqyok2okdxb" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/图与树/">图与树</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-LCA之Tarjan算法" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2016/07/13/LCA之Tarjan算法/" class="article-date">
@@ -128,7 +197,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/13/LCA之Tarjan算法/" data-id="ciqkep7yl0052o0qygyjussmd" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/13/LCA之Tarjan算法/" data-id="ciqklv24a0052roqynxvwbp76" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/图与树/">图与树</a></li></ul>
@@ -178,7 +247,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/12/ST算法/" data-id="ciqkep7xu003to0qy7nq4mn8m" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/12/ST算法/" data-id="ciqklv23l003troqydspux5wd" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/图与树/">图与树</a></li></ul>
@@ -265,7 +334,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/12/线段树/" data-id="ciqkep7uu000ro0qyjhvh7itl" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/12/线段树/" data-id="ciqklv20y000rroqyfnqbhn1q" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/图与树/">图与树</a></li></ul>
@@ -312,7 +381,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/12/并查集/" data-id="ciqkep7vk001ko0qyrj37vnzm" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/12/并查集/" data-id="ciqklv21e001kroqy6cu6ons8" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/图与树/">图与树</a></li></ul>
@@ -366,7 +435,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/11/UDP之connect/" data-id="ciqkep7xp003ko0qy0z6u6ufc" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/11/UDP之connect/" data-id="ciqklv22i003kroqy5an8rov0" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TCP-IP/">TCP/IP</a></li></ul>
@@ -439,7 +508,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/08/Java之JVM调优/" data-id="ciqkep7ys005jo0qybevhh2p8" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/08/Java之JVM调优/" data-id="ciqklv24l005mroqyhr618bbs" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java底层机制/">Java底层机制</a></li></ul>
@@ -508,7 +577,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/07/Java之垃圾回收/" data-id="ciqkep7yq005do0qy2lut5p6e" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/07/Java之垃圾回收/" data-id="ciqklv24i005groqya145yn8g" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java底层机制/">Java底层机制</a></li></ul>
@@ -580,7 +649,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/07/Java之内存管理/" data-id="ciqkep7yr005go0qyz39fee9d" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/07/Java之内存管理/" data-id="ciqklv24j005jroqymmlfvc3f" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java底层机制/">Java底层机制</a></li></ul>
@@ -635,69 +704,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/07/Java之类的反射机制/" data-id="ciqkep7ym0055o0qyv38zo656" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java底层机制/">Java底层机制</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-Java之类的加载到执行" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/07/07/Java之类的加载到执行/" class="article-date">
-  <time datetime="2016-07-07T11:00:04.000Z" itemprop="datePublished">2016-07-07</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/Java/">Java</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/07/07/Java之类的加载到执行/">类的加载到执行</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>在命令行中输入<code>java xxx</code>指令后，java执行程序会在JRE安装目录中寻找JVM启动文件，如果在windows中，就是jvm.dll文件，启动JVM后，接着JVM产生Bootstrap Loader类加载器，Bootstrap Loader类加载器接着产生Extended Loader，并且设置该加载器的父加载器为Bootstrap Loader，接着有产生System Loader，并且设置其父加载器为Extended Loader.<br>在java中，除了Bootstrap Loader之外，其他的类加载器都有父加载器。Bootstrap由C语言编写，其他的由java语言编写。<br>三种类型的加载器的主要功能如下：</p>
-<ol>
-<li>引导类加载器（bootstrap class loader）：它用来加载 Java 的核心库，是用原生代码来实现的，并不继承自 java.lang.ClassLoader。</li>
-<li>扩展类加载器（extensions class loader）：它用来加载 Java 的扩展库。Java 虚拟机的实现会提供一个扩展库目录。该类加载器在此目录里面查找并加载 Java 类。</li>
-<li>系统类加载器（system class loader）：它根据 Java 应用的类路径（CLASSPATH）来加载 Java 类。一般来说，Java 应用的类都是由它来完成加载的。可以通过 ClassLoader.getSystemClassLoader()来获取它。</li>
-</ol>
-<h4 id="加载"><a href="#加载" class="headerlink" title="加载"></a>加载</h4><p>当以上过程完成后，System Loader就开始加载运行类了，也就是在运行中，需要用到新的类时，在默认情况下就由System Loader来负责加载。每一个类加载器在加载类时，都会把加载工作交给其父类加载器来完成，一层一层的往上提交，如果父类加载器不能完成加载工作，才由当前的类加载器来完成加载工作。这就是所谓的”类加载代理模式”。之所以采用该模式主要是为了保证java核心库的类型安全。在java虚拟机中，判定两个类是否相同，Java 虚拟机不仅要看类的全名是否相同，还要看加载此类的类加载器是否一样。只有两者都相同的情况，才认为两个类是相同的。即便是同样的字节代码，被不同的类加载器加载之后所得到的类，也是不同的。比如一个 Java 类 com.example.Sample，编译之后生成了字节代码文件 Sample.class。两个不同的类加载器 ClassLoaderA和 ClassLoaderB分别读取了这个 Sample.class文件，并定义出两个 java.lang.Class类的实例来表示这个类。这两个实例是不相同的。对于 Java 虚拟机来说，它们是不同的类。试图对这两个类的对象进行相互赋值，会抛出运行时异常 ClassCastException。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">package com.example;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> Sample &#123;</span><br><span class="line">   <span class="keyword">private</span> Sample instance;</span><br><span class="line"></span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setSample</span><span class="params">(Object instance)</span> </span>&#123;</span><br><span class="line">       <span class="keyword">this</span>.instance = (Sample) instance;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//测试类是否相同</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">testClassIdentity</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    String classDataRootPath = <span class="string">"C:\\workspace\\Classloader\\classData"</span>;</span><br><span class="line">    FileSystemClassLoader fscl1 = <span class="keyword">new</span> FileSystemClassLoader(classDataRootPath);</span><br><span class="line">    FileSystemClassLoader fscl2 = <span class="keyword">new</span> FileSystemClassLoader(classDataRootPath);</span><br><span class="line">    String className = <span class="string">"com.example.Sample"</span>; 	</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        Class&lt;?&gt; class1 = fscl1.loadClass(className);</span><br><span class="line">        Object obj1 = class1.newInstance();</span><br><span class="line">        Class&lt;?&gt; class2 = fscl2.loadClass(className);</span><br><span class="line">        Object obj2 = class2.newInstance();</span><br><span class="line">        Method setSampleMethod = class1.getMethod(<span class="string">"setSample"</span>, java.lang.Object.<span class="keyword">class</span>);</span><br><span class="line">        setSampleMethod.invoke(obj1, obj2);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">        e.printStackTrace();</span><br><span class="line">    &#125;</span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//运行错误输出</span></span><br><span class="line">java.lang.reflect.InvocationTargetException</span><br><span class="line">at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)</span><br><span class="line">at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:<span class="number">39</span>)</span><br><span class="line">at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:<span class="number">25</span>)</span><br><span class="line">at java.lang.reflect.Method.invoke(Method.java:<span class="number">597</span>)</span><br><span class="line">at classloader.ClassIdentity.testClassIdentity(ClassIdentity.java:<span class="number">26</span>)</span><br><span class="line">at classloader.ClassIdentity.main(ClassIdentity.java:<span class="number">9</span>)</span><br><span class="line">Caused by: java.lang.ClassCastException: com.example.Sample</span><br><span class="line">cannot be cast to com.example.Sample</span><br><span class="line">at com.example.Sample.setSample(Sample.java:<span class="number">7</span>)</span><br><span class="line">... <span class="number">6</span> more</span><br></pre></td></tr></table></figure></p>
-<p>所有 Java 应用都至少需要引用 java.lang.Object类，也就是说在运行的时候，java.lang.Object这个类需要被加载到 Java 虚拟机中。如果这个加载过程由 Java 应用自己的类加载器来完成的话，很可能就存在多个版本的 java.lang.Object类，而且这些类之间是不兼容的。通过代理模式，对于 Java 核心库的类的加载工作由引导类加载器来统一完成，保证了 Java 应用所使用的都是同一个版本的 Java 核心库的类，是互相兼容的。</p>
-<p>不同的类加载器为相同名称的类创建了额外的名称空间。相同名称的类可以并存在 Java 虚拟机中，只需要用不同的类加载器来加载它们即可。不同类加载器加载的类之间是不兼容的，这就相当于在 Java 虚拟机内部创建了一个个相互隔离的 Java 类空间。</p>
-<p>当类对应的.class文件加载到JVM后，会创建一个java.lang.Class对象，一个Class对象对应一个.class文件，主要记录该文件的关于类的所有信息。我们可以通过该对象的<code>newInstance()</code>函数来生成类的实例，这种情况只适合在类具有无参数构造函数的情况下。默认情况下，JVM只会用一个Class实例来代表一个.class文件（确切说，应该是通过同一类加载器载入的.class文件），每一个类的实例都会知道自己由哪一个Class实例生成，可以听过<code>对象.getClass()</code>或是<code>类名.class</code>或是<code>Class.forName(&quot;类名&quot;)</code>来获得类的Class实例。Class实例记录了类的所有信息，可以通过该实例来得到具体类的对象，java的反射机制就是通过Class来实现的。</p>
-<h4 id="链接"><a href="#链接" class="headerlink" title="链接"></a>链接</h4><p>当类被加载后，系统就为之创建一个对应的Class对象，接着就会进入连接阶段。连接阶段会负责吧类的二进制数据合并到JRE中。类连接又可以分为如下三个阶段：</p>
-<ol>
-<li><p>验证：检验被加载的类是否有正确的内部结构，并和其它类协调一致。</p>
-</li>
-<li><p>准备：负责为类的静态属性分配内存，并设置默认初始值。</p>
-</li>
-<li><p>解析：将类的二进制数据中的符号引用替换成直接引用。</p>
-</li>
-</ol>
-<h4 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h4><p>JVM负责对类进行初始化，也就是对静态属性进行初始化。在Java类中，对静态属性指定初始值的方式有两种：（1）声明静态属性时指定初始值；（2）使用静态初始化块为静态属性指定初始值。<br>默认情况下都是在Class实例生成后，对类进行初始化。但是也可以对其推迟，直到需要生成类的实例时，才进行初始化，而且只在第一次生成类的实例前才执行初始化。<code>Class.forName(&quot;类名&quot;， bool值初始化与否， 类加载器)</code>可以自定义初始化的时间。<br>完成以上工作后，程序就可以继续执行了。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/07/Java之类的加载到执行/" data-id="ciqkep7yo005ao0qyrbnpk1zu" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/07/Java之类的反射机制/" data-id="ciqklv24d0058roqyi61jfbx8" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java底层机制/">Java底层机制</a></li></ul>
@@ -722,7 +729,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java/">Java</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">10</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java/">Java</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">26</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">10</span></li></ul>
     </div>
   </div>
 
@@ -731,7 +738,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java底层机制/">Java底层机制</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图与树/">图与树</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/设计模式/">设计模式</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java底层机制/">Java底层机制</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图与树/">图与树</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/设计模式/">设计模式</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
     </div>
   </div>
 
@@ -740,7 +747,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/C-11-常规新特性/" style="font-size: 18.33px;">C++11 常规新特性</a> <a href="/tags/Java底层机制/" style="font-size: 16.67px;">Java底层机制</a> <a href="/tags/Linux-网络编程/" style="font-size: 16.67px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 16.67px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 15px;">Linux用户管理</a> <a href="/tags/Linux进程间通信/" style="font-size: 16.67px;">Linux进程间通信</a> <a href="/tags/TCP-IP/" style="font-size: 20px;">TCP/IP</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/动态规划/" style="font-size: 13.33px;">动态规划</a> <a href="/tags/图与树/" style="font-size: 15px;">图与树</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/数组/" style="font-size: 10px;">数组</a> <a href="/tags/树结构/" style="font-size: 13.33px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 11.67px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 11.67px;">爬虫</a> <a href="/tags/设计模式/" style="font-size: 13.33px;">设计模式</a> <a href="/tags/随记/" style="font-size: 11.67px;">随记</a>
+      <a href="/tags/C-11-常规新特性/" style="font-size: 18.33px;">C++11 常规新特性</a> <a href="/tags/Java底层机制/" style="font-size: 16.67px;">Java底层机制</a> <a href="/tags/Linux-网络编程/" style="font-size: 16.67px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 16.67px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 15px;">Linux用户管理</a> <a href="/tags/Linux进程间通信/" style="font-size: 16.67px;">Linux进程间通信</a> <a href="/tags/TCP-IP/" style="font-size: 20px;">TCP/IP</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/动态规划/" style="font-size: 13.33px;">动态规划</a> <a href="/tags/图与树/" style="font-size: 16.67px;">图与树</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/数组/" style="font-size: 10px;">数组</a> <a href="/tags/树结构/" style="font-size: 13.33px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 11.67px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 11.67px;">爬虫</a> <a href="/tags/设计模式/" style="font-size: 13.33px;">设计模式</a> <a href="/tags/随记/" style="font-size: 11.67px;">随记</a>
     </div>
   </div>
 
@@ -749,7 +756,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a><span class="archive-list-count">24</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a><span class="archive-list-count">25</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
     </div>
   </div>
 
@@ -759,6 +766,10 @@
     <h3 class="widget-title">Recents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2016/07/13/LCA之DFS-ST算法/">LCA之DFS+ST算法</a>
+          </li>
         
           <li>
             <a href="/2016/07/13/LCA之Tarjan算法/">LCA之Tarjan算法</a>
@@ -774,10 +785,6 @@
         
           <li>
             <a href="/2016/07/12/并查集/">并查集</a>
-          </li>
-        
-          <li>
-            <a href="/2016/07/11/UDP之connect/">UDP之connect</a>
           </li>
         
       </ul>

@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>typedef与define的区别 | LiuYongbin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="typedeftypedef故名思意就是类型定义的意思，但是它并不是定义一个新的类型而是给已有的类型起一个别名，在这一点上与引用的含义类似，引用是变量或对象的别名，而typedef定义的是类型的别名。typedef的作用主要有两点：
+1.1  简化复杂的类型声明简化复杂的类型声明，或给已有类型起一含义明确的别名；如：12345//声明了一个返回 bool 类型并带有两个(int和double)形参">
+<meta property="og:type" content="article">
+<meta property="og:title" content="typedef与define的区别">
+<meta property="og:url" content="http://liubigbin.github.io/2016/04/12/typedef与define的区别/index.html">
+<meta property="og:site_name" content="LiuYongbin">
+<meta property="og:description" content="typedeftypedef故名思意就是类型定义的意思，但是它并不是定义一个新的类型而是给已有的类型起一个别名，在这一点上与引用的含义类似，引用是变量或对象的别名，而typedef定义的是类型的别名。typedef的作用主要有两点：
+1.1  简化复杂的类型声明简化复杂的类型声明，或给已有类型起一含义明确的别名；如：12345//声明了一个返回 bool 类型并带有两个(int和double)形参">
+<meta property="og:updated_time" content="2016-04-12T03:19:41.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="typedef与define的区别">
+<meta name="twitter:description" content="typedeftypedef故名思意就是类型定义的意思，但是它并不是定义一个新的类型而是给已有的类型起一个别名，在这一点上与引用的含义类似，引用是变量或对象的别名，而typedef定义的是类型的别名。typedef的作用主要有两点：
+1.1  简化复杂的类型声明简化复杂的类型声明，或给已有类型起一含义明确的别名；如：12345//声明了一个返回 bool 类型并带有两个(int和double)形参">
+  
+    <link rel="alternative" href="/atom.xml" title="LiuYongbin" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" type="text/css">
+  
+
+</head>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">LiuYongbin</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">Hey boy just do it!</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://liubigbin.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-typedef与define的区别" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/04/12/typedef与define的区别/" class="article-date">
+  <time datetime="2016-04-12T02:50:47.000Z" itemprop="datePublished">2016-04-12</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C与C/">C与C++</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      typedef与define的区别
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="typedef"><a href="#typedef" class="headerlink" title="typedef"></a>typedef</h2><p>typedef故名思意就是类型定义的意思，但是它并不是定义一个新的类型而是给已有的类型起一个别名，在这一点上与引用的含义类似，引用是变量或对象的别名，而typedef定义的是类型的别名。typedef的作用主要有两点：</p>
+<h4 id="1-1-简化复杂的类型声明"><a href="#1-1-简化复杂的类型声明" class="headerlink" title="1.1  简化复杂的类型声明"></a>1.1  简化复杂的类型声明</h4><p>简化复杂的类型声明，或给已有类型起一含义明确的别名；如：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//声明了一个返回 bool 类型并带有两个(int和double)形参的函数的指针类型FuncPointer</span></span><br><span class="line"><span class="function"><span class="keyword">typedef</span> <span class="title">bool</span> <span class="params">(*FuncPointer)</span><span class="params">(<span class="keyword">int</span>, <span class="keyword">double</span>)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//声明了一个FuncPointer类型的函数指针对象pFunc</span></span><br><span class="line">FuncPointer pFunc;</span><br></pre></td></tr></table></figure></p>
+<h4 id="1-2-定义与平台无关的类型"><a href="#1-2-定义与平台无关的类型" class="headerlink" title="1.2  定义与平台无关的类型"></a>1.2  定义与平台无关的类型</h4><p>定义与平台无关的类型，屏蔽不同平台的类型差异化；如：<br>用typedef来定义与平台无关的类型。<br>比如定义一个叫 REAL 的浮点类型，在目标平台一上，让它表示最高精度的类型为：<br>typedef long double REAL;<br>在不支持 long double 的平台二上，改为：<br>typedef double REAL;<br>在连 double 都不支持的平台三上，改为：<br>typedef float REAL;<br>也就是说，当跨平台时，只要改下 typedef 本身就行，不用对其他源码做任何修改。<br>标准库就广泛使用了这个技巧，比如size_t。另外，因为typedef是定义了一种类型的新别名，不是简单的字符串替换，所以它比宏来得稳健。</p>
+<h4 id="1-3-与struct的结合使用"><a href="#1-3-与struct的结合使用" class="headerlink" title="1.3  与struct的结合使用"></a>1.3  与struct的结合使用</h4><p>在C++中，struct与class的作用相同，就是默认的访问权限不同，struct默认为public，而class默认为private的。</p>
+<figure class="highlight dns"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">struct Person  </span><br><span class="line">&#123;  </span><br><span class="line">    string name<span class="comment">;  </span></span><br><span class="line">    int age<span class="comment">;  </span></span><br><span class="line">    float height<span class="comment">;  </span></span><br><span class="line">&#125;<span class="comment">;  </span></span><br><span class="line">Person person<span class="comment">;</span></span><br></pre></td></tr></table></figure>
+<p>定义一个Struct的类型Person，定义一个Person的对象person。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> Person  </span><br><span class="line">&#123;  </span><br><span class="line">    <span class="built_in">string</span> name;  </span><br><span class="line">    <span class="keyword">int</span> age;  </span><br><span class="line">    <span class="keyword">float</span> height;  </span><br><span class="line">&#125;person;</span><br></pre></td></tr></table></figure>
+<p>定义一个Struct的类型Person，在定义的同时还声明了一个Person的对象person。</p>
+<p>但是在C语言中，struct的定义和声明要用typedef。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> __Person  </span><br><span class="line">&#123;  </span><br><span class="line">    <span class="built_in">string</span> name;  </span><br><span class="line">    <span class="keyword">int</span> age;  </span><br><span class="line">    <span class="keyword">float</span> height;  </span><br><span class="line">&#125;Person;    <span class="comment">//这是Person是结构体的一个别名  </span></span><br><span class="line">Person person;</span><br></pre></td></tr></table></figure></p>
+<p>如果没有typedef就必须用struct Person person;来声明，如：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> Person  </span><br><span class="line">&#123;  </span><br><span class="line">    <span class="built_in">string</span> name;  </span><br><span class="line">    <span class="keyword">int</span> age;  </span><br><span class="line">    <span class="keyword">float</span> height;  </span><br><span class="line">&#125;;  </span><br><span class="line"><span class="keyword">struct</span> Person person;</span><br></pre></td></tr></table></figure></p>
+<p>或<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> Person  </span><br><span class="line">&#123;  </span><br><span class="line">    <span class="built_in">string</span> name;  </span><br><span class="line">    <span class="keyword">int</span> age;  </span><br><span class="line">    <span class="keyword">float</span> height;  </span><br><span class="line">&#125;person;    <span class="comment">//person是Person的对象</span></span><br></pre></td></tr></table></figure></p>
+<h2 id="typedef与-define的区别"><a href="#typedef与-define的区别" class="headerlink" title="typedef与#define的区别"></a>typedef与#define的区别</h2><h4 id="2-1-执行时间不同"><a href="#2-1-执行时间不同" class="headerlink" title="2.1.  执行时间不同"></a>2.1.  执行时间不同</h4><p>关键字typedef在编译阶段有效，由于是在编译阶段，因此typedef有类型检查的功能。</p>
+<p>#define则是宏定义，发生在预处理阶段，也就是编译之前，它只进行简单而机械的字符串替换，而不进行任何检查。<br>typedef会做相应的类型检查：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="keyword">unsigned</span> <span class="keyword">int</span> UINT;  </span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">func</span><span class="params">()</span>  </span><br><span class="line"></span>&#123;  </span><br><span class="line">    UINT value = <span class="string">"abc"</span>; <span class="comment">// error C2440: 'initializing' : cannot convert from 'const char [4]' to 'UINT'  </span></span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; value &lt;&lt; endl;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>#define不做类型检查：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//#define用法例子：  </span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">define</span> f(x) x*x  </span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span>  </span><br><span class="line"></span>&#123;  </span><br><span class="line">    <span class="keyword">int</span> a=<span class="number">6</span>, b=<span class="number">2</span>, c;  </span><br><span class="line">    c=f(a) / f(b);  </span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"%d\n"</span>, c);  </span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>程序的输出结果是: 36，根本原因就在于#define只是简单的字符串替换。</p>
+<h4 id="2-2-功能有差异"><a href="#2-2-功能有差异" class="headerlink" title="2.2. 功能有差异"></a>2.2. 功能有差异</h4><p>typedef用来定义类型的别名，定义与平台无关的数据类型，与struct的结合使用等。</p>
+<p>#define不只是可以为类型取别名，还可以定义常量、变量、编译开关等。</p>
+<h4 id="2-3．作用域不同"><a href="#2-3．作用域不同" class="headerlink" title="2.3．作用域不同"></a>2.3．作用域不同</h4><p>#define没有作用域的限制，只要是之前预定义过的宏，在以后的程序中都可以使用。<br>而typedef有自己的作用域。</p>
+<p>【例2.3.1】没有作用域的限制，只要是之前预定义过就可以<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">func1</span><span class="params">()</span>  </span><br><span class="line"></span>&#123;  </span><br><span class="line">    <span class="preprocessor">#<span class="keyword">define</span> HW <span class="string">"HelloWorld"</span>;  </span></span><br><span class="line">&#125;  </span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">func2</span><span class="params">()</span>  </span><br><span class="line"></span>&#123;  </span><br><span class="line">    <span class="built_in">string</span> str = HW;  </span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; str &lt;&lt; endl;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">【例<span class="number">2.3</span><span class="number">.2</span>】而<span class="keyword">typedef</span>有自己的作用域</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">func1</span><span class="params">()</span>  </span><br><span class="line"></span>&#123;  </span><br><span class="line">    <span class="keyword">typedef</span> <span class="keyword">unsigned</span> <span class="keyword">int</span> UINT;  </span><br><span class="line">&#125;  </span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">func2</span><span class="params">()</span>  </span><br><span class="line"></span>&#123;  </span><br><span class="line">    UINT uValue = <span class="number">5</span>;<span class="comment">//error C2065: 'UINT' : undeclared identifier  </span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>【例2.3.3】<br><figure class="highlight zephir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span>  </span><br><span class="line"></span>&#123;  </span><br><span class="line">    typedef unsigned <span class="keyword">int</span> <span class="keyword">UINT</span>;  </span><br><span class="line">    <span class="keyword">UINT</span> valueA;  </span><br><span class="line">    A() : valueA(<span class="number">0</span>)&#123;&#125;  </span><br><span class="line">&#125;;  </span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">B</span>  </span><br><span class="line"></span>&#123;  </span><br><span class="line">    <span class="keyword">UINT</span> valueB;  </span><br><span class="line">    <span class="comment">//error C2146: syntax error : missing ';' before identifier 'valueB'  </span></span><br><span class="line">    <span class="comment">//error C4430: missing type specifier - int assumed. Note: C++ does not support default-int  </span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>上面例子在B类中使用UINT会出错，因为UINT只在类A的作用域中。此外，在类中用typedef定义的类型别名还具有相应的访问权限<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> A  </span><br><span class="line">&#123;  </span><br><span class="line">    <span class="keyword">typedef</span> <span class="keyword">unsigned</span> <span class="keyword">int</span> UINT;  </span><br><span class="line">    UINT valueA;  </span><br><span class="line">    A() : valueA(<span class="number">0</span>)&#123;&#125;  </span><br><span class="line">&#125;;  </span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">func3</span><span class="params">()</span>  </span><br><span class="line"></span>&#123;  </span><br><span class="line">    A::UINT i = <span class="number">1</span>;  </span><br><span class="line">    <span class="comment">// error C2248: 'A::UINT' : cannot access private typedef declared in class 'A'  </span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>而给UINT加上public访问权限后，则可编译通过。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> A  </span><br><span class="line">&#123;  </span><br><span class="line"><span class="keyword">public</span>:  </span><br><span class="line">    <span class="keyword">typedef</span> <span class="keyword">unsigned</span> <span class="keyword">int</span> UINT;  </span><br><span class="line">    UINT valueA;  </span><br><span class="line">    A() : valueA(<span class="number">0</span>)&#123;&#125;  </span><br><span class="line">&#125;;  </span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">func3</span><span class="params">()</span>  </span><br><span class="line"></span>&#123;  </span><br><span class="line">    A::UINT i = <span class="number">1</span>;  </span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; i &lt;&lt; endl;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h4 id="2-4．-对指针的操作"><a href="#2-4．-对指针的操作" class="headerlink" title="2.4． 对指针的操作"></a>2.4． 对指针的操作</h4><p>二者修饰指针类型时，作用不同。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="keyword">int</span> * pint;  </span><br><span class="line"><span class="preprocessor">#<span class="keyword">define</span> PINT int *  </span></span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> i1 = <span class="number">1</span>, i2 = <span class="number">2</span>;  </span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> pint p1 = &amp;i1;    <span class="comment">//p不可更改，p指向的内容可以更改，相当于 int * const p;  </span></span><br><span class="line"><span class="keyword">const</span> PINT p2 = &amp;i2;    <span class="comment">//p可以更改，p指向的内容不能更改，相当于 const int *p；或 int const *p；  </span></span><br><span class="line"></span><br><span class="line">pint s1, s2;    <span class="comment">//s1和s2都是int型指针  </span></span><br><span class="line">PINT s3, s4;    <span class="comment">//相当于int * s3，s4；只有一个是指针。  </span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">TestPointer</span><span class="params">()</span>  </span><br><span class="line"></span>&#123;  </span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"p1:"</span> &lt;&lt; p1 &lt;&lt; <span class="string">"  *p1:"</span> &lt;&lt; *p1 &lt;&lt; endl;  </span><br><span class="line">    <span class="comment">//p1 = &amp;i2; //error C3892: 'p1' : you cannot assign to a variable that is const  </span></span><br><span class="line">    *p1 = <span class="number">5</span>;  </span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"p1:"</span> &lt;&lt; p1 &lt;&lt; <span class="string">"  *p1:"</span> &lt;&lt; *p1 &lt;&lt; endl;  </span><br><span class="line"></span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"p2:"</span> &lt;&lt; p2 &lt;&lt; <span class="string">"  *p2:"</span> &lt;&lt; *p2 &lt;&lt; endl;  </span><br><span class="line">    <span class="comment">//*p2 = 10; //error C3892: 'p2' : you cannot assign to a variable that is const  </span></span><br><span class="line">    p2 = &amp;i1;  </span><br><span class="line">    <span class="built_in">cout</span> &lt;&lt; <span class="string">"p2:"</span> &lt;&lt; p2 &lt;&lt; <span class="string">"  *p2:"</span> &lt;&lt; *p2 &lt;&lt; endl;  </span><br><span class="line">&#125;  </span><br><span class="line"></span><br><span class="line">结果：</span><br><span class="line">p1:<span class="number">00</span>EFD094  *p1:<span class="number">1</span></span><br><span class="line">p1:<span class="number">00</span>EFD094  *p1:<span class="number">5</span></span><br><span class="line">p2:<span class="number">00</span>EFD098  *p2:<span class="number">2</span></span><br><span class="line">p2:<span class="number">00</span>EFD094  *p2:<span class="number">5</span></span><br></pre></td></tr></table></figure></p>
+<p>以上内容转自<a href="http://blog.csdn.net/luoweifu/article/details/41630195" target="_blank" rel="external">这里</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/04/12/typedef与define的区别/" data-id="ciqvsjb1v0030agqyox7mhks5" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2016/04/26/内网穿透简介/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          内网穿透简介
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2016/04/07/epoll之ET和LT编程/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">epoll之ET和LT编程</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java/">Java</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">33</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">10</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java底层机制/">Java底层机制</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/muduo-C-网络库/">muduo C++ 网络库</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图与树/">图与树</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/设计模式/">设计模式</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/C-11-常规新特性/" style="font-size: 17.14px;">C++11 常规新特性</a> <a href="/tags/Java底层机制/" style="font-size: 15.71px;">Java底层机制</a> <a href="/tags/Linux-网络编程/" style="font-size: 15.71px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 15.71px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 14.29px;">Linux用户管理</a> <a href="/tags/Linux进程间通信/" style="font-size: 15.71px;">Linux进程间通信</a> <a href="/tags/TCP-IP/" style="font-size: 20px;">TCP/IP</a> <a href="/tags/muduo-C-网络库/" style="font-size: 18.57px;">muduo C++ 网络库</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/动态规划/" style="font-size: 12.86px;">动态规划</a> <a href="/tags/图与树/" style="font-size: 15.71px;">图与树</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/数组/" style="font-size: 10px;">数组</a> <a href="/tags/树结构/" style="font-size: 12.86px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 11.43px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 11.43px;">爬虫</a> <a href="/tags/设计模式/" style="font-size: 12.86px;">设计模式</a> <a href="/tags/随记/" style="font-size: 11.43px;">随记</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a><span class="archive-list-count">33</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/07/21/test/">test</a>
+          </li>
+        
+          <li>
+            <a href="/2016/07/20/muduo中的Channel和Poller/">muduo中的Channel和Poller</a>
+          </li>
+        
+          <li>
+            <a href="/2016/07/20/muduo中的EventLoop/">muduo中的EventLoop</a>
+          </li>
+        
+          <li>
+            <a href="/2016/07/20/muduo中的buffer/">muduo中的buffer</a>
+          </li>
+        
+          <li>
+            <a href="/2016/07/20/多线程与fork/">多线程与fork()</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 LiuYongbin<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js" type="text/javascript"></script>
+
+
+<script src="/js/script.js" type="text/javascript"></script>
+
+  </div>
+</body>
+</html>

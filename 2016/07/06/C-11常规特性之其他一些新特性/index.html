@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>C++11常规特性之其他一些新特性 | LiuYongbin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="C++11有很多的新特性，这里只记录一下一些比较会常用到的新特性，有：auto和decltype、nullptr、noexcept、lambda、基于范围的for语句、初始化器列表、右值引用和move语义、constexpr、override和final、强类型枚举（Strong-type enums）、智能指针（Smart Pointers）、非成员begin()和end()以及static_a">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++11常规特性之其他一些新特性">
+<meta property="og:url" content="http://liubigbin.github.io/2016/07/06/C-11常规特性之其他一些新特性/index.html">
+<meta property="og:site_name" content="LiuYongbin">
+<meta property="og:description" content="C++11有很多的新特性，这里只记录一下一些比较会常用到的新特性，有：auto和decltype、nullptr、noexcept、lambda、基于范围的for语句、初始化器列表、右值引用和move语义、constexpr、override和final、强类型枚举（Strong-type enums）、智能指针（Smart Pointers）、非成员begin()和end()以及static_a">
+<meta property="og:updated_time" content="2016-07-06T10:51:35.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="C++11常规特性之其他一些新特性">
+<meta name="twitter:description" content="C++11有很多的新特性，这里只记录一下一些比较会常用到的新特性，有：auto和decltype、nullptr、noexcept、lambda、基于范围的for语句、初始化器列表、右值引用和move语义、constexpr、override和final、强类型枚举（Strong-type enums）、智能指针（Smart Pointers）、非成员begin()和end()以及static_a">
+  
+    <link rel="alternative" href="/atom.xml" title="LiuYongbin" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" type="text/css">
+  
+
+</head>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">LiuYongbin</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">Hey boy just do it!</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://liubigbin.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-C-11常规特性之其他一些新特性" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/07/06/C-11常规特性之其他一些新特性/" class="article-date">
+  <time datetime="2016-07-06T04:01:15.000Z" itemprop="datePublished">2016-07-06</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C与C/">C与C++</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      C++11常规特性之其他一些新特性
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>C++11有很多的新特性，这里只记录一下一些比较会常用到的新特性，有：auto和decltype、nullptr、noexcept、lambda、基于范围的for语句、初始化器列表、右值引用和move语义、constexpr、override和final、强类型枚举（Strong-type enums）、智能指针（Smart Pointers）、非成员begin()和end()以及static_assert和type traits</p>
+<h3 id="nullptr"><a href="#nullptr" class="headerlink" title="nullptr"></a>nullptr</h3><p>以前都是用0来表示空指针的，但由于0可以被隐式类型转换为整形，这就会存在一些问题。关键字nullptr是std::nullptr_t类型的值，用来指代空指针。nullptr和任何指针类型以及类成员指针类型的空值之间可以发生隐式类型转换，同样也可以隐式转换为bool型（取值为false）。但是不存在到整形的隐式类型转换。但是为了向前兼容，0仍然是个合法的空指针值。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">foo</span><span class="params">(<span class="keyword">int</span>* p)</span> </span>&#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">bar</span><span class="params">(<span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;<span class="keyword">int</span>&gt; p)</span> </span>&#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span>* p1 = <span class="literal">NULL</span>;</span><br><span class="line"><span class="keyword">int</span>* p2 = <span class="literal">nullptr</span>;   </span><br><span class="line"><span class="keyword">if</span>(p1 == p2)</span><br><span class="line">&#123;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">foo(<span class="literal">nullptr</span>);</span><br><span class="line">bar(<span class="literal">nullptr</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">bool</span> f = <span class="literal">nullptr</span>;</span><br><span class="line"><span class="keyword">int</span> i = <span class="literal">nullptr</span>; <span class="comment">// error: A native nullptr can only be converted to bool or, using reinterpret_cast, to an integral type</span></span><br></pre></td></tr></table></figure></p>
+<h3 id="Range-based-for-loops-（基于范围的for循环）"><a href="#Range-based-for-loops-（基于范围的for循环）" class="headerlink" title="Range-based for loops （基于范围的for循环）"></a>Range-based for loops （基于范围的for循环）</h3><p>为了在遍历容器时支持”foreach”用法，C++11扩展了for语句的语法。用这个新的写法，可以遍历C类型的数组、初始化列表以及任何重载了非成员的begin()和end()函数的类型。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="keyword">const</span> <span class="keyword">auto</span> x : &#123; <span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">5</span>,<span class="number">8</span>,<span class="number">13</span>,<span class="number">21</span>,<span class="number">34</span> &#125;) <span class="built_in">cout</span> &lt;&lt; x &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="built_in">vector</span>&lt;<span class="keyword">double</span>&gt;&amp; v)</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span> x : v) <span class="built_in">cout</span> &lt;&lt; x &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span>&amp; x : v) ++x;  <span class="comment">// using a reference to allow us to change the value</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> arr[] = &#123;<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>&#125;;</span><br><span class="line"><span class="keyword">for</span>(<span class="keyword">int</span>&amp; e : arr) &#123;e=e*e;&#125;;</span><br></pre></td></tr></table></figure></p>
+<h3 id="constexpr和const"><a href="#constexpr和const" class="headerlink" title="constexpr和const"></a>constexpr和const</h3><p>const并未区分出编译期常量和运行期常量<br>constexpr限定在了编译期常量<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">constexpr</span> <span class="keyword">int</span> mf = <span class="number">20</span>; <span class="comment">// 常量表达式</span></span><br><span class="line"><span class="keyword">constexpr</span> <span class="keyword">int</span> limit = mf + <span class="number">1</span>; <span class="comment">// 常量表达式</span></span><br><span class="line"><span class="keyword">constexpr</span> <span class="keyword">int</span> sz = size(); <span class="comment">// 如果size()是常量表达式则编译通过，否则报错</span></span><br></pre></td></tr></table></figure></p>
+<p>constexpr修饰的函数，返回值不一定是编译期常量。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;array&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">constexpr</span> <span class="keyword">int</span> <span class="title">foo</span><span class="params">(<span class="keyword">int</span> i)</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> i + <span class="number">5</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> i = <span class="number">10</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">array</span>&lt;<span class="keyword">int</span>, foo(5)&gt; arr; <span class="comment">// OK</span></span><br><span class="line"></span><br><span class="line">    foo(i); <span class="comment">// Call is Ok</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// But...</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">array</span>&lt;<span class="keyword">int</span>, foo(i)&gt; arr1; <span class="comment">// Error</span></span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>constexpr修饰的函数，简单的来说，如果其传入的参数可以在编译时期计算出来，那么这个函数就会产生编译时期的值。但是，传入的参数如果不能在编译时期计算出来，那么constexpr修饰的函数就和普通函数一样了。不过，我们不必因此而写两个版本，所以如果函数体适用于constexpr函数的条件，可以尽量加上constexpr。</p>
+<p>而检测constexpr函数是否产生编译时期值的方法很简单，就是利用std::array需要编译期常值才能编译通过的小技巧。这样的话，即可检测你所写的函数是否真的产生编译期常值了。</p>
+<p>以上内容来自<a href="https://www.zhihu.com/question/35614219/answer/63798713" target="_blank" rel="external">知乎</a></p>
+<p>通常，我们希望编译时期计算可以保护全局或者名字空间内的对象，对名字空间内的对象，我们希望它保存在只读空间内。<br>对于那些构造函数比较简单，可以成为常量表达式（也就是可以使用constexpr进行修饰）的对象可以做到这一点<br><figure class="highlight aspectj"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">struct Point &#123;</span><br><span class="line">      <span class="keyword">int</span> x,y;</span><br><span class="line">      constexpr Point(<span class="keyword">int</span> xx, <span class="keyword">int</span> yy) : x(xx), y(yy) &#123; &#125;</span><br><span class="line">  &#125;;</span><br><span class="line">  constexpr <span class="function">Point <span class="title">origo</span><span class="params">(<span class="number">0</span>,<span class="number">0</span>)</span></span>;</span><br><span class="line">  constexpr <span class="keyword">int</span> z = origo.x;</span><br><span class="line">  constexpr Point a[] = &#123;Point(<span class="number">0</span>,<span class="number">0</span>), Point(<span class="number">1</span>,<span class="number">1</span>), Point(<span class="number">2</span>,<span class="number">2</span>) &#125;;</span><br><span class="line">  constexpr <span class="keyword">int</span> x = a[<span class="number">1</span>].x;   <span class="comment">// x becomes 1</span></span><br></pre></td></tr></table></figure></p>
+<ol>
+<li>const的主要功能是修饰一个对象而不是通过一个接口（即使对象很容易通过其他接口修改）。只不过声明一个对象常量为编译器提供了优化的机会。特别是，如果一个声明了一个对象常量而他的地址没有取到，编译器通常可以在编译时对他进行初始化（尽管这不是肯定的）保证这个对象在他的列表里而不是把它添加到生成代码里。</li>
+<li>constexpr的主要功能可以在编译时计算表达式的值进行了范围扩展，这是一种计算安全而且可以用在编译时期（如初始化枚举或者整体模板参数）。constexpr声明对象可以在初始化编译的时候计算出结果来。他们基本上只保存在编译器的列表，如果需要的话会释放到生成的代码里。</li>
+</ol>
+<p>以上内容来自<a href="http://blog.jobbole.com/55063/" target="_blank" rel="external">知乎</a></p>
+<h3 id="override和final"><a href="#override和final" class="headerlink" title="override和final"></a>override和final</h3><p>我总觉得C++中虚函数的设计很差劲，因为时至今日仍然没有一个强制的机制来标识虚函数会在派生类里被改写。vitual关键字是可选的，这使得阅读代码变得很费劲。因为可能需要追溯到继承体系的源头才能确定某个方法是否是虚函数。为了增加可读性，我总是在派生类里也写上virtual关键字，并且也鼓励大家都这么做。即使这样，仍然会产生一些微妙的错误。看下面这个例子：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> B</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">   <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">short</span>)</span> </span>&#123;<span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"B::f"</span> &lt;&lt; <span class="built_in">std</span>::endl;&#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> D : <span class="keyword">public</span> B</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">   <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span>)</span> </span>&#123;<span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"D::f"</span> &lt;&lt; <span class="built_in">std</span>::endl;&#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>D::f 按理应当重写 B::f。然而二者的声明是不同的，一个参数是short，另一个是int。因此D::f（原文为B::f，可能是作者笔误——译者注）只是拥有同样名字的另一个函数（重载）而不是重写。当你通过B类型的指针调用f()可能会期望打印出D::f，但实际上则会打出 B::f 。</p>
+<p>另一个很微妙的错误情况：参数相同，但是基类的函数是const的，派生类的函数却不是。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> B</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">   <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span>)</span> <span class="keyword">const</span> </span>&#123;<span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"B::f "</span> &lt;&lt; <span class="built_in">std</span>::endl;&#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> D : <span class="keyword">public</span> B</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">   <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span>)</span> </span>&#123;<span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"D::f"</span> &lt;&lt; <span class="built_in">std</span>::endl;&#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>同样，这两个函数是重载而不是重写，所以你通过B类型指针调用f()将打印B::f，而不是D::f。</p>
+<p>幸运的是，现在有一种方式能描述你的意图。新标准加入了两个新的标识符（不是关键字）:：</p>
+<ol>
+<li>override，表示函数应当重写基类中的虚函数。</li>
+<li>final，表示派生类不应当重写这个虚函数。<br>第一个的例子如下：<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> B</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">   <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">short</span>)</span> </span>&#123;<span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"B::f"</span> &lt;&lt; <span class="built_in">std</span>::endl;&#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> D : <span class="keyword">public</span> B</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">   <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span>)</span> override </span>&#123;<span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"D::f"</span> &lt;&lt; <span class="built_in">std</span>::endl;&#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<p>现在这将触发一个编译错误（后面那个例子，如果也写上override标识，会得到相同的错误提示）：<br><figure class="highlight nimrod"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">'D::f' : <span class="keyword">method</span> <span class="keyword">with</span> override specifier 'override' did <span class="keyword">not</span> override <span class="type">any</span> base class methods</span><br></pre></td></tr></table></figure></p>
+<p>另一方面，如果你希望函数不要再被派生类进一步重写，你可以把它标识为final。可以在基类或任何派生类中使用final。在派生类中，可以同时使用override和final标识。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> B</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">   <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span>)</span> </span>&#123;<span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"B::f"</span> &lt;&lt; <span class="built_in">std</span>::endl;&#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> D : <span class="keyword">public</span> B</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">   <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span>)</span> override final </span>&#123;<span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"D::f"</span> &lt;&lt; <span class="built_in">std</span>::endl;&#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> F : <span class="keyword">public</span> D</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">   <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span>)</span> override </span>&#123;<span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"F::f"</span> &lt;&lt; <span class="built_in">std</span>::endl;&#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>被标记成final的函数将不能再被F::f重写。</p>
+<h3 id="Strongly-typed-enums-强类型枚举"><a href="#Strongly-typed-enums-强类型枚举" class="headerlink" title="Strongly-typed enums 强类型枚举"></a>Strongly-typed enums 强类型枚举</h3><p>传统的C++枚举类型存在一些缺陷：它们会将枚举常量暴露在外层作用域中（这可能导致名字冲突，如果同一个作用域中存在两个不同的枚举类型，但是具有相同的枚举常量就会冲突），而且它们会被隐式转换为整形，无法拥有特定的用户定义类型。</p>
+<p>在C++11中通过引入了一个称为强类型枚举的新类型，修正了这种情况。强类型枚举由关键字enum class标识。它不会将枚举常量暴露到外层作用域中，也不会隐式转换为整形，并且拥有用户指定的特定类型（传统枚举也增加了这个性质）。<br><figure class="highlight crystal"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">enum</span> <span class="title">class</span> <span class="title">Options</span> &#123;<span class="title">None</span>, <span class="title">One</span>, <span class="title">All</span>&#125;;</span></span><br><span class="line"><span class="constant">Options</span> o = <span class="constant">Options::All</span>;</span><br></pre></td></tr></table></figure></p>
+<p>在标准C++中，枚举类型不是类型安全的。枚举类型被视为整数，这使得两种不同的枚举类型之间可以进行比较。C++03 唯一提供的安全机制是一个整数或一个枚举型值不能隐式转换到另一个枚举别型。 此外，枚举所使用整数类型及其大小都由实现方法定义，皆无法明确指定。 最后，枚举的名称全数暴露于一般范围中，因此C++03两个不同的枚举，不可以有相同的枚举名。 (好比 enum Side{ Right, Left }; 和 enum Thing{ Wrong, Right }; 不能一起使用。)<br><figure class="highlight crystal"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">enum</span> <span class="title">class</span> <span class="title">Enumeration</span></span></span><br><span class="line">&#123;</span><br><span class="line">  <span class="constant">Val1</span>,</span><br><span class="line">  <span class="constant">Val2</span>,</span><br><span class="line">  <span class="constant">Val3</span> = <span class="number">100</span>,</span><br><span class="line">  <span class="constant">Val4</span> /* = <span class="number">101</span> *<span class="regexp">/,</span><br><span class="line">&#125;;</span></span><br></pre></td></tr></table></figure></p>
+<p>此种枚举为类型安全的。枚举类型不能隐式地转换为整数；也无法与整数数值做比较。 (表示式 Enumeration::Val4 == 101 会触发编译期错误)。</p>
+<p>枚举类型所使用类型必须显式指定。在上面的示例中，使用的是默认类型 int，但也可以指定其他类型：<br><figure class="highlight crystal"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">enum</span> <span class="title">class</span> <span class="title">Enum2</span> : <span class="title">unsigned</span> <span class="title">int</span> &#123;<span class="title">Val1</span>, <span class="title">Val2</span>&#125;;</span></span><br></pre></td></tr></table></figure></p>
+<p>枚举类型的语汇范围(scoping)定义于枚举类型的名称范围中。 使用枚举类型的枚举名时，必须明确指定其所属范围。 由前述枚举类型 Enum2 为例，Enum2::Val1是有意义的表示法， 而单独的 Val1 则否。</p>
+<p>此外，C++11 允许为传统的枚举指定使用类型：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">enum</span> Enum3 : <span class="keyword">unsigned</span> <span class="keyword">long</span> &#123;Val1 = <span class="number">1</span>, Val2&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>枚举名 Val1 定义于 Enum3 的枚举范围中(Enum3::Val1)，但为了兼容性， Val1 仍然可以于一般的范围中单独使用。</p>
+<p>在 C++11 中，枚举类型的前置声明 (forward declaration) 也是可行的，只要使用可指定类型的新式枚举即可。 之前的 C++ 无法写出枚举的前置声明，是由于无法确定枚举参数所占的空间大小， C++11 解决了这个问题：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">enum</span> Enum1;                     <span class="comment">// 不合法的 C++ 與 C++11; 無法判別大小</span></span><br><span class="line"><span class="keyword">enum</span> Enum2 : <span class="keyword">unsigned</span> <span class="keyword">int</span>;      <span class="comment">// 合法的 C++11</span></span><br><span class="line"><span class="keyword">enum</span> <span class="keyword">class</span> Enum3;               <span class="comment">// 合法的 C++11，列舉類別使用預設型別 int</span></span><br><span class="line"><span class="keyword">enum</span> <span class="keyword">class</span> Enum4: <span class="keyword">unsigned</span> <span class="keyword">int</span>; <span class="comment">// 合法的 C++11</span></span><br><span class="line"><span class="keyword">enum</span> Enum2 : <span class="keyword">unsigned</span> <span class="keyword">short</span>;    <span class="comment">// 不合法的 C++11，Enum2 已被聲明為 unsigned int</span></span><br></pre></td></tr></table></figure></p>
+<h3 id="static-assert和-type-traits"><a href="#static-assert和-type-traits" class="headerlink" title="static_assert和 type traits"></a>static_assert和 type traits</h3><p>static_assert提供一个编译时的断言检查。如果断言为真，什么也不会发生。如果断言为假，编译器会打印一个特殊的错误信息。是在编译的时候进行断言，所以在实时编译的环境下编辑代码的时候，如果断言为假的话，就会直接提示错误<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="keyword">int</span> sj = <span class="number">4</span>;</span><br><span class="line"><span class="keyword">static_assert</span>(sj&lt;<span class="number">9</span>, <span class="string">"Size is too small"</span>); <span class="comment">//OK and assert is true</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">int</span> a = <span class="number">4</span>;</span><br><span class="line"><span class="comment">// error 因为是在编译期的断言，所以在编译期必须能够对断言的内容进行确定，由于a是运行时动态确定的，所以这里编译错误</span></span><br><span class="line"><span class="keyword">static_assert</span>(a&lt;<span class="number">9</span>, <span class="string">"Size is too small"</span>);</span><br></pre></td></tr></table></figure></p>
+<p>static_assert和type traits一起使用能发挥更大的威力。type traits是一些class，在编译时提供关于类型的信息。在头文件<type_traits>中可以找到它们。这个头文件中有好几种class: helper class，用来产生编译时常量。type traits class，用来在编译时获取类型信息，还有就是type transformation class，他们可以将已存在的类型变换为新的类型。</type_traits></p>
+<p>下面这段代码原本期望只做用于整数类型。<br><figure class="highlight livescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">template &lt;typename T1, typename T2&gt;</span><br><span class="line">auto add<span class="function"><span class="params">(T1 t1, T2 t2)</span> -&gt;</span> decltype(t1 + t2)</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">return</span> t1 + t2;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>但是如果有人写出如下代码，编译器并不会报错<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; add(<span class="number">1</span>, <span class="number">3.14</span>) &lt;&lt; <span class="built_in">std</span>::endl;</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; add(<span class="string">"one"</span>, <span class="number">2</span>) &lt;&lt; <span class="built_in">std</span>::endl;</span><br></pre></td></tr></table></figure></p>
+<p>程序会打印出4.14和”e”。但是如果我们加上编译时断言，那么以上两行将产生编译错误。<br><figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">template &lt;typename <span class="constant">T1,</span> typename <span class="constant">T2&gt;</span></span><br><span class="line">auto add(<span class="constant">T1 </span>t1, <span class="constant">T2 </span>t2) -&gt; decltype(t1 + t2)</span><br><span class="line">&#123;</span><br><span class="line">   static_assert(<span class="symbol">std:</span><span class="symbol">:is_integral&lt;T1&gt;</span><span class="symbol">:</span><span class="symbol">:value</span>, <span class="string">"Type T1 must be integral"</span>);</span><br><span class="line">   static_assert(<span class="symbol">std:</span><span class="symbol">:is_integral&lt;T2&gt;</span><span class="symbol">:</span><span class="symbol">:value</span>, <span class="string">"Type T2 must be integral"</span>);</span><br><span class="line"></span><br><span class="line">   <span class="keyword">return</span> t1 + t2;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight vbnet"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">error</span> C2338: Type T2 must be integral</span><br><span class="line">see reference <span class="keyword">to</span> <span class="keyword">function</span> template instantiation <span class="comment">'T2 add<span class="xmlDocTag">&lt;int,double&gt;</span>(T1,T2)' being compiled</span></span><br><span class="line">   <span class="keyword">with</span></span><br><span class="line">   [</span><br><span class="line">      T2=<span class="built_in">double</span>,</span><br><span class="line">      T1=int</span><br><span class="line">   ]</span><br><span class="line"><span class="keyword">error</span> C2338: Type T1 must be integral</span><br><span class="line">see reference <span class="keyword">to</span> <span class="keyword">function</span> template instantiation <span class="comment">'T1 add<span class="xmlDocTag">&lt;const char*,int&gt;</span>(T1,T2)' being compiled</span></span><br><span class="line">   <span class="keyword">with</span></span><br><span class="line">   [</span><br><span class="line">      T1=<span class="keyword">const</span> <span class="built_in">char</span> *,</span><br><span class="line">      T2=int</span><br><span class="line">   ]</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/07/06/C-11常规特性之其他一些新特性/" data-id="ciqvsjb41006tagqyj6m6rn64" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2016/07/06/C-11常规特性之noexcept/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          C++11常规特性之noexcept
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2016/07/02/套接字/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">套接字</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java/">Java</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">33</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">10</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java底层机制/">Java底层机制</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/muduo-C-网络库/">muduo C++ 网络库</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图与树/">图与树</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/设计模式/">设计模式</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/C-11-常规新特性/" style="font-size: 17.14px;">C++11 常规新特性</a> <a href="/tags/Java底层机制/" style="font-size: 15.71px;">Java底层机制</a> <a href="/tags/Linux-网络编程/" style="font-size: 15.71px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 15.71px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 14.29px;">Linux用户管理</a> <a href="/tags/Linux进程间通信/" style="font-size: 15.71px;">Linux进程间通信</a> <a href="/tags/TCP-IP/" style="font-size: 20px;">TCP/IP</a> <a href="/tags/muduo-C-网络库/" style="font-size: 18.57px;">muduo C++ 网络库</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/动态规划/" style="font-size: 12.86px;">动态规划</a> <a href="/tags/图与树/" style="font-size: 15.71px;">图与树</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/数组/" style="font-size: 10px;">数组</a> <a href="/tags/树结构/" style="font-size: 12.86px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 11.43px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 11.43px;">爬虫</a> <a href="/tags/设计模式/" style="font-size: 12.86px;">设计模式</a> <a href="/tags/随记/" style="font-size: 11.43px;">随记</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a><span class="archive-list-count">33</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/07/21/test/">test</a>
+          </li>
+        
+          <li>
+            <a href="/2016/07/20/muduo中的Channel和Poller/">muduo中的Channel和Poller</a>
+          </li>
+        
+          <li>
+            <a href="/2016/07/20/muduo中的EventLoop/">muduo中的EventLoop</a>
+          </li>
+        
+          <li>
+            <a href="/2016/07/20/muduo中的buffer/">muduo中的buffer</a>
+          </li>
+        
+          <li>
+            <a href="/2016/07/20/多线程与fork/">多线程与fork()</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 LiuYongbin<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js" type="text/javascript"></script>
+
+
+<script src="/js/script.js" type="text/javascript"></script>
+
+  </div>
+</body>
+</html>

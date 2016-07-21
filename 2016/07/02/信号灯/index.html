@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>信号灯 | LiuYongbin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="信号灯与其他进程间通信方式不大相同，它主要提供对进程间共享资源访问控制机制。相当于内存中的标志，进程可以根据它判定是否能够访问某些共享资源，同时，进程也可以修改该标志。除了用于访问控制外，还可用于进程同步。
+一、信号灯概述信号灯与其他进程间通信方式不大相同，它主要提供对进程间共享资源访问控制机制。相当于内存中的标志，进程可以根据它判定是否能够访问某些共享资源，同时，进程也可以修改该标志。除了用于访">
+<meta property="og:type" content="article">
+<meta property="og:title" content="信号灯">
+<meta property="og:url" content="http://liubigbin.github.io/2016/07/02/信号灯/index.html">
+<meta property="og:site_name" content="LiuYongbin">
+<meta property="og:description" content="信号灯与其他进程间通信方式不大相同，它主要提供对进程间共享资源访问控制机制。相当于内存中的标志，进程可以根据它判定是否能够访问某些共享资源，同时，进程也可以修改该标志。除了用于访问控制外，还可用于进程同步。
+一、信号灯概述信号灯与其他进程间通信方式不大相同，它主要提供对进程间共享资源访问控制机制。相当于内存中的标志，进程可以根据它判定是否能够访问某些共享资源，同时，进程也可以修改该标志。除了用于访">
+<meta property="og:image" content="http://liubigbin.github.io/pictures/Linux/进程间通信/共享内存-信号灯全局数据结构.png">
+<meta property="og:image" content="http://liubigbin.github.io/pictures/Linux/进程间通信/共享内存-信号灯union_semun数据结构.png">
+<meta property="og:image" content="http://liubigbin.github.io/pictures/Linux/进程间通信/共享内存-信号灯竞争问题.png">
+<meta property="og:updated_time" content="2016-07-02T06:56:07.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="信号灯">
+<meta name="twitter:description" content="信号灯与其他进程间通信方式不大相同，它主要提供对进程间共享资源访问控制机制。相当于内存中的标志，进程可以根据它判定是否能够访问某些共享资源，同时，进程也可以修改该标志。除了用于访问控制外，还可用于进程同步。
+一、信号灯概述信号灯与其他进程间通信方式不大相同，它主要提供对进程间共享资源访问控制机制。相当于内存中的标志，进程可以根据它判定是否能够访问某些共享资源，同时，进程也可以修改该标志。除了用于访">
+  
+    <link rel="alternative" href="/atom.xml" title="LiuYongbin" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" type="text/css">
+  
+
+</head>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">LiuYongbin</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">Hey boy just do it!</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://liubigbin.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-信号灯" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/07/02/信号灯/" class="article-date">
+  <time datetime="2016-07-02T04:57:06.000Z" itemprop="datePublished">2016-07-02</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      信号灯
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>信号灯与其他进程间通信方式不大相同，它主要提供对进程间共享资源访问控制机制。相当于内存中的标志，进程可以根据它判定是否能够访问某些共享资源，同时，进程也可以修改该标志。除了用于访问控制外，还可用于进程同步。</p>
+<h3 id="一、信号灯概述"><a href="#一、信号灯概述" class="headerlink" title="一、信号灯概述"></a>一、信号灯概述</h3><p>信号灯与其他进程间通信方式不大相同，它主要提供对进程间共享资源访问控制机制。相当于内存中的标志，进程可以根据它判定是否能够访问某些共享资源，同时，进程也可以修改该标志。除了用于访问控制外，还可用于进程同步。信号灯有以下两种类型：</p>
+<ol>
+<li>二值信号灯：最简单的信号灯形式，信号灯的值只能取0或1，类似于互斥锁。<br>注：二值信号灯能够实现互斥锁的功能，但两者的关注内容不同。信号灯强调共享资源，只要共享资源可用，其他进程同样可以修改信号灯的值；互斥锁更强调进程，占用资源的进程使用完资源后，必须由进程本身来解锁。</li>
+<li>计算信号灯：信号灯的值可以取任意非负值（当然受内核本身的约束）。</li>
+</ol>
+<h3 id="二、Linux信号灯"><a href="#二、Linux信号灯" class="headerlink" title="二、Linux信号灯"></a>二、Linux信号灯</h3><p>linux对信号灯的支持状况与消息队列一样，在red had 8.0发行版本中支持的是系统V的信号灯。因此，本文将主要介绍系统V信号灯及其相应API。在没有声明的情况下，以下讨论中指的都是系统V信号灯。</p>
+<p>注意，通常所说的系统V信号灯指的是计数信号灯集。</p>
+<h3 id="三、信号灯与内核"><a href="#三、信号灯与内核" class="headerlink" title="三、信号灯与内核"></a>三、信号灯与内核</h3><ol>
+<li><p>系统V信号灯是随内核持续的，只有在内核重起或者显示删除一个信号灯集时，该信号灯集才会真正被删除。因此系统中记录信号灯的数据结构（struct ipc_ids sem_ids）位于内核中，系统中的所有信号灯都可以在结构sem_ids中找到访问入口。</p>
+</li>
+<li><p>下图说明了内核与信号灯是怎样建立起联系的：<br>其中：struct ipc_ids sem_ids是内核中记录信号灯的全局数据结构；描述一个具体的信号灯及其相关信息。<br><img src="/pictures/Linux/进程间通信/共享内存-信号灯全局数据结构.png" alt=""></p>
+</li>
+</ol>
+<p>其中，struct sem结构如下：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> sem&#123;</span><br><span class="line"><span class="keyword">int</span> semval;		<span class="comment">// current value</span></span><br><span class="line"><span class="keyword">int</span> sempid		<span class="comment">// pid of last operation</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>从上图可以看出，全局数据结构struct ipc_ids sem_ids可以访问到struct kern_ipc_perm的第一个成员：struct kern_ipc_perm；而每个struct kern_ipc_perm能够与具体的信号灯对应起来是因为在该结构中，有一个key_t类型成员key，而key则唯一确定一个信号灯集；同时，结构struct kern_ipc_perm的最后一个成员sem_nsems确定了该信号灯在信号灯集中的顺序，这样内核就能够记录每个信号灯的信息了。<br><figure class="highlight smali"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">/*系统中的每个信号灯集对应一个sem_array 结构 */</span><br><span class="line">struct sem_array &#123;</span><br><span class="line">  struct kern_ipc_perm  sem_perm;    /* permissions .. see ipc.h */</span><br><span class="line">  time_t      sem_otime;      /* last semop time */</span><br><span class="line">  time_t      sem_ctime;      /* last change time */</span><br><span class="line">  struct sem    *sem_base;      /* ptr to first semaphore in<span class="instruction"> array </span>*/</span><br><span class="line">  struct sem_queue  *sem_pending;    /* pending operations to be processed */</span><br><span class="line">  struct sem_queue  **sem_pending_last;   /* last pending operation */</span><br><span class="line">  struct sem_undo    *undo;      /* undo requests on this<span class="instruction"> array </span>*/</span><br><span class="line">  unsigned<span class="instruction"> long </span>   sem_nsems;    /* no. of semaphores in<span class="instruction"> array </span>*/</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>其中，sem_queue结构如下：<br><figure class="highlight gherkin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">/<span class="keyword">*</span> 系统中每个因为信号灯而睡眠的进程，都对应一个sem_queue结构<span class="keyword">*</span>/</span><br><span class="line"> struct sem_queue &#123;</span><br><span class="line">  struct sem_queue <span class="keyword">*</span>  next;     /<span class="keyword">*</span> next entry in the queue <span class="keyword">*</span>/</span><br><span class="line">  struct sem_queue <span class="keyword">*</span><span class="keyword">*</span>  prev;</span><br><span class="line">  /<span class="keyword">*</span> previous entry in the queue, <span class="keyword">*</span>(q-&gt;prev) == q <span class="keyword">*</span>/</span><br><span class="line">  struct task_struct<span class="keyword">*</span>  sleeper;   /<span class="keyword">*</span> this process <span class="keyword">*</span>/</span><br><span class="line">  struct sem_undo <span class="keyword">*</span>  undo;     /<span class="keyword">*</span> undo structure <span class="keyword">*</span>/</span><br><span class="line">  int   pid;             /<span class="keyword">*</span> process id of requesting process <span class="keyword">*</span>/</span><br><span class="line">  int   status;           /<span class="keyword">*</span> completion status of operation <span class="keyword">*</span>/</span><br><span class="line">  struct sem_array <span class="keyword">*</span>  sma;       /<span class="keyword">*</span> semaphore array for operations <span class="keyword">*</span>/</span><br><span class="line">  int  id;               /<span class="keyword">*</span> internal sem id <span class="keyword">*</span>/</span><br><span class="line">  struct sembuf <span class="keyword">*</span>  sops;       /<span class="keyword">*</span> array of pending operations <span class="keyword">*</span>/</span><br><span class="line">  int  nsops;             /<span class="keyword">*</span> number of operations <span class="keyword">*</span>/</span><br><span class="line">  int  alter;             /<span class="keyword">*</span> operation will alter semaphore <span class="keyword">*</span>/</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<h3 id="四、操作信号灯"><a href="#四、操作信号灯" class="headerlink" title="四、操作信号灯"></a>四、操作信号灯</h3><p>对消息队列的操作无非有下面三种类型：</p>
+<ol>
+<li><p>打开或创建信号灯<br>与消息队列的创建及打开基本相同，不再详述。</p>
+</li>
+<li><p>信号灯值操作<br>linux可以增加或减小信号灯的值，相应于对共享资源的释放和占有。具体参见后面的semop系统调用。</p>
+</li>
+<li><p>获得或设置信号灯属性：<br>系统中的每一个信号灯集都对应一个struct sem_array结构，该结构记录了信号灯集的各种信息，存在于系统空间。为了设置、获得该信号灯集的各种信息及属性，在用户空间有一个重要的联合结构与之对应，即union semun。<br><img src="/pictures/Linux/进程间通信/共享内存-信号灯union_semun数据结构.png" alt=""></p>
+</li>
+</ol>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">union</span> semun &#123;</span><br><span class="line">	<span class="keyword">int</span> val;					<span class="comment">/* value for SETVAL */</span></span><br><span class="line">	<span class="keyword">struct</span> semid_ds *buf;		<span class="comment">/* buffer for IPC_STAT &amp; IPC_SET */</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">short</span> *<span class="built_in">array</span>;		<span class="comment">/* array for GETALL &amp; SETALL */</span></span><br><span class="line">	<span class="keyword">struct</span> seminfo *__buf;		<span class="comment">/* buffer for IPC_INFO */</span>   <span class="comment">//test!!</span></span><br><span class="line">	<span class="keyword">void</span> *__pad;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">struct</span>  seminfo &#123;</span><br><span class="line">	<span class="keyword">int</span> semmap;</span><br><span class="line">	<span class="keyword">int</span> semmni;</span><br><span class="line">	<span class="keyword">int</span> semmns;</span><br><span class="line">	<span class="keyword">int</span> semmnu;</span><br><span class="line">	<span class="keyword">int</span> semmsl;</span><br><span class="line">	<span class="keyword">int</span> semopm;</span><br><span class="line">	<span class="keyword">int</span> semume;</span><br><span class="line">	<span class="keyword">int</span> semusz;</span><br><span class="line">	<span class="keyword">int</span> semvmx;</span><br><span class="line">	<span class="keyword">int</span> semaem;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="信号灯API"><a href="#信号灯API" class="headerlink" title="信号灯API"></a>信号灯API</h3><h4 id="1、文件名到键值"><a href="#1、文件名到键值" class="headerlink" title="1、文件名到键值"></a>1、文件名到键值</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;sys/ipc.h&gt;</span></span></span><br><span class="line"><span class="keyword">key_t</span> ftok (<span class="keyword">char</span>*pathname, <span class="keyword">char</span> proj)；</span><br></pre></td></tr></table></figure>
+<p>它返回与路径pathname相对应的一个键值.</p>
+<h4 id="2、linux特有的ipc-调用："><a href="#2、linux特有的ipc-调用：" class="headerlink" title="2、linux特有的ipc()调用："></a>2、linux特有的ipc()调用：</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">ipc</span><span class="params">(<span class="keyword">unsigned</span> <span class="keyword">int</span> call, <span class="keyword">int</span> first, <span class="keyword">int</span> second, <span class="keyword">int</span> third, <span class="keyword">void</span> \*ptr, <span class="keyword">long</span> fifth)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>参数call取不同值时，对应信号灯的三个系统调用：</p>
+<ol>
+<li>当call为SEMOP时，对应int semop(int semid, struct sembuf *sops, unsigned nsops)调用；</li>
+<li>当call为SEMGET时，对应int semget(key_t key, int nsems, int semflg)调用；</li>
+<li>当call为SEMCTL时，对应int semctl(int semid，int semnum，int cmd，union semun arg)调用；<br>这些调用将在后面阐述。</li>
+</ol>
+<h3 id="3、系统V信号灯API"><a href="#3、系统V信号灯API" class="headerlink" title="3、系统V信号灯API"></a>3、系统V信号灯API</h3><p>系统V消息队列API只有三个，使用时需要包括几个头文件：<br> <figure class="highlight autoit"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;sys/ipc.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;sys/sem.h&gt;</span></span></span><br></pre></td></tr></table></figure></p>
+<h5 id="1）int-semget-key-t-key-int-nsems-int-semflg"><a href="#1）int-semget-key-t-key-int-nsems-int-semflg" class="headerlink" title="1）int semget(key_t key, int nsems, int semflg)"></a>1）int semget(key_t key, int nsems, int semflg)</h5><p>  参数key是一个键值，由ftok获得，唯一标识一个信号灯集，用法与msgget()中的key相同；参数nsems指定打开或者新创建的信号灯集中将包含信号灯的数目；semflg参数是一些标志位。参数key和semflg的取值，以及何时打开已有信号灯集或者创建一个新的信号灯集与msgget()中的对应部分相同，不再祥述。<br>  该调用返回与健值key相对应的信号灯集描述字。<br>  调用返回：成功返回信号灯集描述字，否则返回-1。<br>  注：如果key所代表的信号灯已经存在，且semget指定了IPC_CREAT|IPC_EXCL标志，那么即使参数nsems与原来信号灯的数目不等，返回的也是EEXIST错误；如果semget只指定了IPC_CREAT标志，那么参数nsems必须与原来的值一致，在后面程序实例中还要进一步说明。</p>
+<h5 id="2）int-semop-int-semid-struct-sembuf-sops-unsigned-nsops"><a href="#2）int-semop-int-semid-struct-sembuf-sops-unsigned-nsops" class="headerlink" title="2）int semop(int semid, struct sembuf *sops, unsigned nsops);"></a>2）int semop(int semid, struct sembuf *sops, unsigned nsops);</h5><p>  semid是信号灯集ID，sops指向数组的每一个sembuf结构都刻画一个在特定信号灯上的操作。nsops为sops指向数组的大小。<br>  sembuf结构如下：<br><figure class="highlight smali"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">struct sembuf &#123;</span><br><span class="line">	unsigned short  	sem_num;		/* semaphore index in<span class="instruction"> array </span>*/</span><br><span class="line">	short			sem_op;		/* semaphore operation */</span><br><span class="line">	short			sem_flg;		/* operation flags */</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>sem_num对应信号集中的信号灯，0对应第一个信号灯。sem_flg可取IPC_NOWAIT以及SEM_UNDO两个标志。如果设置了SEM_UNDO标志，那么在进程结束时，相应的操作将被取消，这是比较重要的一个标志位。如果设置了该标志位，那么在进程没有释放共享资源就退出时，内核将代为释放。如果为一个信号灯设置了该标志，内核都要分配一个sem_undo结构来记录它，为的是确保以后资源能够安全释放。事实上，如果进程退出了，那么它所占用就释放了，但信号灯值却没有改变，此时，信号灯值反映的已经不是资源占有的实际情况，在这种情况下，问题的解决就靠内核来完成。这有点像僵尸进程，进程虽然退出了，资源也都释放了，但内核进程表中仍然有它的记录，此时就需要父进程调用waitpid来解决问题了。<br> sem_op的值大于0，等于0以及小于0确定了对sem_num指定的信号灯进行的三种操作。具体请参考linux相应手册页。<br> 这里需要强调的是semop同时操作多个信号灯，在实际应用中，对应多种资源的申请或释放。semop保证操作的原子性，这一点尤为重要。尤其对于多种资源的申请来说，要么一次性获得所有资源，要么放弃申请，要么在不占有任何资源情况下继续等待，这样，一方面避免了资源的浪费；另一方面，避免了进程之间由于申请共享资源造成死锁。<br> 也许从实际含义上更好理解这些操作：信号灯的当前值记录相应资源目前可用数目；sem_op&gt;0对应相应进程要释放sem_op数目的共享资源；sem_op=0可以用于对共享资源是否已用完的测试；sem_op&lt;0相当于进程要申请-sem_op个共享资源。再联想操作的原子性，更不难理解该系统调用何时正常返回，何时睡眠等待。<br> 调用返回：成功返回0，否则返回-1。</p>
+<h5 id="3-int-semctl-int-semid，int-semnum，int-cmd，union-semun-arg"><a href="#3-int-semctl-int-semid，int-semnum，int-cmd，union-semun-arg" class="headerlink" title="3) int semctl(int semid，int semnum，int cmd，union semun arg)"></a>3) int semctl(int semid，int semnum，int cmd，union semun arg)</h5><p> 该系统调用实现对信号灯的各种控制操作，参数semid指定信号灯集，参数cmd指定具体的操作类型；参数semnum指定对哪个信号灯操作，只对几个特殊的cmd操作有意义；arg用于设置或返回信号灯信息。<br> 该系统调用详细信息请参见其手册页，这里只给出参数cmd所能指定的操作。</p>
+<ol>
+<li><p>IPC_STAT</p>
+<p>获取信号灯信息，信息由arg.buf返回；</p>
+</li>
+</ol>
+<ol>
+<li><p>IPC_SET 设置信号灯信息，待设置信息保存在arg.buf中（在manpage中给出了可以设置哪些信息）；<br>GETALL 返回所有信号灯的值，结果保存在arg.array中，参数sennum被忽略；<br>GETNCNT 返回等待semnum所代表信号灯的值增加的进程数，相当于目前有多少进程在等待semnum代表的信号灯所代表的共享资源；<br>GETPID 返回最后一个对semnum所代表信号灯执行semop操作的进程ID；<br>GETVAL 返回semnum所代表信号灯的值；<br>GETZCNT 返回等待semnum所代表信号灯的值变成0的进程数；<br>SETALL 通过arg.array更新所有信号灯的值；同时，更新与本信号集相关的semid_ds结构的sem_ctime成员；<br>SETVAL 设置semnum所代表信号灯的值为arg.val；</p>
+<p>调用返回：调用失败返回-1，成功返回与cmd相关：</p>
+</li>
+</ol>
+<h6 id="Cmd-return-value"><a href="#Cmd-return-value" class="headerlink" title="Cmd          return value"></a>Cmd          return value</h6><p> GETNCNT      Semncnt<br> GETPID       Sempid<br> GETVAL       Semval<br> GETZCNT      Semzcnt</p>
+<h3 id="五、信号灯的限制"><a href="#五、信号灯的限制" class="headerlink" title="五、信号灯的限制"></a>五、信号灯的限制</h3><ol>
+<li><p>一次系统调用semop可同时操作的信号灯数目SEMOPM，semop中的参数nsops如果超过了这个数目，将返回E2BIG错误。SEMOPM的大小特定与系统，redhat 8.0为32。</p>
+</li>
+<li><p>信号灯的最大数目：SEMVMX，当设置信号灯值超过这个限制时，会返回ERANGE错误。在redhat 8.0中该值为32767。</p>
+</li>
+<li><p>系统范围内信号灯集的最大数目SEMMNI以及系统范围内信号灯的最大数目SEMMNS。超过这两个限制将返回ENOSPC错误。redhat 8.0中该值为32000。</p>
+</li>
+<li><p>每个信号灯集中的最大信号灯数目SEMMSL，redhat 8.0中为250。 SEMOPM以及SEMVMX是使用semop调用时应该注意的；SEMMNI以及SEMMNS是调用semget时应该注意的。SEMVMX同时也是semctl调用应该注意的。</p>
+</li>
+</ol>
+<h3 id="六、竞争问题"><a href="#六、竞争问题" class="headerlink" title="六、竞争问题"></a>六、竞争问题</h3><p>第一个创建信号灯的进程同时也初始化信号灯，这样，系统调用semget包含了两个步骤：创建信号灯；初始化信号灯。由此可能导致一种竞争状态：第一个创建信号灯的进程在初始化信号灯时，第二个进程又调用semget，并且发现信号灯已经存在，此时，第二个进程必须具有判断是否有进程正在对信号灯进行初始化的能力。在参考文献[1]中，给出了绕过这种竞争状态的方法：当semget创建一个新的信号灯时，信号灯结构semid_ds的sem_otime成员初始化后的值为0。因此，第二个进程在成功调用semget后，可再次以IPC_STAT命令调用semctl，等待sem_otime变为非0值，此时可判断该信号灯已经初始化完毕。下图描述了竞争状态产生及解决方法：<br><img src="/pictures/Linux/进程间通信/共享内存-信号灯竞争问题.png" alt=""><br>实际上，这种解决方法也是基于这样一个假定：第一个创建信号灯的进程必须调用semop，这样sem_otime才能变为非零值。另外，因为第一个进程可能不调用semop，或者semop操作需要很长时间，第二个进程可能无限期等待下去，或者等待很长时间。</p>
+<h3 id="七、信号灯应用实例"><a href="#七、信号灯应用实例" class="headerlink" title="七、信号灯应用实例"></a>七、信号灯应用实例</h3><p>本实例有两个目的：1、获取各种信号灯信息；2、利用信号灯实现共享资源的申请和释放。并在程序中给出了详细注释。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;linux/sem.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;errno.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">define</span> SEM_PATH <span class="string">"/unix/my_sem"</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">define</span> max_tries <span class="number">3</span></span></span><br><span class="line"><span class="keyword">int</span> semid;</span><br><span class="line">main()</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">int</span> flag1,flag2,key,i,init_ok,tmperrno;</span><br><span class="line"><span class="keyword">struct</span> semid_ds sem_info;</span><br><span class="line"><span class="keyword">struct</span> seminfo sem_info2;</span><br><span class="line"><span class="keyword">union</span> semun arg;       <span class="comment">//union semun： 请参考附录2</span></span><br><span class="line"><span class="keyword">struct</span> sembuf askfor_res, free_res;</span><br><span class="line">flag1=IPC_CREAT|IPC_EXCL|<span class="number">00666</span>;</span><br><span class="line">flag2=IPC_CREAT|<span class="number">00666</span>;</span><br><span class="line">key=ftok(SEM_PATH,<span class="string">'a'</span>);</span><br><span class="line"><span class="comment">//error handling for ftok here;</span></span><br><span class="line">init_ok=<span class="number">0</span>;</span><br><span class="line">semid=semget(key,<span class="number">1</span>,flag1);</span><br><span class="line"><span class="comment">//create a semaphore set that only includes one semphore.</span></span><br><span class="line"><span class="keyword">if</span>(semid&lt;<span class="number">0</span>)</span><br><span class="line">&#123;</span><br><span class="line">  tmperrno=errno;</span><br><span class="line">  perror(<span class="string">"semget"</span>);</span><br><span class="line"><span class="keyword">if</span>(tmperrno==EEXIST)</span><br><span class="line"><span class="comment">//errno is undefined after a successful library call( including perror call)</span></span><br><span class="line"><span class="comment">//so it is saved  in tmperrno.</span></span><br><span class="line">    &#123;</span><br><span class="line">    semid=semget(key,<span class="number">1</span>,flag2);</span><br><span class="line"><span class="comment">//flag2 只包含了IPC_CREAT标志, 参数nsems(这里为1)必须与原来的信号灯数目一致</span></span><br><span class="line">    arg.buf=&amp;sem_info;</span><br><span class="line">    <span class="keyword">for</span>(i=<span class="number">0</span>; i&lt;max_tries; i++)</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="keyword">if</span>(semctl(semid, <span class="number">0</span>, IPC_STAT, arg)==-<span class="number">1</span>)</span><br><span class="line">      &#123;  perror(<span class="string">"semctl error"</span>); i=max_tries;&#125;</span><br><span class="line">      <span class="keyword">else</span></span><br><span class="line">      &#123;</span><br><span class="line">        <span class="keyword">if</span>(arg.buf-&gt;sem_otime!=<span class="number">0</span>)&#123; i=max_tries;  init_ok=<span class="number">1</span>;&#125;</span><br><span class="line">        <span class="keyword">else</span>   sleep(<span class="number">1</span>);  </span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>(!init_ok)</span><br><span class="line">  <span class="comment">// do some initializing, here we assume that the first process that creates the sem</span></span><br><span class="line">  <span class="comment">//  will finish initialize the sem and run semop in max_tries*1 seconds. else it will  </span></span><br><span class="line">  <span class="comment">// not run semop any more.</span></span><br><span class="line">    &#123;</span><br><span class="line">      arg.val=<span class="number">1</span>;</span><br><span class="line">      <span class="keyword">if</span>(semctl(semid,<span class="number">0</span>,SETVAL,arg)==-<span class="number">1</span>) perror(<span class="string">"semctl setval error"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">  &#123;perror(<span class="string">"semget error, process exit"</span>);  <span class="built_in">exit</span>();  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span> <span class="comment">//semid&gt;=0; do some initializing   </span></span><br><span class="line">&#123;</span><br><span class="line">  arg.val=<span class="number">1</span>;</span><br><span class="line">  <span class="keyword">if</span>(semctl(semid,<span class="number">0</span>,SETVAL,arg)==-<span class="number">1</span>)</span><br><span class="line">    perror(<span class="string">"semctl setval error"</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//get some information about the semaphore and the limit of semaphore in redhat8.0</span></span><br><span class="line">  arg.buf=&amp;sem_info;</span><br><span class="line">  <span class="keyword">if</span>(semctl(semid, <span class="number">0</span>, IPC_STAT, arg)==-<span class="number">1</span>)</span><br><span class="line">    perror(<span class="string">"semctl IPC STAT"</span>);    </span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">"owner's uid is %d\n"</span>,   arg.buf-&gt;sem_perm.uid);</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">"owner's gid is %d\n"</span>,   arg.buf-&gt;sem_perm.gid);</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">"creater's uid is %d\n"</span>,   arg.buf-&gt;sem_perm.cuid);</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">"creater's gid is %d\n"</span>,   arg.buf-&gt;sem_perm.cgid);</span><br><span class="line">  arg.__buf=&amp;sem_info2;</span><br><span class="line">  <span class="keyword">if</span>(semctl(semid,<span class="number">0</span>,IPC_INFO,arg)==-<span class="number">1</span>)</span><br><span class="line">    perror(<span class="string">"semctl IPC_INFO"</span>);</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">"the number of entries in semaphore map is %d \n"</span>,  arg.__buf-&gt;semmap);</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">"max number of semaphore identifiers is %d \n"</span>,    arg.__buf-&gt;semmni);</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">"mas number of semaphores in system is %d \n"</span>,   arg.__buf-&gt;semmns);</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">"the number of undo structures system wide is %d \n"</span>,  arg.__buf-&gt;semmnu);</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">"max number of semaphores per semid is %d \n"</span>,   arg.__buf-&gt;semmsl);</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">"max number of ops per semop call is %d \n"</span>,  arg.__buf-&gt;semopm);</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">"max number of undo entries per process is %d \n"</span>,  arg.__buf-&gt;semume);</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">"the sizeof of struct sem_undo is %d \n"</span>,  arg.__buf-&gt;semusz);</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">"the maximum semaphore value is %d \n"</span>,  arg.__buf-&gt;semvmx);</span><br><span class="line"></span><br><span class="line"><span class="comment">//now ask for available resource:  </span></span><br><span class="line">  askfor_res.sem_num=<span class="number">0</span>;</span><br><span class="line">  askfor_res.sem_op=-<span class="number">1</span>;</span><br><span class="line">  askfor_res.sem_flg=SEM_UNDO;    </span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span>(semop(semid,&amp;askfor_res,<span class="number">1</span>)==-<span class="number">1</span>)<span class="comment">//ask for resource</span></span><br><span class="line">      perror(<span class="string">"semop error"</span>);</span><br><span class="line"></span><br><span class="line">  sleep(<span class="number">3</span>);</span><br><span class="line">  <span class="comment">//do some handling on the sharing resource here, just sleep on it 3 seconds</span></span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">"now free the resource\n"</span>);  </span><br><span class="line"></span><br><span class="line"><span class="comment">//now free resource  </span></span><br><span class="line">  free_res.sem_num=<span class="number">0</span>;</span><br><span class="line">  free_res.sem_op=<span class="number">1</span>;</span><br><span class="line">  free_res.sem_flg=SEM_UNDO;</span><br><span class="line">  <span class="keyword">if</span>(semop(semid,&amp;free_res,<span class="number">1</span>)==-<span class="number">1</span>)<span class="comment">//free the resource.</span></span><br><span class="line">    <span class="keyword">if</span>(errno==EIDRM)</span><br><span class="line">      <span class="built_in">printf</span>(<span class="string">"the semaphore set was removed\n"</span>);</span><br><span class="line"><span class="comment">//you can comment out the codes below to compile a different version:      </span></span><br><span class="line">  <span class="keyword">if</span>(semctl(semid, <span class="number">0</span>, IPC_RMID)==-<span class="number">1</span>)</span><br><span class="line">    perror(<span class="string">"semctl IPC_RMID"</span>);</span><br><span class="line">  <span class="keyword">else</span> <span class="built_in">printf</span>(<span class="string">"remove sem ok\n"</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>注：读者可以尝试一下注释掉初始化步骤，进程在运行时会出现何种情况（进程在申请资源时会睡眠），同时可以像程序结尾给出的注释那样，把该程序编译成两个不同版本。下面是本程序的运行结果（操作系统redhat8.0）：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">owne<span class="string">r's uid is 0</span><br><span class="line">owner'</span>s gid <span class="keyword">is</span> <span class="number">0</span></span><br><span class="line">create<span class="string">r's uid is 0</span><br><span class="line">creater'</span>s gid <span class="keyword">is</span> <span class="number">0</span></span><br><span class="line">the number of entries <span class="keyword">in</span> semaphore map <span class="keyword">is</span> <span class="number">32000</span></span><br><span class="line">max number of semaphore identifiers <span class="keyword">is</span> <span class="number">128</span></span><br><span class="line">mas number of semaphores <span class="keyword">in</span> system <span class="keyword">is</span> <span class="number">32000</span></span><br><span class="line">the number of undo structures system wide <span class="keyword">is</span> <span class="number">32000</span></span><br><span class="line">max number of semaphores per semid <span class="keyword">is</span> <span class="number">250</span></span><br><span class="line">max number of ops per semop call <span class="keyword">is</span> <span class="number">32</span></span><br><span class="line">max number of undo entries per process <span class="keyword">is</span> <span class="number">32</span></span><br><span class="line">the sizeof of struct sem_undo <span class="keyword">is</span> <span class="number">20</span></span><br><span class="line">the maximum semaphore value <span class="keyword">is</span> <span class="number">32767</span></span><br><span class="line">now free the resource</span><br><span class="line">remove sem ok</span><br></pre></td></tr></table></figure></p>
+<p>Summary：信号灯与其它进程间通信方式有所不同，它主要用于进程间同步。通常所说的系统V信号灯实际上是一个信号灯的集合，可用于多种共享资源的进程间同步。每个信号灯都有一个值，可以用来表示当前该信号灯代表的共享资源可用（available）数量，如果一个进程要申请共享资源，那么就从信号灯值中减去要申请的数目，如果当前没有足够的可用资源，进程可以睡眠等待，也可以立即返回。当进程要申请多种共享资源时，linux可以保证操作的原子性，即要么申请到所有的共享资源，要么放弃所有资源，这样能够保证多个进程不会造成互锁。Linux对信号灯有各种各样的限制，程序中给出了输出结果。另外，如果读者想对信号灯作进一步的理解，建议阅读sem.h源代码，该文件不长，但给出了信号灯相关的重要数据结构。</p>
+<p>本文转载自<a href="http://www.ibm.com/developerworks/cn/linux/l-ipc/part4/index.html" target="_blank" rel="external">这里</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/07/02/信号灯/" data-id="ciqvsjb1v002tagqytaa3p64e" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2016/07/02/套接字/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          套接字
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2016/07/02/消息队列/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">消息队列</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java/">Java</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">33</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">10</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java底层机制/">Java底层机制</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/muduo-C-网络库/">muduo C++ 网络库</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图与树/">图与树</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/设计模式/">设计模式</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/C-11-常规新特性/" style="font-size: 17.14px;">C++11 常规新特性</a> <a href="/tags/Java底层机制/" style="font-size: 15.71px;">Java底层机制</a> <a href="/tags/Linux-网络编程/" style="font-size: 15.71px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 15.71px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 14.29px;">Linux用户管理</a> <a href="/tags/Linux进程间通信/" style="font-size: 15.71px;">Linux进程间通信</a> <a href="/tags/TCP-IP/" style="font-size: 20px;">TCP/IP</a> <a href="/tags/muduo-C-网络库/" style="font-size: 18.57px;">muduo C++ 网络库</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/动态规划/" style="font-size: 12.86px;">动态规划</a> <a href="/tags/图与树/" style="font-size: 15.71px;">图与树</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/数组/" style="font-size: 10px;">数组</a> <a href="/tags/树结构/" style="font-size: 12.86px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 11.43px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 11.43px;">爬虫</a> <a href="/tags/设计模式/" style="font-size: 12.86px;">设计模式</a> <a href="/tags/随记/" style="font-size: 11.43px;">随记</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a><span class="archive-list-count">33</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/07/21/test/">test</a>
+          </li>
+        
+          <li>
+            <a href="/2016/07/20/muduo中的Channel和Poller/">muduo中的Channel和Poller</a>
+          </li>
+        
+          <li>
+            <a href="/2016/07/20/muduo中的EventLoop/">muduo中的EventLoop</a>
+          </li>
+        
+          <li>
+            <a href="/2016/07/20/muduo中的buffer/">muduo中的buffer</a>
+          </li>
+        
+          <li>
+            <a href="/2016/07/20/多线程与fork/">多线程与fork()</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 LiuYongbin<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js" type="text/javascript"></script>
+
+
+<script src="/js/script.js" type="text/javascript"></script>
+
+  </div>
+</body>
+</html>

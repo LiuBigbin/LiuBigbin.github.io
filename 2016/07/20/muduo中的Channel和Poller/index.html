@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>muduo中的Channel和Poller | LiuYongbin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Channel每一个Channel对象只负责一个文件描述符的IO时间分发，但她并不拥有这个文件描述符，也不会在析构的时候关闭该文件描述符。channel把不同的IO事件分发为不同的回调，例如readCallBack，writeCallback等，而回调用boost::function表示，用户无需继承channel。用户一般不直接使用，而回使用更上一层的封装，如TcpConnection。chan">
+<meta property="og:type" content="article">
+<meta property="og:title" content="muduo中的Channel和Poller">
+<meta property="og:url" content="http://liubigbin.github.io/2016/07/20/muduo中的Channel和Poller/index.html">
+<meta property="og:site_name" content="LiuYongbin">
+<meta property="og:description" content="Channel每一个Channel对象只负责一个文件描述符的IO时间分发，但她并不拥有这个文件描述符，也不会在析构的时候关闭该文件描述符。channel把不同的IO事件分发为不同的回调，例如readCallBack，writeCallback等，而回调用boost::function表示，用户无需继承channel。用户一般不直接使用，而回使用更上一层的封装，如TcpConnection。chan">
+<meta property="og:updated_time" content="2016-07-21T02:43:10.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="muduo中的Channel和Poller">
+<meta name="twitter:description" content="Channel每一个Channel对象只负责一个文件描述符的IO时间分发，但她并不拥有这个文件描述符，也不会在析构的时候关闭该文件描述符。channel把不同的IO事件分发为不同的回调，例如readCallBack，writeCallback等，而回调用boost::function表示，用户无需继承channel。用户一般不直接使用，而回使用更上一层的封装，如TcpConnection。chan">
+  
+    <link rel="alternative" href="/atom.xml" title="LiuYongbin" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" type="text/css">
+  
+
+</head>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">LiuYongbin</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">Hey boy just do it!</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://liubigbin.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-muduo中的Channel和Poller" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/07/20/muduo中的Channel和Poller/" class="article-date">
+  <time datetime="2016-07-20T12:13:02.000Z" itemprop="datePublished">2016-07-20</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      muduo中的Channel和Poller
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="Channel"><a href="#Channel" class="headerlink" title="Channel"></a>Channel</h3><p>每一个Channel对象只负责一个文件描述符的IO时间分发，但她并不拥有这个文件描述符，也不会在析构的时候关闭该文件描述符。channel把不同的IO事件分发为不同的回调，例如readCallBack，writeCallback等，而回调用boost::function表示，用户无需继承channel。用户一般不直接使用，而回使用更上一层的封装，如TcpConnection。<br>channel的部分代码如下：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">namespace</span> muduo</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">namespace</span> net</span><br><span class="line">&#123;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> EventLoop;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> Channel : boost::noncopyable</span><br><span class="line">&#123;</span><br><span class="line"> <span class="keyword">public</span>:</span><br><span class="line">  <span class="keyword">typedef</span> boost::function&lt;<span class="keyword">void</span>()&gt; EventCallback;</span><br><span class="line">  <span class="keyword">typedef</span> boost::function&lt;<span class="keyword">void</span>(Timestamp)&gt; ReadEventCallback;</span><br><span class="line"></span><br><span class="line">  Channel(EventLoop* loop, <span class="keyword">int</span> fd);</span><br><span class="line">  ~Channel();</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">void</span> <span class="title">handleEvent</span><span class="params">(Timestamp receiveTime)</span></span>;</span><br><span class="line">  <span class="function"><span class="keyword">void</span> <span class="title">setReadCallback</span><span class="params">(<span class="keyword">const</span> ReadEventCallback&amp; cb)</span></span><br><span class="line">  </span>&#123; readCallback_ = cb; &#125;</span><br><span class="line">  <span class="function"><span class="keyword">void</span> <span class="title">setWriteCallback</span><span class="params">(<span class="keyword">const</span> EventCallback&amp; cb)</span></span><br><span class="line">  </span>&#123; writeCallback_ = cb; &#125;</span><br><span class="line">  <span class="function"><span class="keyword">void</span> <span class="title">setCloseCallback</span><span class="params">(<span class="keyword">const</span> EventCallback&amp; cb)</span></span><br><span class="line">  </span>&#123; closeCallback_ = cb; &#125;</span><br><span class="line">  <span class="function"><span class="keyword">void</span> <span class="title">setErrorCallback</span><span class="params">(<span class="keyword">const</span> EventCallback&amp; cb)</span></span><br><span class="line">  </span>&#123; errorCallback_ = cb; &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">void</span> <span class="title">enableReading</span><span class="params">()</span> </span>&#123; events_ |= kReadEvent; update(); &#125;</span><br><span class="line">  <span class="function"><span class="keyword">void</span> <span class="title">disableReading</span><span class="params">()</span> </span>&#123; events_ &amp;= ~kReadEvent; update(); &#125;</span><br><span class="line">  <span class="function"><span class="keyword">void</span> <span class="title">enableWriting</span><span class="params">()</span> </span>&#123; events_ |= kWriteEvent; update(); &#125;</span><br><span class="line">  <span class="function"><span class="keyword">void</span> <span class="title">disableWriting</span><span class="params">()</span> </span>&#123; events_ &amp;= ~kWriteEvent; update(); &#125;</span><br><span class="line">  <span class="function"><span class="keyword">void</span> <span class="title">disableAll</span><span class="params">()</span> </span>&#123; events_ = kNoneEvent; update(); &#125;</span><br><span class="line">  <span class="function"><span class="keyword">bool</span> <span class="title">isWriting</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123; <span class="keyword">return</span> events_ &amp; kWriteEvent; &#125;</span><br><span class="line">  <span class="function"><span class="keyword">bool</span> <span class="title">isReading</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123; <span class="keyword">return</span> events_ &amp; kReadEvent; &#125;</span><br><span class="line"></span><br><span class="line"> <span class="keyword">private</span>:</span><br><span class="line"></span><br><span class="line">  EventLoop* loop_;</span><br><span class="line">  <span class="keyword">const</span> <span class="keyword">int</span>  fd_;</span><br><span class="line">  <span class="keyword">int</span>        events_;</span><br><span class="line">  <span class="keyword">int</span>        revents_; <span class="comment">// it's the received event types of epoll or poll</span></span><br><span class="line">  <span class="keyword">int</span>        index_; <span class="comment">// used by Poller.</span></span><br><span class="line"></span><br><span class="line">  ReadEventCallback readCallback_;</span><br><span class="line">  EventCallback writeCallback_;</span><br><span class="line">  EventCallback closeCallback_;</span><br><span class="line">  EventCallback errorCallback_;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//revents_由poller来设置，根据触发的事件类型来执行相应的回调</span></span><br><span class="line"><span class="keyword">void</span> Channel::handleEventWithGuard(Timestamp receiveTime)</span><br><span class="line">&#123;</span><br><span class="line">  eventHandling_ = <span class="literal">true</span>;</span><br><span class="line">  LOG_TRACE &lt;&lt; reventsToString();</span><br><span class="line">  <span class="keyword">if</span> ((revents_ &amp; POLLHUP) &amp;&amp; !(revents_ &amp; POLLIN))</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">if</span> (logHup_)</span><br><span class="line">    &#123;</span><br><span class="line">      LOG_WARN &lt;&lt; <span class="string">"fd = "</span> &lt;&lt; fd_ &lt;&lt; <span class="string">" Channel::handle_event() POLLHUP"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (closeCallback_) closeCallback_();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (revents_ &amp; POLLNVAL)</span><br><span class="line">  &#123;</span><br><span class="line">    LOG_WARN &lt;&lt; <span class="string">"fd = "</span> &lt;&lt; fd_ &lt;&lt; <span class="string">" Channel::handle_event() POLLNVAL"</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (revents_ &amp; (POLLERR | POLLNVAL))</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">if</span> (errorCallback_) errorCallback_();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (revents_ &amp; (POLLIN | POLLPRI | POLLRDHUP))</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">if</span> (readCallback_) readCallback_(receiveTime);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (revents_ &amp; POLLOUT)</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">if</span> (writeCallback_) writeCallback_();</span><br><span class="line">  &#125;</span><br><span class="line">  eventHandling_ = <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="Poller"><a href="#Poller" class="headerlink" title="Poller"></a>Poller</h3><p>Poller calss为IO multiplexing的封装。Poller并不拥有channel，channel在析构前必须自己unregister(EventLoop::removeChannel()),避免空悬指针。<br>Poller使用两个数据结构来记录需要监听的channel：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="built_in">std</span>::<span class="built_in">map</span>&lt;<span class="keyword">int</span>, Channel*&gt; ChannelMap;</span><br><span class="line"><span class="keyword">typedef</span> <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">struct</span> pollfd&gt; PollFdList;</span><br><span class="line">ChannelMap channels_;</span><br><span class="line">PollFdList pollfds_;</span><br></pre></td></tr></table></figure></p>
+<p>pollfds<em>用来记录需要监听的文件描述符以及对应监听的事件，每一个channel在这里面都有一个元素与之对应，元素的下标就是channel成员变量中的index</em>,poller可以跟根据每一个channel中的index来对pollfds_进行更新(removeChannel, updateChannel等操作)。</p>
+<p>channels<em>用来记录每一个文件描述符对应的channel指针，这里的key为channel的文件描述符，不可以为channel的index</em>,因为index<em>会改变。当Poller获得文件描述符的监听事件后，就根据channels</em>来获得有时间发生的文件描述符的channel，并设置对应channel的revents_(实际发生的事件),接着将每一个有事件的channel放进一个vector里面，最后将vector返回给EventLoop，作为activateChannels。</p>
+<p>之所以需要返回activateChannels，而不是在遍历发生事件的文件描述符的同时执行对应的channel中的handleEvent函数，是因为handleEvent函数有可能会对pollfds<em>进行修改，如删除channel，使得在迭代期间pollfds</em>大小发生改变，这是一件很危险的事情。另一个原因就是简化Poller的职责，Poller只负责监听，不负责事件的分发与处理。</p>
+<p>如果某一个channel暂时不关心任何事件，那么可以吧pollfd.fd设置为负数，这样poll会忽略此文件描述符。不能将pollfd.events设置为0，因为无法屏蔽POLLERR事件。muduo的改进做法是吧pollfd.fd设为channel-&gt;fd()的相反数减一（文件描述符从0开始，减一是为了兼容0，因为0的相反数还是0）。</p>
+<p>但需要删除channel时，由于pollfds<em>使用的是vector来存储channel的，可以根据channle本身的index</em>来确定该channel在vector中所在的位置。如果直接删除该位置的话，那么后面的channel都需要上移一个位置，导致后面的channel都需要更新自己的index<em>,这样效率会很低。这里有一个小技巧，就是直接将vector最后的元素A与该位置进行呼唤，只需要修改A的index</em>就好，其他的channel不受影响。<br><figure class="highlight sml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">void <span class="type">PollPoller</span>::removeChannel(<span class="type">Channel</span>* channel)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="type">Poller</span>::assertInLoopThread<span class="literal">()</span>;</span><br><span class="line">  <span class="type">LOG_TRACE</span> &lt;&lt; <span class="string">"fd = "</span> &lt;&lt; channel-&gt;fd<span class="literal">()</span>;</span><br><span class="line">  assert(channels_.find(channel-&gt;fd<span class="literal">()</span>) != channels_.<span class="keyword">end</span><span class="literal">()</span>);</span><br><span class="line">  assert(channels_[channel-&gt;fd<span class="literal">()</span>] == channel);</span><br><span class="line">  assert(channel-&gt;isNoneEvent<span class="literal">()</span>);</span><br><span class="line">  <span class="built_in">int</span> idx = channel-&gt;index<span class="literal">()</span>;</span><br><span class="line">  assert(<span class="number">0</span> &lt;= idx &amp;&amp; idx &lt; static_cast&lt;<span class="built_in">int</span>&gt;(pollfds_.size<span class="literal">()</span>));</span><br><span class="line">  const <span class="keyword">struct</span> pollfd&amp; pfd = pollfds_[idx]; (void)pfd;</span><br><span class="line">  assert(pfd.fd == -channel-&gt;fd<span class="literal">()</span>-<span class="number">1</span> &amp;&amp; pfd.events == channel-&gt;events<span class="literal">()</span>);</span><br><span class="line">  size_t n = channels_.erase(channel-&gt;fd<span class="literal">()</span>);</span><br><span class="line">  assert(n == <span class="number">1</span>); (void)n;</span><br><span class="line">  <span class="keyword">if</span> (implicit_cast&lt;size_t&gt;(idx) == pollfds_.size<span class="literal">()</span>-<span class="number">1</span>)</span><br><span class="line">  &#123;</span><br><span class="line">    pollfds_.pop_back<span class="literal">()</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">  &#123;</span><br><span class="line">    <span class="built_in">int</span> channelAtEnd = pollfds_.back<span class="literal">()</span>.fd;</span><br><span class="line">    iter_swap(pollfds_.begin<span class="literal">()</span>+idx, pollfds_.<span class="keyword">end</span><span class="literal">()</span>-<span class="number">1</span>);</span><br><span class="line">    <span class="keyword">if</span> (channelAtEnd &lt; <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">      channelAtEnd = -channelAtEnd-<span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    channels_[channelAtEnd]-&gt;set_index(idx);</span><br><span class="line">    pollfds_.pop_back<span class="literal">()</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/07/20/muduo中的Channel和Poller/" data-id="ciqvsjb2b003hagqymo6mmqew" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/muduo-C-网络库/">muduo C++ 网络库</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2016/07/21/test/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          test
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2016/07/20/muduo中的EventLoop/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">muduo中的EventLoop</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java/">Java</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">33</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">10</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java底层机制/">Java底层机制</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/muduo-C-网络库/">muduo C++ 网络库</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图与树/">图与树</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/设计模式/">设计模式</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/C-11-常规新特性/" style="font-size: 17.14px;">C++11 常规新特性</a> <a href="/tags/Java底层机制/" style="font-size: 15.71px;">Java底层机制</a> <a href="/tags/Linux-网络编程/" style="font-size: 15.71px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 15.71px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 14.29px;">Linux用户管理</a> <a href="/tags/Linux进程间通信/" style="font-size: 15.71px;">Linux进程间通信</a> <a href="/tags/TCP-IP/" style="font-size: 20px;">TCP/IP</a> <a href="/tags/muduo-C-网络库/" style="font-size: 18.57px;">muduo C++ 网络库</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/动态规划/" style="font-size: 12.86px;">动态规划</a> <a href="/tags/图与树/" style="font-size: 15.71px;">图与树</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/数组/" style="font-size: 10px;">数组</a> <a href="/tags/树结构/" style="font-size: 12.86px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 11.43px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 11.43px;">爬虫</a> <a href="/tags/设计模式/" style="font-size: 12.86px;">设计模式</a> <a href="/tags/随记/" style="font-size: 11.43px;">随记</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a><span class="archive-list-count">33</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/07/21/test/">test</a>
+          </li>
+        
+          <li>
+            <a href="/2016/07/20/muduo中的Channel和Poller/">muduo中的Channel和Poller</a>
+          </li>
+        
+          <li>
+            <a href="/2016/07/20/muduo中的EventLoop/">muduo中的EventLoop</a>
+          </li>
+        
+          <li>
+            <a href="/2016/07/20/muduo中的buffer/">muduo中的buffer</a>
+          </li>
+        
+          <li>
+            <a href="/2016/07/20/多线程与fork/">多线程与fork()</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 LiuYongbin<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js" type="text/javascript"></script>
+
+
+<script src="/js/script.js" type="text/javascript"></script>
+
+  </div>
+</body>
+</html>

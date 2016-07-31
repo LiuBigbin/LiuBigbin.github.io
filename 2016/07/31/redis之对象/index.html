@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>LiuYongbin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="title: redis对象date: 2016-06-20 20:13:02categories: Linuxtags: redis
+redis并没有直接使用这些数据结构来实现键值对数据库，而是基于这些数据结构创建了一个对象系统，这个系统包含字符串对象、列表对象、哈希对象、集合对象以及有序集合对象这五种类型的对象，每种对象都用到了至少一种redis中的数据结构。
+通过这五种不同类型的对象，red">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LiuYongbin">
+<meta property="og:url" content="http://liubigbin.github.io/2016/07/31/redis之对象/index.html">
+<meta property="og:site_name" content="LiuYongbin">
+<meta property="og:description" content="title: redis对象date: 2016-06-20 20:13:02categories: Linuxtags: redis
+redis并没有直接使用这些数据结构来实现键值对数据库，而是基于这些数据结构创建了一个对象系统，这个系统包含字符串对象、列表对象、哈希对象、集合对象以及有序集合对象这五种类型的对象，每种对象都用到了至少一种redis中的数据结构。
+通过这五种不同类型的对象，red">
+<meta property="og:updated_time" content="2016-07-31T05:02:32.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="LiuYongbin">
+<meta name="twitter:description" content="title: redis对象date: 2016-06-20 20:13:02categories: Linuxtags: redis
+redis并没有直接使用这些数据结构来实现键值对数据库，而是基于这些数据结构创建了一个对象系统，这个系统包含字符串对象、列表对象、哈希对象、集合对象以及有序集合对象这五种类型的对象，每种对象都用到了至少一种redis中的数据结构。
+通过这五种不同类型的对象，red">
+  
+    <link rel="alternative" href="/atom.xml" title="LiuYongbin" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" type="text/css">
+  
+
+</head>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">LiuYongbin</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">Hey boy just do it!</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://liubigbin.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-redis之对象" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/07/31/redis之对象/" class="article-date">
+  <time datetime="2016-07-31T05:02:19.000Z" itemprop="datePublished">2016-07-31</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>title: redis对象<br>date: 2016-06-20 20:13:02<br>categories: Linux<br>tags: redis</p>
+<p>redis并没有直接使用这些数据结构来实现键值对数据库，而是基于这些数据结构创建了一个对象系统，这个系统包含字符串对象、列表对象、哈希对象、集合对象以及有序集合对象这五种类型的对象，每种对象都用到了至少一种redis中的数据结构。</p>
+<p>通过这五种不同类型的对象，redis可以在执行命令前，根据对象的类型来判断一个对象是否可以执行给定的命令。使用对象的另一个好处就是，我们可以针对不同的使用场景，对对象设置多种不同的数据结构实现，从而优化对象在不同使用场景下的效率。除此之外，redis对象系统还实现了基于引用计数技术的内存回收机制，当程序不再使用某个对象时，这个对象所占用的内存就会被自动释放；另外，redis还通过引用计数技术实现了对象共享机制，这一机制可以在适当的条件下，通过让多个数据库键共享同一个对象来节约内存。最后，redis的对象带有访问时间记录信息，该信息可以用于计算数据库键的空转时长，在服务器启用了maxmemory功能的情况下，空转时长较大的那些键可能会优先被服务器删除。</p>
+<p>redis中的每一个对象都由一个redisObject结构表示，该结构中和保存数据有关的三个属性分别是type属性、encoding属性和ptr属性。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> redisObject&#123;</span><br><span class="line">    <span class="comment">//类型</span></span><br><span class="line">	<span class="keyword">unsigned</span> type:<span class="number">4</span>;</span><br><span class="line">	<span class="comment">//编码</span></span><br><span class="line">	<span class="keyword">unsigned</span> encoding:<span class="number">4</span>;</span><br><span class="line">	<span class="comment">//指向数据的指针，如果数据为整数的话，ptr直接存储该整数的值</span></span><br><span class="line">	<span class="keyword">void</span>* ptr;</span><br><span class="line"></span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line">&#125; robj;</span><br></pre></td></tr></table></figure>
+<p>对象的类型有以下几种：</p>
+<pre><code>REDIS_STRING: 字符串对象 : &quot;string&quot;
+REDIS_LIST: 列表对象 : &quot;list&quot;
+REDIS_HASH: 哈希对象 : &quot;hash&quot;
+REDIS_SET: 集合对象  : &quot;set&quot;
+REDIS_ZSET: 有序集合对象  : &quot;zset&quot;
+</code></pre><p>在redis中，所有键的类型都是字符串。</p>
+<figure class="highlight crmsh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">redis&gt; SET msg <span class="string">"hello world"</span></span><br><span class="line">OK</span><br><span class="line"></span><br><span class="line">redis&gt; <span class="operator">TYPE</span> msg</span><br><span class="line"><span class="type">string</span></span><br><span class="line"></span><br><span class="line">redis&gt; RPUSH <span class="type">number</span> <span class="number">1</span> <span class="number">3</span> <span class="number">5</span></span><br><span class="line">OK</span><br><span class="line"></span><br><span class="line">redis&gt; <span class="operator">TYPE</span> <span class="type">number</span></span><br><span class="line"></span><br><span class="line">lsit</span><br><span class="line"></span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>encoding 属性记录对象所使用的编码，也就是对象使用了什么数据结构作为底层的实现。encoding 的类型有以下几种：</p>
+<pre><code>REDIS_ENCODING_INT : long 类型的整数 ：&quot;int&quot;
+REDIS_ENCODING_EMBSTR : embstr编码的简单动态字符串 : &quot;embstr&quot;
+REDIS_ENCODING_RAW : 简单动态字符串 : &quot;raw&quot;
+REDIS_ENCODING_HT : 字典 : &quot;hashtable&quot;
+REDIS_ENCODING_LINKEDLIST : 双端链表 : linkedlist
+REDIS_ENCODING_ZIPLIST : 压缩列表 : &quot;ziplist&quot;
+REDIS_ENCODING_INTSET : 整数集合 : &quot;inset&quot;
+REDIS_ENCODING_SKIPLIST : 跳跃表和字典 : &quot;skiplist&quot;
+</code></pre><figure class="highlight vbnet"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">redis&gt; <span class="keyword">SET</span> msg <span class="string">"hello world"</span></span><br><span class="line">OK</span><br><span class="line"></span><br><span class="line">redid&gt; <span class="built_in">OBJECT</span> ENCODING msg</span><br><span class="line"><span class="string">"embstr"</span></span><br><span class="line"></span><br><span class="line">redis&gt; <span class="keyword">SET</span> story <span class="string">"long long long ago"</span></span><br><span class="line">OK</span><br><span class="line"></span><br><span class="line">redis&gt; <span class="built_in">OBJECT</span> ENCODING story</span><br><span class="line"><span class="string">"raw"</span>(SDS)</span><br><span class="line"></span><br><span class="line">redis&gt; SADD number <span class="number">1</span> <span class="number">3</span> <span class="number">5</span></span><br><span class="line">(<span class="built_in">integer</span>) <span class="number">3</span></span><br><span class="line"></span><br><span class="line">redis&gt; <span class="built_in">OBJECT</span> ENCODING number</span><br><span class="line"><span class="string">"inset"</span></span><br><span class="line"></span><br><span class="line">redis&gt; SADD number <span class="string">"seven"</span></span><br><span class="line">(<span class="built_in">integer</span>) <span class="number">1</span></span><br><span class="line"></span><br><span class="line">redis&gt; <span class="built_in">OBJECT</span> ENCODING number</span><br><span class="line"><span class="string">"hashtable"</span></span><br></pre></td></tr></table></figure>
+<p>通过encoding属性来设定对象所使用的编码，而不是为特定类型的对象关联一种固定的编码，极大的提高了redis的灵活性和效率，因为redis可以根据不同使用场景来为一个对象设置不同的编码，从而优化对象在特定场合的效率。<br>例如：在列表对象包含的元素比较少的时候，redis使用压缩类表作为列表对象的底层实现：</p>
+<ol>
+<li>因为压缩列表比双端列表更节约内存，而且在元素数量比较少的时候，在内存中以连续块方式保存的压缩列表比起双端列表可以更快的被载入到缓存中。</li>
+<li>随着列表对象包含的元素越来越多，使用压缩列表来保存元素的优势逐渐消失，对象就会将底层的实现从压缩列表改为功能呢个更强大、适合保存大量元素的双端链表上面。</li>
+</ol>
+<h4 id="有序集合对象的底层数据实现"><a href="#有序集合对象的底层数据实现" class="headerlink" title="有序集合对象的底层数据实现"></a>有序集合对象的底层数据实现</h4><p>redis的有序集合对象zset结构使用了两种数据结构：跳表和字典。跳表来实现有序集合，可以保存执行范围类型操作的所有优点，也可以实现集合的有序，但是对于根据成员key来查找value，将会由于二分查找而时间复制度变为O(logN)， 使用字典来保存所有的key-value对的话，那么既可以将查找的时间复杂度降为O(1)。为了实现高效率，有序集合就采用了跳表和字典来作为底层的数据实现。</p>
+<h4 id="对象共享"><a href="#对象共享" class="headerlink" title="对象共享"></a>对象共享</h4><p>目前来说，redis会在初始化服务器时，创建一万个字符串对象，这些对象包含了从0到9999的所有整数值，当服务器需要用到这些字符串对象的时候，服务器就会使用这些共享对象，而不是创建新对象。另外，这些共享对象不仅只有字符串键可以使用，那些在数据结构中嵌套了字符对象的对象，都可以使用这邪恶共享对象。</p>
+<p>redis只共享包含整数值的字符串对象，而不共享包含字符串的对象，是因为对象越复杂时，共享的时候需要检查的东西越多，消耗的CPU时间就越长。如果共享独享是一个保存整数值的字符串，那么需要比较的复杂度为O(1)，如果保存的是一个字符串，需要的复杂度为O(n)，如果是包含多个值的对象，那么需要的时间复杂度为O(N^2)。所以为了效率的考虑，redis目前只对包含整数值的字符串对象进行共享。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/07/31/redis之对象/" data-id="cira56wa7003l90qycrrocfjc" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2016/07/31/redis数据结构/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title"></div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java/">Java</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">34</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">11</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java底层机制/">Java底层机制</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/STL/">STL</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/muduo-C-网络库/">muduo C++ 网络库</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/">redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图与树/">图与树</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/设计模式/">设计模式</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/C-11-常规新特性/" style="font-size: 17.14px;">C++11 常规新特性</a> <a href="/tags/Java底层机制/" style="font-size: 15.71px;">Java底层机制</a> <a href="/tags/Linux-网络编程/" style="font-size: 17.14px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 15.71px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 14.29px;">Linux用户管理</a> <a href="/tags/Linux进程间通信/" style="font-size: 15.71px;">Linux进程间通信</a> <a href="/tags/STL/" style="font-size: 10px;">STL</a> <a href="/tags/TCP-IP/" style="font-size: 20px;">TCP/IP</a> <a href="/tags/muduo-C-网络库/" style="font-size: 18.57px;">muduo C++ 网络库</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/动态规划/" style="font-size: 12.86px;">动态规划</a> <a href="/tags/图与树/" style="font-size: 15.71px;">图与树</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/数组/" style="font-size: 10px;">数组</a> <a href="/tags/树结构/" style="font-size: 12.86px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 11.43px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 11.43px;">爬虫</a> <a href="/tags/设计模式/" style="font-size: 12.86px;">设计模式</a> <a href="/tags/随记/" style="font-size: 11.43px;">随记</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a><span class="archive-list-count">37</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/06/">六月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/07/31/redis之对象/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2016/07/31/redis数据结构/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2016/07/31/redis发布与订阅/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2016/07/21/网络编程摘要/">网络编程摘要</a>
+          </li>
+        
+          <li>
+            <a href="/2016/07/21/test/">test</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 LiuYongbin<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js" type="text/javascript"></script>
+
+
+<script src="/js/script.js" type="text/javascript"></script>
+
+  </div>
+</body>
+</html>

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>LiuYongbin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="title: redis数据结构date: 2016-06-25 20:13:02categories: Linuxtags: redis
+redis的数据结构主要有以下几种：SDS(simple dynamic string)，embstr(编码的简单动态字符串)，字典，链表(双端链表)，压缩列表，整数集合，跳表。
+SDS的主要结构为：123456789struct sdshdr&amp;#123;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LiuYongbin">
+<meta property="og:url" content="http://liubigbin.github.io/2016/07/31/redis数据结构/index.html">
+<meta property="og:site_name" content="LiuYongbin">
+<meta property="og:description" content="title: redis数据结构date: 2016-06-25 20:13:02categories: Linuxtags: redis
+redis的数据结构主要有以下几种：SDS(simple dynamic string)，embstr(编码的简单动态字符串)，字典，链表(双端链表)，压缩列表，整数集合，跳表。
+SDS的主要结构为：123456789struct sdshdr&amp;#123;">
+<meta property="og:updated_time" content="2016-07-31T05:02:00.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="LiuYongbin">
+<meta name="twitter:description" content="title: redis数据结构date: 2016-06-25 20:13:02categories: Linuxtags: redis
+redis的数据结构主要有以下几种：SDS(simple dynamic string)，embstr(编码的简单动态字符串)，字典，链表(双端链表)，压缩列表，整数集合，跳表。
+SDS的主要结构为：123456789struct sdshdr&amp;#123;">
+  
+    <link rel="alternative" href="/atom.xml" title="LiuYongbin" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" type="text/css">
+  
+
+</head>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">LiuYongbin</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">Hey boy just do it!</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://liubigbin.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-redis数据结构" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/07/31/redis数据结构/" class="article-date">
+  <time datetime="2016-07-31T05:01:39.000Z" itemprop="datePublished">2016-07-31</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>title: redis数据结构<br>date: 2016-06-25 20:13:02<br>categories: Linux<br>tags: redis</p>
+<p>redis的数据结构主要有以下几种：SDS(simple dynamic string)，embstr(编码的简单动态字符串)，字典，链表(双端链表)，压缩列表，整数集合，跳表。</p>
+<h4 id="SDS的主要结构为："><a href="#SDS的主要结构为：" class="headerlink" title="SDS的主要结构为："></a>SDS的主要结构为：</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> sdshdr&#123;</span><br><span class="line">    <span class="comment">//记录buffer中的存储数据的实际长度</span></span><br><span class="line">	<span class="keyword">int</span> len;</span><br><span class="line">	<span class="comment">//记录buffer当前还剩下的长度</span></span><br><span class="line">	<span class="keyword">int</span> <span class="built_in">free</span>;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//buffer，实际存储数据的数组,会在存储数据的最后面加一个'\0',以适应于系统的一些字符串处理函数</span></span><br><span class="line">	<span class="keyword">char</span> buf[];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>SDS与C字符串的区别：</p>
+<ol>
+<li>属性len可以使得SDS能够在常数时间内返回字符串的长度</li>
+<li>杜绝缓冲区的溢出，C字符串不记录本身的长度，所以在字符串的复制、拼接(strcat)上面会出现溢出，而SDS有free属性，可以根据属性来确定还有没有空间可以允许安全的字符串操作，没有的话会自动的申请更大的内存空间，并复制原来的数据。</li>
+<li>减少修改字符串所带来的内存重分配次数。由于C字符串没有预分配策略，所以每一次的字符串增加或减少操作都会造成内存的重分配。而SDS有内存预分配策略，所以可以减少相应的内存重分配次数。</li>
+<li>二进制安全的。因为SDS是根据len来确定所存储的字符串的长度的，而不是硬性的根据’\0’来决定字符串的结尾，所以对于二进制等会在数据中出现’\0’的数据，SDS是安全的，可以完整的读取以及存储数据，而C字符串却不能。</li>
+</ol>
+<h4 id="链表"><a href="#链表" class="headerlink" title="链表"></a>链表</h4><p>redis的链表采用的是双向链表的方式，每一个链表节点都有指向上一个和下一个节点的指针。链表由list数据结构来表示，主要负责管理链表，有链表头、链表尾、链表长度等属性。链表的节点就是简单的几个属性：节点值、上一个节点指针、下一个节点指针。</p>
+<h4 id="字典"><a href="#字典" class="headerlink" title="字典"></a>字典</h4><p>redis使用字典来表示数据库，也用来作为哈希键的底层实现。哈希表采用数组加链表的方式来实现以及解决哈希冲突的问题。字典的结构与链表一样，有两个数据结构组成。一个是dictht，用来表示整个哈希表的具体信息，另一个数dictEntry，为哈希表的具体节点值，用来存储key<br>和value数据。每一个dictEntry都有一个对应的指针，来指向下一个哈希冲突的dictEntry。在dictht中，有两个dictEntry** ht[2]元素, 一个用来指向真是的哈希数组，一个在平时的值为nullptr。在哈希数组达到一定的饱和度或是太过于稀疏的时候，redis会进行rehash操作，此时会重新生成哈希数组，指向nullptr的属性会指向该新的数组起始地址，将原来的哈希表数据剪切到新的空间里面，剪切完成后，会将旧的属性赋值为nullptr。</p>
+<p>rehash的操作有两种策略，一种是一次性操作，一次性将原有的数据剪切到新的空间里面。另外一种是渐进式的rehash，每次对于字典的操作，都会将对应的key以及value剪切到新的空间里面，该策略在对字典的操作，比如查找时，需要新旧两个哈希数组一起参与，在久的找不到的情况下查找新的。</p>
+<h4 id="跳跃表"><a href="#跳跃表" class="headerlink" title="跳跃表"></a>跳跃表</h4><p>与链表一样，跳跃表也由两种数据结构组成，redis.h/zskiplistNode和redis.h/zskiplist。zskiplist用来表示整个跳跃表的具体信息，zskiplistNode用来表示跳跃表的节点。</p>
+<h4 id="整数集合"><a href="#整数集合" class="headerlink" title="整数集合"></a>整数集合</h4><p>整数结合用来保存整数值集合。具体的数据结构为：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> inset&#123;</span><br><span class="line">    <span class="comment">//编码方式：INSET_ENC_INT16，INSET_ENC_INT32，INSET_ENC_INT64，用来表示content数组里面的数据的真实类型</span></span><br><span class="line">	<span class="keyword">uint32_t</span> encoding;</span><br><span class="line">	<span class="comment">//集合的元素数量</span></span><br><span class="line">	<span class="keyword">uint32_t</span> length;</span><br><span class="line">	<span class="comment">//保存集合的数组，数组里面存储的真实数据会根据encoding属性来确定，并不是根据content的int8_t类型来确定的。</span></span><br><span class="line">	<span class="keyword">int8_t</span> contents[];</span><br><span class="line">&#125;inset;</span><br></pre></td></tr></table></figure>
+<p>content数组中，各个元素按照值的大小递增排序，并且只出现一次。<br>当向整数集合插入新的元素，并且新元素的类型比原有的类型还大时，redis会对整数集合进行编码升级，所有的数据的类型都会升级为新的类型。所以需要对conetne执行新的内存操作以及数据剪切。由于新元素的值要么大于content中的任何值，要么小于content中的任何值，所以在新的content里面，新元素的位置要么在最后，要么在最前。</p>
+<h5 id="升级的好处"><a href="#升级的好处" class="headerlink" title="升级的好处"></a>升级的好处</h5><ol>
+<li>通过升级，整数集合可以存储不同类型的整数，由于C语言是静态类型语言，如果不升级的话，就需要有不同类型的数据结构。通过升级就可以直接使用一种数据结构来表示多种类型整数。</li>
+<li>节约内存。为了能够存储多种数据类型，只在需要的时候才进行升级，这样可以节约内存，不然的话，需要一开始就定义最大的整数类型作为content<br>的元素类型。</li>
+</ol>
+<p>整数集合是没有降级的，只有升级，一旦升级后，编码就会一直保持升级后的编码，即使content中的元素值很小，也不会执行降级。</p>
+<h4 id="压缩列表"><a href="#压缩列表" class="headerlink" title="压缩列表"></a>压缩列表</h4><p>压缩列表是列表键和哈希键的底层实现之一。当一个列表键只包含少量列表项，并且每个列表项要么就是小整数值，要么就是长度比较短的字符串，那么redis就会使用压缩列表来做列表键的底层实现。另外，当一个哈希键只包含少量键值对时，并且每个键值对的键和值要么就是小整数值，要么就是长度比较短的字符串，那么redis就会使用压缩列表来做哈希键的底层实现。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">redis&gt; RPUSH lst <span class="number">1</span> <span class="number">2</span> <span class="number">3</span> <span class="number">4</span> <span class="string">"hello"</span> <span class="string">"world"</span></span><br><span class="line">(integer)<span class="number">6</span></span><br><span class="line"></span><br><span class="line">redis&gt; OBJECT ENCODING lst</span><br><span class="line"><span class="string">"ziplist"</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">redis&gt; HMSET profile <span class="string">"name"</span> <span class="string">"Jack"</span> <span class="string">"age"</span> <span class="number">28</span> <span class="string">"Job"</span> <span class="string">"Programmer"</span></span><br><span class="line">OK</span><br><span class="line"></span><br><span class="line">redis&gt; OBJECT ENCODING profile</span><br><span class="line"><span class="string">"ziplist"</span></span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/07/31/redis数据结构/" data-id="cira56wa2003f90qy6k9uyxb2" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2016/07/31/redis之对象/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          (no title)
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2016/07/31/redis发布与订阅/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title"></div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java/">Java</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">34</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">11</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java底层机制/">Java底层机制</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/STL/">STL</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/muduo-C-网络库/">muduo C++ 网络库</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/">redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图与树/">图与树</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/设计模式/">设计模式</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/C-11-常规新特性/" style="font-size: 17.14px;">C++11 常规新特性</a> <a href="/tags/Java底层机制/" style="font-size: 15.71px;">Java底层机制</a> <a href="/tags/Linux-网络编程/" style="font-size: 17.14px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 15.71px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 14.29px;">Linux用户管理</a> <a href="/tags/Linux进程间通信/" style="font-size: 15.71px;">Linux进程间通信</a> <a href="/tags/STL/" style="font-size: 10px;">STL</a> <a href="/tags/TCP-IP/" style="font-size: 20px;">TCP/IP</a> <a href="/tags/muduo-C-网络库/" style="font-size: 18.57px;">muduo C++ 网络库</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/动态规划/" style="font-size: 12.86px;">动态规划</a> <a href="/tags/图与树/" style="font-size: 15.71px;">图与树</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/数组/" style="font-size: 10px;">数组</a> <a href="/tags/树结构/" style="font-size: 12.86px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 11.43px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 11.43px;">爬虫</a> <a href="/tags/设计模式/" style="font-size: 12.86px;">设计模式</a> <a href="/tags/随记/" style="font-size: 11.43px;">随记</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a><span class="archive-list-count">37</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/06/">六月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/07/31/redis之对象/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2016/07/31/redis数据结构/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2016/07/31/redis发布与订阅/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2016/07/21/网络编程摘要/">网络编程摘要</a>
+          </li>
+        
+          <li>
+            <a href="/2016/07/21/test/">test</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 LiuYongbin<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js" type="text/javascript"></script>
+
+
+<script src="/js/script.js" type="text/javascript"></script>
+
+  </div>
+</body>
+</html>

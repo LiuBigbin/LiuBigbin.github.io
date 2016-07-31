@@ -5,19 +5,22 @@
   
   <title>LiuYongbin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="redis的数据结构主要有以下几种：SDS(simple dynamic string)，embstr(编码的简单动态字符串)，字典，链表(双端链表)，压缩列表，整数集合，跳表。
-SDS的主要结构为：123456789struct sdshdr&amp;#123;    //记录buffer中的存储数据的实际长度	int len;	//记录buffer当前还剩下的长度	int free;	//buffer">
+  <meta name="description" content="title: redis数据结构date: 2016-06-25 20:13:02categories: Linuxtags: redis
+redis的数据结构主要有以下几种：SDS(simple dynamic string)，embstr(编码的简单动态字符串)，字典，链表(双端链表)，压缩列表，整数集合，跳表。
+SDS的主要结构为：123456789struct sdshdr&amp;#123;">
 <meta property="og:type" content="article">
 <meta property="og:title" content="LiuYongbin">
 <meta property="og:url" content="http://liubigbin.github.io/2016/07/31/redis数据结构/index.html">
 <meta property="og:site_name" content="LiuYongbin">
-<meta property="og:description" content="redis的数据结构主要有以下几种：SDS(simple dynamic string)，embstr(编码的简单动态字符串)，字典，链表(双端链表)，压缩列表，整数集合，跳表。
-SDS的主要结构为：123456789struct sdshdr&amp;#123;    //记录buffer中的存储数据的实际长度	int len;	//记录buffer当前还剩下的长度	int free;	//buffer">
-<meta property="og:updated_time" content="2016-07-22T13:46:20.000Z">
+<meta property="og:description" content="title: redis数据结构date: 2016-06-25 20:13:02categories: Linuxtags: redis
+redis的数据结构主要有以下几种：SDS(simple dynamic string)，embstr(编码的简单动态字符串)，字典，链表(双端链表)，压缩列表，整数集合，跳表。
+SDS的主要结构为：123456789struct sdshdr&amp;#123;">
+<meta property="og:updated_time" content="2016-07-31T04:26:00.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="LiuYongbin">
-<meta name="twitter:description" content="redis的数据结构主要有以下几种：SDS(simple dynamic string)，embstr(编码的简单动态字符串)，字典，链表(双端链表)，压缩列表，整数集合，跳表。
-SDS的主要结构为：123456789struct sdshdr&amp;#123;    //记录buffer中的存储数据的实际长度	int len;	//记录buffer当前还剩下的长度	int free;	//buffer">
+<meta name="twitter:description" content="title: redis数据结构date: 2016-06-25 20:13:02categories: Linuxtags: redis
+redis的数据结构主要有以下几种：SDS(simple dynamic string)，embstr(编码的简单动态字符串)，字典，链表(双端链表)，压缩列表，整数集合，跳表。
+SDS的主要结构为：123456789struct sdshdr&amp;#123;">
   
     <link rel="alternative" href="/atom.xml" title="LiuYongbin" type="application/atom+xml">
   
@@ -79,7 +82,8 @@ SDS的主要结构为：123456789struct sdshdr&amp;#123;    //记录buffer中的
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>redis的数据结构主要有以下几种：SDS(simple dynamic string)，embstr(编码的简单动态字符串)，字典，链表(双端链表)，压缩列表，整数集合，跳表。</p>
+        <p>title: redis数据结构<br>date: 2016-06-25 20:13:02<br>categories: Linux<br>tags: redis</p>
+<p>redis的数据结构主要有以下几种：SDS(simple dynamic string)，embstr(编码的简单动态字符串)，字典，链表(双端链表)，压缩列表，整数集合，跳表。</p>
 <h4 id="SDS的主要结构为："><a href="#SDS的主要结构为：" class="headerlink" title="SDS的主要结构为："></a>SDS的主要结构为：</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> sdshdr&#123;</span><br><span class="line">    <span class="comment">//记录buffer中的存储数据的实际长度</span></span><br><span class="line">	<span class="keyword">int</span> len;</span><br><span class="line">	<span class="comment">//记录buffer当前还剩下的长度</span></span><br><span class="line">	<span class="keyword">int</span> <span class="built_in">free</span>;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//buffer，实际存储数据的数组,会在存储数据的最后面加一个'\0',以适应于系统的一些字符串处理函数</span></span><br><span class="line">	<span class="keyword">char</span> buf[];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>SDS与C字符串的区别：</p>
 <ol>
@@ -93,7 +97,7 @@ SDS的主要结构为：123456789struct sdshdr&amp;#123;    //记录buffer中的
 <p>rehash的操作有两种策略，一种是一次性操作，一次性将原有的数据剪切到新的空间里面。另外一种是渐进式的rehash，每次对于字典的操作，都会将对应的key以及value剪切到新的空间里面，该策略在对字典的操作，比如查找时，需要新旧两个哈希数组一起参与，在久的找不到的情况下查找新的。</p>
 <h4 id="跳跃表"><a href="#跳跃表" class="headerlink" title="跳跃表"></a>跳跃表</h4><p>与链表一样，跳跃表也由两种数据结构组成，redis.h/zskiplistNode和redis.h/zskiplist。zskiplist用来表示整个跳跃表的具体信息，zskiplistNode用来表示跳跃表的节点。</p>
 <h4 id="整数集合"><a href="#整数集合" class="headerlink" title="整数集合"></a>整数集合</h4><p>整数结合用来保存整数值集合。具体的数据结构为：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> inset&#123;</span><br><span class="line">    <span class="comment">//编码方式：INSET_ENC_INT16，INSET_ENC_INT32，INSET_ENC_INT64，用来表示content数组里面的数据的真实类型 </span></span><br><span class="line">	<span class="keyword">uint32_t</span> encoding;</span><br><span class="line">	<span class="comment">//集合的元素数量</span></span><br><span class="line">	<span class="keyword">uint32_t</span> length;</span><br><span class="line">	<span class="comment">//保存集合的数组，数组里面存储的真实数据会根据encoding属性来确定，并不是根据content的int8_t类型来确定的。</span></span><br><span class="line">	<span class="keyword">int8_t</span> contents[];</span><br><span class="line">&#125;inset;</span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> inset&#123;</span><br><span class="line">    <span class="comment">//编码方式：INSET_ENC_INT16，INSET_ENC_INT32，INSET_ENC_INT64，用来表示content数组里面的数据的真实类型</span></span><br><span class="line">	<span class="keyword">uint32_t</span> encoding;</span><br><span class="line">	<span class="comment">//集合的元素数量</span></span><br><span class="line">	<span class="keyword">uint32_t</span> length;</span><br><span class="line">	<span class="comment">//保存集合的数组，数组里面存储的真实数据会根据encoding属性来确定，并不是根据content的int8_t类型来确定的。</span></span><br><span class="line">	<span class="keyword">int8_t</span> contents[];</span><br><span class="line">&#125;inset;</span><br></pre></td></tr></table></figure>
 <p>content数组中，各个元素按照值的大小递增排序，并且只出现一次。<br>当向整数集合插入新的元素，并且新元素的类型比原有的类型还大时，redis会对整数集合进行编码升级，所有的数据的类型都会升级为新的类型。所以需要对conetne执行新的内存操作以及数据剪切。由于新元素的值要么大于content中的任何值，要么小于content中的任何值，所以在新的content里面，新元素的位置要么在最后，要么在最前。</p>
 <h5 id="升级的好处"><a href="#升级的好处" class="headerlink" title="升级的好处"></a>升级的好处</h5><ol>
 <li>通过升级，整数集合可以存储不同类型的整数，由于C语言是静态类型语言，如果不升级的话，就需要有不同类型的数据结构。通过升级就可以直接使用一种数据结构来表示多种类型整数。</li>
@@ -114,7 +118,7 @@ SDS的主要结构为：123456789struct sdshdr&amp;#123;    //记录buffer中的
     
 <nav id="article-nav">
   
-    <a href="/2016/07/31/redis发布与订阅/" id="article-nav-newer" class="article-nav-link-wrap">
+    <a href="/2016/07/31/redis之对象/" id="article-nav-newer" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Newer</strong>
       <div class="article-nav-title">
         
@@ -124,9 +128,9 @@ SDS的主要结构为：123456789struct sdshdr&amp;#123;    //记录buffer中的
     </a>
   
   
-    <a href="/2016/07/31/网络编程摘要/" id="article-nav-older" class="article-nav-link-wrap">
+    <a href="/2016/07/21/网络编程摘要/" id="article-nav-older" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title"></div>
+      <div class="article-nav-title">网络编程摘要</div>
     </a>
   
 </nav>
@@ -142,7 +146,7 @@ SDS的主要结构为：123456789struct sdshdr&amp;#123;    //记录buffer中的
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java/">Java</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">33</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">10</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java/">Java</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">34</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">11</span></li></ul>
     </div>
   </div>
 
@@ -151,7 +155,7 @@ SDS的主要结构为：123456789struct sdshdr&amp;#123;    //记录buffer中的
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java底层机制/">Java底层机制</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/muduo-C-网络库/">muduo C++ 网络库</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图与树/">图与树</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/设计模式/">设计模式</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java底层机制/">Java底层机制</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/STL/">STL</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/muduo-C-网络库/">muduo C++ 网络库</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/">redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图与树/">图与树</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/设计模式/">设计模式</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
     </div>
   </div>
 
@@ -160,7 +164,7 @@ SDS的主要结构为：123456789struct sdshdr&amp;#123;    //记录buffer中的
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/C-11-常规新特性/" style="font-size: 17.14px;">C++11 常规新特性</a> <a href="/tags/Java底层机制/" style="font-size: 15.71px;">Java底层机制</a> <a href="/tags/Linux-网络编程/" style="font-size: 15.71px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 15.71px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 14.29px;">Linux用户管理</a> <a href="/tags/Linux进程间通信/" style="font-size: 15.71px;">Linux进程间通信</a> <a href="/tags/TCP-IP/" style="font-size: 20px;">TCP/IP</a> <a href="/tags/muduo-C-网络库/" style="font-size: 18.57px;">muduo C++ 网络库</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/动态规划/" style="font-size: 12.86px;">动态规划</a> <a href="/tags/图与树/" style="font-size: 15.71px;">图与树</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/数组/" style="font-size: 10px;">数组</a> <a href="/tags/树结构/" style="font-size: 12.86px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 11.43px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 11.43px;">爬虫</a> <a href="/tags/设计模式/" style="font-size: 12.86px;">设计模式</a> <a href="/tags/随记/" style="font-size: 11.43px;">随记</a>
+      <a href="/tags/C-11-常规新特性/" style="font-size: 17.14px;">C++11 常规新特性</a> <a href="/tags/Java底层机制/" style="font-size: 15.71px;">Java底层机制</a> <a href="/tags/Linux-网络编程/" style="font-size: 17.14px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 15.71px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 14.29px;">Linux用户管理</a> <a href="/tags/Linux进程间通信/" style="font-size: 15.71px;">Linux进程间通信</a> <a href="/tags/STL/" style="font-size: 10px;">STL</a> <a href="/tags/TCP-IP/" style="font-size: 20px;">TCP/IP</a> <a href="/tags/muduo-C-网络库/" style="font-size: 18.57px;">muduo C++ 网络库</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/动态规划/" style="font-size: 12.86px;">动态规划</a> <a href="/tags/图与树/" style="font-size: 15.71px;">图与树</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/数组/" style="font-size: 10px;">数组</a> <a href="/tags/树结构/" style="font-size: 12.86px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 11.43px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 11.43px;">爬虫</a> <a href="/tags/设计模式/" style="font-size: 12.86px;">设计模式</a> <a href="/tags/随记/" style="font-size: 11.43px;">随记</a>
     </div>
   </div>
 
@@ -169,7 +173,7 @@ SDS的主要结构为：123456789struct sdshdr&amp;#123;    //记录buffer中的
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a><span class="archive-list-count">39</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a><span class="archive-list-count">37</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/06/">六月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
     </div>
   </div>
 
@@ -181,11 +185,11 @@ SDS的主要结构为：123456789struct sdshdr&amp;#123;    //记录buffer中的
       <ul>
         
           <li>
-            <a href="/2016/07/31/redis之对象/">(no title)</a>
+            <a href="/2016/07/31/redis发布与订阅/">(no title)</a>
           </li>
         
           <li>
-            <a href="/2016/07/31/redis发布与订阅/">(no title)</a>
+            <a href="/2016/07/31/redis之对象/">(no title)</a>
           </li>
         
           <li>
@@ -193,11 +197,11 @@ SDS的主要结构为：123456789struct sdshdr&amp;#123;    //记录buffer中的
           </li>
         
           <li>
-            <a href="/2016/07/31/网络编程摘要/">(no title)</a>
+            <a href="/2016/07/21/网络编程摘要/">网络编程摘要</a>
           </li>
         
           <li>
-            <a href="/2016/07/31/STL概览/">(no title)</a>
+            <a href="/2016/07/21/test/">test</a>
           </li>
         
       </ul>

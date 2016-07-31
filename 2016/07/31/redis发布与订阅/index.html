@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>LiuYongbin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="redis可以发布与订阅频道，有两种订阅方式，一种是具体频道，一种是模式匹配频道。对于具体频道，redis采用了字典来保存具体频道与订阅客户端的数据，key为频道，value为订阅的客户端，采用链表的形式保存。对于模式频道，redis直接采用链表的方式来保存模式客户端。每当有消息发布，redis根据消息所属的频道来通过字典找到客户端链表，遍历链表，发送消息。接着遍历模式链表，查找匹配的模式频道，发">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LiuYongbin">
+<meta property="og:url" content="http://liubigbin.github.io/2016/07/31/redis发布与订阅/index.html">
+<meta property="og:site_name" content="LiuYongbin">
+<meta property="og:description" content="redis可以发布与订阅频道，有两种订阅方式，一种是具体频道，一种是模式匹配频道。对于具体频道，redis采用了字典来保存具体频道与订阅客户端的数据，key为频道，value为订阅的客户端，采用链表的形式保存。对于模式频道，redis直接采用链表的方式来保存模式客户端。每当有消息发布，redis根据消息所属的频道来通过字典找到客户端链表，遍历链表，发送消息。接着遍历模式链表，查找匹配的模式频道，发">
+<meta property="og:updated_time" content="2016-07-26T10:16:40.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="LiuYongbin">
+<meta name="twitter:description" content="redis可以发布与订阅频道，有两种订阅方式，一种是具体频道，一种是模式匹配频道。对于具体频道，redis采用了字典来保存具体频道与订阅客户端的数据，key为频道，value为订阅的客户端，采用链表的形式保存。对于模式频道，redis直接采用链表的方式来保存模式客户端。每当有消息发布，redis根据消息所属的频道来通过字典找到客户端链表，遍历链表，发送消息。接着遍历模式链表，查找匹配的模式频道，发">
+  
+    <link rel="alternative" href="/atom.xml" title="LiuYongbin" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" type="text/css">
+  
+
+</head>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">LiuYongbin</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">Hey boy just do it!</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://liubigbin.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-redis发布与订阅" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/07/31/redis发布与订阅/" class="article-date">
+  <time datetime="2016-07-31T02:35:54.000Z" itemprop="datePublished">2016-07-31</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>redis可以发布与订阅频道，有两种订阅方式，一种是具体频道，一种是模式匹配频道。<br>对于具体频道，redis采用了字典来保存具体频道与订阅客户端的数据，key为频道，value为订阅的客户端，采用链表的形式保存。对于模式频道，redis直接采用链表的方式来保存模式客户端。每当有消息发布，redis根据消息所属的频道来通过字典找到客户端链表，遍历链表，发送消息。接着遍历模式链表，查找匹配的模式频道，发送消息给客户端。<br>具体的代码如下所示：<br><figure class="highlight zephir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* Publish a message</span><br><span class="line"> *</span><br><span class="line"> * 将 message 发送到所有订阅频道 channel 的客户端，</span><br><span class="line"> * 以及所有订阅了和 channel 频道匹配的模式的客户端。</span><br><span class="line"> */</span></span><br><span class="line"><span class="keyword">int</span> pubsubPublishMessage(robj *channel, robj *message) &#123;</span><br><span class="line">    <span class="keyword">int</span> receivers = <span class="number">0</span>;</span><br><span class="line">    dictEntry *de;</span><br><span class="line">    listNode *ln;</span><br><span class="line">    listIter li;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Send to clients listening for that channel */</span></span><br><span class="line">    <span class="comment">// 取出包含所有订阅频道 channel 的客户端的链表</span></span><br><span class="line">    <span class="comment">// 并将消息发送给它们</span></span><br><span class="line">    de = dictFind(server.pubsub_channels,channel);</span><br><span class="line">    <span class="keyword">if</span> (de) &#123;</span><br><span class="line">        <span class="keyword">list</span> *<span class="keyword">list</span> = dictGetVal(de);</span><br><span class="line">        listNode *ln;</span><br><span class="line">        listIter li;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 遍历客户端链表，将 message 发送给它们</span></span><br><span class="line">        listRewind(<span class="keyword">list</span>,&amp;li);</span><br><span class="line">        <span class="keyword">while</span> ((ln = listNext(&amp;li)) != <span class="keyword">NULL</span>) &#123;</span><br><span class="line">            redisClient *c = ln-&gt;value;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 回复客户端。</span></span><br><span class="line">            <span class="comment">// 示例：</span></span><br><span class="line">            <span class="comment">// 1) "message"</span></span><br><span class="line">            <span class="comment">// 2) "xxx"</span></span><br><span class="line">            <span class="comment">// 3) "hello"</span></span><br><span class="line">            addReply(c,shared.mbulkhdr[<span class="number">3</span>]);</span><br><span class="line">            <span class="comment">// "message" 字符串</span></span><br><span class="line">            addReply(c,shared.messagebulk);</span><br><span class="line">            <span class="comment">// 消息的来源频道</span></span><br><span class="line">            addReplyBulk(c,channel);</span><br><span class="line">            <span class="comment">// 消息内容</span></span><br><span class="line">            addReplyBulk(c,message);</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 接收客户端计数</span></span><br><span class="line">            receivers++;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Send to clients listening to matching channels */</span></span><br><span class="line">    <span class="comment">// 将消息也发送给那些和频道匹配的模式</span></span><br><span class="line">    <span class="keyword">if</span> (listLength(server.pubsub_patterns)) &#123;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 遍历模式链表</span></span><br><span class="line">        listRewind(server.pubsub_patterns,&amp;li);</span><br><span class="line">        channel = getDecodedObject(channel);</span><br><span class="line">        <span class="keyword">while</span> ((ln = listNext(&amp;li)) != <span class="keyword">NULL</span>) &#123;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 取出 pubsubPattern</span></span><br><span class="line">            pubsubPattern *pat = ln-&gt;value;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 如果 channel 和 pattern 匹配</span></span><br><span class="line">            <span class="comment">// 就给所有订阅该 pattern 的客户端发送消息</span></span><br><span class="line">            <span class="keyword">if</span> (stringmatchlen((<span class="keyword">char</span>*)pat-&gt;pattern-&gt;ptr,</span><br><span class="line">                                sdslen(pat-&gt;pattern-&gt;ptr),</span><br><span class="line">                                (<span class="keyword">char</span>*)channel-&gt;ptr,</span><br><span class="line">                                sdslen(channel-&gt;ptr),<span class="number">0</span>)) &#123;</span><br><span class="line"></span><br><span class="line">                <span class="comment">// 回复客户端</span></span><br><span class="line">                <span class="comment">// 示例：</span></span><br><span class="line">                <span class="comment">// 1) "pmessage"</span></span><br><span class="line">                <span class="comment">// 2) "*"</span></span><br><span class="line">                <span class="comment">// 3) "xxx"</span></span><br><span class="line">                <span class="comment">// 4) "hello"</span></span><br><span class="line">                addReply(pat-&gt;client,shared.mbulkhdr[<span class="number">4</span>]);</span><br><span class="line">                addReply(pat-&gt;client,shared.pmessagebulk);</span><br><span class="line">                addReplyBulk(pat-&gt;client,pat-&gt;pattern);</span><br><span class="line">                addReplyBulk(pat-&gt;client,channel);</span><br><span class="line">                addReplyBulk(pat-&gt;client,message);</span><br><span class="line"></span><br><span class="line">                <span class="comment">// 对接收消息的客户端进行计数</span></span><br><span class="line">                receivers++;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        decrRefCount(channel);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 返回计数</span></span><br><span class="line">    <span class="keyword">return</span> receivers;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/07/31/redis发布与订阅/" data-id="cir9zx3260003ngqysd9fiwi1" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2016/07/31/redis之对象/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          (no title)
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2016/07/31/redis数据结构/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title"></div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java/">Java</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">33</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">10</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java底层机制/">Java底层机制</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/muduo-C-网络库/">muduo C++ 网络库</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图与树/">图与树</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/设计模式/">设计模式</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/C-11-常规新特性/" style="font-size: 17.14px;">C++11 常规新特性</a> <a href="/tags/Java底层机制/" style="font-size: 15.71px;">Java底层机制</a> <a href="/tags/Linux-网络编程/" style="font-size: 15.71px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 15.71px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 14.29px;">Linux用户管理</a> <a href="/tags/Linux进程间通信/" style="font-size: 15.71px;">Linux进程间通信</a> <a href="/tags/TCP-IP/" style="font-size: 20px;">TCP/IP</a> <a href="/tags/muduo-C-网络库/" style="font-size: 18.57px;">muduo C++ 网络库</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/动态规划/" style="font-size: 12.86px;">动态规划</a> <a href="/tags/图与树/" style="font-size: 15.71px;">图与树</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/数组/" style="font-size: 10px;">数组</a> <a href="/tags/树结构/" style="font-size: 12.86px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 11.43px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 11.43px;">爬虫</a> <a href="/tags/设计模式/" style="font-size: 12.86px;">设计模式</a> <a href="/tags/随记/" style="font-size: 11.43px;">随记</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a><span class="archive-list-count">39</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/07/31/redis之对象/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2016/07/31/redis发布与订阅/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2016/07/31/redis数据结构/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2016/07/31/网络编程摘要/">(no title)</a>
+          </li>
+        
+          <li>
+            <a href="/2016/07/31/STL概览/">(no title)</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 LiuYongbin<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js" type="text/javascript"></script>
+
+
+<script src="/js/script.js" type="text/javascript"></script>
+
+  </div>
+</body>
+</html>

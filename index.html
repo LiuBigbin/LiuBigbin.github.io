@@ -65,6 +65,281 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-redis之对象" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/07/31/redis之对象/" class="article-date">
+  <time datetime="2016-07-31T02:35:54.000Z" itemprop="datePublished">2016-07-31</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>redis并没有直接使用这些数据结构来实现键值对数据库，而是基于这些数据结构创建了一个对象系统，这个系统包含字符串对象、列表对象、哈希对象、集合对象以及有序集合对象这五种类型的对象，每种对象都用到了至少一种redis中的数据结构。</p>
+<p>通过这五种不同类型的对象，redis可以在执行命令前，根据对象的类型来判断一个对象是否可以执行给定的命令。使用对象的另一个好处就是，我们可以针对不同的使用场景，对对象设置多种不同的数据结构实现，从而优化对象在不同使用场景下的效率。除此之外，redis对象系统还实现了基于引用计数技术的内存回收机制，当程序不再使用某个对象时，这个对象所占用的内存就会被自动释放；另外，redis还通过引用计数技术实现了对象共享机制，这一机制可以在适当的条件下，通过让多个数据库键共享同一个对象来节约内存。最后，redis的对象带有访问时间记录信息，该信息可以用于计算数据库键的空转时长，在服务器启用了maxmemory功能的情况下，空转时长较大的那些键可能会优先被服务器删除。</p>
+<p>redis中的每一个对象都由一个redisObject结构表示，该结构中和保存数据有关的三个属性分别是type属性、encoding属性和ptr属性。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> redisObject&#123;</span><br><span class="line">    <span class="comment">//类型</span></span><br><span class="line">	<span class="keyword">unsigned</span> type:<span class="number">4</span>;</span><br><span class="line">	<span class="comment">//编码</span></span><br><span class="line">	<span class="keyword">unsigned</span> encoding:<span class="number">4</span>;</span><br><span class="line">	<span class="comment">//指向数据的指针，如果数据为整数的话，ptr直接存储该整数的值</span></span><br><span class="line">	<span class="keyword">void</span>* ptr;</span><br><span class="line"></span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line">&#125; robj;</span><br></pre></td></tr></table></figure>
+<p>对象的类型有以下几种：</p>
+<pre><code>REDIS_STRING: 字符串对象 : &quot;string&quot;
+REDIS_LIST: 列表对象 : &quot;list&quot;
+REDIS_HASH: 哈希对象 : &quot;hash&quot;
+REDIS_SET: 集合对象  : &quot;set&quot;
+REDIS_ZSET: 有序集合对象  : &quot;zset&quot;
+</code></pre><p>在redis中，所有键的类型都是字符串。</p>
+<figure class="highlight crmsh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">redis&gt; SET msg <span class="string">"hello world"</span></span><br><span class="line">OK</span><br><span class="line"></span><br><span class="line">redis&gt; <span class="operator">TYPE</span> msg</span><br><span class="line"><span class="type">string</span></span><br><span class="line"></span><br><span class="line">redis&gt; RPUSH <span class="type">number</span> <span class="number">1</span> <span class="number">3</span> <span class="number">5</span></span><br><span class="line">OK</span><br><span class="line"></span><br><span class="line">redis&gt; <span class="operator">TYPE</span> <span class="type">number</span></span><br><span class="line"></span><br><span class="line">lsit</span><br><span class="line"></span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+<p>encoding 属性记录对象所使用的编码，也就是对象使用了什么数据结构作为底层的实现。encoding 的类型有以下几种：</p>
+<pre><code>REDIS_ENCODING_INT : long 类型的整数 ：&quot;int&quot;
+REDIS_ENCODING_EMBSTR : embstr编码的简单动态字符串 : &quot;embstr&quot;
+REDIS_ENCODING_RAW : 简单动态字符串 : &quot;raw&quot;
+REDIS_ENCODING_HT : 字典 : &quot;hashtable&quot;
+REDIS_ENCODING_LINKEDLIST : 双端链表 : linkedlist
+REDIS_ENCODING_ZIPLIST : 压缩列表 : &quot;ziplist&quot;
+REDIS_ENCODING_INTSET : 整数集合 : &quot;inset&quot;
+REDIS_ENCODING_SKIPLIST : 跳跃表和字典 : &quot;skiplist&quot;
+</code></pre><figure class="highlight vbnet"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">redis&gt; <span class="keyword">SET</span> msg <span class="string">"hello world"</span></span><br><span class="line">OK</span><br><span class="line"></span><br><span class="line">redid&gt; <span class="built_in">OBJECT</span> ENCODING msg</span><br><span class="line"><span class="string">"embstr"</span></span><br><span class="line"></span><br><span class="line">redis&gt; <span class="keyword">SET</span> story <span class="string">"long long long ago"</span></span><br><span class="line">OK</span><br><span class="line"></span><br><span class="line">redis&gt; <span class="built_in">OBJECT</span> ENCODING story</span><br><span class="line"><span class="string">"raw"</span>(SDS)</span><br><span class="line"></span><br><span class="line">redis&gt; SADD number <span class="number">1</span> <span class="number">3</span> <span class="number">5</span></span><br><span class="line">(<span class="built_in">integer</span>) <span class="number">3</span></span><br><span class="line"></span><br><span class="line">redis&gt; <span class="built_in">OBJECT</span> ENCODING number</span><br><span class="line"><span class="string">"inset"</span></span><br><span class="line"></span><br><span class="line">redis&gt; SADD number <span class="string">"seven"</span></span><br><span class="line">(<span class="built_in">integer</span>) <span class="number">1</span></span><br><span class="line"></span><br><span class="line">redis&gt; <span class="built_in">OBJECT</span> ENCODING number</span><br><span class="line"><span class="string">"hashtable"</span></span><br></pre></td></tr></table></figure>
+<p>通过encoding属性来设定对象所使用的编码，而不是为特定类型的对象关联一种固定的编码，极大的提高了redis的灵活性和效率，因为redis可以根据不同使用场景来为一个对象设置不同的编码，从而优化对象在特定场合的效率。<br>例如：在列表对象包含的元素比较少的时候，redis使用压缩类表作为列表对象的底层实现：</p>
+<ol>
+<li>因为压缩列表比双端列表更节约内存，而且在元素数量比较少的时候，在内存中以连续块方式保存的压缩列表比起双端列表可以更快的被载入到缓存中。</li>
+<li>随着列表对象包含的元素越来越多，使用压缩列表来保存元素的优势逐渐消失，对象就会将底层的实现从压缩列表改为功能呢个更强大、适合保存大量元素的双端链表上面。</li>
+</ol>
+<h4 id="有序集合对象的底层数据实现"><a href="#有序集合对象的底层数据实现" class="headerlink" title="有序集合对象的底层数据实现"></a>有序集合对象的底层数据实现</h4><p>redis的有序集合对象zset结构使用了两种数据结构：跳表和字典。跳表来实现有序集合，可以保存执行范围类型操作的所有优点，也可以实现集合的有序，但是对于根据成员key来查找value，将会由于二分查找而时间复制度变为O(logN)， 使用字典来保存所有的key-value对的话，那么既可以将查找的时间复杂度降为O(1)。为了实现高效率，有序集合就采用了跳表和字典来作为底层的数据实现。</p>
+<h4 id="对象共享"><a href="#对象共享" class="headerlink" title="对象共享"></a>对象共享</h4><p>目前来说，redis会在初始化服务器时，创建一万个字符串对象，这些对象包含了从0到9999的所有整数值，当服务器需要用到这些字符串对象的时候，服务器就会使用这些共享对象，而不是创建新对象。另外，这些共享对象不仅只有字符串键可以使用，那些在数据结构中嵌套了字符对象的对象，都可以使用这邪恶共享对象。</p>
+<p>redis只共享包含整数值的字符串对象，而不共享包含字符串的对象，是因为对象越复杂时，共享的时候需要检查的东西越多，消耗的CPU时间就越长。如果共享独享是一个保存整数值的字符串，那么需要比较的复杂度为O(1)，如果保存的是一个字符串，需要的复杂度为O(n)，如果是包含多个值的对象，那么需要的时间复杂度为O(N^2)。所以为了效率的考虑，redis目前只对包含整数值的字符串对象进行共享。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/07/31/redis之对象/" data-id="cir9zx3260005ngqy9i9g1aug" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-redis发布与订阅" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/07/31/redis发布与订阅/" class="article-date">
+  <time datetime="2016-07-31T02:35:54.000Z" itemprop="datePublished">2016-07-31</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>redis可以发布与订阅频道，有两种订阅方式，一种是具体频道，一种是模式匹配频道。<br>对于具体频道，redis采用了字典来保存具体频道与订阅客户端的数据，key为频道，value为订阅的客户端，采用链表的形式保存。对于模式频道，redis直接采用链表的方式来保存模式客户端。每当有消息发布，redis根据消息所属的频道来通过字典找到客户端链表，遍历链表，发送消息。接着遍历模式链表，查找匹配的模式频道，发送消息给客户端。<br>具体的代码如下所示：<br><figure class="highlight zephir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/* Publish a message</span><br><span class="line"> *</span><br><span class="line"> * 将 message 发送到所有订阅频道 channel 的客户端，</span><br><span class="line"> * 以及所有订阅了和 channel 频道匹配的模式的客户端。</span><br><span class="line"> */</span></span><br><span class="line"><span class="keyword">int</span> pubsubPublishMessage(robj *channel, robj *message) &#123;</span><br><span class="line">    <span class="keyword">int</span> receivers = <span class="number">0</span>;</span><br><span class="line">    dictEntry *de;</span><br><span class="line">    listNode *ln;</span><br><span class="line">    listIter li;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Send to clients listening for that channel */</span></span><br><span class="line">    <span class="comment">// 取出包含所有订阅频道 channel 的客户端的链表</span></span><br><span class="line">    <span class="comment">// 并将消息发送给它们</span></span><br><span class="line">    de = dictFind(server.pubsub_channels,channel);</span><br><span class="line">    <span class="keyword">if</span> (de) &#123;</span><br><span class="line">        <span class="keyword">list</span> *<span class="keyword">list</span> = dictGetVal(de);</span><br><span class="line">        listNode *ln;</span><br><span class="line">        listIter li;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 遍历客户端链表，将 message 发送给它们</span></span><br><span class="line">        listRewind(<span class="keyword">list</span>,&amp;li);</span><br><span class="line">        <span class="keyword">while</span> ((ln = listNext(&amp;li)) != <span class="keyword">NULL</span>) &#123;</span><br><span class="line">            redisClient *c = ln-&gt;value;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 回复客户端。</span></span><br><span class="line">            <span class="comment">// 示例：</span></span><br><span class="line">            <span class="comment">// 1) "message"</span></span><br><span class="line">            <span class="comment">// 2) "xxx"</span></span><br><span class="line">            <span class="comment">// 3) "hello"</span></span><br><span class="line">            addReply(c,shared.mbulkhdr[<span class="number">3</span>]);</span><br><span class="line">            <span class="comment">// "message" 字符串</span></span><br><span class="line">            addReply(c,shared.messagebulk);</span><br><span class="line">            <span class="comment">// 消息的来源频道</span></span><br><span class="line">            addReplyBulk(c,channel);</span><br><span class="line">            <span class="comment">// 消息内容</span></span><br><span class="line">            addReplyBulk(c,message);</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 接收客户端计数</span></span><br><span class="line">            receivers++;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/* Send to clients listening to matching channels */</span></span><br><span class="line">    <span class="comment">// 将消息也发送给那些和频道匹配的模式</span></span><br><span class="line">    <span class="keyword">if</span> (listLength(server.pubsub_patterns)) &#123;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 遍历模式链表</span></span><br><span class="line">        listRewind(server.pubsub_patterns,&amp;li);</span><br><span class="line">        channel = getDecodedObject(channel);</span><br><span class="line">        <span class="keyword">while</span> ((ln = listNext(&amp;li)) != <span class="keyword">NULL</span>) &#123;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 取出 pubsubPattern</span></span><br><span class="line">            pubsubPattern *pat = ln-&gt;value;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 如果 channel 和 pattern 匹配</span></span><br><span class="line">            <span class="comment">// 就给所有订阅该 pattern 的客户端发送消息</span></span><br><span class="line">            <span class="keyword">if</span> (stringmatchlen((<span class="keyword">char</span>*)pat-&gt;pattern-&gt;ptr,</span><br><span class="line">                                sdslen(pat-&gt;pattern-&gt;ptr),</span><br><span class="line">                                (<span class="keyword">char</span>*)channel-&gt;ptr,</span><br><span class="line">                                sdslen(channel-&gt;ptr),<span class="number">0</span>)) &#123;</span><br><span class="line"></span><br><span class="line">                <span class="comment">// 回复客户端</span></span><br><span class="line">                <span class="comment">// 示例：</span></span><br><span class="line">                <span class="comment">// 1) "pmessage"</span></span><br><span class="line">                <span class="comment">// 2) "*"</span></span><br><span class="line">                <span class="comment">// 3) "xxx"</span></span><br><span class="line">                <span class="comment">// 4) "hello"</span></span><br><span class="line">                addReply(pat-&gt;client,shared.mbulkhdr[<span class="number">4</span>]);</span><br><span class="line">                addReply(pat-&gt;client,shared.pmessagebulk);</span><br><span class="line">                addReplyBulk(pat-&gt;client,pat-&gt;pattern);</span><br><span class="line">                addReplyBulk(pat-&gt;client,channel);</span><br><span class="line">                addReplyBulk(pat-&gt;client,message);</span><br><span class="line"></span><br><span class="line">                <span class="comment">// 对接收消息的客户端进行计数</span></span><br><span class="line">                receivers++;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        decrRefCount(channel);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 返回计数</span></span><br><span class="line">    <span class="keyword">return</span> receivers;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/07/31/redis发布与订阅/" data-id="cir9zx3260003ngqysd9fiwi1" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-redis数据结构" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/07/31/redis数据结构/" class="article-date">
+  <time datetime="2016-07-31T02:35:54.000Z" itemprop="datePublished">2016-07-31</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>redis的数据结构主要有以下几种：SDS(simple dynamic string)，embstr(编码的简单动态字符串)，字典，链表(双端链表)，压缩列表，整数集合，跳表。</p>
+<h4 id="SDS的主要结构为："><a href="#SDS的主要结构为：" class="headerlink" title="SDS的主要结构为："></a>SDS的主要结构为：</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> sdshdr&#123;</span><br><span class="line">    <span class="comment">//记录buffer中的存储数据的实际长度</span></span><br><span class="line">	<span class="keyword">int</span> len;</span><br><span class="line">	<span class="comment">//记录buffer当前还剩下的长度</span></span><br><span class="line">	<span class="keyword">int</span> <span class="built_in">free</span>;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//buffer，实际存储数据的数组,会在存储数据的最后面加一个'\0',以适应于系统的一些字符串处理函数</span></span><br><span class="line">	<span class="keyword">char</span> buf[];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>SDS与C字符串的区别：</p>
+<ol>
+<li>属性len可以使得SDS能够在常数时间内返回字符串的长度</li>
+<li>杜绝缓冲区的溢出，C字符串不记录本身的长度，所以在字符串的复制、拼接(strcat)上面会出现溢出，而SDS有free属性，可以根据属性来确定还有没有空间可以允许安全的字符串操作，没有的话会自动的申请更大的内存空间，并复制原来的数据。</li>
+<li>减少修改字符串所带来的内存重分配次数。由于C字符串没有预分配策略，所以每一次的字符串增加或减少操作都会造成内存的重分配。而SDS有内存预分配策略，所以可以减少相应的内存重分配次数。</li>
+<li>二进制安全的。因为SDS是根据len来确定所存储的字符串的长度的，而不是硬性的根据’\0’来决定字符串的结尾，所以对于二进制等会在数据中出现’\0’的数据，SDS是安全的，可以完整的读取以及存储数据，而C字符串却不能。</li>
+</ol>
+<h4 id="链表"><a href="#链表" class="headerlink" title="链表"></a>链表</h4><p>redis的链表采用的是双向链表的方式，每一个链表节点都有指向上一个和下一个节点的指针。链表由list数据结构来表示，主要负责管理链表，有链表头、链表尾、链表长度等属性。链表的节点就是简单的几个属性：节点值、上一个节点指针、下一个节点指针。</p>
+<h4 id="字典"><a href="#字典" class="headerlink" title="字典"></a>字典</h4><p>redis使用字典来表示数据库，也用来作为哈希键的底层实现。哈希表采用数组加链表的方式来实现以及解决哈希冲突的问题。字典的结构与链表一样，有两个数据结构组成。一个是dictht，用来表示整个哈希表的具体信息，另一个数dictEntry，为哈希表的具体节点值，用来存储key<br>和value数据。每一个dictEntry都有一个对应的指针，来指向下一个哈希冲突的dictEntry。在dictht中，有两个dictEntry** ht[2]元素, 一个用来指向真是的哈希数组，一个在平时的值为nullptr。在哈希数组达到一定的饱和度或是太过于稀疏的时候，redis会进行rehash操作，此时会重新生成哈希数组，指向nullptr的属性会指向该新的数组起始地址，将原来的哈希表数据剪切到新的空间里面，剪切完成后，会将旧的属性赋值为nullptr。</p>
+<p>rehash的操作有两种策略，一种是一次性操作，一次性将原有的数据剪切到新的空间里面。另外一种是渐进式的rehash，每次对于字典的操作，都会将对应的key以及value剪切到新的空间里面，该策略在对字典的操作，比如查找时，需要新旧两个哈希数组一起参与，在久的找不到的情况下查找新的。</p>
+<h4 id="跳跃表"><a href="#跳跃表" class="headerlink" title="跳跃表"></a>跳跃表</h4><p>与链表一样，跳跃表也由两种数据结构组成，redis.h/zskiplistNode和redis.h/zskiplist。zskiplist用来表示整个跳跃表的具体信息，zskiplistNode用来表示跳跃表的节点。</p>
+<h4 id="整数集合"><a href="#整数集合" class="headerlink" title="整数集合"></a>整数集合</h4><p>整数结合用来保存整数值集合。具体的数据结构为：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> inset&#123;</span><br><span class="line">    <span class="comment">//编码方式：INSET_ENC_INT16，INSET_ENC_INT32，INSET_ENC_INT64，用来表示content数组里面的数据的真实类型 </span></span><br><span class="line">	<span class="keyword">uint32_t</span> encoding;</span><br><span class="line">	<span class="comment">//集合的元素数量</span></span><br><span class="line">	<span class="keyword">uint32_t</span> length;</span><br><span class="line">	<span class="comment">//保存集合的数组，数组里面存储的真实数据会根据encoding属性来确定，并不是根据content的int8_t类型来确定的。</span></span><br><span class="line">	<span class="keyword">int8_t</span> contents[];</span><br><span class="line">&#125;inset;</span><br></pre></td></tr></table></figure>
+<p>content数组中，各个元素按照值的大小递增排序，并且只出现一次。<br>当向整数集合插入新的元素，并且新元素的类型比原有的类型还大时，redis会对整数集合进行编码升级，所有的数据的类型都会升级为新的类型。所以需要对conetne执行新的内存操作以及数据剪切。由于新元素的值要么大于content中的任何值，要么小于content中的任何值，所以在新的content里面，新元素的位置要么在最后，要么在最前。</p>
+<h5 id="升级的好处"><a href="#升级的好处" class="headerlink" title="升级的好处"></a>升级的好处</h5><ol>
+<li>通过升级，整数集合可以存储不同类型的整数，由于C语言是静态类型语言，如果不升级的话，就需要有不同类型的数据结构。通过升级就可以直接使用一种数据结构来表示多种类型整数。</li>
+<li>节约内存。为了能够存储多种数据类型，只在需要的时候才进行升级，这样可以节约内存，不然的话，需要一开始就定义最大的整数类型作为content<br>的元素类型。</li>
+</ol>
+<p>整数集合是没有降级的，只有升级，一旦升级后，编码就会一直保持升级后的编码，即使content中的元素值很小，也不会执行降级。</p>
+<h4 id="压缩列表"><a href="#压缩列表" class="headerlink" title="压缩列表"></a>压缩列表</h4><p>压缩列表是列表键和哈希键的底层实现之一。当一个列表键只包含少量列表项，并且每个列表项要么就是小整数值，要么就是长度比较短的字符串，那么redis就会使用压缩列表来做列表键的底层实现。另外，当一个哈希键只包含少量键值对时，并且每个键值对的键和值要么就是小整数值，要么就是长度比较短的字符串，那么redis就会使用压缩列表来做哈希键的底层实现。<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">redis&gt; RPUSH lst <span class="number">1</span> <span class="number">2</span> <span class="number">3</span> <span class="number">4</span> <span class="string">"hello"</span> <span class="string">"world"</span></span><br><span class="line">(integer)<span class="number">6</span></span><br><span class="line"></span><br><span class="line">redis&gt; OBJECT ENCODING lst</span><br><span class="line"><span class="string">"ziplist"</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">redis&gt; HMSET profile <span class="string">"name"</span> <span class="string">"Jack"</span> <span class="string">"age"</span> <span class="number">28</span> <span class="string">"Job"</span> <span class="string">"Programmer"</span></span><br><span class="line">OK</span><br><span class="line"></span><br><span class="line">redis&gt; OBJECT ENCODING profile</span><br><span class="line"><span class="string">"ziplist"</span></span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/07/31/redis数据结构/" data-id="cir9zx3260002ngqy52wxbn2g" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-网络编程摘要" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/07/31/网络编程摘要/" class="article-date">
+  <time datetime="2016-07-31T02:35:54.000Z" itemprop="datePublished">2016-07-31</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>对于阻塞的socket，client和server在数据的交流时，有可能会发生死锁：</p>
+<ol>
+<li>client发送数据给server，server发送数据给client，如果数据都很大时，那么两端一起发送数据时，会阻塞在send操作上，由于每一个连接的接受端缓冲区的大小都是有限的，当接受端的接收缓冲区满时，发送端将一直阻塞在send操作上，这样一来，两端都没有读取接收缓冲区的数据，导致一直阻塞在send操作上。从而出现死锁。</li>
+<li>client发送很大的数据给server，server只是echo给client，由于数据比较大，client会阻塞在send上，此时echo给client的数据占满了client的接收缓冲区，那么server的send操作将会阻塞，此时不会读取client发送的数据，这样会导致server的接收缓冲区满了，此时client的send也会一直阻塞，从而出现死锁。<br>这种原因是因为应用层没有缓冲，如果两端都先接收好完整的数据存在应用层的buffer上，那么就不会出现死锁了。两端先发送需要发送的数据的大小，接下来接收到完整数据后，就可以发送给对端了。</li>
+</ol>
+<h3 id="TCP-自连接"><a href="#TCP-自连接" class="headerlink" title="TCP 自连接"></a>TCP 自连接</h3><p>当在本地进行tcp连接时，有可能会出现自连接。所谓的自连接就是客户端和服务端共用一个port。出现这种情况的原因如下：</p>
+<ol>
+<li>client发起连接，连到端口为B的服务器上。</li>
+<li>系统会选择一个port A 作为client的端口。</li>
+<li>如果port B上面没有服务器在侦听，那么client会收到一个rst恢复包，如果有的话就可以连接上。</li>
+<li>如果此时port A 等于 port B， 那么此时实际上是没有服务器在port B 上监听的，不然的话，client不会分配到port B。在这种情况下，client发送的SYN包会来到端口B上，此时由于client已经打开了端口B，系统会以为端口B上有服务器在监听，那么就直接接收SYN包，并发给client。这种情况其实就是client和server同时发起连接，client此时的状态为SYN_RECEIVE，按照TCP的三次握手，client会跟自己建立起了连接。此时就出现了自连接。</li>
+</ol>
+<p>自连接是一种难以确定的情况，因为在TCP下，server和client并不是对等的，这种情况下分不清谁是谁了，所以会出现难以确定的问题。为了防止自连接，每当在本地连接后，可以根据client的端口和server的端口来判断是否是自连接。</p>
+<p>先有TCP，再有UDP，一般情况下使用的是TCP，因为UDP没有拥塞控制，很难很好的使用网络的带宽，发多会丢包，发少有不能合理使用带宽。从编程角度来说，UDP不需要网络库，在服务端，udp只需要一个socket就可以与所有的客户端进行数据交互。而TCP需要一个连接一个socket。TCP是线程不安全的，因为TCP为字节流协议，多个线程操作一个socket会发生数据错乱。而UDP是线程安全的，只需要维护客户端的信息，由于是数据包的格式，所以多个线程写一个UDP socket的话，不会造成数据包内的数据错乱。</p>
+<p>在TCP编程的时候，如果没有数据需要发送了，那么应该调用shutdownWrite,关闭写连接，在read返回0的时候，才调用close。如果在没有数据可发送的时候直接的调用close，会导致输入缓冲区的数据直接被清除，使得数据读取不到。<br>TCP是可靠的意思是协议会帮你把数据安全的发送到对端的接收端口，但是并不负责数据会被对端的程序给读取到，所以为了数据的可靠传输，我们在应用层需要进行数据的接收确认，表示数据已经被程序成功处理。</p>
+<p>在linux下使用管道时，如果管道的一端关闭了，那么往里面写数据的话，程序会受到SIGPIPE信号，在默认的情况下，程序会直接退出。在TCP网络编程下，如果对端关闭了socket的读连接，此时往里面写数据的话，也会收到SIGPIPE 信号，所以在server端，需要忽略掉SIGPIPE信号，不然的话，收到SIGPIPE信号的时候，server会退出。</p>
+<p>TCP网络编程三部曲：</p>
+<ol>
+<li>开起SO_REUSEADDR,保证程序在重启的时候可以再一次的监听端口。在TCP下，如果主动关掉连接的话，会有一个TIME_WAITE时间，此时的端口还是处于忙的状态，如果不启用SO_REUSEADDR的话，绑定该端口会发生错误。</li>
+<li>忽略SIGPIPE</li>
+<li>TCP_NODELAY, 一般情况下都是默认关掉该算法，使得数据可以立刻发送到对端。</li>
+</ol>
+<p>在IO多路复用的时候，服务器监听的端口需要采用非阻塞的方式，因为如果端口可读的情况下，当真正的去accept的时候，如果在可读与真正accept之间，客户端断开了连接，那么在阻塞的情况下accept会出现阻塞。其他的连接socket也应该设置为非阻塞，不然的话，服务器会阻塞在某一个socket上，使得其他的socket被饿死。</p>
+<p>在多路复用时，如果buffer没有数据可写或是没有数据想读，那么应该取消掉相应的时间侦听，否则的话会出现busy loop。</p>
+<p>对于发布订阅等有多个客户端连接需要发布数据的情况，需要考虑有一些很慢的客户端的情况，极端情况下，客户端有可能不收数据，导致所有的消息都存在服务器上，造成服务器内存被消耗。所有跟多个客户端打交道的场景都需要考虑这个问题，防止个别客户端拖垮整个应用。至于如何解决，这个是应用场景需要考虑的问题，不是网络库的任务。在redis中，对于每一个客户端，会有一个buffer来缓冲服务器恢复给client的消息，如果buffer满了，redis会新开一个链表，每一个节点的空间是固定的，用来存放新到来的消息，如果链表尾节点由足够空间可以存放新消息，那么直接存储消息，否则的话需要新增一个节点，用来存放新消息，并将节点连到链表的尾部。每一次在链表存储消息后，redis会检查客户端的消息缓存的总大小，如果超过配置的阈值的话，那么直接关闭客户端。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/07/31/网络编程摘要/" data-id="cir9zx3260001ngqyg5x7w217" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-STL概览" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/07/31/STL概览/" class="article-date">
+  <time datetime="2016-07-31T02:35:54.000Z" itemprop="datePublished">2016-07-31</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="STL有六大组件："><a href="#STL有六大组件：" class="headerlink" title="STL有六大组件："></a>STL有六大组件：</h3><ol>
+<li>容器：各种数据结构，用来存放数据，容器分为序列式容器和关联式容器。</li>
+<li>算法：如sort、search等算法，从实现的角度来看，STL算法是一种function template。</li>
+<li>迭代器：扮演容器和算法之间的胶合剂，是所谓的泛型指针。</li>
+<li>仿函数：行为类似函数，可作为算法的某种策略。</li>
+<li>适配器：一种用来修饰容器和仿函数或迭代器接口的东西，对外提供特定的接口，具有一定规则的数据操作访问。</li>
+<li>配置器：负责空间配置与管理。</li>
+</ol>
+<h3 id="序列式容器"><a href="#序列式容器" class="headerlink" title="序列式容器"></a>序列式容器</h3><h4 id="vector"><a href="#vector" class="headerlink" title="vector"></a>vector</h4><p>vector的安排和操作方式与array非常相似，两者的唯一区别就是空间的灵活运用。array是静态空间，一旦配置不能更改，如果需要更大的空间的话，需要重新申请内存，再负责原有的数据到新空间。而vector是动态空间，随着元素的加入，他的内部机制会自行扩充空间以容纳新元素。vector实现该机制的主要属性有size和capacity，size记录用户想要申请的空间大小或是vector实际上存储的元素的个数，而capacity记录的是vector实际申请的内存大小，capacity通常大于size，这样当需要向vector加入新元素时，就不需要每次都向系统重新申请内存，提高了数据操作的效率。</p>
+<p>vector有对应的迭代器来遍历自己的元素，由于当增加或删除元素时，vector内部有可能会重新分配内存空间，导致迭代器失效，所以在使用vector迭代器的时候，对vector进行元素的增加或删除操作是很危险的。</p>
+<h4 id="list"><a href="#list" class="headerlink" title="list"></a>list</h4><p>相比较vector，list在任何位置增加或删除元素时，都是常数时间的，但是在随机访问元素时，却比vector差。在STL中，list的实现时以双向环形链表的形式，只需要一个指针，就可以完整表现整个链表。STL会自己增加一个空节点，该结点连接着链表头和尾部节点，从而构成一个环。list.end()就是指向该节点。判断链表是否为空，只需要查看空节点的上一个或下一个节点是否指向自己就好。<br>list有自己的迭代器，相比于vector，list的插入或删除操作都不会造成原有的迭代器失效，因为list元素的改动不会影响到其他元素的内存位置。当然，删除操作会影响到原来指向被删除的元素的迭代器。</p>
+<h4 id="deque"><a href="#deque" class="headerlink" title="deque"></a>deque</h4><p>deque是双向开口的，可以在头部或是尾部插入或删除元素。deque与vector的最大差异，一在于deque允许常数时间内对头部进行元素的插入删除操作，二是deque没有capacity观念，因为他是动态的以分段连续的空间组合而成，随时可以增加一段新空间并连接起来。deque采用一块所谓的map作为主控，这里所谓的map是一小块连续空间，其中每个元素都是指针，指向另一段较大的连续线性空间，称为缓冲区，缓冲区才是deque的数据存储空间。</p>
+<p>deque也有自己的迭代器。</p>
+<h3 id="适配器"><a href="#适配器" class="headerlink" title="适配器"></a>适配器</h3><h4 id="stack"><a href="#stack" class="headerlink" title="stack"></a>stack</h4><p>stack允许数据先进后出，STL默认采用的是deque容器来作为stack的底层实现。stack封装容器，对外提供特定的数据操作接口，只允许数据先进后出，所以stack没有迭代器。</p>
+<h4 id="queue"><a href="#queue" class="headerlink" title="queue"></a>queue</h4><p>与stack类似，queue默认采用的也是deque来实现数据的存储，只允许数据先进先出，queue也没有迭代器。</p>
+<h4 id="heap"><a href="#heap" class="headerlink" title="heap"></a>heap</h4><p>heap并不是STL容器组件，同时priority queue的底层实现算法。二叉堆为完全二叉树，所以可以使用数组来实现heap算法。heap分为max-heap和min-heap。由于堆也规定特定的数据操作规则，所以heap没有迭代器</p>
+<h4 id="priority-queue"><a href="#priority-queue" class="headerlink" title="priority queue"></a>priority queue</h4><p>priority queue是一个拥有权值的queue，元素根据权值来排序。默认情况下，priority queue采用max-heap作为底层的实现，而max-heap采用vector作为底层的数据存储结构。priority queue没有自己的迭代器。</p>
+<h3 id="关联式容器"><a href="#关联式容器" class="headerlink" title="关联式容器"></a>关联式容器</h3><p>标准的STL关联式容器分为set和map两大类，以及这两大类衍生的multiset和multimap。这些都采用红黑树来实现。红黑树是STL的独立容器，不对外开放。</p>
+<h4 id="set"><a href="#set" class="headerlink" title="set"></a>set</h4><p>set的特点是所有的元素会根据元素的键值自动排序。set的元素不像map那样同时拥有key和value，set元素的key和value是一体的。 因为set的元素值就是其键值，关系到set元素的排列规则，不允许修改set的元素值。set拥有和list相同的某些性质，当客户端进行插入或删除元素时，操作之前的原有迭代器，在操作后都依然有效，当然，被删除的那个元素的迭代器必然是个例外。</p>
+<h4 id="map"><a href="#map" class="headerlink" title="map"></a>map</h4><p>map的特性是，所有元素会根据key来进行排序，map的所有元素都是pair，同时拥有key和value，因此我们可以根据map的迭代器来修改map的value。map和set一样，在删除或是插入元素时，除了别删除的元素外，其他的迭代器都是有效的。</p>
+<h4 id="multiset"><a href="#multiset" class="headerlink" title="multiset"></a>multiset</h4><p>multiset的性质和set一样，只不过允许有相同的值。</p>
+<h4 id="multimap"><a href="#multimap" class="headerlink" title="multimap"></a>multimap</h4><p>multimap的特性与map完全一样，只不过允许有相同的key。</p>
+<h4 id="hashtable"><a href="#hashtable" class="headerlink" title="hashtable"></a>hashtable</h4><p>hashtable采用字典的形式来存储数据，底层实现为数组加链表。拥有自己的迭代器。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/07/31/STL概览/" data-id="cir9zx2zk0000ngqyd70yujd7" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-redis单机数据库" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/07/31/redis单机数据库/" class="article-date">
+  <time datetime="2016-07-31T02:35:54.000Z" itemprop="datePublished">2016-07-31</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>redis将数据库结构都保存在服务器状态的redis.h/redisServer数据结构中的db数组中，db数组的每一个元素都是一个redis.h/redisDb结构，每一个redisDb结构代表一个数据库：<br><figure class="highlight thrift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">redisServer</span></span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="comment">//服务器初始化数据库数量</span></span><br><span class="line">  int dbnum;</span><br><span class="line"></span><br><span class="line">  <span class="comment">//保存数据库的数组</span></span><br><span class="line">  redisDb *db;</span><br><span class="line">  ...</span><br><span class="line">  ...</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<p>redisDb的结构如下：<br><figure class="highlight thrift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">redisDb</span></span>&#123;</span><br><span class="line">  <span class="comment">//数据库键空间，保存着数据库中的所有键值对</span></span><br><span class="line">  dict *dict;</span><br><span class="line"></span><br><span class="line">  ...</span><br><span class="line">  ...</span><br><span class="line">&#125;redisDb;</span><br></pre></td></tr></table></figure></p>
+<p>键空间和用户所见的数据库是直接对应的：</p>
+<ol>
+<li>键空间的键也就是数据库的键，每一个键都是一个字符串对象</li>
+<li>键空间的值也就是数据库的值，每个值可以是字符串对象、列表对象、哈希对象等redis中的任何对象。</li>
+</ol>
+<h4 id="键的生存时间"><a href="#键的生存时间" class="headerlink" title="键的生存时间"></a>键的生存时间</h4><p>通过expire和pexpire命令，客户端可以以秒或者毫秒精度为数据库中的某个键设置生存时间：<br><figure class="highlight processing"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">redis&gt; <span class="built_in">set</span> <span class="variable">key</span> <span class="number">9</span></span><br><span class="line">OK</span><br><span class="line"></span><br><span class="line">redis&gt; expire <span class="variable">key</span> <span class="number">5</span>  <span class="comment">//5秒后过期</span></span><br><span class="line">(integer) <span class="number">1</span></span><br><span class="line"></span><br><span class="line">redis&gt; <span class="built_in">get</span> <span class="variable">key</span>   <span class="comment">//5秒后重新获取key时，会出现错误</span></span><br><span class="line">(nil)</span><br></pre></td></tr></table></figure></p>
+<p>expireat和pexpireat命令用来设置在某个时间戳后，键超时：<br><figure class="highlight q"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">redis&gt; <span class="built_in">set</span> <span class="built_in">key</span> <span class="built_in">value</span></span><br><span class="line">OK</span><br><span class="line"></span><br><span class="line"><span class="comment">//设置在特定时间戳后过期</span></span><br><span class="line">redis&gt; expireat <span class="built_in">key</span> <span class="number">1377257300</span></span><br><span class="line">(integer) <span class="number">1</span></span><br></pre></td></tr></table></figure></p>
+<p>可以使用persist来取消键的过期时间：<br><figure class="highlight vbnet"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">redis&gt; expire <span class="keyword">key</span> <span class="number">5</span></span><br><span class="line">OK</span><br><span class="line"></span><br><span class="line">redis&gt; TTL <span class="keyword">key</span></span><br><span class="line">(<span class="built_in">integer</span>) ****</span><br><span class="line"></span><br><span class="line">redis&gt; persist <span class="keyword">key</span></span><br><span class="line">(<span class="built_in">integer</span>) <span class="number">1</span></span><br><span class="line"></span><br><span class="line">redis&gt; TTL <span class="keyword">key</span></span><br><span class="line">(<span class="built_in">integer</span>) -<span class="number">1</span></span><br></pre></td></tr></table></figure></p>
+<p>redis使用expires字典来保存数据库中键的过期时间,对于过期键，需要删除，否则的话会占用内存。对于过期键的删除，有三种可能的策略：</p>
+<ol>
+<li>定时删除：在设置键的过期时间时，创建一个定时器，让定时器在键的过期时间来临时，立即执行删除操作。该策略对内存是最友好的，但是对CPU最不友好</li>
+<li>惰性删除：放任键过期不管，但访问到键时，才对键执行删除操作，如果过期的键没有被访问到，那么键就直接存在内存。该策略对CPU最友好，但是对内存不友好</li>
+<li>定期删除：每隔一段时间，程序就对数据库进行一次检查，删除过期的键。至于要删除多少，以及检查多少个数据库，则由算法决定<br>redis采用惰性和定期删除两种策略，通过配合使用这两种策略，服务器可以很好的在合理使用CPU时间和避免浪费内存空间之间取得平衡。</li>
+</ol>
+<p>redis服务器采用reactor的模型，是一个事件驱动程序，在redis服务器中，有两种事件：文件事件和时间事件。文件事件就是所建立的socket而时间事件就是redis自己需要的，用来执行一些定时操作。<br>redis采用IO复用的模式来处理文件事件，对于时间事件，由于目前redis的时间事件很少，所以redis采用链表的形式来保存所有的时间事件。每次遍历链表，执行所有超时的时间事件。</p>
+<p>因为服务器中同时存在文件事件和时间事件两种类型，所以服务器必须对这两种事件进行调度，决定何时应该处理文件事件和时间事件，以及花多少时间来处理他们。redis会遍历时间事件，获得最近的定时事件的时间，如果定时事件已经到达，那么时间为0，redis以该时间来决定监听IO复用的超时时间。（其实这里如果时间事件是平凡执行的，那么redis会在时间事件上busy，导致文件事件饿死，但是由于时间事件是redis自己加的，不对外开放，所以不会存在恶意时间事件）。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/07/31/redis单机数据库/" data-id="cir9zx3260004ngqy495mcwff" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-test" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2016/07/21/test/" class="article-date">
@@ -5783,7 +6058,7 @@ branch: master
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a><span class="archive-list-count">33</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a><span class="archive-list-count">39</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
     </div>
   </div>
 
@@ -5795,23 +6070,23 @@ branch: master
       <ul>
         
           <li>
-            <a href="/2016/07/21/test/">test</a>
+            <a href="/2016/07/31/redis之对象/">(no title)</a>
           </li>
         
           <li>
-            <a href="/2016/07/20/muduo中的Channel和Poller/">muduo中的Channel和Poller</a>
+            <a href="/2016/07/31/redis发布与订阅/">(no title)</a>
           </li>
         
           <li>
-            <a href="/2016/07/20/muduo中的EventLoop/">muduo中的EventLoop</a>
+            <a href="/2016/07/31/redis数据结构/">(no title)</a>
           </li>
         
           <li>
-            <a href="/2016/07/20/muduo中的buffer/">muduo中的buffer</a>
+            <a href="/2016/07/31/网络编程摘要/">(no title)</a>
           </li>
         
           <li>
-            <a href="/2016/07/20/多线程与fork/">多线程与fork()</a>
+            <a href="/2016/07/31/STL概览/">(no title)</a>
           </li>
         
       </ul>

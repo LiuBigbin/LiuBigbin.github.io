@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>网络服务器模型简介 | LiuYongbin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="一个服务器一个进程这种模型是最原始的，服务器中只有一个进程，复制监听端口，建立链接以及处理请求，然后关闭socket。这种模型效率最低，而且不能够支持长连接，对于阻塞socket来说，效率更是底下，服务器会阻塞在一个socket上，导致其他的socket被饿死。
+一个链接一个进程服务器只负责监听端口，每当收到一个链接，就fork一个进程负责处理该链接请求。这使得服务器能够同时为多个客户服务，每一个">
+<meta property="og:type" content="article">
+<meta property="og:title" content="网络服务器模型简介">
+<meta property="og:url" content="http://liubigbin.github.io/2016/08/01/网络服务器模型简介/index.html">
+<meta property="og:site_name" content="LiuYongbin">
+<meta property="og:description" content="一个服务器一个进程这种模型是最原始的，服务器中只有一个进程，复制监听端口，建立链接以及处理请求，然后关闭socket。这种模型效率最低，而且不能够支持长连接，对于阻塞socket来说，效率更是底下，服务器会阻塞在一个socket上，导致其他的socket被饿死。
+一个链接一个进程服务器只负责监听端口，每当收到一个链接，就fork一个进程负责处理该链接请求。这使得服务器能够同时为多个客户服务，每一个">
+<meta property="og:updated_time" content="2016-08-01T13:39:50.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="网络服务器模型简介">
+<meta name="twitter:description" content="一个服务器一个进程这种模型是最原始的，服务器中只有一个进程，复制监听端口，建立链接以及处理请求，然后关闭socket。这种模型效率最低，而且不能够支持长连接，对于阻塞socket来说，效率更是底下，服务器会阻塞在一个socket上，导致其他的socket被饿死。
+一个链接一个进程服务器只负责监听端口，每当收到一个链接，就fork一个进程负责处理该链接请求。这使得服务器能够同时为多个客户服务，每一个">
+  
+    <link rel="alternative" href="/atom.xml" title="LiuYongbin" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" type="text/css">
+  
+
+</head>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">LiuYongbin</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">Hey boy just do it!</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://liubigbin.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-网络服务器模型简介" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/08/01/网络服务器模型简介/" class="article-date">
+  <time datetime="2016-08-01T09:06:09.000Z" itemprop="datePublished">2016-08-01</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/计算机网络/">计算机网络</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      网络服务器模型简介
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="一个服务器一个进程"><a href="#一个服务器一个进程" class="headerlink" title="一个服务器一个进程"></a>一个服务器一个进程</h3><p>这种模型是最原始的，服务器中只有一个进程，复制监听端口，建立链接以及处理请求，然后关闭socket。这种模型效率最低，而且不能够支持长连接，对于阻塞socket来说，效率更是底下，服务器会阻塞在一个socket上，导致其他的socket被饿死。</p>
+<h3 id="一个链接一个进程"><a href="#一个链接一个进程" class="headerlink" title="一个链接一个进程"></a>一个链接一个进程</h3><p>服务器只负责监听端口，每当收到一个链接，就fork一个进程负责处理该链接请求。这使得服务器能够同时为多个客户服务，每一个进程一个客户，客户数量的唯一限制是操作系统对以其名义运行服务器的用户ID能够同时拥有多少子进程的限制。</p>
+<h3 id="预先派生子进程"><a href="#预先派生子进程" class="headerlink" title="预先派生子进程"></a>预先派生子进程</h3><p>相比于上一个模型，预先派生子进程可以在有链接时就可以直接的有进程为客户服务，而不需要先等到fork完成后，才能够为客户服务。派生子进程在服务器启动会的时候，会预先派生一定数量的进程，当客户链接到达时，这些进程就可以立即为客户服务。所有派生的子进程都直接监听端口，单当收到连接时，就负责为建立的链接服务。由于多个子进程同时监听一个端口，会导致惊群效应。该模式只适合在于Berkeley内核的系统，对于System V， 多个进程同时在应用同一个监听socket描述符上调用accept会出现错误。</p>
+<h3 id="预先派生子进程-accept上锁"><a href="#预先派生子进程-accept上锁" class="headerlink" title="预先派生子进程+accept上锁"></a>预先派生子进程+accept上锁</h3><p>该模式只是上一个模式的改进，在accept上进行加锁，使得只有一个进程可以访问accept。其他的都与上一个模式一样，只不过由于加锁，这里没有了惊群效应。（其实还是有的，只不过移到了等待锁上，有多个进程在等待加锁，如果此时锁可用，那么所有等到加锁的进程都会醒过来，再一次进行加锁竞争）</p>
+<h3 id="预先派生子进程-传递描述符"><a href="#预先派生子进程-传递描述符" class="headerlink" title="预先派生子进程+传递描述符"></a>预先派生子进程+传递描述符</h3><p>预先派生多个进程，但是所有子进程都关闭了监听socket，只有父进程负责监听socket，父进程与子进程通过管道进行通信。有多少个子进程就有多少个管道，父进程采用select模式，监听所有的管道文件描述符和监听socket，当有新链接时，父进程负责将新的文件描述符发给空闲的子进程。父进程维护一个子进程数组，记录子进程的空闲与否，父进程与子进程通过管道进行信息交互，子进程空闲时，写管道通知父进程，同时读管道，等待父进程写新的链接描述符给子进程。当select中的管道文件描述符可读时，父进程根据管道所属的子进程来标记子进程空闲，以方便有新连接时可以将链接分配给子进程处理。</p>
+<h3 id="预先派线程"><a href="#预先派线程" class="headerlink" title="预先派线程"></a>预先派线程</h3><p>该系列模型其实与预先派生子进程差不多，只不过采用的是一个客户一个线程的方式。</p>
+<p>预先派生进程或是线程都有一个问题，就是不知道开始需要派生多少，还有，需要实时对线程或是进程数量进行监控，当数量不够的时候需要采取一定的措施。</p>
+<h3 id="基于事件驱动"><a href="#基于事件驱动" class="headerlink" title="基于事件驱动"></a>基于事件驱动</h3><p>一般地,I/O多路复用机制都依赖于一个事件多路分离器(Event Demultiplexer)。分离器对象可将来自事件源的I/O事件分离出来，并分发到对应的read/write事件处理器(Event Handler)。开发人员预先注册需要处理的事件及其事件处理器（或回调函数）；事件分离器负责将请求事件传递给事件处理器。两个与事件分离器有关的模式是Reactor和Proactor。Reactor模式采用同步IO，而Proactor采用异步IO。</p>
+<p>在Reactor中，事件分离器负责等待文件描述符或socket为读写操作准备就绪，然后将就绪事件传递给对应的处理器，最后由处理器负责完成实际的读写工作。</p>
+<p>而在Proactor模式中，处理器或者兼任处理器的事件分离器，只负责发起异步读写操作。IO操作本身由操作系统来完成。传递给操作系统的参数需要包括用户定义的数据缓冲区地址和数据大小，操作系统才能从中得到写出操作所需数据，或写入从socket读到的数据。事件分离器捕获IO操作完成事件，然后将事件传递给对应处理器。比如，在windows上，处理器发起一个异步IO操作，再由事件分离器等待IOCompletion事件。典型的异步模式实现，都建立在操作系统支持异步API的基础之上，我们将这种实现称为“系统级”异步或“真”异步，因为应用程序完全依赖操作系统执行真正的IO工作。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/08/01/网络服务器模型简介/" data-id="ciroo0epa000zkcqy9564pn3h" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2016/08/10/跳表/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          跳表
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2016/07/31/muduo中的TCPServer/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">muduo中的TCPServer</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">15</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java/">Java</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">47</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">12</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java底层机制/">Java底层机制</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux库、链接、装载/">Linux库、链接、装载</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/STL/">STL</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/muduo-C-网络库/">muduo C++ 网络库</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/">redis</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图与树/">图与树</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/设计模式/">设计模式</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/C-11-常规新特性/" style="font-size: 15.56px;">C++11 常规新特性</a> <a href="/tags/Java底层机制/" style="font-size: 14.44px;">Java底层机制</a> <a href="/tags/Linux-网络编程/" style="font-size: 16.67px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 17.78px;">Linux命令</a> <a href="/tags/Linux库、链接、装载/" style="font-size: 13.33px;">Linux库、链接、装载</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 13.33px;">Linux用户管理</a> <a href="/tags/Linux进程间通信/" style="font-size: 14.44px;">Linux进程间通信</a> <a href="/tags/STL/" style="font-size: 10px;">STL</a> <a href="/tags/TCP-IP/" style="font-size: 20px;">TCP/IP</a> <a href="/tags/muduo-C-网络库/" style="font-size: 18.89px;">muduo C++ 网络库</a> <a href="/tags/redis/" style="font-size: 14.44px;">redis</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/动态规划/" style="font-size: 12.22px;">动态规划</a> <a href="/tags/图与树/" style="font-size: 14.44px;">图与树</a> <a href="/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/数组/" style="font-size: 10px;">数组</a> <a href="/tags/树结构/" style="font-size: 13.33px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 11.11px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 11.11px;">爬虫</a> <a href="/tags/设计模式/" style="font-size: 12.22px;">设计模式</a> <a href="/tags/随记/" style="font-size: 11.11px;">随记</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a><span class="archive-list-count">36</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/06/">六月 2016</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">21</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/08/10/mysql之锁机制/">mysql之锁机制</a>
+          </li>
+        
+          <li>
+            <a href="/2016/08/10/Linux命令之top/">Linux命令之top</a>
+          </li>
+        
+          <li>
+            <a href="/2016/08/10/Linux命令之netstat/">Linux命令之netstat</a>
+          </li>
+        
+          <li>
+            <a href="/2016/08/10/Linux命令之netcat/">Linux命令之netcat</a>
+          </li>
+        
+          <li>
+            <a href="/2016/08/10/C-向前声明/">C++向前声明</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 LiuYongbin<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js" type="text/javascript"></script>
+
+
+<script src="/js/script.js" type="text/javascript"></script>
+
+  </div>
+</body>
+</html>

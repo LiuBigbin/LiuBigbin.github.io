@@ -65,6 +65,468 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-mysql之锁机制" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/08/10/mysql之锁机制/" class="article-date">
+  <time datetime="2016-08-10T08:56:30.000Z" itemprop="datePublished">2016-08-10</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/MySQL/">MySQL</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/08/10/mysql之锁机制/">mysql之锁机制</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>mysql默认采用的是InnoDB，默认可以支持row-level-lock,在InnoDB中，有两种锁，读共享锁和写锁，读共享锁可以多个读操作一起进行，写锁只允许一个客户端独占，由于支持的是行锁，所以在查找的时候需要有明确的主键信息，才可以<br>确定是那一行，然后进行加锁，没有的话，mysql会直接锁表。<br>读共享锁：<br><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="operator"><span class="keyword">select</span> * <span class="keyword">from</span> tableA <span class="keyword">where</span> <span class="keyword">id</span>=*** <span class="keyword">LOCK</span> <span class="keyword">IN</span> <span class="keyword">SHARE</span> <span class="keyword">MODE</span></span></span><br></pre></td></tr></table></figure></p>
+<h4 id="写锁："><a href="#写锁：" class="headerlink" title="写锁："></a>写锁：</h4><figure class="highlight gherkin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">//必须指明主主键信息，才能明确到行，如果信息不能确定到具体的行的话，只能锁表，如id <span class="variable">&lt;&gt;</span> 3,也会直接锁表. FOR UPDATE 仅适用于InnoDB，且必须在事务区块(BEGIN/COMMIT)中才能生效。</span><br><span class="line">select <span class="keyword">*</span> from tableA where id=<span class="keyword">*</span><span class="keyword">*</span><span class="keyword">*</span> FOR UPDATE</span><br></pre></td></tr></table></figure>
+<h4 id="事务："><a href="#事务：" class="headerlink" title="事务："></a>事务：</h4><p>mysql默认采用的是自动提交模式，可以采用下面的命令来修改：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">set</span> autocommit=<span class="number">0</span>  <span class="comment">//取消自动提交</span></span><br><span class="line"><span class="built_in">set</span> autocommit=<span class="number">1</span>  <span class="comment">//自动提交</span></span><br></pre></td></tr></table></figure></p>
+<p>自动提交表示你每输入一条命令，myswl自动的执行 commit，所以每一条命令对应一个事务，如果需要多条命令作为事务的话，那么需要：<br><figure class="highlight asciidoc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">BEGIN</span><br><span class="line">命令1</span><br><span class="line">命令2</span><br><span class="line"><span class="bullet">...</span><br><span class="line"></span><span class="bullet">...</span><br><span class="line"></span>commit</span><br></pre></td></tr></table></figure></p>
+<p>一个事务由BEGIN开始，commit结束。事务只保证所有提交的命令的执行原子性，并不能用来作为同步，默认情况下，事务是可以一起执行的，例如事务A和B都需要读取行记录r，两个事务可以并发执行。有串行模式的事务，只支持同时只有一个<br>事务运行，这可以用来实现同步，但是效率很低，因为一个表同时只能有一个操作。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/08/10/mysql之锁机制/" data-id="ciroo0evm0041kcqydajs09lh" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Linux命令之top" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/08/10/Linux命令之top/" class="article-date">
+  <time datetime="2016-08-10T08:55:05.000Z" itemprop="datePublished">2016-08-10</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/08/10/Linux命令之top/">Linux命令之top</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>显示进程占用cpu以及内存的情况<br><figure class="highlight haml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">-<span class="ruby"><span class="symbol">d:</span> 表示每一次刷新的时间间隔</span><br><span class="line"></span>-<span class="ruby"><span class="symbol">c:</span> 显示整个命令行（包括参数）而不只是显示命令名</span><br><span class="line"></span>-<span class="ruby"><span class="symbol">p:</span> 只显示具体的进程，不显示所有的进程</span><br><span class="line"></span>在top的显示过程中，还可以输入命令进行交互：</span><br><span class="line">M：以内存的占有率进行排序</span><br><span class="line">P：CPU占有率进行排序</span><br><span class="line">T：运行时间进行排序</span><br><span class="line">d：改变刷新时间</span><br></pre></td></tr></table></figure></p>
+<p>示例：<br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">top</span>   <span class="comment">//每隔5秒显式所有进程的资源占用情况</span></span><br><span class="line"><span class="attribute">top</span> -d <span class="number">2</span>  <span class="comment">//每隔2秒显式所有进程的资源占用情况</span></span><br><span class="line"><span class="attribute">top</span> -c  <span class="comment">//每隔5秒显式进程的资源占用情况，并显示进程的命令行参数(默认只有进程名)</span></span><br><span class="line"><span class="attribute">top</span> -<span class="tag">p</span> <span class="number">12345</span> -<span class="tag">p</span> <span class="number">6789</span><span class="comment">//每隔5秒显示pid是12345和pid是6789的两个进程的资源占用情况</span></span><br><span class="line"><span class="attribute">top</span> -d <span class="number">2</span> -c -<span class="tag">p</span> <span class="number">123456</span> <span class="comment">//每隔2秒显示pid是12345的进程的资源使用情况，并显式该进程启动的命令行参数</span></span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/08/10/Linux命令之top/" data-id="ciroo0exl0061kcqyvb1xrl6t" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux命令/">Linux命令</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Linux命令之netstat" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/08/10/Linux命令之netstat/" class="article-date">
+  <time datetime="2016-08-10T08:54:18.000Z" itemprop="datePublished">2016-08-10</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/08/10/Linux命令之netstat/">Linux命令之netstat</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>从整体上看，netstat的输出结果可以分为两个部分：</p>
+<p>一个是Active Internet connections，称为有源TCP连接，其中”Recv-Q”和”Send-Q”指%0A的是接收队列和发送队列。这些数字一般都应该是0。如果不是则表示软件包正在队列中堆积。这种情况只能在非常少的情况见到。</p>
+<p>另一个是Active UNIX domain sockets，称为有源Unix域套接口(和网络套接字一样，但是只能用于本机通信，性能可以提高一倍)。<br>Proto显示连接使用的协议,RefCnt表示连接到本套接口上的进程号,Types显示套接口的类型,State显示套接口当前的状态,Path表示连接到套接口的其它进程使用的路径名。</p>
+<p>常见参数<br><figure class="highlight haml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">-<span class="ruby">a (all)显示所有选项，默认不显示<span class="constant">LISTEN</span>相关</span><br><span class="line"></span>-<span class="ruby">t (tcp)仅显示tcp相关选项</span><br><span class="line"></span>-<span class="ruby">u (udp)仅显示udp相关选项</span><br><span class="line"></span>-<span class="ruby">x <span class="constant">Unix</span>域socket，仅显示<span class="constant">Unxi</span>域相关的信息</span><br><span class="line"></span>-<span class="ruby">n 拒绝显示别名，能显示数字的全部转化成数字。</span><br><span class="line"></span>-<span class="ruby">l 仅列出有在 <span class="constant">Listen</span> (监听) 的服務状态</span><br><span class="line"></span></span><br><span class="line">-<span class="ruby">p 显示建立相关链接的程序名</span><br><span class="line"></span>-<span class="ruby">r 显示路由信息，路由表</span><br><span class="line"></span>-<span class="ruby">e 显示扩展信息，例如uid等</span><br><span class="line"></span>-<span class="ruby">s 按各个协议进行统计</span><br><span class="line"></span>-<span class="ruby">c 每隔一个固定时间，执行该netstat命令。定时执行netcat</span><br><span class="line"></span>-<span class="ruby">i 显示网络接口列表</span><br><span class="line"></span>-<span class="ruby">ie 两个加起显示类时于ifconfig一样的详细信息</span></span><br></pre></td></tr></table></figure></p>
+<p>提示：LISTEN和LISTENING的状态只有用-a或者-l才能看到</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/08/10/Linux命令之netstat/" data-id="ciroo0exn0064kcqyum49hwcp" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux命令/">Linux命令</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Linux命令之netcat" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/08/10/Linux命令之netcat/" class="article-date">
+  <time datetime="2016-08-10T08:52:19.000Z" itemprop="datePublished">2016-08-10</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/08/10/Linux命令之netcat/">Linux命令之netcat</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>netcat是网络工具中的瑞士军刀，它能通过TCP和UDP在网络中读写数据。通过与其他工具结合和重定向，你可以在脚本中以多种方式使用它。使用netcat命令所能完成的事情令人惊讶。<br>netcat所做的就是在两台电脑之间建立链接并返回两个数据流，在这之后所能做的事就看你的想像力了。你能建立一个服务器，传输文件，与朋友聊天，传输流媒体或者用它作为其它协议的独立客户端。</p>
+<p>其参数有以下几个：<br><figure class="highlight haml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">-<span class="ruby">d 后台模式</span><br><span class="line"></span>-<span class="ruby">e prog 程序重定向，一旦连接，就执行-e后面的程序 [危险!!]</span><br><span class="line"></span>   我们可以通过shell绑定将Windows下的cmd和Linux的/bin/sh绑定，这样非常危险，我们整个系统对别人来说是完全透明，从下面的例子中我们可以看到。这也是Linux默认去掉-e参数的原因。</span><br><span class="line">-<span class="ruby">z：用来扫描机器端口  nc -z -v localhost <span class="number">1</span>-<span class="number">1024</span></span><br><span class="line"></span>-<span class="ruby">w：用来表示等待多久时间（以秒为单位）</span><br><span class="line"></span>-<span class="ruby">l：表示用来作为服务器</span><br><span class="line"></span>-<span class="ruby">p：表示端口  nc localhost <span class="number">12345</span> -p <span class="number">12346</span>(指定本地端口为<span class="number">12346</span>， 连接到localhost的<span class="number">12345</span>端口)</span><br><span class="line"></span>-<span class="ruby">r：随机使用端口  nc localhost <span class="number">12345</span> -r(随机使用可用端口)，效果跟 nc localhost <span class="number">12345</span> 一样</span><br><span class="line"></span>-<span class="ruby">v：显示执行过程</span><br><span class="line"></span>-<span class="ruby">vv：更加详细的显示执行过程</span><br><span class="line"></span>-<span class="ruby">q：客户端在收到<span class="constant">EOF</span>时，经过多少秒才会停止，默认在收到<span class="constant">EOF</span>时，客户端会直接停止</span><br><span class="line"></span>-<span class="ruby">k：用在服务器端，表示当客户端连接断开时，服务器依然保持运行。默认为当客户端断开连接时，服务器端会退出.当不加该参数时，服务器只能有一个连接，第二个客户端会连接不上，但唯一的客户大un关闭时，服务器也就关闭了</span><br><span class="line"></span>  加了该参数，服务器可以接收多个连接，且当所有客户端退出时，服务器依然运行</span><br><span class="line">-<span class="ruby">u：使用udp协议</span><br><span class="line"></span>-<span class="ruby">n：使用的是数字的ip地址，不加可以使用域名</span><br><span class="line"></span>-<span class="ruby"><span class="number">4</span>：使用的是ipv4</span><br><span class="line"></span>-<span class="ruby"><span class="number">6</span>：使用的是ipv6</span></span><br></pre></td></tr></table></figure></p>
+<p>nc可以用来作为远程文件复制：</p>
+<p>将客户端的copy文件复制到服务器端<br><figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">服务端：</span><br><span class="line">nc -<span class="keyword">l</span> 12345 &gt; <span class="keyword">copy</span>.txt</span><br><span class="line">客户端：</span><br><span class="line">nc localhost 12345 &lt; <span class="keyword">copy</span>.txt</span><br></pre></td></tr></table></figure></p>
+<p>创建远程连接<br><figure class="highlight xquery"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">服务端：</span><br><span class="line"><span class="variable">$nc</span> -l <span class="number">1567</span> -e /bin/bash -i</span><br><span class="line">客户端：</span><br><span class="line"><span class="variable">$nc</span> <span class="number">172.31</span>.<span class="number">100.7</span> <span class="number">1567</span></span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/08/10/Linux命令之netcat/" data-id="ciroo0exp0067kcqy1ginj6iq" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux命令/">Linux命令</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-C-向前声明" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/08/10/C-向前声明/" class="article-date">
+  <time datetime="2016-08-10T08:50:41.000Z" itemprop="datePublished">2016-08-10</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C与C/">C与C++</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/08/10/C-向前声明/">C++向前声明</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>向前声明：只有class可以向前声明，struct不可以。对于向前声明，只是告诉编译器这里有一个类在外部定义，具体定义在这里不知道，所以在该文件里面，只能使用向前声明的类的指针或是应用，而不能直接定义该类的对象，因为不知道该类的具体定义。（在编译期，编译器必须知道类的大小，才能在构造相应的类实例时分配具体大小的空间。注：并非只在创建实例时才必须知道类的类型的大小，编译时，也必须知道。）对于在某些文件里面，由于只需要使用到某个类的指针或是引用，而不需要定义类的对象，此时就可以使用向前声明，而不需要包含定义该类的头文件，这样可以较少一些不必要的冲突或是错误。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/08/10/C-向前声明/" data-id="ciroo0ezs008ckcqyag7y0bml" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-java多线程之volatile" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/08/10/java多线程之volatile/" class="article-date">
+  <time datetime="2016-08-10T08:47:09.000Z" itemprop="datePublished">2016-08-10</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Java/">Java</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/08/10/java多线程之volatile/">volatile</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>volatile关键字的两层语义</p>
+<p>一旦一个共享变量（类的成员变量、类的静态成员变量）被volatile修饰之后，那么就具备了两层语义：</p>
+<pre><code>1）保证了不同线程对这个变量进行操作时的可见性，即一个线程修改了某个变量的值，这新值对其他线程来说是立即可见的。
+2）禁止进行指令重排序。
+3）不保证操作原子性。
+</code></pre>
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/08/10/java多线程之volatile/" data-id="ciroo0ew4004lkcqygam9ysli" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/多线程/">多线程</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-跳表" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/08/10/跳表/" class="article-date">
+  <time datetime="2016-08-10T08:44:29.000Z" itemprop="datePublished">2016-08-10</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/数据结构/">数据结构</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/08/10/跳表/">跳表</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>跳表的机制可以参考该链接（有时间最好自己实现一下）：<br><a href="http://blog.sina.com.cn/s/blog\_72995dcc01017w1t.html" target="_blank" rel="external">http://blog.sina.com.cn/s/blog\_72995dcc01017w1t.html</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/08/10/跳表/" data-id="ciroo0eox000lkcqy2gjhyg6v" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/树结构/">树结构</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-网络服务器模型简介" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/08/01/网络服务器模型简介/" class="article-date">
+  <time datetime="2016-08-01T09:06:09.000Z" itemprop="datePublished">2016-08-01</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/计算机网络/">计算机网络</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/08/01/网络服务器模型简介/">网络服务器模型简介</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="一个服务器一个进程"><a href="#一个服务器一个进程" class="headerlink" title="一个服务器一个进程"></a>一个服务器一个进程</h3><p>这种模型是最原始的，服务器中只有一个进程，复制监听端口，建立链接以及处理请求，然后关闭socket。这种模型效率最低，而且不能够支持长连接，对于阻塞socket来说，效率更是底下，服务器会阻塞在一个socket上，导致其他的socket被饿死。</p>
+<h3 id="一个链接一个进程"><a href="#一个链接一个进程" class="headerlink" title="一个链接一个进程"></a>一个链接一个进程</h3><p>服务器只负责监听端口，每当收到一个链接，就fork一个进程负责处理该链接请求。这使得服务器能够同时为多个客户服务，每一个进程一个客户，客户数量的唯一限制是操作系统对以其名义运行服务器的用户ID能够同时拥有多少子进程的限制。</p>
+<h3 id="预先派生子进程"><a href="#预先派生子进程" class="headerlink" title="预先派生子进程"></a>预先派生子进程</h3><p>相比于上一个模型，预先派生子进程可以在有链接时就可以直接的有进程为客户服务，而不需要先等到fork完成后，才能够为客户服务。派生子进程在服务器启动会的时候，会预先派生一定数量的进程，当客户链接到达时，这些进程就可以立即为客户服务。所有派生的子进程都直接监听端口，单当收到连接时，就负责为建立的链接服务。由于多个子进程同时监听一个端口，会导致惊群效应。该模式只适合在于Berkeley内核的系统，对于System V， 多个进程同时在应用同一个监听socket描述符上调用accept会出现错误。</p>
+<h3 id="预先派生子进程-accept上锁"><a href="#预先派生子进程-accept上锁" class="headerlink" title="预先派生子进程+accept上锁"></a>预先派生子进程+accept上锁</h3><p>该模式只是上一个模式的改进，在accept上进行加锁，使得只有一个进程可以访问accept。其他的都与上一个模式一样，只不过由于加锁，这里没有了惊群效应。（其实还是有的，只不过移到了等待锁上，有多个进程在等待加锁，如果此时锁可用，那么所有等到加锁的进程都会醒过来，再一次进行加锁竞争）</p>
+<h3 id="预先派生子进程-传递描述符"><a href="#预先派生子进程-传递描述符" class="headerlink" title="预先派生子进程+传递描述符"></a>预先派生子进程+传递描述符</h3><p>预先派生多个进程，但是所有子进程都关闭了监听socket，只有父进程负责监听socket，父进程与子进程通过管道进行通信。有多少个子进程就有多少个管道，父进程采用select模式，监听所有的管道文件描述符和监听socket，当有新链接时，父进程负责将新的文件描述符发给空闲的子进程。父进程维护一个子进程数组，记录子进程的空闲与否，父进程与子进程通过管道进行信息交互，子进程空闲时，写管道通知父进程，同时读管道，等待父进程写新的链接描述符给子进程。当select中的管道文件描述符可读时，父进程根据管道所属的子进程来标记子进程空闲，以方便有新连接时可以将链接分配给子进程处理。</p>
+<h3 id="预先派线程"><a href="#预先派线程" class="headerlink" title="预先派线程"></a>预先派线程</h3><p>该系列模型其实与预先派生子进程差不多，只不过采用的是一个客户一个线程的方式。</p>
+<p>预先派生进程或是线程都有一个问题，就是不知道开始需要派生多少，还有，需要实时对线程或是进程数量进行监控，当数量不够的时候需要采取一定的措施。</p>
+<h3 id="基于事件驱动"><a href="#基于事件驱动" class="headerlink" title="基于事件驱动"></a>基于事件驱动</h3><p>一般地,I/O多路复用机制都依赖于一个事件多路分离器(Event Demultiplexer)。分离器对象可将来自事件源的I/O事件分离出来，并分发到对应的read/write事件处理器(Event Handler)。开发人员预先注册需要处理的事件及其事件处理器（或回调函数）；事件分离器负责将请求事件传递给事件处理器。两个与事件分离器有关的模式是Reactor和Proactor。Reactor模式采用同步IO，而Proactor采用异步IO。</p>
+<p>在Reactor中，事件分离器负责等待文件描述符或socket为读写操作准备就绪，然后将就绪事件传递给对应的处理器，最后由处理器负责完成实际的读写工作。</p>
+<p>而在Proactor模式中，处理器或者兼任处理器的事件分离器，只负责发起异步读写操作。IO操作本身由操作系统来完成。传递给操作系统的参数需要包括用户定义的数据缓冲区地址和数据大小，操作系统才能从中得到写出操作所需数据，或写入从socket读到的数据。事件分离器捕获IO操作完成事件，然后将事件传递给对应处理器。比如，在windows上，处理器发起一个异步IO操作，再由事件分离器等待IOCompletion事件。典型的异步模式实现，都建立在操作系统支持异步API的基础之上，我们将这种实现称为“系统级”异步或“真”异步，因为应用程序完全依赖操作系统执行真正的IO工作。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/08/01/网络服务器模型简介/" data-id="ciroo0epa000zkcqy9564pn3h" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-muduo中的TCPServer" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/07/31/muduo中的TCPServer/" class="article-date">
+  <time datetime="2016-07-31T14:19:22.000Z" itemprop="datePublished">2016-07-31</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/07/31/muduo中的TCPServer/">muduo中的TCPServer</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>TCPServer封装了Acceptor，并且自己提供了一个<code>newConnection</code>函数，作为Acceptor的连接建立回调函数：<br><figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">void TcpServer::newConnection(<span class="keyword">int</span> sockfd, <span class="keyword">const</span> InetAddress&amp; peerAddr)</span><br><span class="line">&#123;</span><br><span class="line">  loop_-&gt;assertInLoopThread();</span><br><span class="line">  EventLoop* ioLoop = threadPool_-&gt;getNextLoop();</span><br><span class="line">  <span class="keyword">char</span> buf[<span class="number">64</span>];</span><br><span class="line">  snprintf(buf, <span class="keyword">sizeof</span> buf, <span class="string">"-%s#%d"</span>, ipPort_.c_str(), nextConnId_);</span><br><span class="line">  ++nextConnId_;</span><br><span class="line">  string connName = name_ + buf;</span><br><span class="line"></span><br><span class="line">  LOG_INFO &lt;&lt; <span class="string">"TcpServer::newConnection ["</span> &lt;&lt; name_</span><br><span class="line">           &lt;&lt; <span class="string">"] - new connection ["</span> &lt;&lt; connName</span><br><span class="line">           &lt;&lt; <span class="string">"] from "</span> &lt;&lt; peerAddr.toIpPort();</span><br><span class="line">  InetAddress localAddr(sockets::getLocalAddr(sockfd));</span><br><span class="line">  <span class="comment">// FIXME poll with zero timeout to double confirm the new connection</span></span><br><span class="line">  <span class="comment">// FIXME use make_shared if necessary</span></span><br><span class="line">  <span class="comment">//建立一个TCPConnection，并设置相应的回调函数</span></span><br><span class="line">  TcpConnectionPtr conn(new TcpConnection(ioLoop,</span><br><span class="line">                                          connName,</span><br><span class="line">                                          sockfd,</span><br><span class="line">                                          localAddr,</span><br><span class="line">                                          peerAddr));</span><br><span class="line"></span><br><span class="line">  connections_[connName] = conn;</span><br><span class="line">  conn-&gt;setConnectionCallback(connectionCallback_);</span><br><span class="line">  conn-&gt;setMessageCallback(messageCallback_);</span><br><span class="line">  conn-&gt;setWriteCompleteCallback(writeCompleteCallback_);</span><br><span class="line">  conn-&gt;setCloseCallback(</span><br><span class="line">      boost::bind(&amp;TcpServer::removeConnection, this, _1)); <span class="comment">// <span class="doctag">FIXME:</span> unsafe</span></span><br><span class="line">  ioLoop-&gt;runInLoop(boost::bind(&amp;TcpConnection::connectEstablished, conn));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>跟TCPConnection一样，TCPServer对外提供了事件处理回调函数接口，并将这些回调函数注册到TCPConnection中。TCPServer还提供了一个<code>ConnectionCallBack</code>函数，该函数也是直接注册到TCPConnection中，用来在链接建立后执行，比如可以在设置高水位处理函数以及写完成处理函数：<br><figure class="highlight lasso"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="attribute">...</span></span><br><span class="line">server_<span class="built_in">.</span>setConnectionCallback(</span><br><span class="line">        boost<span class="tag">::bind</span>(<span class="subst">&amp;</span>SudokuServer<span class="tag">::onConnection</span>, this, _1));</span><br><span class="line"><span class="attribute">...</span></span><br><span class="line"><span class="attribute">...</span></span><br><span class="line"><span class="literal">void</span> onConnection(const TcpConnectionPtr<span class="subst">&amp;</span> conn)</span><br><span class="line">  &#123;</span><br><span class="line">    LOG_TRACE &lt;&lt; conn<span class="subst">-&gt;</span>peerAddress()<span class="built_in">.</span>toIpPort() &lt;&lt; <span class="string">" -&gt; "</span></span><br><span class="line">        &lt;&lt; conn<span class="subst">-&gt;</span>localAddress()<span class="built_in">.</span>toIpPort() &lt;&lt; <span class="string">" is "</span></span><br><span class="line">        &lt;&lt; (conn<span class="subst">-&gt;</span>connected() ? <span class="string">"UP"</span> : <span class="string">"DOWN"</span>);</span><br><span class="line">    <span class="keyword">if</span> (conn<span class="subst">-&gt;</span>connected())</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="keyword">if</span> (tcpNoDelay_)</span><br><span class="line">        conn<span class="subst">-&gt;</span>setTcpNoDelay(<span class="literal">true</span>);</span><br><span class="line">      conn<span class="subst">-&gt;</span>setHighWaterMarkCallback(</span><br><span class="line">          boost<span class="tag">::bind</span>(<span class="subst">&amp;</span>SudokuServer<span class="tag">::highWaterMark</span>, this, _1, _2), <span class="number">5</span> * <span class="number">1024</span> * <span class="number">1024</span>);</span><br><span class="line">      bool throttle = <span class="literal">false</span>;</span><br><span class="line">      conn<span class="subst">-&gt;</span>setContext(throttle);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure></p>
+<p>TCPServer通过一个map来保存所有已经建立的链接：<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="built_in">std</span>::<span class="built_in">map</span>&lt;<span class="built_in">string</span>, TcpConnectionPtr&gt; ConnectionMap;</span><br><span class="line">ConnectionMap connections_;</span><br></pre></td></tr></table></figure></p>
+<p>channel-&gt;TCPConnection-&gt;TCPServer每一个类有着自己的任务以及需要维护的属性，层与层之间通过回调函数来进行控制，上一层通过注册回调函数来控制下一层的事件操作以及维护自己的属性，下一层负责处理自己维护的属性以及执行上一层所注册的函数，从而实现每一层的信息维护以及上一层对下一层的操作控制。</p>
+<p>利用注册回调函数，我们可以在不需要继承任何基类的情况下，通过TCPServer实现自己的服务器。对于不同功能的服务器，只需要提供自己的相关事件处理函数并注册到TCPServer中，就可以了！</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/07/31/muduo中的TCPServer/" data-id="ciroo0evt0047kcqyvvngbewv" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/muduo-C-网络库/">muduo C++ 网络库</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-muduo中的TCPConnection" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/07/31/muduo中的TCPConnection/" class="article-date">
+  <time datetime="2016-07-31T13:30:11.000Z" itemprop="datePublished">2016-07-31</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/07/31/muduo中的TCPConnection/">muduo中的TCPConnection</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>在muduo中，socket的事件分发由channel来完成，针对不同的事件，channel负责调用不同的回调函数。TCPConnection则是对channel的封装，TCPConnection用来表示一个已建立的链接，每一个TCPConnection负责一个channel。TCPConnection属于应用层的类，拥有TCP链接的属性，如对端socket信息、链接信息等。TCPConnection有着不同事件处理函数，并且对外提供三个回调函数接口，应用可以对于不同的事件注册不同的回调函数，在TCPConnection执行完自己的事件处理流程后，会调用上一层注册的相应回调函数。TCPConnection直接将自己的事件处理函数作为回调函数注册到channel中，这样对于在channel中，实际上执行的事件处理函数为TCPConnection中的事件处理函数，用户可以通过向TCPConnection注册回调函数来控制socket不同事件所应采取的操作。</p>
+<p>TCPConnection中有着接受和输出buffer缓冲，数据的读取都需要和buffer打交道，发送数据要比读取数据难，需要注意两个地方：</p>
+<ol>
+<li>当没有数据可以发送的时候，需要关闭读事件，否则的话会造成busy loop。</li>
+<li>当发送的数据堆积在buffer中，client一直没有接收或是数据接收很慢造成buffer太大的时候，需要进行处理，否则的话，会造成内存浪费。</li>
+</ol>
+<p>TCPConnection有两个回调函数，<code>WriteCompleteCallBack</code>和<code>HighWaterMarkCallBack</code>,当buffer没有数据发送时，可以执行<code>WriteCompleteCallBack</code>函数，当buffer太大时，可以执行<code>HighWaterMarkCallBack</code>函数（一般默认是直接关闭链接，回收内存），TCPConnection暴露这两个回调接口，提供该上一层注册。<br>TCPConnection的代码如下：<br><figure class="highlight aspectj"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//TCPConnection维护的部分信息以及属性</span></span><br><span class="line">EventLoop* loop_;</span><br><span class="line"><span class="keyword">const</span> string name_;</span><br><span class="line">StateE state_;  <span class="comment">// <span class="doctag">FIXME:</span> use atomic variable</span></span><br><span class="line"><span class="comment">// we don't expose those classes to client.</span></span><br><span class="line">boost::scoped_ptr&lt;Socket&gt; socket_;</span><br><span class="line">boost::scoped_ptr&lt;Channel&gt; channel_;</span><br><span class="line"><span class="keyword">const</span> InetAddress localAddr_;</span><br><span class="line"><span class="keyword">const</span> InetAddress peerAddr_;</span><br><span class="line"><span class="comment">//该回调函数在链接建立时执行</span></span><br><span class="line">ConnectionCallback connectionCallback_;</span><br><span class="line">MessageCallback messageCallback_;</span><br><span class="line">WriteCompleteCallback writeCompleteCallback_;</span><br><span class="line">HighWaterMarkCallback highWaterMarkCallback_;</span><br><span class="line">CloseCallback closeCallback_;</span><br><span class="line">size_t highWaterMark_;</span><br><span class="line">Buffer inputBuffer_;</span><br><span class="line">Buffer outputBuffer_; <span class="comment">// <span class="doctag">FIXME:</span> use list&lt;Buffer&gt; as output buffer.</span></span><br><span class="line">boost::any context_;</span><br><span class="line">bool reading_;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">//建立连接</span></span><br><span class="line">TcpConnection::TcpConnection(EventLoop* loop,</span><br><span class="line">                             <span class="keyword">const</span> string&amp; nameArg,</span><br><span class="line">                             <span class="keyword">int</span> sockfd,</span><br><span class="line">                             <span class="keyword">const</span> InetAddress&amp; localAddr,</span><br><span class="line">                             <span class="keyword">const</span> InetAddress&amp; peerAddr)</span><br><span class="line">  : loop_(CHECK_NOTNULL(loop)),</span><br><span class="line">    name_(nameArg),</span><br><span class="line">    state_(kConnecting),</span><br><span class="line">    socket_(<span class="keyword">new</span> Socket(sockfd)),</span><br><span class="line">    channel_(<span class="keyword">new</span> Channel(loop, sockfd)),</span><br><span class="line">    localAddr_(localAddr),</span><br><span class="line">    peerAddr_(peerAddr),</span><br><span class="line">    highWaterMark_(64*1024*1024),</span><br><span class="line">    reading_(<span class="keyword">true</span>)</span><br><span class="line">&#123;</span><br><span class="line">  channel_-&gt;setReadCallback(</span><br><span class="line">      boost::bind(&amp;TcpConnection::handleRead, <span class="keyword">this</span>, _1));</span><br><span class="line">  channel_-&gt;setWriteCallback(</span><br><span class="line">      boost::bind(&amp;TcpConnection::handleWrite, <span class="keyword">this</span>));</span><br><span class="line">  channel_-&gt;setCloseCallback(</span><br><span class="line">      boost::bind(&amp;TcpConnection::handleClose, <span class="keyword">this</span>));</span><br><span class="line">  channel_-&gt;setErrorCallback(</span><br><span class="line">      boost::bind(&amp;TcpConnection::handleError, <span class="keyword">this</span>));</span><br><span class="line">  LOG_DEBUG &lt;&lt; <span class="string">"TcpConnection::ctor["</span> &lt;&lt;  name_ &lt;&lt; <span class="string">"] at "</span> &lt;&lt; <span class="keyword">this</span></span><br><span class="line">            &lt;&lt; <span class="string">" fd="</span> &lt;&lt; sockfd;</span><br><span class="line">  socket_-&gt;setKeepAlive(<span class="keyword">true</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> TcpConnection::connectEstablished()</span><br><span class="line">&#123;</span><br><span class="line">  loop_-&gt;assertInLoopThread();</span><br><span class="line">  <span class="keyword">assert</span>(state_ == kConnecting);</span><br><span class="line">  setState(kConnected);</span><br><span class="line">  channel_-&gt;tie(shared_from_this());</span><br><span class="line">  channel_-&gt;enableReading();</span><br><span class="line"></span><br><span class="line">  connectionCallback_(shared_from_this());</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//关闭连接</span></span><br><span class="line"><span class="keyword">void</span> TcpConnection::forceCloseInLoop()</span><br><span class="line">&#123;</span><br><span class="line">  loop_-&gt;assertInLoopThread();</span><br><span class="line">  <span class="keyword">if</span> (state_ == kConnected || state_ == kDisconnecting)</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="comment">// as if we received 0 byte in handleRead();</span></span><br><span class="line">    handleClose();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//事件处理函数</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//当socket可读，但是读取数据返回0的时候，说明对端关闭了链接，此时，执行handleClose函数</span></span><br><span class="line"><span class="keyword">void</span> TcpConnection::handleRead(Timestamp receiveTime)</span><br><span class="line">&#123;</span><br><span class="line">  loop_-&gt;assertInLoopThread();</span><br><span class="line">  <span class="keyword">int</span> savedErrno = <span class="number">0</span>;</span><br><span class="line">  ssize_t n = inputBuffer_.readFd(channel_-&gt;fd(), &amp;savedErrno);</span><br><span class="line">  <span class="keyword">if</span> (n &gt; <span class="number">0</span>)</span><br><span class="line">  &#123;</span><br><span class="line">    messageCallback_(shared_from_this(), &amp;inputBuffer_, receiveTime);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="function"><span class="keyword">else</span> <span class="title">if</span> <span class="params">(n == <span class="number">0</span>)</span></span><br><span class="line">  </span>&#123;</span><br><span class="line">    handleClose();</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">  &#123;</span><br><span class="line">    errno = savedErrno;</span><br><span class="line">    LOG_SYSERR &lt;&lt; <span class="string">"TcpConnection::handleRead"</span>;</span><br><span class="line">    handleError();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> TcpConnection::handleWrite()</span><br><span class="line">&#123;</span><br><span class="line">  loop_-&gt;assertInLoopThread();</span><br><span class="line">  <span class="keyword">if</span> (channel_-&gt;isWriting())</span><br><span class="line">  &#123;</span><br><span class="line">    ssize_t n = sockets::write(channel_-&gt;fd(),</span><br><span class="line">                               outputBuffer_.peek(),</span><br><span class="line">                               outputBuffer_.readableBytes());</span><br><span class="line">    <span class="keyword">if</span> (n &gt; <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">      outputBuffer_.retrieve(n);</span><br><span class="line">      <span class="keyword">if</span> (outputBuffer_.readableBytes() == <span class="number">0</span>)</span><br><span class="line">      &#123;</span><br><span class="line">        channel_-&gt;disableWriting();</span><br><span class="line">        <span class="keyword">if</span> (writeCompleteCallback_)</span><br><span class="line">        &#123;</span><br><span class="line">          loop_-&gt;queueInLoop(boost::bind(writeCompleteCallback_, shared_from_this()));</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (state_ == kDisconnecting)</span><br><span class="line">        &#123;</span><br><span class="line">          shutdownInLoop();</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">      LOG_SYSERR &lt;&lt; <span class="string">"TcpConnection::handleWrite"</span>;</span><br><span class="line">      <span class="comment">// if (state_ == kDisconnecting)</span></span><br><span class="line">      <span class="comment">// &#123;</span></span><br><span class="line">      <span class="comment">//   shutdownInLoop();</span></span><br><span class="line">      <span class="comment">// &#125;</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">  &#123;</span><br><span class="line">    LOG_TRACE &lt;&lt; <span class="string">"Connection fd = "</span> &lt;&lt; channel_-&gt;fd()</span><br><span class="line">              &lt;&lt; <span class="string">" is down, no more writing"</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> TcpConnection::handleClose()</span><br><span class="line">&#123;</span><br><span class="line">  loop_-&gt;assertInLoopThread();</span><br><span class="line">  LOG_TRACE &lt;&lt; <span class="string">"fd = "</span> &lt;&lt; channel_-&gt;fd() &lt;&lt; <span class="string">" state = "</span> &lt;&lt; stateToString();</span><br><span class="line">  <span class="keyword">assert</span>(state_ == kConnected || state_ == kDisconnecting);</span><br><span class="line">  <span class="comment">// we don't close fd, leave it to dtor, so we can find leaks easily.</span></span><br><span class="line">  setState(kDisconnected);</span><br><span class="line">  channel_-&gt;disableAll();</span><br><span class="line"></span><br><span class="line">  TcpConnectionPtr guardThis(shared_from_this());</span><br><span class="line">  connectionCallback_(guardThis);</span><br><span class="line">  <span class="comment">// must be the last line</span></span><br><span class="line">  closeCallback_(guardThis);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> TcpConnection::handleError()</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">int</span> err = sockets::getSocketError(channel_-&gt;fd());</span><br><span class="line">  LOG_ERROR &lt;&lt; <span class="string">"TcpConnection::handleError ["</span> &lt;&lt; name_</span><br><span class="line">            &lt;&lt; <span class="string">"] - SO_ERROR = "</span> &lt;&lt; err &lt;&lt; <span class="string">" "</span> &lt;&lt; strerror_tl(err);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/07/31/muduo中的TCPConnection/" data-id="ciroo0evv004akcqyax61esg8" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/muduo-C-网络库/">muduo C++ 网络库</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-网络编程摘要" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2016/07/21/网络编程摘要/" class="article-date">
@@ -107,8 +569,7 @@
 <p>先有TCP，再有UDP，一般情况下使用的是TCP，因为UDP没有拥塞控制，很难很好的使用网络的带宽，发多会丢包，发少有不能合理使用带宽。从编程角度来说，UDP不需要网络库，在服务端，udp只需要一个socket就可以与所有的客户端进行数据交互。而TCP需要一个连接一个socket。TCP是线程不安全的，因为TCP为字节流协议，多个线程操作一个socket会发生数据错乱。而UDP是线程安全的，只需要维护客户端的信息，由于是数据包的格式，所以多个线程写一个UDP socket的话，不会造成数据包内的数据错乱。</p>
 <p>在TCP编程的时候，如果没有数据需要发送了，那么应该调用shutdownWrite,关闭写连接，在read返回0的时候，才调用close。如果在没有数据可发送的时候直接的调用close，会导致输入缓冲区的数据直接被清除，使得数据读取不到。<br>TCP是可靠的意思是协议会帮你把数据安全的发送到对端的接收端口，但是并不负责数据会被对端的程序给读取到，所以为了数据的可靠传输，我们在应用层需要进行数据的接收确认，表示数据已经被程序成功处理。</p>
 <p>在linux下使用管道时，如果管道的一端关闭了，那么往里面写数据的话，程序会受到SIGPIPE信号，在默认的情况下，程序会直接退出。在TCP网络编程下，如果对端关闭了socket的读连接，此时往里面写数据的话，也会收到SIGPIPE 信号，所以在server端，需要忽略掉SIGPIPE信号，不然的话，收到SIGPIPE信号的时候，server会退出。</p>
-<p>TCP网络编程三部曲：</p>
-<ol>
+<h3 id="TCP网络编程三部曲："><a href="#TCP网络编程三部曲：" class="headerlink" title="TCP网络编程三部曲："></a>TCP网络编程三部曲：</h3><ol>
 <li>开起SO_REUSEADDR,保证程序在重启的时候可以再一次的监听端口。在TCP下，如果主动关掉连接的话，会有一个TIME_WAITE时间，此时的端口还是处于忙的状态，如果不启用SO_REUSEADDR的话，绑定该端口会发生错误。</li>
 <li>忽略SIGPIPE</li>
 <li>TCP_NODELAY, 一般情况下都是默认关掉该算法，使得数据可以立刻发送到对端。</li>
@@ -120,7 +581,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/21/网络编程摘要/" data-id="cira56w7h000r90qyjyge3na9" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/21/网络编程摘要/" data-id="ciroo0ep6000vkcqyr62qhi50" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a></li></ul>
@@ -169,7 +630,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/20/muduo中的Channel和Poller/" data-id="cira56wac003s90qy8zfmrrl2" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/20/muduo中的Channel和Poller/" data-id="ciroo0evz004gkcqygyfndlpx" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/muduo-C-网络库/">muduo C++ 网络库</a></li></ul>
@@ -223,7 +684,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/20/muduo中的EventLoop/" data-id="cira56wab003p90qy7d2ygm61" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/20/muduo中的EventLoop/" data-id="ciroo0evy004dkcqy4rvz7xmd" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/muduo-C-网络库/">muduo C++ 网络库</a></li></ul>
@@ -282,7 +743,7 @@ writable = size()-writeIndex
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/20/muduo中的buffer/" data-id="cira56wa9003m90qy2pb9557w" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/20/muduo中的buffer/" data-id="ciroo0evq0044kcqya3jsg7k7" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/muduo-C-网络库/">muduo C++ 网络库</a></li></ul>
@@ -326,7 +787,7 @@ writable = size()-writeIndex
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/20/多线程与fork/" data-id="cira56w87002190qy14mlb2q3" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/20/多线程与fork/" data-id="ciroo0et50028kcqy9b9ymrka" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/muduo-C-网络库/">muduo C++ 网络库</a></li></ul>
@@ -386,7 +847,7 @@ writable = size()-writeIndex
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/20/Linux上的线程标识/" data-id="cira56wb5005a90qyrt0u3op2" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/20/Linux上的线程标识/" data-id="ciroo0eya006pkcqy5ts5u92w" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/muduo-C-网络库/">muduo C++ 网络库</a></li></ul>
@@ -430,7 +891,7 @@ writable = size()-writeIndex
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/20/C-中线程安全的单例实现/" data-id="cira56wc5007090qystm56og9" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/20/C-中线程安全的单例实现/" data-id="ciroo0ezx008gkcqyralvl5ka" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/muduo-C-网络库/">muduo C++ 网络库</a></li></ul>
@@ -491,7 +952,7 @@ writable = size()-writeIndex
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/20/条件变量的使用/" data-id="cira56w7x001l90qyshn8se3d" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/20/条件变量的使用/" data-id="ciroo0eq7001skcqyy5tl01aq" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/muduo-C-网络库/">muduo C++ 网络库</a></li></ul>
@@ -560,7 +1021,7 @@ writable = size()-writeIndex
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/13/LCA之DFS-ST算法/" data-id="cira56wbn006390qy13w31kco" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/13/LCA之DFS-ST算法/" data-id="ciroo0eyz007ikcqyiynxfk7y" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/图与树/">图与树</a></li></ul>
@@ -635,7 +1096,7 @@ writable = size()-writeIndex
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/13/LCA之Tarjan算法/" data-id="cira56wbl006090qyjnqwfe72" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/13/LCA之Tarjan算法/" data-id="ciroo0eyx007fkcqyw8xgygqr" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/图与树/">图与树</a></li></ul>
@@ -685,7 +1146,7 @@ writable = size()-writeIndex
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/12/ST算法/" data-id="cira56war004k90qyxi2v2kib" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/12/ST算法/" data-id="ciroo0eww005dkcqys8wyqsfh" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/图与树/">图与树</a></li></ul>
@@ -772,7 +1233,7 @@ writable = size()-writeIndex
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/12/线段树/" data-id="cira56w7j000v90qy9dbkak2k" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/12/线段树/" data-id="ciroo0epc0012kcqypkdl0zld" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/图与树/">图与树</a></li></ul>
@@ -819,7 +1280,7 @@ writable = size()-writeIndex
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/12/并查集/" data-id="cira56w81001s90qyzpnaa17t" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/12/并查集/" data-id="ciroo0eqg001zkcqyrbppg6ic" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/图与树/">图与树</a></li></ul>
@@ -873,10 +1334,55 @@ writable = size()-writeIndex
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/11/UDP之connect/" data-id="cira56wan004b90qyerb11g1o" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/11/UDP之connect/" data-id="ciroo0ewo0054kcqysdr7hro0" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TCP-IP/">TCP/IP</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-分布式锁" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/07/10/分布式锁/" class="article-date">
+  <time datetime="2016-07-10T08:39:48.000Z" itemprop="datePublished">2016-07-10</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/07/10/分布式锁/">分布式锁</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>基于redis的分布式锁：redis加锁需要用到命令setnt（如果key不存在，那么设置对应的值），对于锁，需要考虑两个问题：网络问题或宕机导致解锁失败和加锁不成功时如何等待（sleep或是一直访问肯定不行）。对于第一个问题，可以采用redis的expire命令，来设置key的过期时间。对于第二个问题，可以利用redis的发布与订阅来实现阻塞等待。一个锁对应一个channel，如果加锁失败，那么订阅该chennel，阻塞监听该chennel知道收到消息为止，此时说明解锁了，可以进一步尝试加锁。在解锁时，需要发布一条消息，来唤醒所有等待在channel上的客户端。</p>
+<p>对于可重入锁，也就是一个获得锁的客户端，可以再一次的加锁，此时可以在setnt的时候，设置key的value为客户端的id+进程id+加锁次数。如果在setnt失败后，那么先获得key对应的value，判断锁的持有者是否为本进程，是的话，可以直接将key的value对应的次数加1，利用set进行设置，再一次加锁。在解锁的时候，如果锁的次数大于1，那么直接减去1就好，如果锁的次数为1的话，那么此时需要真正的解锁，直接把del key，并发布一条消息，通知等待的客户端。可以参考redissonlock来学习具体的实现机制：<br><figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">//加锁的实现函数，成功返回null，不成功返回锁的存活时间，-1表示锁永不超时</span></span><br><span class="line"><span class="function"><span class="keyword">private</span> Long <span class="title">tryLockInner</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="comment">//保存锁的状态: 客户端UUID+线程ID来唯一标识某一JVM实例的某一线程</span></span><br><span class="line">    final LockValue currentLock = <span class="keyword">new</span> LockValue(id, Thread.currentThread().getId());    </span><br><span class="line"></span><br><span class="line">    currentLock.incCounter();    <span class="comment">//用来保存重入次数, 实现可重入功能, 初始情况是1</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">//Redisson封装了交互的细节, 具体的逻辑为execute方法逻辑.</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> connectionManager.write(getName(), <span class="keyword">new</span> SyncOperation&lt;LockValue, Long&gt;() &#123;</span><br><span class="line"></span><br><span class="line">        @<span class="function">Override</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> Long <span class="title">execute</span>(<span class="params">RedisConnection&lt;Object, LockValue&gt; connection</span>) </span>&#123;</span><br><span class="line">        <span class="comment">//如果key:haogrgr不存在, 就set并返回true, 否则返回false</span></span><br><span class="line">        Boolean res = connection.setnx(getName(), currentLock);    </span><br><span class="line">        <span class="comment">//如果设置失败, 那么表示有锁竞争了, 于是获取当前锁的状态, 如果拥有者是当前线程, 就累加重入次数并set新值</span></span><br><span class="line">        <span class="keyword">if</span> (!res) &#123;    </span><br><span class="line">          <span class="comment">//通过watch命令配合multi来实现简单的事务功能,这里需要监看key，有可能key因为超时被删除了。</span></span><br><span class="line">          connection.watch(getName());    </span><br><span class="line"></span><br><span class="line">          LockValue <span class="keyword">lock</span> = (LockValue) connection.<span class="keyword">get</span>(getName());</span><br><span class="line">          <span class="comment">//LockValue的equals实现为比较客户id和threadid是否一样</span></span><br><span class="line">          <span class="keyword">if</span> (<span class="keyword">lock</span> != <span class="keyword">null</span> &amp;&amp; <span class="keyword">lock</span>.equals(currentLock)) &#123;    </span><br><span class="line"></span><br><span class="line">                    <span class="keyword">lock</span>.incCounter();    <span class="comment">//如果当前线程已经获取过锁, 则累加加锁次数, 并set更新</span></span><br><span class="line"></span><br><span class="line">                    connection.multi();</span><br><span class="line"></span><br><span class="line">                    connection.<span class="keyword">set</span>(getName(), <span class="keyword">lock</span>);</span><br><span class="line"></span><br><span class="line">                    <span class="keyword">if</span> (connection.exec().size() == <span class="number">1</span>) &#123;</span><br><span class="line"></span><br><span class="line">                        <span class="keyword">return</span> <span class="keyword">null</span>;    <span class="comment">//set成功,</span></span><br><span class="line"></span><br><span class="line">                    &#125;</span><br><span class="line"></span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                connection.unwatch();</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">                <span class="comment">//走到这里, 说明上面set的时候, 其他客户端在  watch之后-&gt;set之前 有其他客户端修改了key值</span></span><br><span class="line"></span><br><span class="line">                <span class="comment">//则获取key的过期时间, 如果是永不过期, 则返回-1, 具体处理后面说明</span></span><br><span class="line"></span><br><span class="line">                Long ttl = connection.pttl(getName());</span><br><span class="line"></span><br><span class="line">                <span class="keyword">return</span> ttl;</span><br><span class="line"></span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//加锁操作</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">lockInterruptibly</span>(<span class="params"><span class="keyword">long</span> leaseTime, TimeUnit unit</span>) throws InterruptedException </span>&#123;</span><br><span class="line"></span><br><span class="line">    Long ttl;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (leaseTime != -<span class="number">1</span>) &#123;</span><br><span class="line"></span><br><span class="line">        ttl = tryLockInner(leaseTime, unit);</span><br><span class="line"></span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line"></span><br><span class="line">        ttl = tryLockInner();   <span class="comment">//lock()方法调用会走的逻辑</span></span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// lock acquired</span></span><br><span class="line">    <span class="comment">//加锁成功(新获取锁, 重入情况) tryLockInner会返回null, 失败会返回key超时时间, 或者-1(key未设置超时时间)</span></span><br><span class="line">    <span class="keyword">if</span> (ttl == <span class="keyword">null</span>) &#123;   </span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span>;   <span class="comment">//加锁成功, 返回</span></span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">//subscribe这个方法代码有点多, Redisson通过netty来和redis通讯, 然后subscribe返回的是一个Future类型,</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//Future的awaitUninterruptibly()调用会阻塞, 然后Redisson通过Redis的pubsub来监听unlock的topic(getChannelName())</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//例如, 5中所看到的命令 "PUBLISH" "redisson__lock__channel__&#123;haogrgr&#125;" "0"</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//当解锁时, 会向名为 getChannelName() 的topic来发送解锁消息("0")</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//而这里 subscribe() 中监听这个topic, 在订阅成功时就会唤醒阻塞在awaitUninterruptibly()的方法.</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//所以线程在这里只会阻塞很短的时间(订阅成功即唤醒, 并不代表已经解锁)</span></span><br><span class="line"></span><br><span class="line">    subscribe().awaitUninterruptibly();</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span> (<span class="keyword">true</span>) &#123;    <span class="comment">//循环, 不断重试lock</span></span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (leaseTime != -<span class="number">1</span>) &#123;</span><br><span class="line"></span><br><span class="line">                ttl = tryLockInner(leaseTime, unit);</span><br><span class="line"></span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line"></span><br><span class="line">                ttl = tryLockInner();   <span class="comment">//不多说了</span></span><br><span class="line"></span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// lock acquired</span></span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (ttl == <span class="keyword">null</span>) &#123;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">            <span class="comment">// 这里才是真正的等待解锁消息, 收到解锁消息, 就唤醒, 然后尝试获取锁, 成功返回, 失败则阻塞在acquire().</span></span><br><span class="line"></span><br><span class="line">            <span class="comment">// 收到订阅成功消息, 则唤醒阻塞上面的subscribe().awaitUninterruptibly();</span></span><br><span class="line"></span><br><span class="line">            <span class="comment">// 收到解锁消息, 则唤醒阻塞在下面的entry.getLatch().acquire();</span></span><br><span class="line"></span><br><span class="line">            RedissonLockEntry entry = ENTRIES.<span class="keyword">get</span>(getEntryName());</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (ttl &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">            	<span class="comment">//等待订阅的消息，ttl时间后超时，表示锁被自动删除</span></span><br><span class="line">                entry.getLatch().tryAcquire(ttl, TimeUnit.MILLISECONDS);</span><br><span class="line"></span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="comment">//锁没有设置超时情况，需要一直等到有消息为止。</span></span><br><span class="line">                entry.getLatch().acquire();</span><br><span class="line"></span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line"></span><br><span class="line">        unsubscribe();  <span class="comment">//加锁成功或异常,解除订阅</span></span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>下面是解锁的代码：<br><figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">unlock</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line"></span><br><span class="line">    connectionManager.write(getName(), <span class="keyword">new</span> SyncOperation&lt;Object, Void&gt;() &#123;</span><br><span class="line"></span><br><span class="line">        @<span class="function">Override</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> Void <span class="title">execute</span>(<span class="params">RedisConnection&lt;Object, Object&gt; connection</span>) </span>&#123;</span><br><span class="line"></span><br><span class="line">            LockValue <span class="keyword">lock</span> = (LockValue) connection.<span class="keyword">get</span>(getName());</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (<span class="keyword">lock</span> != <span class="keyword">null</span>) &#123;</span><br><span class="line"></span><br><span class="line">                LockValue currentLock = <span class="keyword">new</span> LockValue(id, Thread.currentThread().getId());</span><br><span class="line"></span><br><span class="line">                <span class="keyword">if</span> (<span class="keyword">lock</span>.equals(currentLock)) &#123;</span><br><span class="line"></span><br><span class="line">                    <span class="keyword">if</span> (<span class="keyword">lock</span>.getCounter() &gt; <span class="number">1</span>) &#123;</span><br><span class="line"></span><br><span class="line">                        <span class="keyword">lock</span>.decCounter();</span><br><span class="line"></span><br><span class="line">                        connection.<span class="keyword">set</span>(getName(), <span class="keyword">lock</span>);</span><br><span class="line"></span><br><span class="line">                    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line"></span><br><span class="line">                        unlock(connection);</span><br><span class="line"></span><br><span class="line">                    &#125;</span><br><span class="line"></span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line"></span><br><span class="line">                    <span class="keyword">throw</span> <span class="keyword">new</span> IllegalMonitorStateException(<span class="string">"Attempt to unlock lock, not locked by current id: "</span></span><br><span class="line"></span><br><span class="line">                            + id + <span class="string">" thread-id: "</span> + Thread.currentThread().getId());</span><br><span class="line"></span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line"></span><br><span class="line">                <span class="comment">// could be deleted</span></span><br><span class="line"></span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">unlock</span>(<span class="params">RedisConnection&lt;Object, Object&gt; connection</span>) </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> counter = <span class="number">0</span>;</span><br><span class="line">    <span class="comment">//尝试5次解锁，不成功则抛出异常</span></span><br><span class="line">    <span class="keyword">while</span> (counter &lt; <span class="number">5</span>) &#123;</span><br><span class="line"></span><br><span class="line">        connection.multi();</span><br><span class="line"></span><br><span class="line">        connection.del(getName());</span><br><span class="line"></span><br><span class="line">        connection.publish(getChannelName(), unlockMessage);</span><br><span class="line"></span><br><span class="line">        List&lt;Object&gt; res = connection.exec();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (res.size() == <span class="number">2</span>) &#123;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        counter++;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> IllegalStateException(<span class="string">"Can't unlock lock after 5 attempts. Current id: "</span></span><br><span class="line"></span><br><span class="line">            + id + <span class="string">" thread-id: "</span> + Thread.currentThread().getId());</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/07/10/分布式锁/" data-id="ciroo0eu4002zkcqyf1cgkdss" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/redis/">redis</a></li></ul>
 
     </footer>
   </div>
@@ -946,7 +1452,7 @@ writable = size()-writeIndex
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/08/Java之JVM调优/" data-id="cira56wbw006k90qy042937qt" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/08/Java之JVM调优/" data-id="ciroo0ezf007ykcqyhwfr56x5" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java底层机制/">Java底层机制</a></li></ul>
@@ -1015,7 +1521,7 @@ writable = size()-writeIndex
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/07/Java之垃圾回收/" data-id="cira56wbs006e90qybvisqlo4" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/07/Java之垃圾回收/" data-id="ciroo0ez6007skcqyizutkmdk" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java底层机制/">Java底层机制</a></li></ul>
@@ -1087,7 +1593,7 @@ writable = size()-writeIndex
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/07/Java之内存管理/" data-id="cira56wbv006h90qygz4vtjbc" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/07/Java之内存管理/" data-id="ciroo0ezc007vkcqyeinvkq8e" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java底层机制/">Java底层机制</a></li></ul>
@@ -1142,7 +1648,7 @@ writable = size()-writeIndex
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/07/Java之类的反射机制/" data-id="cira56wbp006690qycybhvc5h" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/07/Java之类的反射机制/" data-id="ciroo0ez2007lkcqyzilphy2z" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java底层机制/">Java底层机制</a></li></ul>
@@ -1204,7 +1710,7 @@ writable = size()-writeIndex
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/07/Java之类的加载到执行/" data-id="cira56wbr006b90qyv41a64j1" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/07/Java之类的加载到执行/" data-id="ciroo0ez4007pkcqy62ijyvpw" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Java底层机制/">Java底层机制</a></li></ul>
@@ -1249,7 +1755,7 @@ writable = size()-writeIndex
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/07/设计模式之单例模式/" data-id="cira56w7e000p90qyng09mbn3" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/07/设计模式之单例模式/" data-id="ciroo0ep5000tkcqyl44dqi04" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/设计模式/">设计模式</a></li></ul>
@@ -1294,7 +1800,7 @@ writable = size()-writeIndex
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/06/设计模式之观察者模式/" data-id="cira56w7b000k90qymns2xrl8" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/06/设计模式之观察者模式/" data-id="ciroo0ep0000okcqyoi7zffl5" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/设计模式/">设计模式</a></li></ul>
@@ -1336,7 +1842,7 @@ writable = size()-writeIndex
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/06/设计模式之工厂模式/" data-id="cira56w7c000n90qykfn6u4ri" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/06/设计模式之工厂模式/" data-id="ciroo0ep3000rkcqyalj45ggf" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/设计模式/">设计模式</a></li></ul>
@@ -1384,7 +1890,7 @@ writable = size()-writeIndex
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/06/C-11常规特性之auto和decltype/" data-id="cira56wcf007j90qytg1pk059" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/06/C-11常规特性之auto和decltype/" data-id="ciroo0f0i008zkcqy43adr4xv" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a></li></ul>
@@ -1432,7 +1938,7 @@ writable = size()-writeIndex
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/06/C-11常规特性之统一初始化和初始化器列表/" data-id="cira56wc7007390qyu4kqfrzp" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/06/C-11常规特性之统一初始化和初始化器列表/" data-id="ciroo0ezz008jkcqy81mwlf6w" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a></li></ul>
@@ -1484,7 +1990,7 @@ writable = size()-writeIndex
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/06/C-11常规特性之右值引用和move语义/" data-id="cira56wc9007790qyxidxpkfg" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/06/C-11常规特性之右值引用和move语义/" data-id="ciroo0f01008nkcqy1znjtimh" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a></li></ul>
@@ -1528,7 +2034,7 @@ writable = size()-writeIndex
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/06/C-11常规特性之lambda/" data-id="cira56wce007g90qy266rd0es" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/06/C-11常规特性之lambda/" data-id="ciroo0f0c008wkcqyqne9vq7s" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a></li></ul>
@@ -1587,7 +2093,7 @@ writable = size()-writeIndex
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/06/C-11常规特性之noexcept/" data-id="cira56wcd007d90qycwq2sbtx" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/06/C-11常规特性之noexcept/" data-id="ciroo0f08008tkcqyyxzkc5ki" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a></li></ul>
@@ -1671,7 +2177,7 @@ writable = size()-writeIndex
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/06/C-11常规特性之其他一些新特性/" data-id="cira56wcb007a90qyqkfet68h" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/06/C-11常规特性之其他一些新特性/" data-id="ciroo0f05008qkcqyp55yng9i" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a></li></ul>
@@ -1764,7 +2270,7 @@ writable = size()-writeIndex
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/02/套接字/" data-id="cira56w85001y90qynj588jfv" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/02/套接字/" data-id="ciroo0esz0025kcqykde536pt" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a></li></ul>
@@ -1873,7 +2379,7 @@ writable = size()-writeIndex
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/02/信号灯/" data-id="cira56w9q002y90qygfoe8bkr" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/02/信号灯/" data-id="ciroo0eui0039kcqybdzkfzk8" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a></li></ul>
@@ -1981,7 +2487,7 @@ writable = size()-writeIndex
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/02/消息队列/" data-id="cira56w7v001i90qy8yi17b5u" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/02/消息队列/" data-id="ciroo0eq3001pkcqyid9lc7fr" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a></li></ul>
@@ -2080,7 +2586,7 @@ writable = size()-writeIndex
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/02/共享内存/" data-id="cira56w9p002v90qyjfafx1qe" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/02/共享内存/" data-id="ciroo0euf0036kcqy8ovhuaom" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a></li></ul>
@@ -2194,7 +2700,7 @@ writable = size()-writeIndex
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/02/管道/" data-id="cira56w7l001090qyal2zrdlz" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/02/管道/" data-id="ciroo0epg0017kcqy37td7sit" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a></li></ul>
@@ -2254,7 +2760,7 @@ writable = size()-writeIndex
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/06/27/redis单机数据库/" data-id="cira56wa5003h90qy9zqbbeyd" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/06/27/redis单机数据库/" data-id="ciroo0evb003vkcqynige4tl2" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/redis/">redis</a></li></ul>
@@ -2297,7 +2803,7 @@ writable = size()-writeIndex
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/06/26/redis发布与订阅/" data-id="cira56wa3003g90qyy1er55x7" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/06/26/redis发布与订阅/" data-id="ciroo0ev6003skcqy6gclzstj" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/redis/">redis</a></li></ul>
@@ -2361,75 +2867,10 @@ writable = size()-writeIndex
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/06/25/redis数据结构/" data-id="cira56wa2003f90qy6k9uyxb2" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/06/25/redis数据结构/" data-id="ciroo0ev3003pkcqyryh0y817" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/redis/">redis</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-STL概览" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2016/06/20/STL概览/" class="article-date">
-  <time datetime="2016-06-20T12:13:02.000Z" itemprop="datePublished">2016-06-20</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/categories/C与C/">C与C++</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/06/20/STL概览/">STL概览</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h3 id="STL有六大组件："><a href="#STL有六大组件：" class="headerlink" title="STL有六大组件："></a>STL有六大组件：</h3><ol>
-<li>容器：各种数据结构，用来存放数据，容器分为序列式容器和关联式容器。</li>
-<li>算法：如sort、search等算法，从实现的角度来看，STL算法是一种function template。</li>
-<li>迭代器：扮演容器和算法之间的胶合剂，是所谓的泛型指针。</li>
-<li>仿函数：行为类似函数，可作为算法的某种策略。</li>
-<li>适配器：一种用来修饰容器和仿函数或迭代器接口的东西，对外提供特定的接口，具有一定规则的数据操作访问。</li>
-<li>配置器：负责空间配置与管理。</li>
-</ol>
-<h3 id="序列式容器"><a href="#序列式容器" class="headerlink" title="序列式容器"></a>序列式容器</h3><h4 id="vector"><a href="#vector" class="headerlink" title="vector"></a>vector</h4><p>vector的安排和操作方式与array非常相似，两者的唯一区别就是空间的灵活运用。array是静态空间，一旦配置不能更改，如果需要更大的空间的话，需要重新申请内存，再负责原有的数据到新空间。而vector是动态空间，随着元素的加入，他的内部机制会自行扩充空间以容纳新元素。vector实现该机制的主要属性有size和capacity，size记录用户想要申请的空间大小或是vector实际上存储的元素的个数，而capacity记录的是vector实际申请的内存大小，capacity通常大于size，这样当需要向vector加入新元素时，就不需要每次都向系统重新申请内存，提高了数据操作的效率。</p>
-<p>vector有对应的迭代器来遍历自己的元素，由于当增加或删除元素时，vector内部有可能会重新分配内存空间，导致迭代器失效，所以在使用vector迭代器的时候，对vector进行元素的增加或删除操作是很危险的。</p>
-<h4 id="list"><a href="#list" class="headerlink" title="list"></a>list</h4><p>相比较vector，list在任何位置增加或删除元素时，都是常数时间的，但是在随机访问元素时，却比vector差。在STL中，list的实现时以双向环形链表的形式，只需要一个指针，就可以完整表现整个链表。STL会自己增加一个空节点，该结点连接着链表头和尾部节点，从而构成一个环。list.end()就是指向该节点。判断链表是否为空，只需要查看空节点的上一个或下一个节点是否指向自己就好。<br>list有自己的迭代器，相比于vector，list的插入或删除操作都不会造成原有的迭代器失效，因为list元素的改动不会影响到其他元素的内存位置。当然，删除操作会影响到原来指向被删除的元素的迭代器。</p>
-<h4 id="deque"><a href="#deque" class="headerlink" title="deque"></a>deque</h4><p>deque是双向开口的，可以在头部或是尾部插入或删除元素。deque与vector的最大差异，一在于deque允许常数时间内对头部进行元素的插入删除操作，二是deque没有capacity观念，因为他是动态的以分段连续的空间组合而成，随时可以增加一段新空间并连接起来。deque采用一块所谓的map作为主控，这里所谓的map是一小块连续空间，其中每个元素都是指针，指向另一段较大的连续线性空间，称为缓冲区，缓冲区才是deque的数据存储空间。</p>
-<p>deque也有自己的迭代器。</p>
-<h3 id="适配器"><a href="#适配器" class="headerlink" title="适配器"></a>适配器</h3><h4 id="stack"><a href="#stack" class="headerlink" title="stack"></a>stack</h4><p>stack允许数据先进后出，STL默认采用的是deque容器来作为stack的底层实现。stack封装容器，对外提供特定的数据操作接口，只允许数据先进后出，所以stack没有迭代器。</p>
-<h4 id="queue"><a href="#queue" class="headerlink" title="queue"></a>queue</h4><p>与stack类似，queue默认采用的也是deque来实现数据的存储，只允许数据先进先出，queue也没有迭代器。</p>
-<h4 id="heap"><a href="#heap" class="headerlink" title="heap"></a>heap</h4><p>heap并不是STL容器组件，同时priority queue的底层实现算法。二叉堆为完全二叉树，所以可以使用数组来实现heap算法。heap分为max-heap和min-heap。由于堆也规定特定的数据操作规则，所以heap没有迭代器</p>
-<h4 id="priority-queue"><a href="#priority-queue" class="headerlink" title="priority queue"></a>priority queue</h4><p>priority queue是一个拥有权值的queue，元素根据权值来排序。默认情况下，priority queue采用max-heap作为底层的实现，而max-heap采用vector作为底层的数据存储结构。priority queue没有自己的迭代器。</p>
-<h3 id="关联式容器"><a href="#关联式容器" class="headerlink" title="关联式容器"></a>关联式容器</h3><p>标准的STL关联式容器分为set和map两大类，以及这两大类衍生的multiset和multimap。这些都采用红黑树来实现。红黑树是STL的独立容器，不对外开放。</p>
-<h4 id="set"><a href="#set" class="headerlink" title="set"></a>set</h4><p>set的特点是所有的元素会根据元素的键值自动排序。set的元素不像map那样同时拥有key和value，set元素的key和value是一体的。 因为set的元素值就是其键值，关系到set元素的排列规则，不允许修改set的元素值。set拥有和list相同的某些性质，当客户端进行插入或删除元素时，操作之前的原有迭代器，在操作后都依然有效，当然，被删除的那个元素的迭代器必然是个例外。</p>
-<h4 id="map"><a href="#map" class="headerlink" title="map"></a>map</h4><p>map的特性是，所有元素会根据key来进行排序，map的所有元素都是pair，同时拥有key和value，因此我们可以根据map的迭代器来修改map的value。map和set一样，在删除或是插入元素时，除了别删除的元素外，其他的迭代器都是有效的。</p>
-<h4 id="multiset"><a href="#multiset" class="headerlink" title="multiset"></a>multiset</h4><p>multiset的性质和set一样，只不过允许有相同的值。</p>
-<h4 id="multimap"><a href="#multimap" class="headerlink" title="multimap"></a>multimap</h4><p>multimap的特性与map完全一样，只不过允许有相同的key。</p>
-<h4 id="hashtable"><a href="#hashtable" class="headerlink" title="hashtable"></a>hashtable</h4><p>hashtable采用字典的形式来存储数据，底层实现为数组加链表。拥有自己的迭代器。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/06/20/STL概览/" data-id="cira56was004n90qyjgzli6os" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/STL/">STL</a></li></ul>
 
     </footer>
   </div>
@@ -2498,11 +2939,128 @@ REDIS_ENCODING_SKIPLIST : 跳跃表和字典 : &quot;skiplist&quot;
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/06/20/redis之对象/" data-id="cira56wa7003l90qycrrocfjc" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/06/20/redis之对象/" data-id="ciroo0evg003ykcqym45n68na" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/redis/">redis</a></li></ul>
 
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-STL概览" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/06/20/STL概览/" class="article-date">
+  <time datetime="2016-06-20T12:13:02.000Z" itemprop="datePublished">2016-06-20</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/C与C/">C与C++</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/06/20/STL概览/">STL概览</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="STL有六大组件："><a href="#STL有六大组件：" class="headerlink" title="STL有六大组件："></a>STL有六大组件：</h3><ol>
+<li>容器：各种数据结构，用来存放数据，容器分为序列式容器和关联式容器。</li>
+<li>算法：如sort、search等算法，从实现的角度来看，STL算法是一种function template。</li>
+<li>迭代器：扮演容器和算法之间的胶合剂，是所谓的泛型指针。</li>
+<li>仿函数：行为类似函数，可作为算法的某种策略。</li>
+<li>适配器：一种用来修饰容器和仿函数或迭代器接口的东西，对外提供特定的接口，具有一定规则的数据操作访问。</li>
+<li>配置器：负责空间配置与管理。</li>
+</ol>
+<h3 id="序列式容器"><a href="#序列式容器" class="headerlink" title="序列式容器"></a>序列式容器</h3><h4 id="vector"><a href="#vector" class="headerlink" title="vector"></a>vector</h4><p>vector的安排和操作方式与array非常相似，两者的唯一区别就是空间的灵活运用。array是静态空间，一旦配置不能更改，如果需要更大的空间的话，需要重新申请内存，再负责原有的数据到新空间。而vector是动态空间，随着元素的加入，他的内部机制会自行扩充空间以容纳新元素。vector实现该机制的主要属性有size和capacity，size记录用户想要申请的空间大小或是vector实际上存储的元素的个数，而capacity记录的是vector实际申请的内存大小，capacity通常大于size，这样当需要向vector加入新元素时，就不需要每次都向系统重新申请内存，提高了数据操作的效率。</p>
+<p>vector有对应的迭代器来遍历自己的元素，由于当增加或删除元素时，vector内部有可能会重新分配内存空间，导致迭代器失效，所以在使用vector迭代器的时候，对vector进行元素的增加或删除操作是很危险的。</p>
+<h4 id="list"><a href="#list" class="headerlink" title="list"></a>list</h4><p>相比较vector，list在任何位置增加或删除元素时，都是常数时间的，但是在随机访问元素时，却比vector差。在STL中，list的实现时以双向环形链表的形式，只需要一个指针，就可以完整表现整个链表。STL会自己增加一个空节点，该结点连接着链表头和尾部节点，从而构成一个环。list.end()就是指向该节点。判断链表是否为空，只需要查看空节点的上一个或下一个节点是否指向自己就好。<br>list有自己的迭代器，相比于vector，list的插入或删除操作都不会造成原有的迭代器失效，因为list元素的改动不会影响到其他元素的内存位置。当然，删除操作会影响到原来指向被删除的元素的迭代器。</p>
+<h4 id="deque"><a href="#deque" class="headerlink" title="deque"></a>deque</h4><p>deque是双向开口的，可以在头部或是尾部插入或删除元素。deque与vector的最大差异，一在于deque允许常数时间内对头部进行元素的插入删除操作，二是deque没有capacity观念，因为他是动态的以分段连续的空间组合而成，随时可以增加一段新空间并连接起来。deque采用一块所谓的map作为主控，这里所谓的map是一小块连续空间，其中每个元素都是指针，指向另一段较大的连续线性空间，称为缓冲区，缓冲区才是deque的数据存储空间。</p>
+<p>deque也有自己的迭代器。</p>
+<h3 id="适配器"><a href="#适配器" class="headerlink" title="适配器"></a>适配器</h3><h4 id="stack"><a href="#stack" class="headerlink" title="stack"></a>stack</h4><p>stack允许数据先进后出，STL默认采用的是deque容器来作为stack的底层实现。stack封装容器，对外提供特定的数据操作接口，只允许数据先进后出，所以stack没有迭代器。</p>
+<h4 id="queue"><a href="#queue" class="headerlink" title="queue"></a>queue</h4><p>与stack类似，queue默认采用的也是deque来实现数据的存储，只允许数据先进先出，queue也没有迭代器。</p>
+<h4 id="heap"><a href="#heap" class="headerlink" title="heap"></a>heap</h4><p>heap并不是STL容器组件，同时priority queue的底层实现算法。二叉堆为完全二叉树，所以可以使用数组来实现heap算法。heap分为max-heap和min-heap。由于堆也规定特定的数据操作规则，所以heap没有迭代器</p>
+<h4 id="priority-queue"><a href="#priority-queue" class="headerlink" title="priority queue"></a>priority queue</h4><p>priority queue是一个拥有权值的queue，元素根据权值来排序。默认情况下，priority queue采用max-heap作为底层的实现，而max-heap采用vector作为底层的数据存储结构。priority queue没有自己的迭代器。</p>
+<h3 id="关联式容器"><a href="#关联式容器" class="headerlink" title="关联式容器"></a>关联式容器</h3><p>标准的STL关联式容器分为set和map两大类，以及这两大类衍生的multiset和multimap。这些都采用红黑树来实现。红黑树是STL的独立容器，不对外开放。</p>
+<h4 id="set"><a href="#set" class="headerlink" title="set"></a>set</h4><p>set的特点是所有的元素会根据元素的键值自动排序。set的元素不像map那样同时拥有key和value，set元素的key和value是一体的。 因为set的元素值就是其键值，关系到set元素的排列规则，不允许修改set的元素值。set拥有和list相同的某些性质，当客户端进行插入或删除元素时，操作之前的原有迭代器，在操作后都依然有效，当然，被删除的那个元素的迭代器必然是个例外。</p>
+<h4 id="map"><a href="#map" class="headerlink" title="map"></a>map</h4><p>map的特性是，所有元素会根据key来进行排序，map的所有元素都是pair，同时拥有key和value，因此我们可以根据map的迭代器来修改map的value。map和set一样，在删除或是插入元素时，除了别删除的元素外，其他的迭代器都是有效的。</p>
+<h4 id="multiset"><a href="#multiset" class="headerlink" title="multiset"></a>multiset</h4><p>multiset的性质和set一样，只不过允许有相同的值。</p>
+<h4 id="multimap"><a href="#multimap" class="headerlink" title="multimap"></a>multimap</h4><p>multimap的特性与map完全一样，只不过允许有相同的key。</p>
+<h4 id="hashtable"><a href="#hashtable" class="headerlink" title="hashtable"></a>hashtable</h4><p>hashtable采用字典的形式来存储数据，底层实现为数组加链表。拥有自己的迭代器。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/06/20/STL概览/" data-id="ciroo0ewz005gkcqyu9dywqb3" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/STL/">STL</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-项目答辩" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/06/06/项目答辩/" class="article-date">
+  <time datetime="2016-06-06T08:35:40.000Z" itemprop="datePublished">2016-06-06</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/06/06/项目答辩/">important</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="数独服务器"><a href="#数独服务器" class="headerlink" title="数独服务器"></a>数独服务器</h3><p>采用reactor的模式，服务器有一个主线程eventloop，主要负责监听文件描述符的事件，文件描述符主要有三种，一种是以建立的连接对应的描述符，一个是服务器监听的端口，另外一个是eventfd，该文件描述符主要是用来<br>唤醒阻塞在IO复用（IO采用的是epoll）上的主线程。在实现中，每一个文件描述符对应一个channel，channel对外提供四个回调函数，用来处理相应的读写或是错误以及关闭事件，该channe负责根据文件描述符的所发生的事件来执行相应的回掉函数。<br>当服务器从IO复用返回的时候，会根据每一个发生事件的文件描述得到其对应的channel，让后执行channel的handevent函数。eventloop提供一个函数注册接口，外界可以通过该接口注册函数，让eventloop在执行所有的发生事件的文件描<br>述符对应的处理函数后，可以执行外界所注册的函数，文件描述符监听事件的更改，删除就是通过注册函数来实现的。我们是实现了一个线程池，用来执行数独的求解，当服务器收到一个请求时，就直接把请求处理任务放到线程池里面，线程池的线程<br>负责求解，并将结果返回给客户端。在整个服务过程中，所有的文件描述符的读写都有eventloop来实现，从而保证数据的完整性以及有序性。在应用层，我们实现一个缓冲类buffer，每一个连接都对应一个输入输出buffer，用来来处理所<br>有的文件读写数据。当文件描述符可读时，会将数据读到buffer里面，有数据可写时，是直接写到buffer里面。由于采用的是非阻塞编程，所以需要一个buffer来实现数据的缓冲，buffer默认为40K的大小，（vector来实现，<br>大大小可以自由伸缩），对于每一个输出buffer，为了防止客户端恶意发送请求，我们设置可一个阈值，但输出buffer的大小超出4M时，就默认关闭该连接。</p>
+<h4 id="注意点："><a href="#注意点：" class="headerlink" title="注意点："></a>注意点：</h4><ol>
+<li>buffer是必须的，由于是非阻塞编程，所以必须兼顾手法数据的不平衡性，在接收端，当收到的数据不全时，需要将数据缓冲起来，在发送时，当数据不能一次性发送完时，需要将数据缓存起来。</li>
+<li>不能多个线程同时操作一个文件描述符的IO。会造成数据的不完整。</li>
+<li>buffer开始不需要开的太大，太大会造成内存浪费，在读文件描述符的时候，为了一次性读完所有的数据，减少系统调用，可以利用栈空间，在栈中开辟一个新的空间，采用readv函数，将数据先后读到输入buffer和栈空间上，再将栈空间数据<br>append到输入buffer中。</li>
+</ol>
+<p>使用C++的functor和bind机制，使得函数注册与回调可以方便的实现。</p>
+<p>函数回调机制：<br>channel有一个handlevent，用来执行事件对应的回调。提供四个接口，类型为typedef boost::function<void()> EventCallback，来分别处理读、写、错误、关闭事件。channel由TCPConnection封装，TcpConnection由自己的<br>handleRead、handleWrite、handleClose、handleError函数，用来处理相应事件，这四个函数都作为callback，注册到channel中。TcpConnection还对外提供了四个回调：<br>//连接建立时调用，就是TCPConnection对象生成后，可以执行该回调。<br>typedef boost::function<void (const="" tcpconnectionptr&)=""> ConnectionCallback;<br>//关闭时调用<br>typedef boost::function<void (const="" tcpconnectionptr&)=""> CloseCallback;<br>//发送数据时，如果buffer的大小超出规定值，则调用<br>typedef boost::function<void (const="" tcpconnectionptr&,="" size_t)=""> HighWaterMarkCallback;<br>//读完数据到buffer后，调用<br>typedef boost::function<void (const="" tcpconnectionptr&,="" buffer*,="" timestamp)=""> MessageCallback;</void></void></void></void></void()></p>
+<p>在TcpConnection的handlexxx函数中，会在处理一些本身的事物后，调用对应的回调。</p>
+<p>TCPConnection由TCPServer产生，所以TCPServer也提供对应的回调函数，用户注册回调函数到TCPServer中，每当一个TCPConnector建立，TCPServer就会将其回调函数负责给TcpConnection对应的回调函数对象，这样就使得用户可以<br>将自己想要的操作注册到TCPConnection中，从而决定事件的具体处理过程。</p>
+<h3 id="股票垂直搜索"><a href="#股票垂直搜索" class="headerlink" title="股票垂直搜索"></a>股票垂直搜索</h3><p>负责从网上爬取股票新闻，我们爬取的是和讯网，对于每一篇新闻，使用股票的结构化数据计算出新闻的相关性概率，融合softmax回归模型的输出概率，通过参数拟合方法得到最终的概率序列，接着通过多标签选择算法得出新闻的<br>所属股票标签，并将该新闻推送给对应的股票。</p>
+<h4 id="爬取以及新闻结构化数据提取模块："><a href="#爬取以及新闻结构化数据提取模块：" class="headerlink" title="爬取以及新闻结构化数据提取模块："></a>爬取以及新闻结构化数据提取模块：</h4><p>使用python来爬取和讯网的数据，由一个模块时可以获得所有股票的最新连接的，我们开启一个线程来爬取该模块的连接，可以获得最新的新闻连接，每一个页面返回30条记录，采用redis来实现去重。程序每一秒爬取一次，为了实现数据的爬全，<br>每一次爬取页面直到有连接在redis中出现重复为止。（分两个redis连接，一个是上一次的连接记录A，一个是这一次的连接记录B，如果一条连接在A中出现，那么说明已经是旧的数据了，直接终止这次爬取，如果不是，那么匹配以下B，如果重复<br>直接忽略，如果不重复，那么爬取该连接，同时在B中增加一条记录）。将没有重复的连接存储在mysql里面，并记录相关的状态，比如还没爬取数据，爬取得到的状态代码等。接下来就是从mysql中查找还没有爬取的连接，爬取该连接的新闻数据。<br>由于由多个线程访问数据库，所以这里需要加锁。我们利用mysql的FOR UPDATE 写锁，对每一行的数据进行写锁，从而保证线程的同步。每一个连接会有一个访问次数以及访问状态code，如果访问出错，那么次数加1，设置得到的状态code，当次数超过三次时，直接忽略该连接（statu设置为1，表示已访问）。将访问得到的新闻数据直接存在mongoDB里面。接着就是从mongoDB里面提取新闻数据，因为mongoDB存储的都是新闻的原始数据，需要进行新闻数据的结构化提取，这里又涉及到<br>多线程访问mongoDB，我们利用python的线程安全的queue模块，自己建立一个中间队列，线程从队列里面获得新闻页面，如果队列的长度小于指定的阈值，那么队列自己从mongoDB里面获得数据，存在队列中，使用中间队列，使得多线程只与队列<br>打交道，队列于mongoDB打交道，从而保证线程的同步。提取好新闻的结构化数据后，就直接的存在mysql中。最后就是从mysql中获得新闻，进行分类推送。也是类似于FOR UPDATE来保证线程的同步。<br>爬从下载用的是pycurl模块，mongoDB用的是pymongo，使用python内建的线程安全queue， python的线程用的是内建的threading模块，类只需要继承threading.Thread类就好了，实现自己的run函数，然后生成对象，调用对象.start()<br>函数就OK。</p>
+<h4 id="分类模块："><a href="#分类模块：" class="headerlink" title="分类模块："></a>分类模块：</h4><p>文章的特征话，获得特征向量：新对文章进行分词，利用搜狗字典以及股票的特有名词，如板块名词，股票名称等，当初的股票总数为2863个股票，需要将这些股票的名称以及所有的板块名称都录入到字典里面，并且给与最大的权限。最长的词长度<br>限制在6个。采用动态规划的方法将文章进行分词，得到词向量。样本有50000多的词，进行信息熵处理后，得到最终10000个词。根据最终的词数组，将分好词的文章与数组一一对应，获得文章的特征向量。将特征向量利用softmax回归得到分类<br>的股票的概率列表（所有股票的概率）。接下来是结构化分类：每一个股票都有自己的结构化数据，如名称，代码，公司，所属行业，经营范围，企业法人等，可以利用这些数据对股票进行一个分类，将股票的特征向量中的词与这些结构化信息进行匹配<br>，每一个信息都有对应的权重（根据经验值来设定），最后得到分类到该股票的权值，每一个结构化所对应的总权值是一样的，将最后的到的权值总和除以总权值，那么就是该股票的概率了。将结构化的概率和softmax概率加权求和，就得到股票的<br>最后概率，将这些概率数组进行排序，从头开始选，如果有出现概率间隔比较大的，那么就截至，将以选择的作为结果输出。<br>分词：采用动态规划的方法，使得分好的最终权重最大。先对文章根据停词和分割符号进行分割，得到分割段列表，对于每一个段，进行动态规划的分词，将所有段的分词合并在一起得到最终的分词结果，根据10000个特征词得到文章的最终特征向量。</p>
+<h4 id="推送模块："><a href="#推送模块：" class="headerlink" title="推送模块："></a>推送模块：</h4><p>采用redis缓存数据库，用户上线后，会从mysql中读取用户所关注的股票id类表，存在redis中，采用的是redis的列表键（uid， stockidlist），redis中还有另外一个数据结构，用来记录每一个股票id所拥有的新闻id列表<br>（stockid， newsidlist），每一篇分好类的新闻就会往对应的stockid的新闻列表头插入该新闻的id。每一个newsidlist的长度限制为200，超过的话，直接丢尾。当用户需要获取新闻时，用户刷新一次，可以获取所有的关注股票的新闻或是<br>对应股票的新闻，如果是所有股票新闻，那么直接通过（uid， stcokidlist）结构获得用户关注的股票id，然后根据（stockid， newsidlist）结构获得对应新闻id，由于一篇新闻会对应多个股票，所以这里需要先对新闻id去重，再从mysql<br>里面获得所有的新闻数据（以事件排序，mysql的order by功能），将数据返回给客户端。每次最多返回前20条。第一次刷新没有时间戳，后面每次刷新都根据上一次获得的新闻的最新时间戳来获得最新的数据。如果想下拉获得更早额数据，那么需要<br>客户提供上一次获得数据中的最早的时间戳，根据该时间来获得数据。获取旧数据如果每次都查找所有的newsid，在mysql中根据时间来获得合适的数据的话，会比较没效率，因为每一次都需要找出所有相关的newid，然后去掉不合适的。可以在<br>redis中增加一个数据结构，记录但前所有需要推送给用户的newsid，用户第一次刷新时，直接获得所有newsid（去重），返回20条数据后，将返回的id从newsid列表中去掉，以后如果需要旧数据，那么就直接从这里的列表中获取就好了。</p>
+<p>对于获得特定的股票新闻，需要根据股票的id，获得newsid列表，这里获取最新和旧新闻不需要时间戳，可以根据newsid来决定那些是新的，那些是旧的，也不需要新闻id的去重。</p>
+<p>如果想主动推送的话，类似于发布和订阅，那么需要增加一个数据结构为（stockid， uidlist），记录每一个股票所对应的用户id列表，当有新的新闻分类到对应的股票时，那么根据股票id获得所有的用户，将新闻推给用户。这里需要注意，由于<br>一篇新闻可能对应多个股票，一个用户如果恰好订阅了这多个股票的话，那么新闻会出现多次推送。这里需要将所有股票的用户搜集起来，进行去重，然后再推送。在客户端，由于收到可新的推送，可以将新闻归类到用户订阅的相应股票上，<br>这样，在进行股票刷新的时候可以保证不会获得重复的数据。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/06/06/项目答辩/" data-id="ciroo0eo90003kcqyd4y6wlft" class="article-share-link">Share</a>
+      
+      
     </footer>
   </div>
   
@@ -2568,7 +3126,7 @@ REDIS_ENCODING_SKIPLIST : 跳跃表和字典 : &quot;skiplist&quot;
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/05/10/TCP-Nagel算法/" data-id="cira56wap004h90qy5ke9jfdu" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/05/10/TCP-Nagel算法/" data-id="ciroo0ews005akcqyo8b1zyw0" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TCP-IP/">TCP/IP</a></li></ul>
@@ -2635,7 +3193,7 @@ REDIS_ENCODING_SKIPLIST : 跳跃表和字典 : &quot;skiplist&quot;
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/05/10/连续发送多份小数据时40ms延迟问题/" data-id="cira56w79000f90qyoholm9hz" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/05/10/连续发送多份小数据时40ms延迟问题/" data-id="ciroo0eou000gkcqy3lvt958b" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TCP-IP/">TCP/IP</a></li></ul>
@@ -2694,7 +3252,7 @@ REDIS_ENCODING_SKIPLIST : 跳跃表和字典 : &quot;skiplist&quot;
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/04/26/ICMP-协议/" data-id="cira56wc0006q90qyy522qyn7" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/04/26/ICMP-协议/" data-id="ciroo0ezl0084kcqy190imu8s" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TCP-IP/">TCP/IP</a></li></ul>
@@ -2748,7 +3306,7 @@ REDIS_ENCODING_SKIPLIST : 跳跃表和字典 : &quot;skiplist&quot;
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/04/26/DDOS攻击简介/" data-id="cira56wc1006t90qyt6g32puv" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/04/26/DDOS攻击简介/" data-id="ciroo0ezn0087kcqyu23vkorc" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TCP-IP/">TCP/IP</a></li></ul>
@@ -2801,7 +3359,7 @@ REDIS_ENCODING_SKIPLIST : 跳跃表和字典 : &quot;skiplist&quot;
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/04/26/内网穿透简介/" data-id="cira56w9n002s90qy816itgk9" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/04/26/内网穿透简介/" data-id="ciroo0eub0033kcqyltz41oar" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TCP-IP/">TCP/IP</a></li></ul>
@@ -2869,7 +3427,7 @@ REDIS_ENCODING_SKIPLIST : 跳跃表和字典 : &quot;skiplist&quot;
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/04/12/typedef与define的区别/" data-id="cira56w9v003590qyqhlryl81" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/04/12/typedef与define的区别/" data-id="ciroo0eur003gkcqyq0rk4982" class="article-share-link">Share</a>
       
       
     </footer>
@@ -2925,7 +3483,7 @@ REDIS_ENCODING_SKIPLIST : 跳跃表和字典 : &quot;skiplist&quot;
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/04/07/epoll之ET和LT编程/" data-id="cira56wah003z90qyg63biyti" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/04/07/epoll之ET和LT编程/" data-id="ciroo0ew8004skcqy1nb89yf2" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a></li></ul>
@@ -2970,7 +3528,7 @@ REDIS_ENCODING_SKIPLIST : 跳跃表和字典 : &quot;skiplist&quot;
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/04/07/socket非阻塞读写/" data-id="cira56wa0003c90qyfantk63m" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/04/07/socket非阻塞读写/" data-id="ciroo0euw003mkcqybtzzxany" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a></li></ul>
@@ -3026,7 +3584,7 @@ REDIS_ENCODING_SKIPLIST : 跳跃表和字典 : &quot;skiplist&quot;
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/04/07/C-之auto、static、extern、register/" data-id="cira56wc4006y90qy0h3ccvlu" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/04/07/C-之auto、static、extern、register/" data-id="ciroo0ezu008ekcqyyd37lwdr" class="article-share-link">Share</a>
       
       
     </footer>
@@ -3112,7 +3670,7 @@ REDIS_ENCODING_SKIPLIST : 跳跃表和字典 : &quot;skiplist&quot;
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/04/06/LinuxIO读取函数/" data-id="cira56wb7005d90qyl828qcn6" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/04/06/LinuxIO读取函数/" data-id="ciroo0eyd006skcqydsm8dodq" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a></li></ul>
@@ -3206,7 +3764,7 @@ REDIS_ENCODING_SKIPLIST : 跳跃表和字典 : &quot;skiplist&quot;
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/23/Boost智能指针/" data-id="cira56w6n000090qy2gysxv0y" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/23/Boost智能指针/" data-id="ciroo0eni0000kcqyv1mttjfl" class="article-share-link">Share</a>
       
       
     </footer>
@@ -3322,7 +3880,7 @@ REDIS_ENCODING_SKIPLIST : 跳跃表和字典 : &quot;skiplist&quot;
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/21/Linux任务调度机制/" data-id="cira56wb4005890qy55y7v2vz" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/21/Linux任务调度机制/" data-id="ciroo0exs006akcqy25u15u86" class="article-share-link">Share</a>
       
       
     </footer>
@@ -3408,7 +3966,7 @@ REDIS_ENCODING_SKIPLIST : 跳跃表和字典 : &quot;skiplist&quot;
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/20/链接库以及编译过程/" data-id="cira56w73000390qyh3egl8q7" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/20/链接库以及编译过程/" data-id="ciroo0eob0004kcqypotwj538" class="article-share-link">Share</a>
       
       
     </footer>
@@ -3522,7 +4080,7 @@ REDIS_ENCODING_SKIPLIST : 跳跃表和字典 : &quot;skiplist&quot;
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/19/malloc函数的实现原理/" data-id="cira56wad003v90qygee90olh" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/19/malloc函数的实现原理/" data-id="ciroo0ew2004jkcqylrk9qkyd" class="article-share-link">Share</a>
       
       
     </footer>
@@ -3574,7 +4132,7 @@ REDIS_ENCODING_SKIPLIST : 跳跃表和字典 : &quot;skiplist&quot;
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/19/Linux-内存管理/" data-id="cira56wb8005g90qyjxjknx8s" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/19/Linux-内存管理/" data-id="ciroo0eyf006vkcqyup0kzs39" class="article-share-link">Share</a>
       
       
     </footer>
@@ -3681,7 +4239,7 @@ REDIS_ENCODING_SKIPLIST : 跳跃表和字典 : &quot;skiplist&quot;
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/18/MySQL索引算法原理/" data-id="cira56wav004u90qyvqx8hblk" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/18/MySQL索引算法原理/" data-id="ciroo0ex6005nkcqyltw7fdi3" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/树结构/">树结构</a></li></ul>
@@ -3759,7 +4317,7 @@ REDIS_ENCODING_SKIPLIST : 跳跃表和字典 : &quot;skiplist&quot;
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/18/那家姓B的树/" data-id="cira56w74000590qyqcctn2lf" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/18/那家姓B的树/" data-id="ciroo0eof0006kcqy3p87huww" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/树结构/">树结构</a></li></ul>
@@ -3822,7 +4380,7 @@ REDIS_ENCODING_SKIPLIST : 跳跃表和字典 : &quot;skiplist&quot;
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/17/第K小元素选择算法/" data-id="cira56w7o001590qyxptm1muv" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/17/第K小元素选择算法/" data-id="ciroo0epk001ckcqygpz39u5q" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/数组/">数组</a></li></ul>
@@ -3880,7 +4438,7 @@ REDIS_ENCODING_SKIPLIST : 跳跃表和字典 : &quot;skiplist&quot;
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/17/C语言之static/" data-id="cira56wc3006w90qyzf2tj1e8" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/17/C语言之static/" data-id="ciroo0ezq008akcqy2gjcemc2" class="article-share-link">Share</a>
       
       
     </footer>
@@ -3930,7 +4488,7 @@ REDIS_ENCODING_SKIPLIST : 跳跃表和字典 : &quot;skiplist&quot;
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/16/从整数的补码到用位运算实现任何两个数的加减法/" data-id="cira56w9s003190qyzbzu41ja" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/16/从整数的补码到用位运算实现任何两个数的加减法/" data-id="ciroo0eul003ckcqydc3j6o4p" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/位运算/">位运算</a></li></ul>
@@ -3979,7 +4537,7 @@ REDIS_ENCODING_SKIPLIST : 跳跃表和字典 : &quot;skiplist&quot;
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/15/域名污染/" data-id="cira56w9c002990qy6r19wpyt" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/15/域名污染/" data-id="ciroo0etf002gkcqyn8l9f6w8" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TCP-IP/">TCP/IP</a></li></ul>
@@ -4047,7 +4605,7 @@ REDIS_ENCODING_SKIPLIST : 跳跃表和字典 : &quot;skiplist&quot;
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/15/NAT以及内网穿透/" data-id="cira56wau004r90qy8v1i1eat" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/15/NAT以及内网穿透/" data-id="ciroo0ex3005kkcqyy1lzu7in" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TCP-IP/">TCP/IP</a></li></ul>
@@ -4109,7 +4667,7 @@ REDIS_ENCODING_SKIPLIST : 跳跃表和字典 : &quot;skiplist&quot;
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/14/TCP_IP模型常用协议/" data-id="cira56wao004e90qyvbbjg4ie" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/14/TCP_IP模型常用协议/" data-id="ciroo0ewq0057kcqys9emhubk" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TCP-IP/">TCP/IP</a></li></ul>
@@ -4183,7 +4741,7 @@ REDIS_ENCODING_SKIPLIST : 跳跃表和字典 : &quot;skiplist&quot;
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/12/平衡二叉查找树-AVL树/" data-id="cira56w84001v90qy08rbpk9r" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/12/平衡二叉查找树-AVL树/" data-id="ciroo0esa0022kcqy1wxb7az8" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/树结构/">树结构</a></li></ul>
@@ -4277,7 +4835,7 @@ REDIS_ENCODING_SKIPLIST : 跳跃表和字典 : &quot;skiplist&quot;
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/11/Linux-之守护进程、僵死进程与孤儿进程/" data-id="cira56wba005i90qyaap0pits" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/11/Linux-之守护进程、僵死进程与孤儿进程/" data-id="ciroo0eyi006xkcqy4lf48ab7" class="article-share-link">Share</a>
       
       
     </footer>
@@ -4358,7 +4916,7 @@ REDIS_ENCODING_SKIPLIST : 跳跃表和字典 : &quot;skiplist&quot;
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/11/IO-多路复用之select、poll、epoll详解/" data-id="cira56wby006n90qyvdc7mz8f" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/11/IO-多路复用之select、poll、epoll详解/" data-id="ciroo0ezj0081kcqyqjftj8lw" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a></li></ul>
@@ -4418,10 +4976,245 @@ REDIS_ENCODING_SKIPLIST : 跳跃表和字典 : &quot;skiplist&quot;
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/03/11/Linux-I-O-模型/" data-id="cira56wbi005u90qyrby432xw" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/03/11/Linux-I-O-模型/" data-id="ciroo0eyq0079kcqyjkob5i2r" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Linux中的动态链接" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/03/08/Linux中的动态链接/" class="article-date">
+  <time datetime="2016-03-08T12:30:23.000Z" itemprop="datePublished">2016-03-08</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/03/08/Linux中的动态链接/">Linux中的动态链接</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>静态由于在链接的时候将所有的代码都合并在一起，每一个可执行文件都有一分静态链接库的副本，这样在多个进程进行运行的时候会造成内存浪费。还有一个缺点就是，当程序需要依赖其他模块时，由于静态链接已经把代码直接写死在可执行文件里面，这样当有一个模块更新时，需要重新链接一遍，导致没必要的麻烦。再说，很难实现程序的动态加载模块。目前有很多的软件可以根据文件格式来加载必要的模块，使用静态链接的话，很难实现该功能。</p>
+<p>要解决空间浪费和更新困难这两个问题最简单的办法就是把程序的模块互相分割开来，形成独立的文件，而不再将他们静态的链接在一起。简单的讲，就是不对那些组成程序的目标文件进行链接，等到程序需要运行时才进行链接，也即是说，把链接的整个过程推迟到运行才进行，这就是动态链接的基本思想。</p>
+<p>假如我们保留Program1.o、Program2.o和Lib.o三个目标文件，但我们需要运行Program1这个程序时，系统首先加载Program1.o，当系统发现Program1.o中需要用到Lib.o时，那么系统会按照这种方法将他们全部加载至内存。所有需要的目标文件加载后，如果依赖关系满足，即所有依赖的目标文件都存在于磁盘，系统开始进行链接工作。这个链接工作原理和静态链接非常相似，包括符号解析、地址重定位等。完成这些工作后，系统开始把控制权交给Program1.o的程序入口处，程序开始运行。这是如果我们需要运行Program2.o，那么系统只需要加载Program2.0，而不需要再一次加载Lib.o，因为内存中已经存在一份Lib.o副本了。只需要将Program2.o和Lib.o链接起来。</p>
+<p>在使用动态链接的时候，当程序被装载的时候，系统的动态链接器会将程序所需要的所有动态链接库装载到进程的地址空间，并且将程序中所有未决议的符号绑定到相应的动态链接库上，并进行重定位工作。</p>
+<h4 id="装载时从定位"><a href="#装载时从定位" class="headerlink" title="装载时从定位"></a>装载时从定位</h4><p>为了能够使得共享对象在任意地址装载，我们首先能够想到的方法就是静态链接中的重定位。这个想法基本思路是，在连接时，对所有绝对地址的引用不做重定位，而是把这一步推迟到装载时再完成。一旦模块装载地址确定，即目标地址确定，那么系统就对程序中所有的绝对地址引用进行重定位。我们在前面的静态链接时提到过重定位，那时候的重定位叫做链接时重定位，而现在的叫做装载是重定位。</p>
+<p>但是装载重定位的方法并不能用来解决共享对象中所存在的问题。可以想象，动态链接模块被装载映射到虚拟空间后，指令部分是在多个进程之间共享的，由于装载时重定位方法需要修改指令，所以没有办法做到同一份指令被多个进程共享，因为指令被重定位后对于每一个进程来讲都是不一样的，当然，动态链接库中的可修改数据部分对于不同的进程来说有多个副本，所以他们可以采用装载时重定位的方法来解决。</p>
+<p>Linux和GCC支持这种装载重定位方法，在编译源文件生成共享对象时，使用了-shared -fPIC参数，如果只是使用-shared，那么输出来的共享对象就是使用装载时重定位的方法。</p>
+<h4 id="地址无关代码"><a href="#地址无关代码" class="headerlink" title="地址无关代码"></a>地址无关代码</h4><p>为了实现程序模块中共享的指令部分在装载时不需要因为装载地址的改变而改变，所以实现的基本想法就是把指令中需要修改的那些部分分离出来，跟数据部分放在一起，这样指令部分就可以保持不变，而数据部分可以在每一个进程中拥有一个副本。这种方案就是目前被称为地址无关代码的技术。<br>为了实现地址无关技术，ELF在数据段里面建立了一个全局偏移表（Global Offset Table）GOT，用来存储指向需要重定位的全局变量的实际地址。当指令需要访问变量时，程序会先找到GOT，然后根据GOT中变量所对应的项找到变量的目标地址。每一个变量都对应一个四个字节的地址，链接器在装载模块的时候会查找每一个变量所在的地址，然后填充GOT的各个项。由于GOT本身是放在数据段，所以他可以在模块装载时被修改，并且每一个进程都可以独立拥有一个副本。</p>
+<p>对于可执行文件来说，默认情况下，如果可执行文件是动态链接的，那么GCC会使用PIC方法来产生可执行文件的代码段部分，以便于不同进程能够共享代码段，节省内存。所以我们可以看到动态链接的可执行文件中存在”.got”段。</p>
+<h4 id="延迟绑定"><a href="#延迟绑定" class="headerlink" title="延迟绑定"></a>延迟绑定</h4><p>动态链接比静态链接慢的主要原因是动态链接下对于全局和静态的数据访问都要进行复杂的GOT定位，然后间接寻址，对于模块间的调用也要先定位GOT，然后再进行间接跳转，如此一来，如此一来程序的运行速度必定会减慢。另外的一个减慢的原因是动态链接的链接工作在运行时完成，即程序开始执行时，动态链接器都要进行一次链接工作，动态链接器会寻找并装载所需要的共享对象，然后进行符号查找地址重定位工作，这些工作势必减慢程序的启动速度。</p>
+<p>在动态链接下，模块包含了大量的函数引用，所以程序在开始执行前，动态链接会耗费不少时间用于解决模块之间的函数引用符号查找以及重定位，不过在一个程序运行过程中，可能很多函数在程序执行完成时，都不会被用到，如果一开始就把所有函数都链接好，实际上就是一种浪费。所以ELF采用了一种叫做延迟绑定的做法，基本思想就是当函数第一次被用到时才进行绑定（符号查找、重定位）。</p>
+<h4 id="动态链接有关的结构"><a href="#动态链接有关的结构" class="headerlink" title="动态链接有关的结构"></a>动态链接有关的结构</h4><h5 id="interp-段"><a href="#interp-段" class="headerlink" title=".interp 段"></a>.interp 段</h5><p>.interp段的内容很简单，里面保存的就是一个字符串，这个字符串就是可执行文件说需要动态链接器的路径。在Linux下，可执行文件所需要的动态链接器的路径几乎都是一样的”/lib/ld-linux.so.2”。该文件通常是一个软连接，一般指向”/lib/ld-2.6.1.so”文件，该文件才是真正的动态链接器。在Linux中，操作系统在对可执行文件进行加载的时候，他回去寻找装载该可执行文件所需要相应的动态链接器，即”.interp”段所记录的路径的共享对象。</p>
+<h5 id="dynamic-段"><a href="#dynamic-段" class="headerlink" title=".dynamic 段"></a>.dynamic 段</h5><p>动态链接ELF中最重要的结构应该是”.dynamic”段，这个段里保存了动态链接器所需要的基本信息，比如依赖于那些共享对象、动态链接符号表的位置、动态链接重定位表的位置、共享对象初始化代码的地址等信息。</p>
+<h5 id="动态符号表"><a href="#动态符号表" class="headerlink" title="动态符号表"></a>动态符号表</h5><p>为了完成动态链接，最关键的还是所依赖的符号和相关文件信息。在静态链接中，有一个专门的段叫做”.symtab”，里面保存了所有关于该目标文件的符号的定义和引用。动态链接的符号表实际上跟静态来凝结十分相似。为了表示动态链接这些模块之间的符号导入导出关系，ELF专门有一个叫做动态符号表的段来保存这些信息。与”.symtab”不同的是，”.dynamic”只保存了与动态链接相关的符号，对于那些模块内部的符号，比如模块私有变量则不保存。很多时候，动态链接的模块同时拥有”.dynsym”和”.symtab”两个表，”symtab”中往往保存了所有符号，包括”.dynsym”中的符号。</p>
+<h5 id="动态链接重定位表"><a href="#动态链接重定位表" class="headerlink" title="动态链接重定位表"></a>动态链接重定位表</h5><p>共享对象需要重定位的主要原因是导入符号的存在。动态链接下，无论是可执行文件或是共享对象，一旦依赖于其他共享对象，那么他的代码或数据中就会有对于导入符号的引用。在编译时，这些导入符号的地址未知，在静态链接中，这些未知的地址引用在最终链接时被修正。但是在动态链接中，导入符号的地址在运行时才确定，所以需要在运行将这些导入符号的应用修正，即需要重定位。</p>
+<p>在静态链接中，目标文件的重定位表为”.rel.text”和”.rel.data”，在动态链接文件中，也有类似的重定位表分别叫做”.rel.dyn”和”.rel.plt”，分别相当于重定位数据段以及重定位代码段。”.rel.dyn”实际上是对数据引用的修正，他所修正的位置位于”.got”以及数据段，而”.rel.plt”是对函数引用的修正，他所修正的位置位于”.got.plt”。</p>
+<p>ELF将got拆分成两个表叫做”.got”和”.got.plt”,”.got”用来保存全局变量引用的地址，”.got.plt”用来保存函数引用的地址，也就是说，所有对于外部函数的引用全部被分离出来放到”.got.plt”中。</p>
+<h4 id="装载共享对象"><a href="#装载共享对象" class="headerlink" title="装载共享对象"></a>装载共享对象</h4><p>动态链接器完成基本自举以后，动态链接器将可执行文件和链接器本身的符号表都合并到一个符号表当中，称为“全局符号表”。然后链接器开始寻找可执行文件所依赖的共享对象，在”.dynamic”段中，有保存改可执行文件（或共享对象）所依赖的共享对象。由此，链接器可以列出可执行文件所需要的所有共享对象，并将这些共享对象的名字放入到一个装载集合中，然后连接器开始从集合里面取一个所需的共享对象名字，找到相应的文件后，打开该文件，读取相应的ELF文件头和”.dynamic”段，然后将他的代码段和数据段映射到进程空间中。如果给ELF共享对象还依赖于其他共享对象，那么将所依赖的共享对象的名字放在装载集合中。如此循环知道所有依赖的共享对象都被装载进来为止。（一般采用广度优先装载）</p>
+<p>当一个新的共享对象被装载进来的时候，他的符号表会被合并到全局符号表中，所以当所有共享对象都被装载进来的时候，全局符号表里面将包含进程中所有的动态链接所需要的符号。</p>
+<h4 id="重定位和初始化"><a href="#重定位和初始化" class="headerlink" title="重定位和初始化"></a>重定位和初始化</h4><p>在所有共享对象都装载完成后，链接器开始重新遍历可执行文件和每一个共享对象的重定位表，将他们的GOT/PLT中的每一个需要重定位的位置进行修改。因为此时动态链接器已经拥有了进程的全局符号表。所以修改过程比较容易实现。</p>
+<p>重定位完成后，如果某一个共享对象有”.init”段，那么动态链接器会执行该段中的代码，用以实现共享对象特有的初始化过程。比如常见的。共享对象中的C++全局/静态对象的构造就需要通过”.init”来初始化。相应的，共享对象中还有可能有”.finit”段，当进程退出时，会执行该段的内容，用以实现类似的C++全局对象析构之类的操作。</p>
+<p>如果进程的可执行文件也有”.init”段和”.finit”段，那么动态链接器不会执行他，因为可执行文件的这两个段由程序初始化部分代码负责执行。</p>
+<p>当完成重定位和初始化工作后，所有的准备工作就宣告完成了，所需要的共享对象也都已经装载并且链接完成了，这个时候动态链接器将进程的控制权转交给程序的入口并且开始执行。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/03/08/Linux中的动态链接/" data-id="ciroo0exy006gkcqyc6yf9ffm" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux库、链接、装载/">Linux库、链接、装载</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Linux中的静态链接" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/03/06/Linux中的静态链接/" class="article-date">
+  <time datetime="2016-03-06T14:33:33.000Z" itemprop="datePublished">2016-03-06</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/03/06/Linux中的静态链接/">Linux中的静态链接</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>静态链接就是将多个目标文件链接成一个文件，主要有两种方法：</p>
+<ol>
+<li>按序叠加：将输入的目标文件按照次序叠加起来。该方法会造成很多的段，因为每一个段都需要有一定的地址和空间对齐要求，这样会造成内存空间的大量内部碎片。</li>
+<li>相似段合并：将相同性质的段合并到一起。</li>
+</ol>
+<p>链接器为目标文件分配地址和空间，这句话中的地址和空间其实有两个含义：第一个就是在输出的可执行文件中的空间，第二个就是在装载后的虚拟地址中的虚拟地址空间。对于有实际数据的段来说，如代码段和数据段，他们在文件和虚拟地址中都需要分配空间，因为他们在这两者中都存在，而对于bss段，分配空间的意义只局限于虚拟地址空间，因为在文件中，bss段并内有实际的内容。<br>现在的空间链接分配策略都采用第二种方法，一般分两个步骤进行：</p>
+<ol>
+<li>空间和地址分配：扫描所有的输入目标文件，获得他们各个段的长度、属性和位置，并且将输入目标文件中的符号表中所有的符号定义和符号应用收集起来，统一放到一个全局符号表。</li>
+<li>符号解析与重定位：使用上面第一步中收集到的所有信息，读取输入文件中段的数据、重定位信息并且进行符号解析与重定位、调整代码中的地址等信息。该步骤是链接的核心，特别是符号重定位过程。链接器对于重定位中的符号，根据生成的全局符号表进行目标地址查找，然后修改代码中相应的地址。</li>
+</ol>
+<p>连接后生成的可执行文件，每一个段都被分配到一个固定的虚拟地址了，转载后，该地址就是实际运行的虚拟地址。也就是说，连接后，每一个段在虚拟地址空间的布局就已经分配好了。在Linux下，ELF可执行文件默认的开始地址为0x08048000，并不是从0x0开始分配。</p>
+<p>由于静态链接是将输入的目标文件合并在一起，所以对已一般的静态运行库来说，一个目标文件只有一个函数，这样的设计是的静态链接后的文件所合并的都是实际上需要的代码或数据段。如果一个目标文件包含多个函数的话，即使只需要该目标文件中的一个函数，由于合并是以文件为单位的，所以其他的不必要的函数也会被合并进来，造成空间浪费。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/03/06/Linux中的静态链接/" data-id="ciroo0ext006ckcqyng8lqqb8" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux库、链接、装载/">Linux库、链接、装载</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Linux中的ELF文件" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/03/05/Linux中的ELF文件/" class="article-date">
+  <time datetime="2016-03-05T12:15:45.000Z" itemprop="datePublished">2016-03-05</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/03/05/Linux中的ELF文件/">Linux中的ELF文件</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Linux中的目标文件、可执行文件、链接库、核心转储文件主要以ELF文件格式来存储。所以linux中ELF文件主要有四种类型：</p>
+<h5 id="可重定位文件"><a href="#可重定位文件" class="headerlink" title="可重定位文件"></a>可重定位文件</h5><p>该类文件包含了代码和数据，可以被用来接连称为可执行文件或共享文件，静态链接库也可以归为该类。该类别的文件也就是平常所说的目标文件，由于静态链接库只是多个目标文件的压缩整合，并建立索引来管理这些目标文件，所以静态链接库也属于该类别。该类别的文件里面有重定位表，用来描述如何修改相应的段里的内容。如果一个源文件引用了其他文件定义的变量或是函数，那么在编译成目标文件的时候，对于这些未定义的符号，ELF文件只是使用一个临时地址来代替这些符号的实际地址，所以需要一个可重定位表来记录文件中那些符号需要重新定位，以及该符号在ELF文件中的地址。在链接的时候，其中一个很重要的步骤就是对符号地址的重定位，所以符号为未定义以及符号的重定义都是在链接的该步骤判断的。</p>
+<p>Linux中的.o和.a文件以及windows中的.obj文件就是这中类型的文件。</p>
+<h5 id="可执行文件"><a href="#可执行文件" class="headerlink" title="可执行文件"></a>可执行文件</h5><p>该类文件包含了可以直接执行的程序，他的代表就是ELF可执行文件，他们一般都没有扩展名。Linux中的/bin/bash文件和windows的.exe文件就是这种类型的文件。</p>
+<h5 id="共享目标文件"><a href="#共享目标文件" class="headerlink" title="共享目标文件"></a>共享目标文件</h5><p>这种文件包括了代码和数据段，可以在一下的两种情况下使用。一种是链接器可以使用这种文件跟其他的可重定位文件和共享目标文件连接，产生新的目标文件。第二种就是动态链接器可以将几个这种共享目标文件与可执行文件结合，作为进程映像的一部分来运行。</p>
+<p>Linux 的.so文件和windows中的.dll文件就是这种类型文件</p>
+<h5 id="核心转储文件"><a href="#核心转储文件" class="headerlink" title="核心转储文件"></a>核心转储文件</h5><p>当进程意外终止时，系统可以将该进程的地址空间的内容以及终止时的一些其他信息转储到核心转储文件。<br>Linux的core dump文件。</p>
+<h4 id="ELF文件的格式"><a href="#ELF文件的格式" class="headerlink" title="ELF文件的格式"></a>ELF文件的格式</h4><p>ELF文件使用段的形式来管理，从上到下主要有：</p>
+<ol>
+<li>文件头：记录生成该ELF的系统信息，以及该ELF文件的信息，如：ELF文件版本、目标机器型号、程序入口地址、段表位置、段数量、入口地址、程序头入口和长度等。</li>
+<li>.text段：也就是所说的代码段，代码段存储的就是程序编译后所生成的机器指令。</li>
+<li>.data段：数据段，用来存储程序中的初始化的全局变量以及初始化的局部静态变量。</li>
+<li>.bss段：记录未初始化的全局变量和局部静态变量，在ELF文件里面，不会为这些为初始的变量分配空间，因为这些未初始的变量的默认值为0，所以只需要记录总体的未初始变量的大小就好，不需要实际的分配磁盘空间来存储他们，但是在程序装载到虚拟内存的时候，需要为其分配空间。</li>
+<li>.rodata: 只读数据段，该段用来存储程序中的字符串常量以及其他类型的常量（const修饰的），如：printf(“%d\n”, n),其中的”%d\n”就是字符串常量，</li>
+<li>.comment：存放编译器的版本信息，比如字符串：“GCC:(GUN)4.2.0”</li>
+<li>.debug：储存调试信息。</li>
+<li>Session header table：段表，用来保存ELF文件中所有段的基本属性结构，段表是ELF文件中除了文件头意外最重要的结构，他描述了ELF的各个段信息，比如每一个段段名、段的长度、在文件中的偏移、读写权限以及段的其他信息。也就是说，ELF文件的段结构就是由短表决定的，编译器、连接器和装载器都是依据段表来定位和访问各个段的属性的。</li>
+<li>.symtab：符号表，记录该文件中的所有符号信息(全局变量和函数符号等)。</li>
+<li>.rel.txt/.rel.data：重定位代码段和重定位数据段，对于每一个需要重定位的代码段和数据段，都会有一个相应的重定位表。对于代码中的对其他文件定义的函数的调用，就需要一个重定位代码段，用来记录需要重新定位的函数。数据段也是一样的道理。</li>
+</ol>
+<p>总的来说，程序被编译以后主要分成两种段：程序指令和程序数据。代码段属于程序指令，数据段以及.bss段属于程序数据。</p>
+<p>将程序指令和程序数据分来存储的主要好处有三个：</p>
+<p>1：程序指令和程序数据被装载后分来存储，由于程序指令属于只读，程序数据可读可写，所以可以对装载后的内存实现不同的权限管理。防止程序指令被改写。<br>2：现代CPU都被设置为数据缓存和指令缓存分离，主要就是利用程序以及数据的局部性，将程序指令和程序数据分离有利于提高程序的局部性，可以充分的利用缓存，从而提高缓存的命中率。<br>3：节省内存。但系统运行着多个该版本的副本时，由于指令都是一样的，所以内存只需要存储一份程序指令就可以了，这样可以节省很多的内存空间。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/03/05/Linux中的ELF文件/" data-id="ciroo0ey3006jkcqyosxbsgx5" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux库、链接、装载/">Linux库、链接、装载</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-Linux中可执行文件的装载" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/03/04/Linux中可执行文件的装载/" class="article-date">
+  <time datetime="2016-03-04T14:33:33.000Z" itemprop="datePublished">2016-03-04</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/03/04/Linux中可执行文件的装载/">Linux中可执行文件的装载</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>在linux中，对于32位机器4G内存来说，内存被划分为两个部分，用户空间和内核空间，高地址的1G空间为内核空间，低地址的3G空间为用户空间，也就是进程可以访问得到的空间。<br>对于采用了虚拟存储技术的系统来说，可执行文件的装载一般采用的是页映射的方式。页映射将内存和磁盘中的数据和指令按照“页”为单位划分成若干个页，以后所有的装载和操作的单位就是页。<br>从操作系统的角度来看，一个进程最关键的特征是拥有独立的虚拟地址空间。很多时候一个程序被执行同时伴随着一个新的进程的创建，然后装载相应的可执行文件并且执行。在有虚拟存储的情况下，上述过程最开始需要做三件事：</p>
+<ol>
+<li>创建一个独立的虚拟地址空间（这部分只需要对已每一个进程新建一个页表就可以了）</li>
+<li>读取可执行文件头，并且建立虚拟空间与可执行文件的映射关系。</li>
+<li>将CPU的指令寄存器设置为可执行文件的入口地址，启动运行。</li>
+</ol>
+<p>第一步只是建立了虚拟内存和实际物理地址的映射，第二步所做的是虚拟空间到可执行文件的映射关系。我们知道，当程序发生页错误时，操作系统将从物理内存中分配一个物理页，然后将该缺页从磁盘读取到内存中，在设置缺页的虚拟页和物理页的映射关系，这样程序才得以正常运行，但是很明显的一点就是，但操作系统捕获到缺页时，它应知道程序当前所需要的页在可执行文件中的哪一个位置。这就是虚拟空间到可执行文件之间的映射关系。从某种角度来看，这一步是整个装载过程中最重要的一点，也是传统意义上“装载”的过程。</p>
+<p>ELF文件中的段需要映射到进程虚拟空间中的页里面，段所占用的页数为正整数，一个页面只能被一个段占有，即使该页面没有别用完。由于一个ELF文件会有很多个段，如果按照这个方法的话，那么会在进程虚拟内存里面出现很多个碎片，造成内存浪费。所以ELF可执行文件引入了一个概念叫做”segment”,一个”segment”包含一个或多个属性类似的段。”segment”的概念实际上是从装载的角度重新划分了ELF的各个段，在将目标文件链接成可执行文件的时候，链接器会尽量把相同权限属性的段分配在同一个空间。比如可读可执行的段都放在一起，这种段的典型是代码段，可读可写的段放在一起，这种典型的为数据段。在ELF中，把这些属性相似的、又连在一起的段叫做一个”segment”,而系统正是按照”segment”而不是段来映射可执行文件的。</p>
+<h4 id="堆的最大申请空间"><a href="#堆的最大申请空间" class="headerlink" title="堆的最大申请空间"></a>堆的最大申请空间</h4><p>在Linux内存中，以32位机器4G的配置来说，高地址的1G为内核的空间，用户可用空间为3G，在可执行文件装载到虚拟内存中，需要占用一些空间，比如代码段和数据段以及bbs段，都需要有相应的空间来存储，所以在申请堆空间的时候，最大的可申请空间为除掉这些已经被占有的空间所剩下的用户空间。最大的堆可申请空间为2.9G左右。因为需要除掉程序本身大小、可用到的动态/共享库数量以及大小、程序栈数量、大小等。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/03/04/Linux中可执行文件的装载/" data-id="ciroo0ey7006mkcqytg441hlb" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux库、链接、装载/">Linux库、链接、装载</a></li></ul>
 
     </footer>
   </div>
@@ -4483,7 +5276,7 @@ REDIS_ENCODING_SKIPLIST : 跳跃表和字典 : &quot;skiplist&quot;
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/29/磁盘的分割、格式化、检验与挂载/" data-id="cira56w7q001990qyshdp7r3y" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/29/磁盘的分割、格式化、检验与挂载/" data-id="ciroo0epm001gkcqyhmlyg2pv" class="article-share-link">Share</a>
       
       
     </footer>
@@ -4537,7 +5330,7 @@ REDIS_ENCODING_SKIPLIST : 跳跃表和字典 : &quot;skiplist&quot;
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/29/Linux文件系统之df，du以及ln命令/" data-id="cira56wb1005390qyx11npig6" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/29/Linux文件系统之df，du以及ln命令/" data-id="ciroo0exg005wkcqy7vo2m987" class="article-share-link">Share</a>
       
       
     </footer>
@@ -4652,7 +5445,7 @@ REDIS_ENCODING_SKIPLIST : 跳跃表和字典 : &quot;skiplist&quot;
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/29/Linux磁盘概念/" data-id="cira56waz004x90qyborrdysy" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/29/Linux磁盘概念/" data-id="ciroo0ex9005qkcqyog5axtr7" class="article-share-link">Share</a>
       
       
     </footer>
@@ -4736,7 +5529,7 @@ REDIS_ENCODING_SKIPLIST : 跳跃表和字典 : &quot;skiplist&quot;
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/29/Linux-User、Group切换/" data-id="cira56wbf005o90qyu755m2j9" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/29/Linux-User、Group切换/" data-id="ciroo0eyn0073kcqyo7x3dzx4" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a></li></ul>
@@ -4821,7 +5614,7 @@ REDIS_ENCODING_SKIPLIST : 跳跃表和字典 : &quot;skiplist&quot;
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/29/Linux用户管理实例/" data-id="cira56wb0004z90qyxhvu29jk" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/29/Linux用户管理实例/" data-id="ciroo0exc005skcqy55tjxox6" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a></li></ul>
@@ -4877,7 +5670,7 @@ REDIS_ENCODING_SKIPLIST : 跳跃表和字典 : &quot;skiplist&quot;
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/29/Linux-Group-管理/" data-id="cira56wbj005x90qyx73ex0yi" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/29/Linux-Group-管理/" data-id="ciroo0eyt007ckcqykao4sngn" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a></li></ul>
@@ -4950,7 +5743,7 @@ REDIS_ENCODING_SKIPLIST : 跳跃表和字典 : &quot;skiplist&quot;
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/Linux-User-管理/" data-id="cira56wbg005r90qy6sb1iqki" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/28/Linux-User-管理/" data-id="ciroo0eyo0076kcqyyg3pvnge" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a></li></ul>
@@ -5007,7 +5800,7 @@ REDIS_ENCODING_SKIPLIST : 跳跃表和字典 : &quot;skiplist&quot;
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/Linux-中SUID、SGID和SBIT的用途/" data-id="cira56wbb005k90qyt205vk70" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/28/Linux-中SUID、SGID和SBIT的用途/" data-id="ciroo0eyk006zkcqyewf92qzb" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a></li></ul>
@@ -5080,7 +5873,7 @@ REDIS_ENCODING_SKIPLIST : 跳跃表和字典 : &quot;skiplist&quot;
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/基于用户的协同过滤算法/" data-id="cira56w99002490qy0mxy70uc" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/28/基于用户的协同过滤算法/" data-id="ciroo0eta002bkcqyarbz5q5n" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/推荐算法/">推荐算法</a></li></ul>
@@ -5152,7 +5945,7 @@ REDIS_ENCODING_SKIPLIST : 跳跃表和字典 : &quot;skiplist&quot;
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/at命令详解/" data-id="cira56wam004890qyerf0akft" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/28/at命令详解/" data-id="ciroo0ewk0051kcqyqgdc0hd0" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux命令/">Linux命令</a></li></ul>
@@ -5252,7 +6045,7 @@ REDIS_ENCODING_SKIPLIST : 跳跃表和字典 : &quot;skiplist&quot;
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/awk命令详解/" data-id="cira56wak004590qyn1irlawp" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/28/awk命令详解/" data-id="ciroo0ewg004ykcqyq5stuu6p" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux命令/">Linux命令</a></li></ul>
@@ -5315,7 +6108,7 @@ REDIS_ENCODING_SKIPLIST : 跳跃表和字典 : &quot;skiplist&quot;
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/tee命令详解/" data-id="cira56w9y003890qyttf19sho" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/28/tee命令详解/" data-id="ciroo0eus003ikcqyfwfoekn0" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux命令/">Linux命令</a></li></ul>
@@ -5392,7 +6185,7 @@ REDIS_ENCODING_SKIPLIST : 跳跃表和字典 : &quot;skiplist&quot;
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/cpio命令详解/" data-id="cira56waj004290qyvizdbxf6" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/28/cpio命令详解/" data-id="ciroo0ewc004vkcqyzk0eurb1" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux命令/">Linux命令</a></li></ul>
@@ -5474,7 +6267,7 @@ REDIS_ENCODING_SKIPLIST : 跳跃表和字典 : &quot;skiplist&quot;
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/28/Linux命令面试问答/" data-id="cira56wb2005590qyj998pfu4" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/28/Linux命令面试问答/" data-id="ciroo0exk005ykcqyt9tolt5a" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux命令/">Linux命令</a></li></ul>
@@ -5594,7 +6387,7 @@ sshthresh = cwnd
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/26/图解TCP-IP协议/" data-id="cira56w9e002c90qyo3wyplvm" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/26/图解TCP-IP协议/" data-id="ciroo0etj002jkcqynmayqce8" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/TCP-IP/">TCP/IP</a></li></ul>
@@ -5642,7 +6435,7 @@ sshthresh = cwnd
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/26/动态规划之整数划分/" data-id="cira56w9l002p90qyrsol7x1i" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/26/动态规划之整数划分/" data-id="ciroo0etz002wkcqynvh7i74s" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/动态规划/">动态规划</a></li></ul>
@@ -5698,7 +6491,7 @@ sshthresh = cwnd
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/26/双线程动态规划之探寻宝藏/" data-id="cira56w9g002f90qyvdvmzi98" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/26/双线程动态规划之探寻宝藏/" data-id="ciroo0etr002mkcqy0xcj4o4w" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/动态规划/">动态规划</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a></li></ul>
@@ -5773,7 +6566,7 @@ sshthresh = cwnd
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/26/双线程动态规划之传纸条/" data-id="cira56w9j002l90qyz7f98xtt" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/26/双线程动态规划之传纸条/" data-id="ciroo0etw002skcqyf3g05sor" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/动态规划/">动态规划</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a></li></ul>
@@ -5837,7 +6630,7 @@ $ git push origin master
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/25/通过git提交或更新代码到github/" data-id="cira56w76000a90qygmcevc3a" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/25/通过git提交或更新代码到github/" data-id="ciroo0eoo000bkcqysnbwhw5h" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/随记/">随记</a></li></ul>
@@ -5884,7 +6677,7 @@ $ git push origin master
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/24/爬取leetcode所有accepted算法题的代码/" data-id="cira56w7t001f90qybb2pi6ys" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/24/爬取leetcode所有accepted算法题的代码/" data-id="ciroo0epz001mkcqytahnq5pg" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/爬虫/">爬虫</a></li></ul>
@@ -5932,7 +6725,7 @@ url_con.setRequestProperty(&quot;Cookie&quot;, &quot;your browser&apos;s cookie 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/24/爬虫绕过登陆方法/" data-id="cira56w7r001b90qyrenj7k3o" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/24/爬虫绕过登陆方法/" data-id="ciroo0epo001ikcqy3qtnx5uo" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/爬虫/">爬虫</a></li></ul>
@@ -6021,7 +6814,7 @@ branch: master
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/24/怎样搭建自己的Hexo博客/" data-id="cira56w7z001p90qy5uwuy1l3" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/24/怎样搭建自己的Hexo博客/" data-id="ciroo0eqd001wkcqywisenzhi" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/随记/">随记</a></li></ul>
@@ -6072,7 +6865,7 @@ branch: master
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/02/24/hello-world/" data-id="cira56wag003x90qyyx1q5955" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/02/24/hello-world/" data-id="ciroo0ew6004qkcqyirjbxzmb" class="article-share-link">Share</a>
       
       
     </footer>
@@ -6091,7 +6884,7 @@ branch: master
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java/">Java</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">37</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">11</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">15</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java/">Java</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">47</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">12</span></li></ul>
     </div>
   </div>
 
@@ -6100,7 +6893,7 @@ branch: master
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java底层机制/">Java底层机制</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/STL/">STL</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/muduo-C-网络库/">muduo C++ 网络库</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/">redis</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图与树/">图与树</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/设计模式/">设计模式</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java底层机制/">Java底层机制</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux库、链接、装载/">Linux库、链接、装载</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/STL/">STL</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/muduo-C-网络库/">muduo C++ 网络库</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/">redis</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图与树/">图与树</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/设计模式/">设计模式</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
     </div>
   </div>
 
@@ -6109,7 +6902,7 @@ branch: master
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/C-11-常规新特性/" style="font-size: 17.14px;">C++11 常规新特性</a> <a href="/tags/Java底层机制/" style="font-size: 15.71px;">Java底层机制</a> <a href="/tags/Linux-网络编程/" style="font-size: 17.14px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 15.71px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 14.29px;">Linux用户管理</a> <a href="/tags/Linux进程间通信/" style="font-size: 15.71px;">Linux进程间通信</a> <a href="/tags/STL/" style="font-size: 10px;">STL</a> <a href="/tags/TCP-IP/" style="font-size: 20px;">TCP/IP</a> <a href="/tags/muduo-C-网络库/" style="font-size: 18.57px;">muduo C++ 网络库</a> <a href="/tags/redis/" style="font-size: 14.29px;">redis</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/动态规划/" style="font-size: 12.86px;">动态规划</a> <a href="/tags/图与树/" style="font-size: 15.71px;">图与树</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/数组/" style="font-size: 10px;">数组</a> <a href="/tags/树结构/" style="font-size: 12.86px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 11.43px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 11.43px;">爬虫</a> <a href="/tags/设计模式/" style="font-size: 12.86px;">设计模式</a> <a href="/tags/随记/" style="font-size: 11.43px;">随记</a>
+      <a href="/tags/C-11-常规新特性/" style="font-size: 15.56px;">C++11 常规新特性</a> <a href="/tags/Java底层机制/" style="font-size: 14.44px;">Java底层机制</a> <a href="/tags/Linux-网络编程/" style="font-size: 16.67px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 17.78px;">Linux命令</a> <a href="/tags/Linux库、链接、装载/" style="font-size: 13.33px;">Linux库、链接、装载</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 13.33px;">Linux用户管理</a> <a href="/tags/Linux进程间通信/" style="font-size: 14.44px;">Linux进程间通信</a> <a href="/tags/STL/" style="font-size: 10px;">STL</a> <a href="/tags/TCP-IP/" style="font-size: 20px;">TCP/IP</a> <a href="/tags/muduo-C-网络库/" style="font-size: 18.89px;">muduo C++ 网络库</a> <a href="/tags/redis/" style="font-size: 14.44px;">redis</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/动态规划/" style="font-size: 12.22px;">动态规划</a> <a href="/tags/图与树/" style="font-size: 14.44px;">图与树</a> <a href="/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/数组/" style="font-size: 10px;">数组</a> <a href="/tags/树结构/" style="font-size: 13.33px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 11.11px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 11.11px;">爬虫</a> <a href="/tags/设计模式/" style="font-size: 12.22px;">设计模式</a> <a href="/tags/随记/" style="font-size: 11.11px;">随记</a>
     </div>
   </div>
 
@@ -6118,7 +6911,7 @@ branch: master
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a><span class="archive-list-count">33</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/06/">六月 2016</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a><span class="archive-list-count">36</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/06/">六月 2016</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">21</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
     </div>
   </div>
 
@@ -6130,23 +6923,23 @@ branch: master
       <ul>
         
           <li>
-            <a href="/2016/07/21/网络编程摘要/">网络编程摘要</a>
+            <a href="/2016/08/10/mysql之锁机制/">mysql之锁机制</a>
           </li>
         
           <li>
-            <a href="/2016/07/20/muduo中的Channel和Poller/">muduo中的Channel和Poller</a>
+            <a href="/2016/08/10/Linux命令之top/">Linux命令之top</a>
           </li>
         
           <li>
-            <a href="/2016/07/20/muduo中的EventLoop/">muduo中的EventLoop</a>
+            <a href="/2016/08/10/Linux命令之netstat/">Linux命令之netstat</a>
           </li>
         
           <li>
-            <a href="/2016/07/20/muduo中的buffer/">muduo中的buffer</a>
+            <a href="/2016/08/10/Linux命令之netcat/">Linux命令之netcat</a>
           </li>
         
           <li>
-            <a href="/2016/07/20/多线程与fork/">多线程与fork()</a>
+            <a href="/2016/08/10/C-向前声明/">C++向前声明</a>
           </li>
         
       </ul>

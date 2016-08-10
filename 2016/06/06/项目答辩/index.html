@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>important | LiuYongbin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="数独服务器采用reactor的模式，服务器有一个主线程eventloop，主要负责监听文件描述符的事件，文件描述符主要有三种，一种是以建立的连接对应的描述符，一个是服务器监听的端口，另外一个是eventfd，该文件描述符主要是用来唤醒阻塞在IO复用（IO采用的是epoll）上的主线程。在实现中，每一个文件描述符对应一个channel，channel对外提供四个回调函数，用来处理相应的读写或是错误以">
+<meta property="og:type" content="article">
+<meta property="og:title" content="important">
+<meta property="og:url" content="http://liubigbin.github.io/2016/06/06/项目答辩/index.html">
+<meta property="og:site_name" content="LiuYongbin">
+<meta property="og:description" content="数独服务器采用reactor的模式，服务器有一个主线程eventloop，主要负责监听文件描述符的事件，文件描述符主要有三种，一种是以建立的连接对应的描述符，一个是服务器监听的端口，另外一个是eventfd，该文件描述符主要是用来唤醒阻塞在IO复用（IO采用的是epoll）上的主线程。在实现中，每一个文件描述符对应一个channel，channel对外提供四个回调函数，用来处理相应的读写或是错误以">
+<meta property="og:updated_time" content="2016-08-10T08:39:21.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="important">
+<meta name="twitter:description" content="数独服务器采用reactor的模式，服务器有一个主线程eventloop，主要负责监听文件描述符的事件，文件描述符主要有三种，一种是以建立的连接对应的描述符，一个是服务器监听的端口，另外一个是eventfd，该文件描述符主要是用来唤醒阻塞在IO复用（IO采用的是epoll）上的主线程。在实现中，每一个文件描述符对应一个channel，channel对外提供四个回调函数，用来处理相应的读写或是错误以">
+  
+    <link rel="alternative" href="/atom.xml" title="LiuYongbin" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" type="text/css">
+  
+
+</head>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">LiuYongbin</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">Hey boy just do it!</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://liubigbin.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-项目答辩" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/06/06/项目答辩/" class="article-date">
+  <time datetime="2016-06-06T08:35:40.000Z" itemprop="datePublished">2016-06-06</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      important
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="数独服务器"><a href="#数独服务器" class="headerlink" title="数独服务器"></a>数独服务器</h3><p>采用reactor的模式，服务器有一个主线程eventloop，主要负责监听文件描述符的事件，文件描述符主要有三种，一种是以建立的连接对应的描述符，一个是服务器监听的端口，另外一个是eventfd，该文件描述符主要是用来<br>唤醒阻塞在IO复用（IO采用的是epoll）上的主线程。在实现中，每一个文件描述符对应一个channel，channel对外提供四个回调函数，用来处理相应的读写或是错误以及关闭事件，该channe负责根据文件描述符的所发生的事件来执行相应的回掉函数。<br>当服务器从IO复用返回的时候，会根据每一个发生事件的文件描述得到其对应的channel，让后执行channel的handevent函数。eventloop提供一个函数注册接口，外界可以通过该接口注册函数，让eventloop在执行所有的发生事件的文件描<br>述符对应的处理函数后，可以执行外界所注册的函数，文件描述符监听事件的更改，删除就是通过注册函数来实现的。我们是实现了一个线程池，用来执行数独的求解，当服务器收到一个请求时，就直接把请求处理任务放到线程池里面，线程池的线程<br>负责求解，并将结果返回给客户端。在整个服务过程中，所有的文件描述符的读写都有eventloop来实现，从而保证数据的完整性以及有序性。在应用层，我们实现一个缓冲类buffer，每一个连接都对应一个输入输出buffer，用来来处理所<br>有的文件读写数据。当文件描述符可读时，会将数据读到buffer里面，有数据可写时，是直接写到buffer里面。由于采用的是非阻塞编程，所以需要一个buffer来实现数据的缓冲，buffer默认为40K的大小，（vector来实现，<br>大大小可以自由伸缩），对于每一个输出buffer，为了防止客户端恶意发送请求，我们设置可一个阈值，但输出buffer的大小超出4M时，就默认关闭该连接。</p>
+<h4 id="注意点："><a href="#注意点：" class="headerlink" title="注意点："></a>注意点：</h4><ol>
+<li>buffer是必须的，由于是非阻塞编程，所以必须兼顾手法数据的不平衡性，在接收端，当收到的数据不全时，需要将数据缓冲起来，在发送时，当数据不能一次性发送完时，需要将数据缓存起来。</li>
+<li>不能多个线程同时操作一个文件描述符的IO。会造成数据的不完整。</li>
+<li>buffer开始不需要开的太大，太大会造成内存浪费，在读文件描述符的时候，为了一次性读完所有的数据，减少系统调用，可以利用栈空间，在栈中开辟一个新的空间，采用readv函数，将数据先后读到输入buffer和栈空间上，再将栈空间数据<br>append到输入buffer中。</li>
+</ol>
+<p>使用C++的functor和bind机制，使得函数注册与回调可以方便的实现。</p>
+<p>函数回调机制：<br>channel有一个handlevent，用来执行事件对应的回调。提供四个接口，类型为typedef boost::function<void()> EventCallback，来分别处理读、写、错误、关闭事件。channel由TCPConnection封装，TcpConnection由自己的<br>handleRead、handleWrite、handleClose、handleError函数，用来处理相应事件，这四个函数都作为callback，注册到channel中。TcpConnection还对外提供了四个回调：<br>//连接建立时调用，就是TCPConnection对象生成后，可以执行该回调。<br>typedef boost::function<void (const="" tcpconnectionptr&)=""> ConnectionCallback;<br>//关闭时调用<br>typedef boost::function<void (const="" tcpconnectionptr&)=""> CloseCallback;<br>//发送数据时，如果buffer的大小超出规定值，则调用<br>typedef boost::function<void (const="" tcpconnectionptr&,="" size_t)=""> HighWaterMarkCallback;<br>//读完数据到buffer后，调用<br>typedef boost::function<void (const="" tcpconnectionptr&,="" buffer*,="" timestamp)=""> MessageCallback;</void></void></void></void></void()></p>
+<p>在TcpConnection的handlexxx函数中，会在处理一些本身的事物后，调用对应的回调。</p>
+<p>TCPConnection由TCPServer产生，所以TCPServer也提供对应的回调函数，用户注册回调函数到TCPServer中，每当一个TCPConnector建立，TCPServer就会将其回调函数负责给TcpConnection对应的回调函数对象，这样就使得用户可以<br>将自己想要的操作注册到TCPConnection中，从而决定事件的具体处理过程。</p>
+<h3 id="股票垂直搜索"><a href="#股票垂直搜索" class="headerlink" title="股票垂直搜索"></a>股票垂直搜索</h3><p>负责从网上爬取股票新闻，我们爬取的是和讯网，对于每一篇新闻，使用股票的结构化数据计算出新闻的相关性概率，融合softmax回归模型的输出概率，通过参数拟合方法得到最终的概率序列，接着通过多标签选择算法得出新闻的<br>所属股票标签，并将该新闻推送给对应的股票。</p>
+<h4 id="爬取以及新闻结构化数据提取模块："><a href="#爬取以及新闻结构化数据提取模块：" class="headerlink" title="爬取以及新闻结构化数据提取模块："></a>爬取以及新闻结构化数据提取模块：</h4><p>使用python来爬取和讯网的数据，由一个模块时可以获得所有股票的最新连接的，我们开启一个线程来爬取该模块的连接，可以获得最新的新闻连接，每一个页面返回30条记录，采用redis来实现去重。程序每一秒爬取一次，为了实现数据的爬全，<br>每一次爬取页面直到有连接在redis中出现重复为止。（分两个redis连接，一个是上一次的连接记录A，一个是这一次的连接记录B，如果一条连接在A中出现，那么说明已经是旧的数据了，直接终止这次爬取，如果不是，那么匹配以下B，如果重复<br>直接忽略，如果不重复，那么爬取该连接，同时在B中增加一条记录）。将没有重复的连接存储在mysql里面，并记录相关的状态，比如还没爬取数据，爬取得到的状态代码等。接下来就是从mysql中查找还没有爬取的连接，爬取该连接的新闻数据。<br>由于由多个线程访问数据库，所以这里需要加锁。我们利用mysql的FOR UPDATE 写锁，对每一行的数据进行写锁，从而保证线程的同步。每一个连接会有一个访问次数以及访问状态code，如果访问出错，那么次数加1，设置得到的状态code，当次数超过三次时，直接忽略该连接（statu设置为1，表示已访问）。将访问得到的新闻数据直接存在mongoDB里面。接着就是从mongoDB里面提取新闻数据，因为mongoDB存储的都是新闻的原始数据，需要进行新闻数据的结构化提取，这里又涉及到<br>多线程访问mongoDB，我们利用python的线程安全的queue模块，自己建立一个中间队列，线程从队列里面获得新闻页面，如果队列的长度小于指定的阈值，那么队列自己从mongoDB里面获得数据，存在队列中，使用中间队列，使得多线程只与队列<br>打交道，队列于mongoDB打交道，从而保证线程的同步。提取好新闻的结构化数据后，就直接的存在mysql中。最后就是从mysql中获得新闻，进行分类推送。也是类似于FOR UPDATE来保证线程的同步。<br>爬从下载用的是pycurl模块，mongoDB用的是pymongo，使用python内建的线程安全queue， python的线程用的是内建的threading模块，类只需要继承threading.Thread类就好了，实现自己的run函数，然后生成对象，调用对象.start()<br>函数就OK。</p>
+<h4 id="分类模块："><a href="#分类模块：" class="headerlink" title="分类模块："></a>分类模块：</h4><p>文章的特征话，获得特征向量：新对文章进行分词，利用搜狗字典以及股票的特有名词，如板块名词，股票名称等，当初的股票总数为2863个股票，需要将这些股票的名称以及所有的板块名称都录入到字典里面，并且给与最大的权限。最长的词长度<br>限制在6个。采用动态规划的方法将文章进行分词，得到词向量。样本有50000多的词，进行信息熵处理后，得到最终10000个词。根据最终的词数组，将分好词的文章与数组一一对应，获得文章的特征向量。将特征向量利用softmax回归得到分类<br>的股票的概率列表（所有股票的概率）。接下来是结构化分类：每一个股票都有自己的结构化数据，如名称，代码，公司，所属行业，经营范围，企业法人等，可以利用这些数据对股票进行一个分类，将股票的特征向量中的词与这些结构化信息进行匹配<br>，每一个信息都有对应的权重（根据经验值来设定），最后得到分类到该股票的权值，每一个结构化所对应的总权值是一样的，将最后的到的权值总和除以总权值，那么就是该股票的概率了。将结构化的概率和softmax概率加权求和，就得到股票的<br>最后概率，将这些概率数组进行排序，从头开始选，如果有出现概率间隔比较大的，那么就截至，将以选择的作为结果输出。<br>分词：采用动态规划的方法，使得分好的最终权重最大。先对文章根据停词和分割符号进行分割，得到分割段列表，对于每一个段，进行动态规划的分词，将所有段的分词合并在一起得到最终的分词结果，根据10000个特征词得到文章的最终特征向量。</p>
+<h4 id="推送模块："><a href="#推送模块：" class="headerlink" title="推送模块："></a>推送模块：</h4><p>采用redis缓存数据库，用户上线后，会从mysql中读取用户所关注的股票id类表，存在redis中，采用的是redis的列表键（uid， stockidlist），redis中还有另外一个数据结构，用来记录每一个股票id所拥有的新闻id列表<br>（stockid， newsidlist），每一篇分好类的新闻就会往对应的stockid的新闻列表头插入该新闻的id。每一个newsidlist的长度限制为200，超过的话，直接丢尾。当用户需要获取新闻时，用户刷新一次，可以获取所有的关注股票的新闻或是<br>对应股票的新闻，如果是所有股票新闻，那么直接通过（uid， stcokidlist）结构获得用户关注的股票id，然后根据（stockid， newsidlist）结构获得对应新闻id，由于一篇新闻会对应多个股票，所以这里需要先对新闻id去重，再从mysql<br>里面获得所有的新闻数据（以事件排序，mysql的order by功能），将数据返回给客户端。每次最多返回前20条。第一次刷新没有时间戳，后面每次刷新都根据上一次获得的新闻的最新时间戳来获得最新的数据。如果想下拉获得更早额数据，那么需要<br>客户提供上一次获得数据中的最早的时间戳，根据该时间来获得数据。获取旧数据如果每次都查找所有的newsid，在mysql中根据时间来获得合适的数据的话，会比较没效率，因为每一次都需要找出所有相关的newid，然后去掉不合适的。可以在<br>redis中增加一个数据结构，记录但前所有需要推送给用户的newsid，用户第一次刷新时，直接获得所有newsid（去重），返回20条数据后，将返回的id从newsid列表中去掉，以后如果需要旧数据，那么就直接从这里的列表中获取就好了。</p>
+<p>对于获得特定的股票新闻，需要根据股票的id，获得newsid列表，这里获取最新和旧新闻不需要时间戳，可以根据newsid来决定那些是新的，那些是旧的，也不需要新闻id的去重。</p>
+<p>如果想主动推送的话，类似于发布和订阅，那么需要增加一个数据结构为（stockid， uidlist），记录每一个股票所对应的用户id列表，当有新的新闻分类到对应的股票时，那么根据股票id获得所有的用户，将新闻推给用户。这里需要注意，由于<br>一篇新闻可能对应多个股票，一个用户如果恰好订阅了这多个股票的话，那么新闻会出现多次推送。这里需要将所有股票的用户搜集起来，进行去重，然后再推送。在客户端，由于收到可新的推送，可以将新闻归类到用户订阅的相应股票上，<br>这样，在进行股票刷新的时候可以保证不会获得重复的数据。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/06/06/项目答辩/" data-id="ciroo0eo90003kcqyd4y6wlft" class="article-share-link">Share</a>
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2016/06/20/STL概览/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          STL概览
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2016/05/10/TCP-Nagel算法/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title"> TCP Nagel算法</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">15</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java/">Java</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">47</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">12</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java底层机制/">Java底层机制</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux库、链接、装载/">Linux库、链接、装载</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/STL/">STL</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/muduo-C-网络库/">muduo C++ 网络库</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/">redis</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图与树/">图与树</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/设计模式/">设计模式</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/C-11-常规新特性/" style="font-size: 15.56px;">C++11 常规新特性</a> <a href="/tags/Java底层机制/" style="font-size: 14.44px;">Java底层机制</a> <a href="/tags/Linux-网络编程/" style="font-size: 16.67px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 17.78px;">Linux命令</a> <a href="/tags/Linux库、链接、装载/" style="font-size: 13.33px;">Linux库、链接、装载</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 13.33px;">Linux用户管理</a> <a href="/tags/Linux进程间通信/" style="font-size: 14.44px;">Linux进程间通信</a> <a href="/tags/STL/" style="font-size: 10px;">STL</a> <a href="/tags/TCP-IP/" style="font-size: 20px;">TCP/IP</a> <a href="/tags/muduo-C-网络库/" style="font-size: 18.89px;">muduo C++ 网络库</a> <a href="/tags/redis/" style="font-size: 14.44px;">redis</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/动态规划/" style="font-size: 12.22px;">动态规划</a> <a href="/tags/图与树/" style="font-size: 14.44px;">图与树</a> <a href="/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/数组/" style="font-size: 10px;">数组</a> <a href="/tags/树结构/" style="font-size: 13.33px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 11.11px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 11.11px;">爬虫</a> <a href="/tags/设计模式/" style="font-size: 12.22px;">设计模式</a> <a href="/tags/随记/" style="font-size: 11.11px;">随记</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a><span class="archive-list-count">36</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/06/">六月 2016</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">21</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/08/10/mysql之锁机制/">mysql之锁机制</a>
+          </li>
+        
+          <li>
+            <a href="/2016/08/10/Linux命令之top/">Linux命令之top</a>
+          </li>
+        
+          <li>
+            <a href="/2016/08/10/Linux命令之netstat/">Linux命令之netstat</a>
+          </li>
+        
+          <li>
+            <a href="/2016/08/10/Linux命令之netcat/">Linux命令之netcat</a>
+          </li>
+        
+          <li>
+            <a href="/2016/08/10/C-向前声明/">C++向前声明</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 LiuYongbin<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js" type="text/javascript"></script>
+
+
+<script src="/js/script.js" type="text/javascript"></script>
+
+  </div>
+</body>
+</html>

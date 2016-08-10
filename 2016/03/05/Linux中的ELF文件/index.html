@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Linux中的ELF文件 | LiuYongbin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Linux中的目标文件、可执行文件、链接库、核心转储文件主要以ELF文件格式来存储。所以linux中ELF文件主要有四种类型：
+可重定位文件该类文件包含了代码和数据，可以被用来接连称为可执行文件或共享文件，静态链接库也可以归为该类。该类别的文件也就是平常所说的目标文件，由于静态链接库只是多个目标文件的压缩整合，并建立索引来管理这些目标文件，所以静态链接库也属于该类别。该类别的文件里面有重定位表，用">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux中的ELF文件">
+<meta property="og:url" content="http://liubigbin.github.io/2016/03/05/Linux中的ELF文件/index.html">
+<meta property="og:site_name" content="LiuYongbin">
+<meta property="og:description" content="Linux中的目标文件、可执行文件、链接库、核心转储文件主要以ELF文件格式来存储。所以linux中ELF文件主要有四种类型：
+可重定位文件该类文件包含了代码和数据，可以被用来接连称为可执行文件或共享文件，静态链接库也可以归为该类。该类别的文件也就是平常所说的目标文件，由于静态链接库只是多个目标文件的压缩整合，并建立索引来管理这些目标文件，所以静态链接库也属于该类别。该类别的文件里面有重定位表，用">
+<meta property="og:updated_time" content="2016-08-09T13:45:50.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Linux中的ELF文件">
+<meta name="twitter:description" content="Linux中的目标文件、可执行文件、链接库、核心转储文件主要以ELF文件格式来存储。所以linux中ELF文件主要有四种类型：
+可重定位文件该类文件包含了代码和数据，可以被用来接连称为可执行文件或共享文件，静态链接库也可以归为该类。该类别的文件也就是平常所说的目标文件，由于静态链接库只是多个目标文件的压缩整合，并建立索引来管理这些目标文件，所以静态链接库也属于该类别。该类别的文件里面有重定位表，用">
+  
+    <link rel="alternative" href="/atom.xml" title="LiuYongbin" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" type="text/css">
+  
+
+</head>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">LiuYongbin</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/" id="subtitle">Hey boy just do it!</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" results="0" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://liubigbin.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-Linux中的ELF文件" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2016/03/05/Linux中的ELF文件/" class="article-date">
+  <time datetime="2016-03-05T12:15:45.000Z" itemprop="datePublished">2016-03-05</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Linux/">Linux</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Linux中的ELF文件
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Linux中的目标文件、可执行文件、链接库、核心转储文件主要以ELF文件格式来存储。所以linux中ELF文件主要有四种类型：</p>
+<h5 id="可重定位文件"><a href="#可重定位文件" class="headerlink" title="可重定位文件"></a>可重定位文件</h5><p>该类文件包含了代码和数据，可以被用来接连称为可执行文件或共享文件，静态链接库也可以归为该类。该类别的文件也就是平常所说的目标文件，由于静态链接库只是多个目标文件的压缩整合，并建立索引来管理这些目标文件，所以静态链接库也属于该类别。该类别的文件里面有重定位表，用来描述如何修改相应的段里的内容。如果一个源文件引用了其他文件定义的变量或是函数，那么在编译成目标文件的时候，对于这些未定义的符号，ELF文件只是使用一个临时地址来代替这些符号的实际地址，所以需要一个可重定位表来记录文件中那些符号需要重新定位，以及该符号在ELF文件中的地址。在链接的时候，其中一个很重要的步骤就是对符号地址的重定位，所以符号为未定义以及符号的重定义都是在链接的该步骤判断的。</p>
+<p>Linux中的.o和.a文件以及windows中的.obj文件就是这中类型的文件。</p>
+<h5 id="可执行文件"><a href="#可执行文件" class="headerlink" title="可执行文件"></a>可执行文件</h5><p>该类文件包含了可以直接执行的程序，他的代表就是ELF可执行文件，他们一般都没有扩展名。Linux中的/bin/bash文件和windows的.exe文件就是这种类型的文件。</p>
+<h5 id="共享目标文件"><a href="#共享目标文件" class="headerlink" title="共享目标文件"></a>共享目标文件</h5><p>这种文件包括了代码和数据段，可以在一下的两种情况下使用。一种是链接器可以使用这种文件跟其他的可重定位文件和共享目标文件连接，产生新的目标文件。第二种就是动态链接器可以将几个这种共享目标文件与可执行文件结合，作为进程映像的一部分来运行。</p>
+<p>Linux 的.so文件和windows中的.dll文件就是这种类型文件</p>
+<h5 id="核心转储文件"><a href="#核心转储文件" class="headerlink" title="核心转储文件"></a>核心转储文件</h5><p>当进程意外终止时，系统可以将该进程的地址空间的内容以及终止时的一些其他信息转储到核心转储文件。<br>Linux的core dump文件。</p>
+<h4 id="ELF文件的格式"><a href="#ELF文件的格式" class="headerlink" title="ELF文件的格式"></a>ELF文件的格式</h4><p>ELF文件使用段的形式来管理，从上到下主要有：</p>
+<ol>
+<li>文件头：记录生成该ELF的系统信息，以及该ELF文件的信息，如：ELF文件版本、目标机器型号、程序入口地址、段表位置、段数量、入口地址、程序头入口和长度等。</li>
+<li>.text段：也就是所说的代码段，代码段存储的就是程序编译后所生成的机器指令。</li>
+<li>.data段：数据段，用来存储程序中的初始化的全局变量以及初始化的局部静态变量。</li>
+<li>.bss段：记录未初始化的全局变量和局部静态变量，在ELF文件里面，不会为这些为初始的变量分配空间，因为这些未初始的变量的默认值为0，所以只需要记录总体的未初始变量的大小就好，不需要实际的分配磁盘空间来存储他们，但是在程序装载到虚拟内存的时候，需要为其分配空间。</li>
+<li>.rodata: 只读数据段，该段用来存储程序中的字符串常量以及其他类型的常量（const修饰的），如：printf(“%d\n”, n),其中的”%d\n”就是字符串常量，</li>
+<li>.comment：存放编译器的版本信息，比如字符串：“GCC:(GUN)4.2.0”</li>
+<li>.debug：储存调试信息。</li>
+<li>Session header table：段表，用来保存ELF文件中所有段的基本属性结构，段表是ELF文件中除了文件头意外最重要的结构，他描述了ELF的各个段信息，比如每一个段段名、段的长度、在文件中的偏移、读写权限以及段的其他信息。也就是说，ELF文件的段结构就是由短表决定的，编译器、连接器和装载器都是依据段表来定位和访问各个段的属性的。</li>
+<li>.symtab：符号表，记录该文件中的所有符号信息(全局变量和函数符号等)。</li>
+<li>.rel.txt/.rel.data：重定位代码段和重定位数据段，对于每一个需要重定位的代码段和数据段，都会有一个相应的重定位表。对于代码中的对其他文件定义的函数的调用，就需要一个重定位代码段，用来记录需要重新定位的函数。数据段也是一样的道理。</li>
+</ol>
+<p>总的来说，程序被编译以后主要分成两种段：程序指令和程序数据。代码段属于程序指令，数据段以及.bss段属于程序数据。</p>
+<p>将程序指令和程序数据分来存储的主要好处有三个：</p>
+<p>1：程序指令和程序数据被装载后分来存储，由于程序指令属于只读，程序数据可读可写，所以可以对装载后的内存实现不同的权限管理。防止程序指令被改写。<br>2：现代CPU都被设置为数据缓存和指令缓存分离，主要就是利用程序以及数据的局部性，将程序指令和程序数据分离有利于提高程序的局部性，可以充分的利用缓存，从而提高缓存的命中率。<br>3：节省内存。但系统运行着多个该版本的副本时，由于指令都是一样的，所以内存只需要存储一份程序指令就可以了，这样可以节省很多的内存空间。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liubigbin.github.io/2016/03/05/Linux中的ELF文件/" data-id="ciroo0ey3006jkcqyosxbsgx5" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux库、链接、装载/">Linux库、链接、装载</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2016/03/06/Linux中的静态链接/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Linux中的静态链接
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2016/03/04/Linux中可执行文件的装载/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Linux中可执行文件的装载</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">15</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java/">Java</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">47</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">12</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java底层机制/">Java底层机制</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux库、链接、装载/">Linux库、链接、装载</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/STL/">STL</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/muduo-C-网络库/">muduo C++ 网络库</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/">redis</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图与树/">图与树</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/设计模式/">设计模式</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/C-11-常规新特性/" style="font-size: 15.56px;">C++11 常规新特性</a> <a href="/tags/Java底层机制/" style="font-size: 14.44px;">Java底层机制</a> <a href="/tags/Linux-网络编程/" style="font-size: 16.67px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 17.78px;">Linux命令</a> <a href="/tags/Linux库、链接、装载/" style="font-size: 13.33px;">Linux库、链接、装载</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 13.33px;">Linux用户管理</a> <a href="/tags/Linux进程间通信/" style="font-size: 14.44px;">Linux进程间通信</a> <a href="/tags/STL/" style="font-size: 10px;">STL</a> <a href="/tags/TCP-IP/" style="font-size: 20px;">TCP/IP</a> <a href="/tags/muduo-C-网络库/" style="font-size: 18.89px;">muduo C++ 网络库</a> <a href="/tags/redis/" style="font-size: 14.44px;">redis</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/动态规划/" style="font-size: 12.22px;">动态规划</a> <a href="/tags/图与树/" style="font-size: 14.44px;">图与树</a> <a href="/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/数组/" style="font-size: 10px;">数组</a> <a href="/tags/树结构/" style="font-size: 13.33px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 11.11px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 11.11px;">爬虫</a> <a href="/tags/设计模式/" style="font-size: 12.22px;">设计模式</a> <a href="/tags/随记/" style="font-size: 11.11px;">随记</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a><span class="archive-list-count">36</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/06/">六月 2016</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">21</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2016/08/10/mysql之锁机制/">mysql之锁机制</a>
+          </li>
+        
+          <li>
+            <a href="/2016/08/10/Linux命令之top/">Linux命令之top</a>
+          </li>
+        
+          <li>
+            <a href="/2016/08/10/Linux命令之netstat/">Linux命令之netstat</a>
+          </li>
+        
+          <li>
+            <a href="/2016/08/10/Linux命令之netcat/">Linux命令之netcat</a>
+          </li>
+        
+          <li>
+            <a href="/2016/08/10/C-向前声明/">C++向前声明</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2016 LiuYongbin<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" type="text/css">
+  <script src="/fancybox/jquery.fancybox.pack.js" type="text/javascript"></script>
+
+
+<script src="/js/script.js" type="text/javascript"></script>
+
+  </div>
+</body>
+</html>

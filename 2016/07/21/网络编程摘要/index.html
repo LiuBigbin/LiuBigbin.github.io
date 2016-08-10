@@ -15,7 +15,7 @@ client发送数据给server，server发送数据给client，如果数据都很�
 <meta property="og:description" content="对于阻塞的socket，client和server在数据的交流时，有可能会发生死锁：
 
 client发送数据给server，server发送数据给client，如果数据都很大时，那么两端一起发送数据时，会阻塞在send操作上，由于每一个连接的接受端缓冲区的大小都是有限的，当接受端的接收缓冲区满时，发送端将一直阻塞在send操作上，这样一来，两端都没有读取接收缓冲区的数据，导致一直阻塞在send操作">
-<meta property="og:updated_time" content="2016-07-31T05:13:29.000Z">
+<meta property="og:updated_time" content="2016-08-01T09:06:39.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="网络编程摘要">
 <meta name="twitter:description" content="对于阻塞的socket，client和server在数据的交流时，有可能会发生死锁：
@@ -112,8 +112,7 @@ client发送数据给server，server发送数据给client，如果数据都很�
 <p>先有TCP，再有UDP，一般情况下使用的是TCP，因为UDP没有拥塞控制，很难很好的使用网络的带宽，发多会丢包，发少有不能合理使用带宽。从编程角度来说，UDP不需要网络库，在服务端，udp只需要一个socket就可以与所有的客户端进行数据交互。而TCP需要一个连接一个socket。TCP是线程不安全的，因为TCP为字节流协议，多个线程操作一个socket会发生数据错乱。而UDP是线程安全的，只需要维护客户端的信息，由于是数据包的格式，所以多个线程写一个UDP socket的话，不会造成数据包内的数据错乱。</p>
 <p>在TCP编程的时候，如果没有数据需要发送了，那么应该调用shutdownWrite,关闭写连接，在read返回0的时候，才调用close。如果在没有数据可发送的时候直接的调用close，会导致输入缓冲区的数据直接被清除，使得数据读取不到。<br>TCP是可靠的意思是协议会帮你把数据安全的发送到对端的接收端口，但是并不负责数据会被对端的程序给读取到，所以为了数据的可靠传输，我们在应用层需要进行数据的接收确认，表示数据已经被程序成功处理。</p>
 <p>在linux下使用管道时，如果管道的一端关闭了，那么往里面写数据的话，程序会受到SIGPIPE信号，在默认的情况下，程序会直接退出。在TCP网络编程下，如果对端关闭了socket的读连接，此时往里面写数据的话，也会收到SIGPIPE 信号，所以在server端，需要忽略掉SIGPIPE信号，不然的话，收到SIGPIPE信号的时候，server会退出。</p>
-<p>TCP网络编程三部曲：</p>
-<ol>
+<h3 id="TCP网络编程三部曲："><a href="#TCP网络编程三部曲：" class="headerlink" title="TCP网络编程三部曲："></a>TCP网络编程三部曲：</h3><ol>
 <li>开起SO_REUSEADDR,保证程序在重启的时候可以再一次的监听端口。在TCP下，如果主动关掉连接的话，会有一个TIME_WAITE时间，此时的端口还是处于忙的状态，如果不启用SO_REUSEADDR的话，绑定该端口会发生错误。</li>
 <li>忽略SIGPIPE</li>
 <li>TCP_NODELAY, 一般情况下都是默认关掉该算法，使得数据可以立刻发送到对端。</li>
@@ -125,7 +124,7 @@ client发送数据给server，server发送数据给client，如果数据都很�
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liubigbin.github.io/2016/07/21/网络编程摘要/" data-id="cira56w7h000r90qyjyge3na9" class="article-share-link">Share</a>
+      <a data-url="http://liubigbin.github.io/2016/07/21/网络编程摘要/" data-id="ciroo0ep6000vkcqyr62qhi50" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a></li></ul>
@@ -135,6 +134,15 @@ client发送数据给server，server发送数据给client，如果数据都很�
   
     
 <nav id="article-nav">
+  
+    <a href="/2016/07/31/muduo中的TCPConnection/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          muduo中的TCPConnection
+        
+      </div>
+    </a>
   
   
     <a href="/2016/07/20/muduo中的Channel和Poller/" id="article-nav-older" class="article-nav-link-wrap">
@@ -155,7 +163,7 @@ client发送数据给server，server发送数据给client，如果数据都很�
   <div class="widget-wrap">
     <h3 class="widget-title">Categories</h3>
     <div class="widget">
-      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">14</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java/">Java</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">37</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">11</span></li></ul>
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/C与C/">C与C++</a><span class="category-list-count">15</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Java/">Java</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Linux/">Linux</a><span class="category-list-count">47</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/数据结构/">数据结构</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/日志/">日志</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/机器学习/">机器学习</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/算法/">算法</a><span class="category-list-count">9</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/计算机网络/">计算机网络</a><span class="category-list-count">12</span></li></ul>
     </div>
   </div>
 
@@ -164,7 +172,7 @@ client发送数据给server，server发送数据给client，如果数据都很�
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java底层机制/">Java底层机制</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/STL/">STL</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/muduo-C-网络库/">muduo C++ 网络库</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/">redis</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图与树/">图与树</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/设计模式/">设计模式</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C-11-常规新特性/">C++11 常规新特性</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Java底层机制/">Java底层机制</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux-网络编程/">Linux 网络编程</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux命令/">Linux命令</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux库、链接、装载/">Linux库、链接、装载</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux权限管理/">Linux权限管理</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux用户管理/">Linux用户管理</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux进程间通信/">Linux进程间通信</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/STL/">STL</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/TCP-IP/">TCP/IP</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/muduo-C-网络库/">muduo C++ 网络库</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/">redis</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/动态规划/">动态规划</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/图与树/">图与树</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/多线程/">多线程</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/推荐算法/">推荐算法</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/数组/">数组</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/树结构/">树结构</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/棋盘动态规划/">棋盘动态规划</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/爬虫/">爬虫</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/设计模式/">设计模式</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/随记/">随记</a><span class="tag-list-count">2</span></li></ul>
     </div>
   </div>
 
@@ -173,7 +181,7 @@ client发送数据给server，server发送数据给client，如果数据都很�
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/tags/C-11-常规新特性/" style="font-size: 17.14px;">C++11 常规新特性</a> <a href="/tags/Java底层机制/" style="font-size: 15.71px;">Java底层机制</a> <a href="/tags/Linux-网络编程/" style="font-size: 17.14px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 15.71px;">Linux命令</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 14.29px;">Linux用户管理</a> <a href="/tags/Linux进程间通信/" style="font-size: 15.71px;">Linux进程间通信</a> <a href="/tags/STL/" style="font-size: 10px;">STL</a> <a href="/tags/TCP-IP/" style="font-size: 20px;">TCP/IP</a> <a href="/tags/muduo-C-网络库/" style="font-size: 18.57px;">muduo C++ 网络库</a> <a href="/tags/redis/" style="font-size: 14.29px;">redis</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/动态规划/" style="font-size: 12.86px;">动态规划</a> <a href="/tags/图与树/" style="font-size: 15.71px;">图与树</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/数组/" style="font-size: 10px;">数组</a> <a href="/tags/树结构/" style="font-size: 12.86px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 11.43px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 11.43px;">爬虫</a> <a href="/tags/设计模式/" style="font-size: 12.86px;">设计模式</a> <a href="/tags/随记/" style="font-size: 11.43px;">随记</a>
+      <a href="/tags/C-11-常规新特性/" style="font-size: 15.56px;">C++11 常规新特性</a> <a href="/tags/Java底层机制/" style="font-size: 14.44px;">Java底层机制</a> <a href="/tags/Linux-网络编程/" style="font-size: 16.67px;">Linux 网络编程</a> <a href="/tags/Linux命令/" style="font-size: 17.78px;">Linux命令</a> <a href="/tags/Linux库、链接、装载/" style="font-size: 13.33px;">Linux库、链接、装载</a> <a href="/tags/Linux权限管理/" style="font-size: 10px;">Linux权限管理</a> <a href="/tags/Linux用户管理/" style="font-size: 13.33px;">Linux用户管理</a> <a href="/tags/Linux进程间通信/" style="font-size: 14.44px;">Linux进程间通信</a> <a href="/tags/STL/" style="font-size: 10px;">STL</a> <a href="/tags/TCP-IP/" style="font-size: 20px;">TCP/IP</a> <a href="/tags/muduo-C-网络库/" style="font-size: 18.89px;">muduo C++ 网络库</a> <a href="/tags/redis/" style="font-size: 14.44px;">redis</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/动态规划/" style="font-size: 12.22px;">动态规划</a> <a href="/tags/图与树/" style="font-size: 14.44px;">图与树</a> <a href="/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/tags/推荐算法/" style="font-size: 10px;">推荐算法</a> <a href="/tags/数组/" style="font-size: 10px;">数组</a> <a href="/tags/树结构/" style="font-size: 13.33px;">树结构</a> <a href="/tags/棋盘动态规划/" style="font-size: 11.11px;">棋盘动态规划</a> <a href="/tags/爬虫/" style="font-size: 11.11px;">爬虫</a> <a href="/tags/设计模式/" style="font-size: 12.22px;">设计模式</a> <a href="/tags/随记/" style="font-size: 11.11px;">随记</a>
     </div>
   </div>
 
@@ -182,7 +190,7 @@ client发送数据给server，server发送数据给client，如果数据都很�
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a><span class="archive-list-count">33</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/06/">六月 2016</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/07/">七月 2016</a><span class="archive-list-count">36</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/06/">六月 2016</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">8</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">21</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">23</span></li></ul>
     </div>
   </div>
 
@@ -194,23 +202,23 @@ client发送数据给server，server发送数据给client，如果数据都很�
       <ul>
         
           <li>
-            <a href="/2016/07/21/网络编程摘要/">网络编程摘要</a>
+            <a href="/2016/08/10/mysql之锁机制/">mysql之锁机制</a>
           </li>
         
           <li>
-            <a href="/2016/07/20/muduo中的Channel和Poller/">muduo中的Channel和Poller</a>
+            <a href="/2016/08/10/Linux命令之top/">Linux命令之top</a>
           </li>
         
           <li>
-            <a href="/2016/07/20/muduo中的EventLoop/">muduo中的EventLoop</a>
+            <a href="/2016/08/10/Linux命令之netstat/">Linux命令之netstat</a>
           </li>
         
           <li>
-            <a href="/2016/07/20/muduo中的buffer/">muduo中的buffer</a>
+            <a href="/2016/08/10/Linux命令之netcat/">Linux命令之netcat</a>
           </li>
         
           <li>
-            <a href="/2016/07/20/多线程与fork/">多线程与fork()</a>
+            <a href="/2016/08/10/C-向前声明/">C++向前声明</a>
           </li>
         
       </ul>
